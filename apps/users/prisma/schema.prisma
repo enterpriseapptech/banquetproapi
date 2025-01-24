@@ -16,8 +16,8 @@ datasource db {
 
 model User {
   id              String    @id @default(uuid()) // Primary key
-  firstname       String? 
-  lastname        String? 
+  firstName       String? 
+  lastName        String? 
   email           String    @unique
   isEmailVerified Boolean   @default(false)
   password        String    // Hashed password
