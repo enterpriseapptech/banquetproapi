@@ -1,19 +1,5 @@
-import { Optional } from '@nestjs/common';
-import { IsEmail, IsEnum, IsNotEmpty, Length } from 'class-validator';
-// import { confirmFieldDecorator } from '../../validations/confirm_field.decorator';
-
-export enum UserType {
-    ADMIN = 'ADMIN',
-    CUSTOMER = 'CUSTOMER',
-    SERVICE_PROVIDER = 'SERVICE_PROVIDER',
-    STAFF = 'STAFF',
-}
-
-export enum UserStatus {
-    ACTIVE = 'ACTIVE',
-    DEACTIVATED = 'DEACTIVATED',
-    RESTRICTED = 'RESTRICTED',
-}
+import { IsEmail, IsEnum, IsNotEmpty, Length, IsOptional } from 'class-validator';
+import { $Enums } from '@prisma/client';
 
 export class CreateUserDto {
     @IsEmail()
@@ -28,17 +14,17 @@ export class CreateUserDto {
     @IsNotEmpty()
     lastName: string;
 
+    @IsOptional()
     @Length(2, 50)
-    @Optional()
     businessName: string;
 
     @Length(10, 20)
     @IsNotEmpty()
     password: string;
 
-    @IsEnum(UserType, { message: 'userType must be one of ADMIN, USER, or GUEST' })
+    @IsEnum($Enums.UserType, { message: 'userType must be one of ADMIN, USER, or GUEST' })
     @IsNotEmpty()
-    userType: UserType;
+    userType: $Enums.UserType;
     
 
     // @confirmFieldDecorator('password')

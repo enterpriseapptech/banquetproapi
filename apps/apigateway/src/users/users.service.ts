@@ -14,7 +14,7 @@ export class UsersService {
   create(createUserDto: CreateUserDto) {
     // return this.userClient.send<UserDto, CreateUserDto>({ cmd: USERPATTERN.CREATEUSER }, createUserDto)
     console.log('Gateway sending message...');
-    return  this.userClient.send<UserDto, CreateUserDto>(USERPATTERN.CREATEUSER, createUserDto)
+    return this.userClient.send<UserDto, CreateUserDto>(USERPATTERN.CREATEUSER, createUserDto)
       // .subscribe({
       //   next: (response) => console.log('Response received:', response),
       //   error: (err) => console.error('Error:', err),
