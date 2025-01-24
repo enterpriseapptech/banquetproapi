@@ -1,28 +1,24 @@
-import { Optional } from '@nestjs/common';
-import { IsEmail, IsNotEmpty, Length } from 'class-validator';
+// import { Optional } from '@nestjs/common';
+// import { IsEmail, IsEnum, IsNotEmpty, Length } from 'class-validator';
+import { UserStatus, UserType } from './create-user.dto';
 // import { confirmFieldDecorator } from '../../validations/confirm_field.decorator';
 export class UserDto {
-    @IsEmail()
-    @Length(6, 100)
+    id: string;
     email: string;
-
-    @Length(2, 50)
-    @IsNotEmpty()
-    firstname: string;
-
-    @Length(2, 50)
-    @IsNotEmpty()
-    lastname: string;
-
-    @Length(2, 50)
-    @Optional()
-    businessname: string;
-
-    @Length(10, 20)
-    @IsNotEmpty()
+    isEmailVerified: boolean;
+    firstName: string;
+    lastName: string;
+    businessName?: string;
     password: string;
-
-    // @confirmFieldDecorator('password')
-    // password_confirmation: string;
-
+    userType: UserType;
+    status: UserStatus; 
+    refreshToken: string;
+    lastLoginAt: string;
+    streetAddress: string;
+    streetAddress2: string;
+    state: string;
+    country: string;
+    createdAt: string;
+    updatedAt: string;
+    deleted_at: string;
 }

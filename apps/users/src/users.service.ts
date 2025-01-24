@@ -9,13 +9,15 @@ import { CreateUserDto, UpdateUserDto } from '@shared/contracts';
 export class UsersService {
   // Promise<Prisma.UserCreateInput>
   async create(createUserDto: CreateUserDto): Promise<CreateUserDto> {
-    // const newUser: Prisma.UserCreateInput = {
-    //   firstname: createUserDto.firstname,
-    //   lastname: createUserDto.lastname,
-    //   email: createUserDto.email,
-    //   password: await bcrypt.hash(createUserDto.password, 10),
-    //   created_at: createUserDto.created_at
-    // }
+    const newUser: Prisma.UserCreateInput = {
+      firstname: createUserDto.firstName,
+      lastname: createUserDto.lastName,
+      email: createUserDto.email,
+      password: await bcrypt.hash(createUserDto.password, 10),
+      userType: createUserDto.userType,
+      status: 'ACTIVE'
+    }
+
     // // create new user if email does not exist
     // const createUser = await this.databaseService.user.create({ data: newUser })
 

@@ -19,7 +19,7 @@ export class ClientConfigService {
         return {
             transport: Transport.RMQ,
             options: {
-                urls: ['amqp://localhost:5672'],  // RabbitMQ URL for the User Microservice
+                urls: ['amqp://users_admin:usersPassword@2025@localhost:5672'],  // RabbitMQ URL for the User Microservice
                 queue: 'users_queue', // The queue name
                 queueOptions: {
                     durable: false,

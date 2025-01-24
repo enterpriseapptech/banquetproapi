@@ -22,8 +22,9 @@ model User {
   isEmailVerified Boolean   @default(false)
   password        String    // Hashed password
   userType        UserType  // Enum for user type
-  status          String    // Account status (e.g., active, suspended)
+  status          UserStatus    // Account status (e.g., active, suspended)
   refreshToken    String?
+  lastLoginAt     DateTime?
   streetAddress   String?
   streetAddress2  String?
   city            String?
@@ -31,8 +32,9 @@ model User {
   country         String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-  lastLoginAt     DateTime?
   deleted_at      DateTime?
+
+
 
   // Relations
   admin           Admin? 
@@ -99,4 +101,10 @@ enum UserType {
   SERVICE_PROVIDER
   CUSTOMER
   STAFF
+}
+
+enum UserStatus {
+  ACTIVE
+  DEACTIVATED
+  RESTRICTED
 }
