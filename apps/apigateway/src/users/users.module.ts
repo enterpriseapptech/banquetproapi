@@ -18,6 +18,7 @@ import { USER_CLIENT } from './constants';
       provide: USER_CLIENT,
       useFactory: (configService: ClientConfigService) => {
         const usersClientOptions = configService.UsersClientOptions;
+        console.log('Creating ClientProxy with options:', usersClientOptions);
         return ClientProxyFactory.create(usersClientOptions);
       },
       inject: [ClientConfigService],

@@ -19,8 +19,8 @@ export class ClientConfigService {
         return {
             transport: Transport.RMQ,
             options: {
-                urls: [this.getUsersClientUrl()],  // RabbitMQ URL for the User Microservice
-                queue: this.getUsersClientQueue(), // The queue name
+                urls: ['amqp://localhost:5672'],  // RabbitMQ URL for the User Microservice
+                queue: 'users_queue', // The queue name
                 queueOptions: {
                     durable: false,
                 }

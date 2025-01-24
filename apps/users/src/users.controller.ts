@@ -1,16 +1,18 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Controller, Get } from '@nestjs/common';
-import { UserService } from './users.service';
+import { UsersService } from './users.service';
 import { UpdateUserDto, CreateUserDto, USERPATTERN } from '@shared/contracts';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 
 
 @Controller()
-export class UserController {
-  constructor(private readonly userService: UserService) { }
+export class UsersController {
+  constructor(private readonly userService: UsersService) { }
 
   @MessagePattern(USERPATTERN.CREATEUSER)
   create(@Payload() createUserDto: CreateUserDto) {
+    console.log('createUserDto', createUserDto)
+    console.log('Message received in microservice:', createUserDto);
     return this.userService.create(createUserDto);
   }
 

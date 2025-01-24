@@ -6,7 +6,7 @@ import { Prisma } from '@prisma/client';
 
 import { CreateUserDto, UpdateUserDto } from '@shared/contracts';
 @Injectable()
-export class UserService {
+export class UsersService {
   // Promise<Prisma.UserCreateInput>
   async create(createUserDto: CreateUserDto): Promise<CreateUserDto> {
     // const newUser: Prisma.UserCreateInput = {
