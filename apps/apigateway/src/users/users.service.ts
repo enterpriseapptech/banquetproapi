@@ -22,12 +22,12 @@ export class UsersService {
 
   }
 
-  findAll() {
-    return `This action returns all users`;
+  findAll(limit: number, offset: number) {
+    return this.userClient.send<UserDto[], { limit: number, offset: number }>(USERPATTERN.FINDALLUSERS, { limit, offset })
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  findOne(id: string) {
+    return this.userClient.send<UserDto, string>(USERPATTERN.FINDUSERBYID, id)
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
