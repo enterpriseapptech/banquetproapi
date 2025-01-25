@@ -23,6 +23,12 @@
       ],
       "@shared/contracts/*": [
         "libs/contracts/src/*"
+      ],
+      "@shared/interfaces": [
+        "libs/interfaces/src"
+      ],
+      "@shared/interfaces/*": [
+        "libs/interfaces/src/*"
       ]
     }
   }

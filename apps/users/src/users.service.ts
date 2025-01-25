@@ -1,17 +1,20 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ConflictException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { $Enums, Prisma } from '@prisma/client';
-import { CreateUserDto, UpdateUserDto, UserDto } from '@shared/contracts';
+import { CreateUserDto, NOTIFICATIONPATTERN, UpdateUserDto, UserDto } from '@shared/contracts';
 import { DatabaseService } from '../database/database.service';
+import { NOTIFICATION_CLIENT } from './constants';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class UsersService {
-    constructor(private readonly databaseService: DatabaseService) { }
+    constructor(
+        @Inject(NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
+        private readonly databaseService: DatabaseService
+    ) {}
 
-
-    // Promise<Prisma.UserDto>
     async create(createUserDto: CreateUserDto): Promise<UserDto> {
         const newUser: Prisma.UserCreateInput = {
             firstName: createUserDto.firstName,
@@ -40,10 +43,10 @@ export class UsersService {
         }
 
         // create new user if email does not exist
-        const createUser = await this.databaseService.user.create({ data: newUser })
+        const user = await this.databaseService.user.create({ data: newUser })
 
         //  if an error occurs during creation of new user, throw exeception
-        if (!createUser) {
+        if (!user) {
 
             console.log("could not create user")
             throw new InternalServerErrorException('sever error could not create user', {
@@ -51,7 +54,19 @@ export class UsersService {
                 description: 'could not create user'
             });
         }
-        return createUser;
+
+        //  emit a email verification event
+        this.notificationClient.emit(NOTIFICATIONPATTERN.SENDNOTIFICATION, {
+            type: 'EMAIL',
+            recipientId: user.id,
+            data: {
+                subject: 'Email Verification Notice!',
+                message: 'Thank you for signing up!',
+                recipientEmail: user.email,
+            },
+        });
+
+        return user;
     }
 
     findAll(limit: number, offset: number): Promise<UserDto[]> {

@@ -26,6 +26,7 @@ model User {
   status          UserStatus    // Account status (e.g., active, suspended)
   refreshToken    String?
   lastLoginAt     DateTime?
+  loginAttempts   Int @default(0) // Number of login attempts
   streetAddress   String?
   streetAddress2  String?
   city            String?
@@ -34,8 +35,6 @@ model User {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   deleted_at      DateTime?
-
-
 
   // Relations
   admin           Admin? 
@@ -95,6 +94,13 @@ model Staff {
 
   // Relation to ServiceProvider
   serviceProvider ServiceProvider @relation(fields: [serviceProviderId], references: [id])
+}
+
+
+model PasswordHistory{
+  id        String @id @default(uuid()) @map("user_id") // Foreign key to User table
+  password  String
+  createdAt DateTime @default(now())
 }
 
 enum UserType {

@@ -85,7 +85,8 @@
       "<rootDir>/libs/"
     ],
     "moduleNameMapper": {
-      "^@shared/contracts(|/.*)$": "<rootDir>/libs/contracts/src/$1"
+      "^@shared/contracts(|/.*)$": "<rootDir>/libs/contracts/src/$1",
+      "^@shared/interfaces(|/.*)$": "<rootDir>/libs/interfaces/src/$1"
     }
   }
 }
