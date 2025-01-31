@@ -26,7 +26,13 @@ export class CreateUserDto {
     @IsNotEmpty()
     userType: $Enums.UserType;
     
+    @IsOptional()
+    @Length(2, 50)
+    serviceType: $Enums.ServiceType;
 
+    @IsOptional()
+    @Length(2, 50)
+    serviceProviderId: string
     // @confirmFieldDecorator('password')
     // password_confirmation: string;
 

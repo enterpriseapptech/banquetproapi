@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Controller } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { MessagePattern, Payload, EventPattern } from '@nestjs/microservices';
 import { NotificationsService } from './notifications.service';
 import { CreateNotificationDto, UpdateNotificationDto, NotificationDto } from '@shared/contracts'
 import { NOTIFICATIONPATTERN } from '@shared/contracts';
@@ -35,7 +35,7 @@ export class NotificationsController {
     return this.notificationsService.remove(id);
   }
 
-  @MessagePattern(NOTIFICATIONPATTERN.SENDNOTIFICATION)
+  @EventPattern(NOTIFICATIONPATTERN.SENDNOTIFICATION)
   send(@Payload() createNotificationDto: NotificationInterface) {
     console.log('receiving notifications ..., payload:', createNotificationDto)
     // return this.notificationsService.create(createNotificationDto);
