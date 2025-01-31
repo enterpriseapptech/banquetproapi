@@ -5,15 +5,25 @@ import { ClientProxyFactory} from '@nestjs/microservices';
 import { ClientConfigModule } from '../client-config/client-config.module';
 import { ClientConfigService } from '../client-config/client-config.service';
 import { USER_CLIENT } from './constants';
+import { JwtModule } from '@nestjs/jwt';
+import { JwtStrategy } from '../jwt/jwt.strategy';
 
 @Module({
   imports: [
     ClientConfigModule,
+    JwtModule.register({
+      secret: process.env.JWT_ACCESS_TOKEN_SECRET, // Ensure this matches your configuration
+      signOptions: {
+        expiresIn:
+          process.env.JWT_EXPIRES_IN
+      },
+    }),
   ],
   controllers: [UsersController],
   providers: [
     UsersService,
     ClientConfigService,
+    JwtStrategy,
     {
       provide: USER_CLIENT,
       useFactory: (configService: ClientConfigService) => {

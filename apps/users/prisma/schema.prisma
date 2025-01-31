@@ -40,7 +40,8 @@ model User {
   admin           Admin? 
   serviceProvider ServiceProvider? 
   customer        Customer?        
-  staff           Staff?           
+  staff           Staff?  
+  personalAccessToken PersonalAccessTokens?         
 }
 
 model Admin {
@@ -111,6 +112,9 @@ model PersonalAccessTokens {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   deleted_at      DateTime?
+
+  // Relation to User
+  user User @relation(fields: [id], references: [id])
 }
 
 model Permission {

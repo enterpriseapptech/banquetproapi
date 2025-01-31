@@ -3,9 +3,7 @@ import { Controller, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto, CreateUserDto, USERPATTERN, LoginUserDto } from '@shared/contracts';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { JwtAuthGuard } from '../jwt/jwt.guard';
-import { VerificationGuard } from '../jwt/verification.guard';
-import { AdminRoleGuard } from '../jwt/admin.guard';
+
 
 @Controller()
 export class UsersController {
@@ -21,13 +19,13 @@ export class UsersController {
 		return this.userService.login(loginUserDto);
 	}
 	
-	@UseGuards(JwtAuthGuard)
+	
 	@MessagePattern(USERPATTERN.VERIFYUSER)
-	verify(@Payload() loginUserDto: LoginUserDto) {
-		return this.userService.login(loginUserDto);
+	verify(@Payload() {id, token}) {
+		return this.userService.verify(id, token);
 	}
 	
-	@UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
+	
 	@MessagePattern(USERPATTERN.FINDALLUSERS)
 	findAll(@Payload() limit: number, @Payload() offset: number) {
 		return this.userService.findAll(limit, offset);
@@ -39,7 +37,6 @@ export class UsersController {
 		return this.userService.findOne(id);
 	}
 
-	@UseGuards(JwtAuthGuard, VerificationGuard)
 	@MessagePattern(USERPATTERN.FINDALLUSERS)
 	findSome(@Payload() limit: number, @Payload() offset: number) {
 		return this.userService.findAll(limit, offset);

@@ -8,7 +8,6 @@ import { ClientConfigModule } from '../client-config/client-config.module';
 import { ClientConfigService } from '../client-config/client-config.service';
 import { NOTIFICATION_CLIENT } from './constants';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from '../jwt/jwt.strategy';
 
 @Module({
     imports: [
@@ -27,7 +26,6 @@ import { JwtStrategy } from '../jwt/jwt.strategy';
     ],
     controllers: [UsersController],
     providers: [
-        JwtStrategy,
         UsersService,
         DatabaseService,
         ClientConfigService,

@@ -8,9 +8,11 @@ export class VerificationGuard extends AuthGuard('jwt') {
     }
 
     handleRequest<TUser = any>(err: any, user: any, info: any, context: ExecutionContext, status?: any): TUser {
-        if (user.isEmailVerified) {
+        if (user) {
+            console.log(user)
             return user; // Allow access
         }
+        console.log(user)
         throw err || new UnauthorizedException('account verification error!', {
             cause: new Error(),
             description: 'access denied! you need to verify your account.'

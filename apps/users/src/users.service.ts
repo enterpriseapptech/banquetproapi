@@ -5,7 +5,7 @@ import { $Enums, Prisma } from '@prisma/client';
 import { CreateUserDto, NOTIFICATIONPATTERN, UpdateUserDto, UserDto, LoginUserDto } from '@shared/contracts';
 import { DatabaseService } from '../database/database.service';
 import { NOTIFICATION_CLIENT } from './constants';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class UsersService {
@@ -97,13 +97,14 @@ export class UsersService {
                 const expiry = new Date();
                 expiry.setHours(expiry.getHours() + 3);
 
-                const personalAccessTokenInput: Prisma.PersonalAccessTokensCreateInput = {
-                    token: hexCode,
-                    type: 'VERIFYACCOUNT' as $Enums.TokenType,
-                    expiry: expiry,
-                }
-
-                const personalaAccessTokens = await prisma.personalAccessTokens.create({ data: personalAccessTokenInput });
+                const personalaAccessTokens = await prisma.personalAccessTokens.create({
+                    data: {
+                        id: user.id,
+                        token: hexCode,
+                        type: 'VERIFYACCOUNT' as $Enums.TokenType,
+                        expiry: expiry,
+                    }
+                });
 
                 return { user, personalaAccessTokens }; // Return created user
             });
@@ -121,6 +122,7 @@ export class UsersService {
 
             return account.user;
         } catch (error) {
+            console.log(error)
             throw new ConflictException('sever error could not create user', {
                 cause: new Error(),
                 description: 'User account creation failed, please try again'
@@ -159,10 +161,11 @@ export class UsersService {
         }
         return {
             user: user,
-            access_token: this.jwtService.sign({ sub: user.id, type: user.userType}, {
+            access_token: this.jwtService.sign({ sub: user.id, type: user.userType, isEmailVerified: user.isEmailVerified }, {
+                secret: process.env.JWT_ACCESS_TOKEN_SECRET,
                 expiresIn: '59m', 
             }),
-            refresh_token: this.jwtService.sign({ sub: user.id, type: user.userType }, {
+            refresh_token: this.jwtService.sign({ sub: user.id, type: user.userType, isEmailVerified: user.isEmailVerified }, {
                 secret: process.env.JWT_REFRESH_TOKEN_SECRET,
                 expiresIn: '7d',
             }),
@@ -187,7 +190,8 @@ export class UsersService {
                 admin: true,
                 serviceProvider: true,
                 customer: true,
-                staff: true
+                staff: true,
+                personalAccessToken: true
             }
         });
         return user;
@@ -212,6 +216,7 @@ export class UsersService {
 
         // If token does not exist or does not match, return null
         if (!personalAccessToken) {
+            // throw new RpcException('Invalid verification token');
             throw new NotFoundException('Invalid verification token', {
                 cause: new Error(),
                 description: 'invalid token, could not verify account'
