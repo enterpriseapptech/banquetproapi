@@ -4,6 +4,7 @@ export const USERPATTERN = {
     CREATEUSER: 'users.create',
     LOGINUSER: 'users.login',
     VERIFYUSER: 'users.verify',
+    RESENDUSER: 'users.resend',
     UPDATEUSER: 'users.update',
     DELETEUSER: 'users.delete',
 }

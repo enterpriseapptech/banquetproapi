@@ -28,6 +28,13 @@ export class UsersController {
         return verify;
     }
 
+    @UseGuards(JwtAuthGuard)
+    @Post('resend-verification')
+    resend(@Body() { id}) {
+        return this.usersService.resend(id)
+        
+    }
+
     @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
     @Get()
     findAll(@Param('limit') limit: number, @Param('offset') offset: number) {

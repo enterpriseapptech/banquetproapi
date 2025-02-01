@@ -24,7 +24,11 @@ export class UsersController {
 	verify(@Payload() {id, token}) {
 		return this.userService.verify(id, token);
 	}
-	
+
+	@MessagePattern(USERPATTERN.RESENDUSER)
+	resend(@Payload() { id }) {
+		return this.userService.resendVerificationToken(id);
+	}
 	
 	@MessagePattern(USERPATTERN.FINDALLUSERS)
 	findAll(@Payload() limit: number, @Payload() offset: number) {

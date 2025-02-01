@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model EventCenter{
+  id                  String    @id @default(uuid()) // Primary key
+  depositAmount       Int
+  totalAmount         Int
+  description         String?
+  pricingType         PricingType //Cost per hour, per day, or full package
+  sittingCapacity     Int
+  venueLayout         String?   //Banquet, Theater, U-Shape, Classroom, etc
+  amenities           Amenities[]
+  images              String[]
+  termsOfUse          String
+  cancellationPolicy  String
+  streetAddress       String
+  streetAddress2      String
+  city                String
+  state               String
+  country             String
+  postal              String
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  deletedAt           DateTime?
+  deletedBy           String?  
+}
+
+
+model EventCenterBooking {
+  id              String    @id @default(uuid())
+  eventcenter_id  String? 
+  booking_id      String? 
+  eventStartDate  DateTime
+  eventEndDate    DateTime
+  eventName       String?  
+  eventTheme      String?  
+  eventType       String?  
+  description     String?  
+  noOfGuest       Int? 
+  specialRequirements SpecialRequirement[]
+  images          String[] // after events customers can upload images from event
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+  deletedBy       String?  
+} 
+
+enum Amenities {
+  WIFI
+  PACKINGSPACE
+  SECURITY
+}
+
+
+enum PricingType {
+  HOURLY
+  DAILY
+  NEGOTIATION
+}
+
+enum EventType {
+  WEDDING
+  CONFERENCE
+  SEMINAR
+  CONCERT
+}
+
+enum BookingStatus {
+  SCHEDULED
+  POSTPONED
+  CANCELED
+}
+
+enum PaymentStatus {
+  SCHEDULED
+  POSTPONED
+  CANCELED
+}
+
+enum SpecialRequirement {
+  WHEELCHAIRACCESS
+  TEMPERATUREADJUSTMENT
+}
