@@ -14,27 +14,27 @@ datasource db {
 }
 
 model Booking {
-  id              String    @id @default(uuid())
-  customer_id     String? // customer booking the venue, points to an ID on users table
-  confirmed_by    String?  // staff who confirmed the book, points to an ID on users table
-  confirmedAt     DateTime?
-  servicebooking_id      String // eventcenterbooking, catering booking , etc
-  serviceType     ServiceType
-  // service_id      String?
-  balanceDue      Int
-  paymentStatus   PaymentStatus
-  status          BookingStatus
+  id                    String    @id @default(uuid())
+  customer_id           String? // customer booking the venue, points to an ID on users table
+  confirmed_by          String?  // staff who confirmed the book, points to an ID on users table
+  confirmedAt           DateTime?
+  servicebooking_id     String? // eventcenterbooking, catering booking , etc
+  serviceType           ServiceType 
+  balanceDue            Int
+  paymentStatus         PaymentStatus
+  status                BookingStatus
   isTermsAccepted               Boolean
   iscancellationPolicyAccepted  Boolean
   isLiabilityWaiverSigned       Boolean
   canceled_by                   String?  //  whoever cancelled the book, points to an ID on users table
   canceledAt                    DateTime?
   cancelationReason             String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  deletedAt       DateTime?
-  deletedBy       String?  
+  createdAt                     DateTime  @default(now())
+  updatedAt                     DateTime  @updatedAt
+  deletedAt                     DateTime?
+  deletedBy                     String?  
 
+  @@index([customer_id, status, paymentStatus, serviceType])
 } // a review must have a booking, booking can have many payments at most 2
 
 

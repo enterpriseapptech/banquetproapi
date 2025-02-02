@@ -12,6 +12,8 @@
     "start:dev": "nest start --watch",
     "start:notifications": "nest start notifications --watch",
     "start:users": "nest start users --watch",
+    "start:booking": "nest start booking --watch",
+    "start:eventcenters": "nest start eventcenters --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/apps/apigateway/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",

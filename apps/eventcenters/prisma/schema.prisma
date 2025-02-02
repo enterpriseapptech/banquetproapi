@@ -15,6 +15,7 @@ datasource db {
 
 model EventCenter{
   id                  String    @id @default(uuid()) // Primary key
+  service_provider_id String // owner of this service points to a userid 
   depositAmount       Int
   totalAmount         Int
   description         String?
@@ -31,17 +32,21 @@ model EventCenter{
   state               String
   country             String
   postal              String
+  status              ServiceStatus 
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
   deletedAt           DateTime?
-  deletedBy           String?  
+  deletedBy           String? 
+
+  eventCenterBooking             EventCenterBooking[]
+  @@index([service_provider_id, city, state, country, status]) 
 }
 
 
 model EventCenterBooking {
   id              String    @id @default(uuid())
-  eventcenter_id  String? 
-  booking_id      String? 
+  eventcenter_id  String 
+  booking_id      String  // points to the parent booking done as it contains most details about this booking
   eventStartDate  DateTime
   eventEndDate    DateTime
   eventName       String?  
@@ -55,8 +60,16 @@ model EventCenterBooking {
   updatedAt       DateTime  @updatedAt
   deletedAt       DateTime?
   deletedBy       String?  
+
+  eventcenter EventCenter @relation(fields: [eventcenter_id], references: [id])
+  @@index([booking_id, eventStartDate, eventEndDate]) 
 } 
 
+enum ServiceStatus {
+  ACTIVE
+  INACTIVE3
+
+}
 enum Amenities {
   WIFI
   PACKINGSPACE
