@@ -2,7 +2,12 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "declaration": false,
-    "outDir": "../../dist/apps/eventcenters"
+    "outDir": "../../dist/apps/eventcenters",
+    "paths": {
+      "@prisma/client": [
+        "../node_modules/@prisma/eventcenters"
+      ]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]

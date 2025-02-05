@@ -6,11 +6,13 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../../node_modules/@prisma/users"
+  
 }
 
-datasource db {
+datasource banquestprobookingdb {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url  = "postgresql://booking_admin:usersPassword@2025@localhost:5432/banquestprobookingdb?schema=public"
 }
 
 model Booking {

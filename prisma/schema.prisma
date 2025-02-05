@@ -6,12 +6,12 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../../node_modules/@prisma/eventcenters"
+  output   = "../node_modules/@prisma/eventcenters"
 }
 
-datasource banquestproeventsdb {
+datasource usersdb {
   provider = "postgresql"
-  url      = "postgresql://events_admin:eventsPassword@2025@localhost:5432/banquestproeventsdb?schema=public"
+  url      = env("DATABASE_URL")
 }
 
 

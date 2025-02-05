@@ -1,18 +1,3 @@
-// @Injectable()
-// export class RolesGuard implements CanActivate {
-//     canActivate(context: ExecutionContext): boolean {
-//         const req = context.switchToHttp().getRequest();
-//         const user = req.user; // Decoded from JWT
-
-//         if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
-//             return true; // Allow access
-//         }
-
-//         throw new ForbiddenException('Access denied');
-//     }
-// }
-
-
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ExecutionContext, UnauthorizedException } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";

@@ -12,7 +12,7 @@ export class VerificationGuard extends AuthGuard('jwt') {
             console.log(user)
             return user; // Allow access
         }
-        console.log(user)
+        
         throw err || new UnauthorizedException('account verification error!', {
             cause: new Error(),
             description: 'access denied! you need to verify your account.'
