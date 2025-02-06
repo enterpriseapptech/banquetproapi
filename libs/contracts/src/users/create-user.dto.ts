@@ -1,5 +1,5 @@
 import { IsEmail, IsEnum, IsNotEmpty, Length, IsOptional } from 'class-validator';
-import { $Enums } from '@prisma/client';
+import { $Enums } from '@prisma/users';
 
 export class CreateUserDto {
     @IsEmail()

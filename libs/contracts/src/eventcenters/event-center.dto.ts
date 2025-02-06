@@ -1,22 +1,27 @@
-import { $Enums } from '@prisma/client';
 // import { confirmFieldDecorator } from '../../validations/confirm_field.decorator';
+import { $Enums } from "@prisma/eventcenters";
+
 export class EventCenterDto {
     id: string;
-    email: string;
-    isEmailVerified: boolean;
-    firstName?: string;
-    lastName?: string;
-    businessName?: string;
-    password: string;
-    userType: $Enums.UserType;
-    status: $Enums.UserStatus; 
-    refreshToken?: string;
-    lastLoginAt?: Date;
-    streetAddress?: string;
-    streetAddress2?: string;
-    state?: string;
-    country?: string;
-    createdAt: Date;;
-    updatedAt: Date;;
-    deleted_at?: Date;;
+    service_provider_id: string;
+    depositAmount: number;
+    totalAmount: number;
+    description?: string;
+    pricingType: $Enums.PricingType;
+    sittingCapacity: number;
+    venueLayout?: string;
+    amenities: string[];
+    images: string[];
+    termsOfUse: string;
+    cancellationPolicy: string;
+    streetAddress: string;
+    city: string;
+    state: string;
+    country: string;
+    postal: string;
+    status: $Enums.ServiceStatus;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt?: Date;
+    deletedBy?: string;
 }

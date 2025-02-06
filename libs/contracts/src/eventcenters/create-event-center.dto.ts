@@ -1,9 +1,9 @@
 import {IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsInt, Min, IsArray } from 'class-validator';
 
 export enum PricingType {
-    HOURLY,
-    DAILY,
-    NEGOTIATION
+    HOURLY = "HOURLY",
+    DAILY = "DAILY",
+    NEGOTIATION = "NEGOTIATION"
 }
 export class CreateEventCenterDto {
     @IsString()

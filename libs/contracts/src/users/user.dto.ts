@@ -1,6 +1,6 @@
 // import { Optional } from '@nestjs/common';
 // import { IsEmail, IsEnum, IsNotEmpty, Length } from 'class-validator';
-import { $Enums } from '@prisma/client';
+import { $Enums } from '@prisma/users';
 // import { confirmFieldDecorator } from '../../validations/confirm_field.decorator';
 export class UserDto {
     id: string;

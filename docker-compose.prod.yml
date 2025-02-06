@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: postgres-db
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - mynetwork
+
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    container_name: rabbitmq_transport
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    networks:
+      - mynetwork
+
+  apigateway:
+    build:
+      context: .
+      dockerfile: apps/apigateway/Dockerfile
+    env_file:
+      - .env.prod
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - mynetwork
+    ports:
+      - "3000:3000"
+
+  booking:
+    build:
+      context: .
+      dockerfile: apps/booking/Dockerfile
+    env_file:
+      - .env.prod
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - mynetwork
+    ports:
+      - "3001:3001"
+
+  eventcenters:
+    build:
+      context: .
+      dockerfile: apps/eventcenters/Dockerfile
+    env_file:
+      - .env.prod
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - mynetwork
+    ports:
+      - "3002:3002"
+
+networks:
+  mynetwork:
+    driver: bridge
+
+volumes:
+  postgres-data:

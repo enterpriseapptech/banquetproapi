@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { $Enums, Prisma } from '@prisma/client';
+import { $Enums, Prisma } from '@prisma/users';
 import { CreateUserDto, NOTIFICATIONPATTERN, UpdateUserDto, UserDto, LoginUserDto } from '@shared/contracts';
 import { DatabaseService } from '../database/database.service';
 import { NOTIFICATION_CLIENT } from './constants';

@@ -46,15 +46,6 @@
         "tsConfigPath": "apps/search/tsconfig.app.json"
       }
     },
-    "restaurants": {
-      "type": "application",
-      "root": "apps/restaurants",
-      "entryFile": "main",
-      "sourceRoot": "apps/restaurants/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/restaurants/tsconfig.app.json"
-      }
-    },
     "eventcenters": {
       "type": "application",
       "root": "apps/eventcenters",

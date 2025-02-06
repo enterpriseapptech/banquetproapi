@@ -2,7 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { EventcentersModule } from './eventcenters.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import * as dotenv from 'dotenv';
-dotenv.config({ path: './apps/users/.env' });
+dotenv.config({ path: './apps/eventcenters/.env' });
+
 async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     EventcentersModule,

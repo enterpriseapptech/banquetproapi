@@ -3,11 +3,14 @@
   "compilerOptions": {
     "declaration": false,
     "outDir": "../../dist/apps/users",
-    "paths": {
-      "@prisma/client": [
-        "../node_modules/@prisma/users"
-      ]
-    }
+    // "paths": {
+    //   "@shared/contracts": [
+    //     "../../libs/shared/contracts/src/index.ts"
+    //   ],
+    //   "@prisma/client": [
+    //     "../node_modules/@prisma/users"
+    //   ]
+    // }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]

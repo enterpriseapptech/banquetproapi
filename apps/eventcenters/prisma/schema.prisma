@@ -4,14 +4,14 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
-generator client {
+generator eventcenterclient {
   provider = "prisma-client-js"
-  output   = "../../node_modules/@prisma/eventcenters"
+  output   = "../../../node_modules/@prisma/eventcenters"
 }
 
 datasource banquestproeventsdb {
   provider = "postgresql"
-  url      = "postgresql://events_admin:eventsPassword@2025@localhost:5432/banquestproeventsdb?schema=public"
+  url      = "postgresql://users_admin:usersPassword@2025@localhost:5432/banquestproeventsdb?schema=public"
 }
 
 
