@@ -82,13 +82,13 @@ export class EventcentersService {
 
     }
 
-    // async findAllByLocation(limit: number, offset: number): Promise<EventCenterDto[]> {
-    //     const users = this.databaseService.user.findMany({
-    //         take: limit, // Number of records to retrieve
-    //         skip: offset,
-    //     })
-    //     return users;
-    // }
+    async findAllByLocation(limit: number, offset: number): Promise<EventCenterDto[]> {
+        const users = this.databaseService.eventCenter.findMany({
+            take: limit, // Number of records to retrieve
+            skip: offset,
+        })
+        return users;
+    }
     
     // async findAll(limit: number, offset: number): Promise<EventCenterDto[]> {
     //     const users = this.databaseService.user.findMany({
