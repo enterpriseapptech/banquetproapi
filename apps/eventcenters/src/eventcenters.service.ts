@@ -83,11 +83,11 @@ export class EventcentersService {
     }
 
     async findAllByLocation(limit: number, offset: number): Promise<EventCenterDto[]> {
-        const users = this.databaseService.eventCenter.findMany({
+        const eventCenter = this.databaseService.eventCenter.findMany({
             take: limit, // Number of records to retrieve
             skip: offset,
         })
-        return users;
+        return eventCenter;
     }
     
     // async findAll(limit: number, offset: number): Promise<EventCenterDto[]> {
