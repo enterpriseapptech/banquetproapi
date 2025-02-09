@@ -149,9 +149,39 @@ export class UsersService {
             });
         }
 
+        if (user.status === $Enums.UserStatus.RESTRICTED || user.status === $Enums.UserStatus.DEACTIVATED) {
+            throw new UnauthorizedException('Unauthorized error, user account is not restricted.');
+        }
+
+        const lastLoginTime = user.lastLoginAt ? new Date(user.lastLoginAt) : null;
+        const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000); // 10 minutes ago
+
+        if (user.loginAttempts >= 4 && lastLoginTime && lastLoginTime > tenMinutesAgo) {
+            throw new UnauthorizedException('Too many failed login attempts. Please wait 10 minutes before trying again.');
+        }
+
         const validatePassword = await bcrypt.compare(password, user.password);
 
         if (!validatePassword) {
+            
+            await this.databaseService.user.update({
+                where: { email: email },
+                data: {
+                    loginAttempts: user.loginAttempts + 1,
+                    lastLoginAt: new Date(),
+                    status: user.loginAttempts + 1 > 7 ? $Enums.UserStatus.RESTRICTED : user.status
+                }
+            });
+
+            if (user.loginAttempts + 1 > 7) {
+                throw new UnauthorizedException('Authentication error',
+                    {
+                        cause: new Error(),
+                        description: 'Your account has been disabled due to too many failed login attempts.'
+                    }
+                )
+            }
+
             throw new UnauthorizedException('Authentication error, Incorrected password for this user',
                 {
                     cause: new Error(),
@@ -159,16 +189,29 @@ export class UsersService {
                 }
             )
         }
+
+        const refreshToken = this.jwtService.sign({ sub: user.id, type: user.userType, isEmailVerified: user.isEmailVerified }, {
+            secret: process.env.JWT_REFRESH_TOKEN_SECRET,
+            expiresIn: '7d',
+        });
+
+        // reset login attempts to 0 once successful login
+        await this.databaseService.user.update({
+            where: { email: email },
+            data: {
+                loginAttempts: 1,
+                lastLoginAt: new Date(),
+                refreshToken: refreshToken
+             }
+        });
+
         return {
             user: user,
             access_token: this.jwtService.sign({ sub: user.id, type: user.userType, isEmailVerified: user.isEmailVerified }, {
                 secret: process.env.JWT_ACCESS_TOKEN_SECRET,
                 expiresIn: '59m', 
             }),
-            refresh_token: this.jwtService.sign({ sub: user.id, type: user.userType, isEmailVerified: user.isEmailVerified }, {
-                secret: process.env.JWT_REFRESH_TOKEN_SECRET,
-                expiresIn: '7d',
-            }),
+            refresh_token: refreshToken,
         };
         
     }

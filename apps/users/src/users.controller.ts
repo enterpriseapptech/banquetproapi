@@ -3,7 +3,9 @@ import { Controller, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto, CreateUserDto, USERPATTERN, LoginUserDto } from '@shared/contracts';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-
+import { RpcException } from '@nestjs/microservices';
+import { catchError } from 'rxjs/operators';
+import { from, throwError } from 'rxjs';
 
 @Controller()
 export class UsersController {
@@ -11,12 +13,32 @@ export class UsersController {
 
 	@MessagePattern(USERPATTERN.CREATEUSER)
 	create(@Payload() createUserDto: CreateUserDto) {
-		return this.userService.create(createUserDto);
+		return from(this.userService.create(createUserDto)).pipe(
+			catchError((err) => {
+				console.error("Error in UsersService:", err);
+				return throwError(() => new RpcException({
+					statusCode: err.response.statusCode || 500,
+					message: err.message || "Internal Server Error",
+					error: err.response.error || "Sever error",
+				}));
+			
+			})
+		)
 	}
 
 	@MessagePattern(USERPATTERN.LOGINUSER)
 	login(@Payload() loginUserDto: LoginUserDto) {
-		return this.userService.login(loginUserDto);
+		return from(this.userService.login(loginUserDto)).pipe(
+			catchError((err) => {
+				console.error("Error in UsersService:", err);
+				return throwError(() => new RpcException({
+					statusCode: err.response.statusCode || 500,
+					message: err.message || "Internal Server Error",
+					error: err.response.error || "Sever error",
+				}));
+
+			})
+		);
 	}
 	
 	

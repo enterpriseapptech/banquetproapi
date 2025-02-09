@@ -128,6 +128,7 @@ model Permission {
 enum ServiceType {
   EVENTCENTERS
   CATERING
+  ALL
 }
 
 enum UserType {

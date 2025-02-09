@@ -1,34 +1,38 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { EventcentersService } from './eventcenters.service';
-import { CreateEventcenterDto } from './dto/create-eventcenter.dto';
-import { UpdateEventcenterDto } from './dto/update-eventcenter.dto';
+import { CreateEventCenterDto } from '@shared/contracts';
+import { JwtAuthGuard } from '../jwt/jwt.guard';
+import { VerificationGuard } from '../jwt/verification.guard';
 
-@Controller('eventcenters')
+
+@Controller('event-centers')
 export class EventcentersController {
-  constructor(private readonly eventcentersService: EventcentersService) {}
-  EVENT_CENTER_CLIENT
-  @Post()
-  create(@Body() createEventcenterDto: CreateEventcenterDto) {
-    return this.eventcentersService.create(createEventcenterDto);
-  }
+    constructor(private readonly eventcentersService: EventcentersService) { }
 
-  @Get()
-  findAll() {
-    return this.eventcentersService.findAll();
-  }
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Post('create')
+    create(@Body() createEventcenterDto: CreateEventCenterDto) {
+        return this.eventcentersService.create(createEventcenterDto);
+    }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.eventcentersService.findOne(+id);
-  }
+    @Get()
+    findAll() {
+        return this.eventcentersService.findAll();
+    }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEventcenterDto: UpdateEventcenterDto) {
-    return this.eventcentersService.update(+id, updateEventcenterDto);
-  }
+    @Get(':id')
+    findOne(@Param('id') id: string) {
+        return this.eventcentersService.findOne(+id);
+    }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.eventcentersService.remove(+id);
-  }
+    // @Patch(':id')
+    // update(@Param('id') id: string, @Body() updateEventcenterDto: UpdateEventcenterDto) {
+    //     return this.eventcentersService.update(+id, updateEventcenterDto);
+    // }
+
+    @Delete(':id')
+    remove(@Param('id') id: string) {
+        return this.eventcentersService.remove(+id);
+    }
 }

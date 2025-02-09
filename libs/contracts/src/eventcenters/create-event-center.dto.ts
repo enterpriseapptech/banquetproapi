@@ -1,10 +1,18 @@
 import {IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsInt, Min, IsArray } from 'class-validator';
+import { $Enums } from '@prisma/eventcenters';
 
 export enum PricingType {
     HOURLY = "HOURLY",
     DAILY = "DAILY",
     NEGOTIATION = "NEGOTIATION"
 }
+
+export enum ServiceStatus {
+    ACTIVE = "ACTIVE",
+    INACTIVE = "INACTIVE",
+}
+
+
 export class CreateEventCenterDto {
     @IsString()
     @Length(26, 40)
@@ -42,6 +50,7 @@ export class CreateEventCenterDto {
 
     @IsArray()
     @IsNotEmpty()
+    @IsEnum($Enums.Amenities, { each: true }) 
     amenities: string[]
 
     @IsArray()
@@ -83,7 +92,7 @@ export class CreateEventCenterDto {
     postal: string
 
     @IsNotEmpty()
-    @IsString()
+    @IsEnum(ServiceStatus, {message: 'service status must either be active or inactive'})
     status: string
 
 }

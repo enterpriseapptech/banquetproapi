@@ -72,8 +72,7 @@ model EventCenterBooking {
 
 enum ServiceStatus {
   ACTIVE
-  INACTIVE3
-
+  INACTIVE
 }
 enum Amenities {
   WIFI

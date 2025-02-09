@@ -39,25 +39,25 @@ export class EventcentersService {
             status: createEventCenterDto.status as $Enums.ServiceStatus
         }
 
+        // validate service provider
+        const serviceProvider = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDUSERBYID, newEventCenterInput.service_provider_id));
+
+        if (!serviceProvider) {
+            throw new NotFoundException("could not verify service provider account")
+        }
+
+        if (serviceProvider?.status !== "ACTIVE") {
+            throw new UnauthorizedException("service provider account is not active")
+        }
+
         try {
-            // find service provider
-            const serviceProvider = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDUSERBYID, newEventCenterInput.service_provider_id));
-
-            if (!serviceProvider) {
-                throw new NotFoundException("could not verify service provider")
-            }
-
-            if (serviceProvider?.status !== "ACTIVE") {
-                throw new UnauthorizedException("service provider account is not active")
-            }
-            // Start a transaction - for an all or fail process of creating a user
+            // Start a transaction - for an all or fail process
             const neweventCenter = await this.databaseService.$transaction(async (prisma) => {
-                // Create the user
                 const eventCenter = await prisma.eventCenter.create({ data: newEventCenterInput });
                 return eventCenter
             });
 
-            //  emit a email verification - notification event
+            //  emit a email notification - notification event
             this.notificationClient.emit(NOTIFICATIONPATTERN.SENDNOTIFICATION, {
                 type: 'EMAIL',
                 recipientId: serviceProvider,
@@ -69,14 +69,16 @@ export class EventcentersService {
             });
 
             return neweventCenter;
-
         } catch (error) {
             console.log(error)
-            throw new ConflictException('sever error could not create new event Center', {
+            throw new InternalServerErrorException(error, {
                 cause: new Error(),
                 description: 'new event Center creation failed, please try again'
             });
         }
+        
+
+
 
 
 

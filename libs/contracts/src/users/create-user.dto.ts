@@ -27,7 +27,7 @@ export class CreateUserDto {
     userType: $Enums.UserType;
     
     @IsOptional()
-    @Length(2, 50)
+    @IsEnum($Enums.ServiceType, { message: 'service type must be event centers, catering or all' })
     serviceType: $Enums.ServiceType;
 
     @IsOptional()

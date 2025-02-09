@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { HttpException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { UpdateUserDto, CreateUserDto, USERPATTERN, UserDto, LoginUserDto } from '@shared/contracts';
 import { USER_CLIENT } from './constants';
-
+import { RpcException } from '@nestjs/microservices';
+import { catchError } from 'rxjs/operators';
+import { from, throwError } from 'rxjs';
 
 @Injectable()
 export class UsersService {
@@ -12,8 +14,8 @@ export class UsersService {
     ) { }
 
     create(createUserDto: CreateUserDto) {
-        console.log('Gateway sending create user message...');
-        return this.userClient.send<UserDto, CreateUserDto>(USERPATTERN.CREATEUSER, createUserDto)
+        console.log('Gateway sending login message...');
+        return this.userClient.send(USERPATTERN.CREATEUSER, createUserDto) 
     }
 
     login(loginUserDto: LoginUserDto) {

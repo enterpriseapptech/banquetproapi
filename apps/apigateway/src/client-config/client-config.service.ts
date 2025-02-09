@@ -32,7 +32,7 @@ export class ClientConfigService {
         return {
             transport: Transport.RMQ,
             options: {
-                urls: ['amqp://event_admin:eventsPassword@2025@localhost:5672'],
+                urls: ['amqp://users_admin:usersPassword@2025@localhost:5672'],
                 queue: 'event_centers_queue',
                 queueOptions: {
                     durable: false,
