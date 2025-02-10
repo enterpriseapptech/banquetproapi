@@ -6,38 +6,57 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../../../node_modules/@prisma/users"
+  output   = "../../../node_modules/@prisma/booking"
   
 }
 
 datasource banquestprobookingdb {
   provider = "postgresql"
-  url  = "postgresql://booking_admin:usersPassword@2025@localhost:5432/banquestprobookingdb?schema=public"
+  url      = "postgresql://users_admin:usersPassword@2025@localhost:5432/banquestprobookingdb?schema=public"
 }
 
 model Booking {
   id                    String    @id @default(uuid())
-  customer_id           String? // customer booking the venue, points to an ID on users table
+  customer_id           String // customer booking the venue, points to an ID on users table
   confirmed_by          String?  // staff who confirmed the book, points to an ID on users table
   confirmedAt           DateTime?
   servicebooking_id     String? // eventcenterbooking, catering booking , etc
-  serviceType           ServiceType 
-  balanceDue            Int
+  serviceType           ServiceType
+  totalBeforeDiscount   Float
+  discount              Float?
+  totalAfterDiscount    Float
   paymentStatus         PaymentStatus
   status                BookingStatus
+  bookingDates          String[]  // carries the different dates for a single booking, not a from to, the individual dates
   isTermsAccepted               Boolean
-  iscancellationPolicyAccepted  Boolean
+  isCancellationPolicyAccepted  Boolean
   isLiabilityWaiverSigned       Boolean
-  canceled_by                   String?  //  whoever cancelled the book, points to an ID on users table
-  canceledAt                    DateTime?
+  bookingReference              String //refernece to find booking fast 
+  source                        BookingSource
+  serviceNotes                  String?
+  customerNotes                 String?
+  rescheduled_by                String?
+  rescheduledAt                 DateTime?
+  previousDates                 String[]
+  cancelled_by                   String?  //  whoever cancelled the book, points to an ID on users table
+  cancelledAt                    DateTime?
   cancelationReason             String?
   createdAt                     DateTime  @default(now())
   updatedAt                     DateTime  @updatedAt
   deletedAt                     DateTime?
-  deletedBy                     String?  
+  deleted_by                     String?  
 
   @@index([customer_id, status, paymentStatus, serviceType])
 } // a review must have a booking, booking can have many payments at most 2
+
+
+
+enum BookingSource {
+  WEB
+  MOBILE
+  
+}
+
 
 
 enum ServiceType {
@@ -47,14 +66,24 @@ enum ServiceType {
 }
 
 enum BookingStatus {
-  SCHEDULED
+  PENDING
+  BOOKED
+  RESERVED
   POSTPONED
   CANCELED
 }
 
 enum PaymentStatus {
-  SCHEDULED
-  POSTPONED
-  CANCELED
+  UNPAID
+  FULLY_PAID
+  PARTIALLY_PAID
 }
 
+
+// enum PaymentStatus {
+//   UNPAID
+//   FULLY_PAID
+//   PARTIALLY_PAID
+//   PENDING_CONFIRMATION
+//   PAYMENT_CONFIRMED
+// }

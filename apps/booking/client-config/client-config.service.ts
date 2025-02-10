@@ -19,7 +19,31 @@ export class ClientConfigService {
         }
     }
 
+    get UsersClientOptions(): ClientOptions {
+        return {
+            transport: Transport.RMQ,
+            options: {
+                urls: ['amqp://users_admin:usersPassword@2025@localhost:5672'],
+                queue: 'users_queue',
+                queueOptions: {
+                    durable: false,
+                }
+            }
+        }
+    } 
     
+    get EventCenterClientOptions(): ClientOptions {
+        return {
+            transport: Transport.RMQ,
+            options: {
+                urls: ['amqp://users_admin:usersPassword@2025@localhost:5672'],
+                queue: 'event_centers_queue',
+                queueOptions: {
+                    durable: false,
+                }
+            }
+        }
+    }
     
 
 }

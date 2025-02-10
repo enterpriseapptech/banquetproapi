@@ -1,8 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { CreateEventCenterDto, EventCenterDto, EVENTCENTERPATTERN } from '@shared/contracts';
+import { CreateEventCenterDto, UpdateEventCenterDto, EventCenterDto, EVENTCENTERPATTERN, ManyEventCentersDto, ManyRequestEventCenterDto } from '@shared/contracts';
 import { EVENT_CENTER_CLIENT } from './constants';
-
 
 @Injectable()
 export class EventcentersService {
@@ -15,19 +14,29 @@ export class EventcentersService {
         return this.eventClient.send<EventCenterDto, CreateEventCenterDto>(EVENTCENTERPATTERN.CREATEEVENTCENTER, createEventcenterDto)
     }
 
-    findAll() {
-        return `This action returns all eventcenters`;
+    findAll(limit: number, offset: number, serviceProvider?: string, city? : string, state?: string, country?: string) {
+        return this.eventClient.send<ManyEventCentersDto, ManyRequestEventCenterDto>(EVENTCENTERPATTERN.FINDALLEVENTCENTER,
+            {   limit,
+                offset,
+                serviceProvider,
+                city,
+                state,
+                country,
+            })
     }
 
-    findOne(id: number) {
-        return `This action returns a #${id} eventcenter`;
+    findOne(id: string) {
+        return this.eventClient.send<EventCenterDto, string>(EVENTCENTERPATTERN.FINDONEBYID, id)
     }
 
-    // update(id: number, updateEventcenterDto: UpdateEventcenterDto) {
-    //     return `This action updates a #${id} eventcenter`;
-    // }
+    update(id: string, updateEventcenterDto: UpdateEventCenterDto) {
+        return this.eventClient.send<EventCenterDto, { id: string, updateEventcenterDto: UpdateEventCenterDto }>(EVENTCENTERPATTERN.UPDATEEVENTCENTER, {
+            id,
+            updateEventcenterDto
+        })
+    }
 
-    remove(id: number) {
-        return `This action removes a #${id} eventcenter`;
+    remove(id: string, updaterId: any) {
+        return this.eventClient.send<EventCenterDto, { id: string, updaterId: string }>(EVENTCENTERPATTERN.DELETEEVENTCENTER, { id, updaterId })
     }
 }

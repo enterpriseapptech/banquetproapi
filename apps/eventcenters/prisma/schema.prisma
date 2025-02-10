@@ -41,7 +41,7 @@ model EventCenter{
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
   deletedAt           DateTime?
-  deletedBy           String? 
+  deleted_by           String? 
 
   eventCenterBooking             EventCenterBooking[]
   @@index([service_provider_id, city, state, country, status]) 
@@ -52,8 +52,6 @@ model EventCenterBooking {
   id              String    @id @default(uuid())
   eventcenter_id  String 
   booking_id      String  // points to the parent booking done as it contains most details about this booking
-  eventStartDate  DateTime
-  eventEndDate    DateTime
   eventName       String?  
   eventTheme      String?  
   eventType       String?  
@@ -64,10 +62,10 @@ model EventCenterBooking {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   deletedAt       DateTime?
-  deletedBy       String?  
+  deleted_by       String?  
 
   eventcenter EventCenter @relation(fields: [eventcenter_id], references: [id])
-  @@index([booking_id, eventStartDate, eventEndDate]) 
+  @@index([booking_id, eventName, eventTheme, eventType]) 
 } 
 
 enum ServiceStatus {

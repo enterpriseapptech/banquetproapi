@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test, TestingModule } from '@nestjs/testing';
 import { EventcentersController } from './eventcenters.controller';
 import { EventcentersService } from './eventcenters.service';
@@ -14,9 +15,9 @@ describe('EventcentersController', () => {
     eventcentersController = app.get<EventcentersController>(EventcentersController);
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(eventcentersController.getHello()).toBe('Hello World!');
-    });
-  });
+  // describe('root', () => {
+  //   it('should return "Hello World!"', () => {
+  //     expect(eventcentersController.getHello()).toBe('Hello World!');
+  //   });
+  // });
 });

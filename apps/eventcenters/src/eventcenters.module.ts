@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { EventcentersController } from './eventcenters.controller';
-import { EventcentersService } from './eventcenters.service';
+import { EventcentersBookingService, EventcentersService } from './eventcenters.service';
 import { DatabaseService } from '../database/database.service';
 import { USER_CLIENT } from './constants';
 import { ConfigModule } from '@nestjs/config';
@@ -19,6 +19,7 @@ import { NOTIFICATION_CLIENT } from './constants';
     controllers: [EventcentersController],
     providers: [
         EventcentersService,
+        EventcentersBookingService,
         DatabaseService,
         ClientConfigService,
         {
