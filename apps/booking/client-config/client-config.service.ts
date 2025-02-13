@@ -32,12 +32,12 @@ export class ClientConfigService {
         }
     } 
     
-    get EventCenterClientOptions(): ClientOptions {
+    get EventCenterBookingClientOptions(): ClientOptions {
         return {
             transport: Transport.RMQ,
             options: {
                 urls: ['amqp://users_admin:usersPassword@2025@localhost:5672'],
-                queue: 'event_centers_queue',
+                queue: 'event_centers_booking_queue',
                 queueOptions: {
                     durable: false,
                 }

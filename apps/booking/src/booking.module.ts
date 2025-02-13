@@ -41,8 +41,8 @@ import { ClientConfigService } from '../client-config/client-config.service';
         {
             provide: EVENT_CENTER_CLIENT,
             useFactory: (configService: ClientConfigService) => {
-                const eventCenterClientOptions = configService.EventCenterClientOptions;
-                return ClientProxyFactory.create(eventCenterClientOptions);
+                const EventCenterBookingClientOptions = configService.EventCenterBookingClientOptions;
+                return ClientProxyFactory.create(EventCenterBookingClientOptions);
             },
             inject: [ClientConfigService],
         }

@@ -293,6 +293,7 @@ export class UsersService {
         });
 
         if (!user) {
+            console.log("user not found")
             throw new NotFoundException('This user does not exist in our system', {
                 cause: new Error(),
                 description: 'could not find a valid user'
@@ -343,6 +344,6 @@ export class UsersService {
                 recipientEmail: user.email,
             },
         });
-
+        return user 
     }
 }

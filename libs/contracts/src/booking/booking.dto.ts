@@ -58,3 +58,15 @@ export class EventCenterBookingDto {
 }
 
 
+export class ManyRequestBookingDto {
+    limit: number;
+    offset: number;
+    serviceProvider?: string;
+    startDate?: Date;
+    endDate?: Date;
+}
+
+export class ManyBookingDto {
+    count: number;
+    data: BookingDto[];
+}

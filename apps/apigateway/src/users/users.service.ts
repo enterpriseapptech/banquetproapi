@@ -42,9 +42,9 @@ export class UsersService {
 
     
     resend(id: string) {
-       return this.userClient.send<UserDto, { id: string}>(USERPATTERN.RESENDUSER, { id })
-        
+        return this.userClient.send<UserDto, { id: string }>(USERPATTERN.RESENDUSER, { id })    
     }
+    
     findAll(limit: number, offset: number) {
         return this.userClient.send<UserDto[], { limit: number, offset: number }>(USERPATTERN.FINDALLUSERS, { limit, offset })
     }

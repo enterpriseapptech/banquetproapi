@@ -41,4 +41,17 @@ export class ClientConfigService {
         }
     }
 
+
+    get BookingClientOptions(): ClientOptions {
+        return {
+            transport: Transport.RMQ,
+            options: {
+                urls: ['amqp://users_admin:usersPassword@2025@localhost:5672'],
+                queue: 'booking_queue',
+                queueOptions: {
+                    durable: false,
+                }
+            }
+        }
+    }
 }

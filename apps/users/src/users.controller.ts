@@ -43,24 +43,64 @@ export class UsersController {
 	
 	
 	@MessagePattern(USERPATTERN.VERIFYUSER)
-	verify(@Payload() {id, token}) {
-		return this.userService.verify(id, token);
+	verify(@Payload() { id, token }) {
+		return from(this.userService.verify(id, token)).pipe(
+			catchError((err) => {
+				console.error("Error in UsersService:", err);
+				return throwError(() => new RpcException({
+					statusCode: err.response.statusCode || 500,
+					message: err.message || "Internal Server Error",
+					error: err.response.error || "Sever error",
+				}));
+
+			})
+		);
 	}
 
 	@MessagePattern(USERPATTERN.RESENDUSER)
 	resend(@Payload() { id }) {
-		return this.userService.resendVerificationToken(id);
+		return from(this.userService.resendVerificationToken(id)).pipe(
+			catchError((err) => {
+				console.error("Error in UsersService:", err);
+				return throwError(() => new RpcException({
+					statusCode: err.response.statusCode || 500,
+					message: err.message || "Internal Server Error",
+					error: err.response.error || "Sever error",
+				}));
+
+			})
+		);
 	}
 	
 	@MessagePattern(USERPATTERN.FINDALLUSERS)
 	findAll(@Payload() limit: number, @Payload() offset: number) {
-		return this.userService.findAll(limit, offset);
+		return from(this.userService.findAll(limit, offset)).pipe(
+			catchError((err) => {
+				console.error("Error in UsersService:", err);
+				return throwError(() => new RpcException({
+					statusCode: err.response.statusCode || 500,
+					message: err.message || "Internal Server Error",
+					error: err.response.error || "Sever error",
+				}));
+
+			})
+		);
 	}
 
 	@MessagePattern(USERPATTERN.FINDUSERBYID)
 	findOne(@Payload() id: string) {
 		console.log('id', id)
-		return this.userService.findOne(id);
+		return from(this.userService.findOne(id)).pipe(
+			catchError((err) => {
+				console.error("Error in UsersService:", err);
+				return throwError(() => new RpcException({
+					statusCode: err.response.statusCode || 500,
+					message: err.message || "Internal Server Error",
+					error: err.response.error || "Sever error",
+				}));
+
+			})
+		);
 	}
 
 	@MessagePattern(USERPATTERN.FINDALLUSERS)
@@ -75,6 +115,16 @@ export class UsersController {
 
 	@MessagePattern('removeUser')
 	remove(@Payload() id: number) {
-		return this.userService.remove(id);
+		return from(this.userService.remove(id)).pipe(
+			catchError((err) => {
+				console.error("Error in UsersService:", err);
+				return throwError(() => new RpcException({
+					statusCode: err.response.statusCode || 500,
+					message: err.message || "Internal Server Error",
+					error: err.response.error || "Sever error",
+				}));
+
+			})
+		);
 	}
 }

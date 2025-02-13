@@ -6,6 +6,7 @@ import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
 import { firstValueFrom } from 'rxjs';
 import { Request } from 'express';
+import { AccountStatusGuard } from '../jwt/account.status..guard';
 
 // Extend the Request type to include 'user'
 interface AuthenticatedRequest extends Request {
@@ -16,7 +17,7 @@ export class EventcentersController {
     constructor(private readonly eventcentersService: EventcentersService) { }
 
 
-    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @UseGuards(JwtAuthGuard, VerificationGuard, AccountStatusGuard)
     @Post('create')
     create(@Body() createEventcenterDto: CreateEventCenterDto) {
         return this.eventcentersService.create(createEventcenterDto);
