@@ -20,7 +20,7 @@ datasource banquestproeventsdb {
 
 model EventCenter{
   id                  String    @id @default(uuid()) // Primary key
-  service_provider_id String // owner of this service points to a userid 
+  serviceProviderId String // owner of this service points to a userid 
   depositAmount       Int
   totalAmount         Int
   description         String?
@@ -41,17 +41,17 @@ model EventCenter{
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
   deletedAt           DateTime?
-  deleted_by           String? 
+  deletedBy           String? 
 
   eventCenterBooking             EventCenterBooking[]
-  @@index([service_provider_id, city, state, country, status]) 
+  @@index([serviceProviderId, city, state, country, status]) 
 }
 
 
 model EventCenterBooking {
   id              String    @id @default(uuid())
-  eventcenter_id  String 
-  booking_id      String  // points to the parent booking done as it contains most details about this booking
+  eventcenterId  String 
+  bookingId      String  // points to the parent booking done as it contains most details about this booking
   eventName       String?  
   eventTheme      String?  
   eventType       String?  
@@ -62,10 +62,10 @@ model EventCenterBooking {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   deletedAt       DateTime?
-  deleted_by       String?  
+  deletedBy       String?  
 
-  eventcenter EventCenter @relation(fields: [eventcenter_id], references: [id])
-  @@index([booking_id, eventName, eventTheme, eventType]) 
+  eventcenter EventCenter @relation(fields: [eventcenterId], references: [id])
+  @@index([bookingId, eventName, eventTheme, eventType]) 
 } 
 
 enum ServiceStatus {

@@ -8,8 +8,8 @@ import { $Enums as $EventBookingEnums} from '@prisma/eventcenters';
 
 export class BookingDto {
     id: string;
-    customer_id?: string;
-    confirmed_by?: string;
+    customerId?: string;
+    confirmedBy?: string;
     confirmedAt?: Date;
     servicebooking_id?: string;
     serviceType: $Enums.ServiceType;
@@ -26,7 +26,7 @@ export class BookingDto {
     source?: $Enums.BookingSource;
     serviceNotes?: string;
     customerNotes?: string;
-    rescheduled_by?: string;
+    rescheduledBy?: string;
     rescheduledAt?: Date;
     previousDates?: string[];
     canceledBy?: string;
@@ -35,14 +35,14 @@ export class BookingDto {
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date;
-    deleted_by?: string;
+    deletedBy?: string;
     eventCenterBooking?: EventCenterBookingDto; // Optional if linked to an event center booking
 }
 
 
 export class EventCenterBookingDto {
     id: string;
-    eventcenter_id: string;
+    eventcenterId: string;
     booking_id: string;
     eventName?: string;
     eventTheme?: string;
@@ -54,7 +54,7 @@ export class EventCenterBookingDto {
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date;
-    deleted_by?: string;
+    deletedBy?: string;
 }
 
 

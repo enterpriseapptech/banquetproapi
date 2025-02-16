@@ -4,7 +4,7 @@ import { EventCenterBookingDto } from "../booking/booking.dto";
 
 export class EventCenterDto {
     id: string;
-    service_provider_id: string;
+    serviceProviderId: string;
     depositAmount: number;
     totalAmount: number;
     description?: string;
@@ -24,7 +24,7 @@ export class EventCenterDto {
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date;
-    deleted_by?: string;
+    deletedBy?: string;
 }
 
 export class ManyRequestEventCenterDto {

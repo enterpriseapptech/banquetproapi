@@ -6,7 +6,7 @@ import { $Enums } from '@prisma/booking';
 export class UpdateBookingDto extends PartialType(CreateBookingDto) {
     @IsUUID()
     @IsOptional()
-    confirmed_by?: string;
+    confirmedBy?: string;
 
     @IsDateString()
     @IsOptional()
@@ -14,7 +14,7 @@ export class UpdateBookingDto extends PartialType(CreateBookingDto) {
 
     @IsUUID()
     @IsOptional()
-    servicebooking_id?: string;
+    servicebookingId?: string;
 
     @IsEnum($Enums.PaymentStatus)
     @IsNotEmpty()
@@ -26,7 +26,7 @@ export class UpdateBookingDto extends PartialType(CreateBookingDto) {
 
     @IsUUID()
     @IsOptional()
-    rescheduled_by: string;
+    rescheduledBy: string;
 
     @IsDateString()
     @IsOptional()
@@ -39,7 +39,7 @@ export class UpdateBookingDto extends PartialType(CreateBookingDto) {
 
     @IsUUID()
     @IsOptional()
-    cancelled_by?: string;
+    cancelledBy?: string;
 
     @IsDateString()
     @IsOptional()
@@ -55,7 +55,7 @@ export class UpdateBookingDto extends PartialType(CreateBookingDto) {
 
     @IsUUID()
     @IsOptional()
-    deleted_by?: string;
+    deletedBy?: string;
 }
 
 
@@ -68,5 +68,5 @@ export class UpdateEventBookingDto extends PartialType(CreateBookingDto) {
 
     @IsUUID()
     @IsOptional()
-    deleted_by?: string;
+    deletedBy?: string;
 }

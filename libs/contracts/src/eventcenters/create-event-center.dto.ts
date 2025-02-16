@@ -16,7 +16,7 @@ export enum ServiceStatus {
 export class CreateEventCenterDto {
     @IsString()
     @Length(26, 40)
-    service_provider_id: string;
+    serviceProviderId: string;
 
     @IsInt()
     @Min(50)

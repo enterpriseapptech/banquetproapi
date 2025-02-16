@@ -17,7 +17,7 @@ export class CreateBookingDto {
 
     @IsUUID()
     @IsNotEmpty()
-    customer_id: string;
+    customerId: string;
 
     @IsEnum($Enums.ServiceType)
     @IsNotEmpty()
@@ -71,7 +71,7 @@ export class CreateBookingDto {
 
     @IsUUID()
     @IsNotEmpty()
-    eventCenter_id: string;
+    eventCenterId: string;
 
     @IsString()
     @IsOptional()
@@ -110,11 +110,11 @@ export class CreateEventCenterBookingDto {
 
     @IsUUID()
     @IsNotEmpty()
-    eventcenter_id: string;
+    eventcenterId: string;
 
     @IsUUID()
     @IsNotEmpty()
-    booking_id: string;
+    bookingId: string;
 
     @IsString()
     @IsOptional()

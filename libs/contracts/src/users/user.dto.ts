@@ -18,7 +18,8 @@ export class UserDto {
     streetAddress2?: string;
     state?: string;
     country?: string;
-    createdAt: Date;;
-    updatedAt: Date;;
-    deleted_at?: Date;;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedat?: Date;
+    deletedBy?: Date;
 }

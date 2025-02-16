@@ -30,9 +30,9 @@ export class CreateUserDto {
     @IsEnum($Enums.ServiceType, { message: 'service type must be event centers, catering or all' })
     serviceType: $Enums.ServiceType;
 
-    @IsOptional()
-    @Length(2, 50)
-    serviceProviderId: string
+    // @IsOptional()
+    // @Length(2, 50)
+    // serviceProviderId: string
     // @confirmFieldDecorator('password')
     // password_confirmation: string;
 

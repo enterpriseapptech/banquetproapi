@@ -17,10 +17,10 @@ datasource banquestprobookingdb {
 
 model Booking {
   id                    String    @id @default(uuid())
-  customer_id           String // customer booking the venue, points to an ID on users table
-  confirmed_by          String?  // staff who confirmed the book, points to an ID on users table
+  customerId           String // customer booking the venue, points to an ID on users table
+  confirmedBy          String?  // staff who confirmed the book, points to an ID on users table
   confirmedAt           DateTime?
-  servicebooking_id     String? // eventcenterbooking, catering booking , etc
+  servicebookingId     String? // eventcenterbooking, catering booking , etc
   serviceType           ServiceType
   totalBeforeDiscount   Float
   discount              Float?
@@ -35,18 +35,18 @@ model Booking {
   source                        BookingSource
   serviceNotes                  String?
   customerNotes                 String?
-  rescheduled_by                String?
+  rescheduledBy                String?
   rescheduledAt                 DateTime?
   previousDates                 String[]
-  cancelled_by                   String?  //  whoever cancelled the book, points to an ID on users table
+  cancelledBy                   String?  //  whoever cancelled the book, points to an ID on users table
   cancelledAt                    DateTime?
   cancelationReason             String?
   createdAt                     DateTime  @default(now())
   updatedAt                     DateTime  @updatedAt
   deletedAt                     DateTime?
-  deleted_by                     String?  
+  deletedBy                     String?  
 
-  @@index([customer_id, status, paymentStatus, serviceType])
+  @@index([customerId, status, paymentStatus, serviceType])
 } // a review must have a booking, booking can have many payments at most 2
 
 
