@@ -89,7 +89,6 @@ export class UsersController {
 
 	@MessagePattern(USERPATTERN.FINDUSERBYID)
 	findOne(@Payload() id: string) {
-		console.log('id', id)
 		return from(this.userService.findOne(id)).pipe(
 			catchError((err) => {
 				console.error("Error in UsersService:", err);

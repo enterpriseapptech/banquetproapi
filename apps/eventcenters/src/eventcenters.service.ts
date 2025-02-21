@@ -1,6 +1,6 @@
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { $Enums, Prisma } from '@prisma/eventcenters';
-import { CreateEventCenterDto, NOTIFICATIONPATTERN, EventCenterDto, UserDto, USERPATTERN, ManyEventCentersDto, UpdateEventCenterDto, CreateEventCenterBookingDto, EventCenterBookingDto, ManyEventCenterBookingsDto, UpdateEventBookingDto } from '@shared/contracts';
+import { CreateEventCenterDto, NOTIFICATIONPATTERN, EventCenterDto, UserDto, USERPATTERN, ManyEventCentersDto, UpdateEventCenterDto } from '@shared/contracts';
 import { DatabaseService } from '../database/database.service';
 import { NOTIFICATION_CLIENT, USER_CLIENT } from './constants';
 import { ClientProxy } from '@nestjs/microservices';
@@ -16,7 +16,7 @@ export class EventcentersService {
     async create(createEventCenterDto: CreateEventCenterDto): Promise<EventCenterDto> {
 
         const newEventCenterInput: Prisma.EventCenterCreateInput = {
-            service_provider_id: createEventCenterDto.service_provider_id,
+            serviceProviderId: createEventCenterDto.serviceProviderId,
             depositAmount: createEventCenterDto.depositAmount,
             totalAmount: createEventCenterDto.totalAmount,
             description: createEventCenterDto.description,
@@ -37,7 +37,7 @@ export class EventcentersService {
         }
 
         // validate service provider
-        const serviceProvider = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDUSERBYID, newEventCenterInput.service_provider_id));
+        const serviceProvider = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDUSERBYID, newEventCenterInput.serviceProviderId));
 
         if (!serviceProvider) {
             throw new NotFoundException("could not verify service provider account")
@@ -85,12 +85,12 @@ export class EventcentersService {
         
         if (serviceProvider) {
             const eventCenters = await this.databaseService.eventCenter.findMany({
-                where: { service_provider_id: serviceProvider, deletedAt: null }, // Filter by service_provider_id
+                where: { serviceProviderId: serviceProvider, deletedAt: null }, // Filter by serviceProviderId
                 take: limit,
                 skip: offset,
             });
             const count = await this.databaseService.eventCenter.count({
-                where: { service_provider_id: serviceProvider, deletedAt: null }
+                where: { serviceProviderId: serviceProvider, deletedAt: null }
             });
             return {
                 count,
@@ -168,7 +168,7 @@ export class EventcentersService {
                 where: { id },
                 data: {
                     deletedAt: new Date(),
-                    deleted_by: updaterId
+                    deletedBy: updaterId
                 }
             });
         return eventCenter;
@@ -206,119 +206,119 @@ export class EventcentersService {
     // }
 }
 
-@Injectable()
-export class EventcentersBookingService {
-    constructor(
-        @Inject(NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
-        private readonly databaseService: DatabaseService,
-        private readonly eventcentersService: EventcentersService
-    ) { }
+// @Injectable()
+// export class EventcentersBookingService {
+//     constructor(
+//         @Inject(NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
+//         private readonly databaseService: DatabaseService,
+//         private readonly eventcentersService: EventcentersService
+//     ) { }
 
-    async create(createEventCenterBookingDto: CreateEventCenterBookingDto): Promise<EventCenterBookingDto> {
+//     async create(createEventCenterBookingDto: CreateEventCenterBookingDto): Promise<EventCenterBookingDto> {
 
-        // find event center 
-        const eventcenter = await this.eventcentersService.findOne(createEventCenterBookingDto.eventcenter_id)
-        if (!eventcenter) {
-            throw new NotFoundException("This is not a valid event center") 
-        }
+//         // find event center 
+//         const eventcenter = await this.eventcentersService.findOne(createEventCenterBookingDto.eventcenterId)
+//         if (!eventcenter) {
+//             throw new NotFoundException("This is not a valid event center and can not be booked") 
+//         }
 
-        const newEventCenterBookingInput: Prisma.EventCenterBookingCreateInput = {
-            eventcenter: { connect: { id: eventcenter.id } },
-            booking_id: createEventCenterBookingDto.booking_id,
-            eventName: createEventCenterBookingDto.eventName,
-            eventTheme: createEventCenterBookingDto.eventTheme,
-            eventType: createEventCenterBookingDto.eventType,
-            description: createEventCenterBookingDto.description,
-            noOfGuest: createEventCenterBookingDto.noOfGuest,
-            specialRequirements: createEventCenterBookingDto.specialRequirements as $Enums.SpecialRequirement[],    
-        }
+//         const newEventCenterBookingInput: Prisma.EventCenterBookingCreateInput = {
+//             eventcenter: { connect: { id: eventcenter.id } },
+//             bookingId: createEventCenterBookingDto.bookingId,
+//             eventName: createEventCenterBookingDto.eventName,
+//             eventTheme: createEventCenterBookingDto.eventTheme,
+//             eventType: createEventCenterBookingDto.eventType,
+//             description: createEventCenterBookingDto.description,
+//             noOfGuest: createEventCenterBookingDto.noOfGuest,
+//             specialRequirements: createEventCenterBookingDto.specialRequirements as $Enums.SpecialRequirement[],    
+//         }
 
-        try {
-            // Start a transaction - for an all or fail process
-            const neweventCenterBooking = await this.databaseService.$transaction(async (prisma) => {
-                const eventCenterBooking = await prisma.eventCenterBooking.create({ data: newEventCenterBookingInput });
-                return eventCenterBooking
-            });
+//         try {
+//             // Start a transaction - for an all or fail process
+//             const neweventCenterBooking = await this.databaseService.$transaction(async (prisma) => {
+//                 const eventCenterBooking = await prisma.eventCenterBooking.create({ data: newEventCenterBookingInput });
+//                 return eventCenterBooking
+//             });
 
-            return neweventCenterBooking;
-        } catch (error) {
-            console.log(error)
-            throw new InternalServerErrorException(error, {
-                cause: new Error(),
-                description: 'new event Center creation failed, please try again'
-            });
-        }
+//             return neweventCenterBooking;
+//         } catch (error) {
+//             console.log(error)
+//             throw new InternalServerErrorException(error, {
+//                 cause: new Error(),
+//                 description: 'new event Center creation failed, please try again'
+//             });
+//         }
 
-    }
+//     }
 
-    async findAll(limit: number, offset: number, eventcenter_id: string): Promise<ManyEventCenterBookingsDto> {
+//     async findAll(limit: number, offset: number, eventcenterId: string): Promise<ManyEventCenterBookingsDto> {
 
-        if (eventcenter_id) {
-            const eventCenters = await this.databaseService.eventCenterBooking.findMany({
-                where: { eventcenter_id: eventcenter_id, deletedAt: null }, // Filter by service_provider_id
-                take: limit,
-                skip: offset,
-            });
-            const count = await this.databaseService.eventCenterBooking.count({
-                where: { eventcenter_id: eventcenter_id, deletedAt: null }
-            });
-            return {
-                count,
-                data: eventCenters
-            }
-        }
+//         if (eventcenterId) {
+//             const eventCenters = await this.databaseService.eventCenterBooking.findMany({
+//                 where: { eventcenterId: eventcenterId, deletedAt: null }, // Filter by serviceProviderId
+//                 take: limit,
+//                 skip: offset,
+//             });
+//             const count = await this.databaseService.eventCenterBooking.count({
+//                 where: { eventcenterId: eventcenterId, deletedAt: null }
+//             });
+//             return {
+//                 count,
+//                 data: eventCenters
+//             }
+//         }
 
         
-        const eventCenters = await this.databaseService.eventCenterBooking.findMany({
-            take: limit,
-            skip: offset,
-        })
-        const count = await this.databaseService.eventCenterBooking.count()
-        return {
-            count,
-            data: eventCenters
-        }
-    }
+//         const eventCenters = await this.databaseService.eventCenterBooking.findMany({
+//             take: limit,
+//             skip: offset,
+//         })
+//         const count = await this.databaseService.eventCenterBooking.count()
+//         return {
+//             count,
+//             data: eventCenters
+//         }
+//     }
 
-    async findOne(id: string): Promise<EventCenterBookingDto> {
+//     async findOne(id: string): Promise<EventCenterBookingDto> {
 
-        const eventCenterBooking = await this.databaseService.eventCenterBooking.findUnique({
-            where: {
-                id: id,
-                deletedAt: null
-            }
-        });
-        if (!eventCenterBooking) {
-            throw new NotFoundException("Event center not found or has been deleted")
-        }
-        return eventCenterBooking;
-    }
+//         const eventCenterBooking = await this.databaseService.eventCenterBooking.findUnique({
+//             where: {
+//                 id: id,
+//                 deletedAt: null
+//             }
+//         });
+//         if (!eventCenterBooking) {
+//             throw new NotFoundException("Event center not found or has been deleted")
+//         }
+//         return eventCenterBooking;
+//     }
 
-    async update(id: string, updateEventcenterDto: UpdateEventBookingDto): Promise<EventCenterBookingDto> {
-        try {
-            const updateEventCenterInput: Prisma.EventCenterBookingUpdateInput = {
-                ...updateEventcenterDto,
-                specialRequirements: updateEventcenterDto.specialRequirements ? { set: updateEventcenterDto.specialRequirements as $Enums.SpecialRequirement[] } : undefined,
-            };
-            const eventCenterBooking = await this.databaseService.eventCenterBooking.update({
-                where: { id },
-                data: updateEventCenterInput
-            });
+//     async update(id: string, updateEventcenterDto: UpdateEventBookingDto): Promise<EventCenterBookingDto> {
+//         try {
+//             const updateEventCenterInput: Prisma.EventCenterBookingUpdateInput = {
+//                 ...updateEventcenterDto,
+//                 specialRequirements: updateEventcenterDto.specialRequirements ? { set: updateEventcenterDto.specialRequirements as $Enums.SpecialRequirement[] } : undefined,
+//             };
+//             const eventCenterBooking = await this.databaseService.eventCenterBooking.update({
+//                 where: { id },
+//                 data: updateEventCenterInput
+//             });
 
-            return eventCenterBooking;
-        } catch (error) {
-            throw new ConflictException(error);
-        }
-    }
+//             return eventCenterBooking;
+//         } catch (error) {
+//             throw new ConflictException(error);
+//         }
+//     }
 
-    async remove(id: string, updaterId: string): Promise<EventCenterBookingDto> {
-        const eventCenterBooking = await this.databaseService.eventCenterBooking.update({
-            where: { id },
-            data: {
-                deletedAt: new Date(),
-                deleted_by: updaterId
-            }
-        });
-        return eventCenterBooking;
-    }
-}
+//     async remove(id: string, updaterId: string): Promise<EventCenterBookingDto> {
+//         const eventCenterBooking = await this.databaseService.eventCenterBooking.update({
+//             where: { id },
+//             data: {
+//                 deletedAt: new Date(),
+//                 deletedBy: updaterId
+//             }
+//         });
+//         return eventCenterBooking;
+//     }
+// }

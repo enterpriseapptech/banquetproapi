@@ -99,7 +99,7 @@ export class UsersService {
 
                 const personalaAccessTokens = await prisma.personalAccessTokens.create({
                     data: {
-                        id: user.id,
+                        user: { connect: { id: user.id } },
                         token: hexCode,
                         type: 'VERIFYACCOUNT' as $Enums.TokenType,
                         expiry: expiry,
@@ -221,10 +221,15 @@ export class UsersService {
             take: limit, // Number of records to retrieve
             skip: offset,
         })
+
+        if (!users) {
+            return [];
+        }
         return users;
     }
 
     async findOne(id: string): Promise<UserDto> {
+        
         const user = await this.databaseService.user.findUnique({
             where: {
                 id: id
@@ -237,7 +242,15 @@ export class UsersService {
                 personalAccessToken: true
             }
         });
+        if (!user) {
+            throw new NotFoundException('sever error could not find this user', {
+                cause: new Error(),
+                description: 'no user found'
+            });
+        }
         return user;
+
+        
     }
 
     update(id: number, updateUserDto: UpdateUserDto) {
@@ -249,17 +262,14 @@ export class UsersService {
     }
 
     async verify(id: string, token: string) {
-        // check personal access token for token
         const personalAccessToken = await this.databaseService.personalAccessTokens.findUnique({
             where: {
-                id: id,
+                userId_type: { userId: id, type: 'VERIFYACCOUNT' } , 
                 token: token
             }
         });
 
-        // If token does not exist or does not match, return null
         if (!personalAccessToken) {
-            // throw new RpcException('Invalid verification token');
             throw new NotFoundException('Invalid verification token', {
                 cause: new Error(),
                 description: 'invalid token, could not verify account'
@@ -277,7 +287,7 @@ export class UsersService {
 
         // Update user to set email as verified
         const user = await this.databaseService.user.update({
-            where: { id: personalAccessToken.id },
+            where: { id: personalAccessToken.userId },
             data: { isEmailVerified: true } // or true if it's a boolean field
         });
 
@@ -306,19 +316,20 @@ export class UsersService {
         expiry.setHours(expiry.getHours() + 3);
 
         const personalAccessTokenInput: Prisma.PersonalAccessTokensCreateInput = {
+            user: { connect: { id: user.id } },
             token: hexCode,
             type: 'VERIFYACCOUNT' as $Enums.TokenType,
             expiry: expiry,
         }
 
         const personalAccessToken = await this.databaseService.personalAccessTokens.upsert({
-            where: { id: user.id }, // Use the unique identifier (e.g., ID)
+            where: { userId_type: { userId: user.id, type: 'VERIFYACCOUNT' } }, 
             update: {
                 token: personalAccessTokenInput.token,
                 expiry: personalAccessTokenInput.expiry,
             },
             create: {
-                id: user.id,
+                user: { connect: { id: user.id } },
                 token: personalAccessTokenInput.token,
                 type: 'VERIFYACCOUNT' as $Enums.TokenType,
                 expiry: personalAccessTokenInput.expiry,

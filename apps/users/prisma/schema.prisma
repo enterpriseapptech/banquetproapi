@@ -34,8 +34,8 @@ model User {
   country         String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-  deletedAt      DateTime?
-  deletedBy      String?
+  deletedAt       DateTime?
+  deletedBy       String?
   // Relations
   admin           Admin? 
   serviceProvider ServiceProvider? 
@@ -96,7 +96,6 @@ model Staff {
   // Relation to ServiceProvider
   serviceProvider ServiceProvider @relation(fields: [serviceProviderId], references: [id])
 }
-
 
 model PasswordHistory{
   id        String @id @default(uuid()) @map("user_id") // Foreign key to User table

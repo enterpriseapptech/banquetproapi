@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "ServiceStatus" AS ENUM ('ACTIVE', 'INACTIVE3');
+CREATE TYPE "ServiceStatus" AS ENUM ('ACTIVE', 'INACTIVE');
 
 -- CreateEnum
 CREATE TYPE "Amenities" AS ENUM ('WIFI', 'PACKINGSPACE', 'SECURITY');
@@ -22,7 +22,7 @@ CREATE TYPE "SpecialRequirement" AS ENUM ('WHEELCHAIRACCESS', 'TEMPERATUREADJUST
 -- CreateTable
 CREATE TABLE "EventCenter" (
     "id" TEXT NOT NULL,
-    "service_provider_id" TEXT NOT NULL,
+    "serviceProviderId" TEXT NOT NULL,
     "depositAmount" INTEGER NOT NULL,
     "totalAmount" INTEGER NOT NULL,
     "description" TEXT,
@@ -51,10 +51,8 @@ CREATE TABLE "EventCenter" (
 -- CreateTable
 CREATE TABLE "EventCenterBooking" (
     "id" TEXT NOT NULL,
-    "eventcenter_id" TEXT NOT NULL,
-    "booking_id" TEXT NOT NULL,
-    "eventStartDate" TIMESTAMP(3) NOT NULL,
-    "eventEndDate" TIMESTAMP(3) NOT NULL,
+    "eventcenterId" TEXT NOT NULL,
+    "bookingId" TEXT NOT NULL,
     "eventName" TEXT,
     "eventTheme" TEXT,
     "eventType" TEXT,
@@ -71,10 +69,10 @@ CREATE TABLE "EventCenterBooking" (
 );
 
 -- CreateIndex
-CREATE INDEX "EventCenter_service_provider_id_city_state_country_status_idx" ON "EventCenter"("service_provider_id", "city", "state", "country", "status");
+CREATE INDEX "EventCenter_serviceProviderId_city_state_country_status_idx" ON "EventCenter"("serviceProviderId", "city", "state", "country", "status");
 
 -- CreateIndex
-CREATE INDEX "EventCenterBooking_booking_id_eventStartDate_eventEndDate_idx" ON "EventCenterBooking"("booking_id", "eventStartDate", "eventEndDate");
+CREATE INDEX "EventCenterBooking_bookingId_eventName_eventTheme_eventType_idx" ON "EventCenterBooking"("bookingId", "eventName", "eventTheme", "eventType");
 
 -- AddForeignKey
-ALTER TABLE "EventCenterBooking" ADD CONSTRAINT "EventCenterBooking_eventcenter_id_fkey" FOREIGN KEY ("eventcenter_id") REFERENCES "EventCenter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "EventCenterBooking" ADD CONSTRAINT "EventCenterBooking_eventcenterId_fkey" FOREIGN KEY ("eventcenterId") REFERENCES "EventCenter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

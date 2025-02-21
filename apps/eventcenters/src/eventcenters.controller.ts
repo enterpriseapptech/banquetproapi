@@ -1,14 +1,21 @@
 import { Controller } from '@nestjs/common';
 import { EventcentersService } from './eventcenters.service';
 import { CreateEventCenterDto, EVENTCENTERPATTERN, UpdateEventCenterDto } from '@shared/contracts';
-import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
+import { MessagePattern, Payload, RpcException, RmqContext, Ctx } from '@nestjs/microservices';
 import { catchError, from, throwError } from 'rxjs';
+
 @Controller()
 export class EventcentersController {
-    constructor(private readonly eventcentersService: EventcentersService) { }
+    constructor(
+        private readonly eventcentersService: EventcentersService,
+    ) { }
 
     @MessagePattern(EVENTCENTERPATTERN.CREATEEVENTCENTER)
-    create(@Payload() createEventCenterDto: CreateEventCenterDto) {
+    create(@Payload() createEventCenterDto: CreateEventCenterDto, @Ctx() context: RmqContext,) {
+        // const channel = context.getChannelRef();
+        const message = context.getMessage();
+        // console.log('Received message channel:', channel);
+        console.log('Received message :', message);
         return from(this.eventcentersService.create(createEventCenterDto)).pipe(
                 catchError((err) => {
                     console.error("Error in UsersService:", err);
@@ -17,10 +24,9 @@ export class EventcentersController {
                         message: err.message || "Internal Server Error",
                         error: err.response.error || "Sever error",
                     }));
-    
+
                 })
             );
-        
     }
 
     @MessagePattern(EVENTCENTERPATTERN.FINDALLEVENTCENTER)
@@ -89,5 +95,7 @@ export class EventcentersController {
         );
 
     }
+
+
 
 }

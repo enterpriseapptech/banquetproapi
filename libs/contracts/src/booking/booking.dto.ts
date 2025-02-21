@@ -1,5 +1,5 @@
 import { $Enums } from '@prisma/booking';
-import { $Enums as $EventBookingEnums} from '@prisma/eventcenters';
+import { $Enums as $EventBookingEnums } from '@prisma/eventcenters';
 
 // enum SpecialRequirement {
 //     // WHEELCHAIRACCESS = 'WHEELCHAIRACCESS',
@@ -43,7 +43,7 @@ export class BookingDto {
 export class EventCenterBookingDto {
     id: string;
     eventcenterId: string;
-    booking_id: string;
+    bookingId: string;
     eventName?: string;
     eventTheme?: string;
     eventType?: string;

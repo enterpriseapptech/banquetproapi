@@ -8,10 +8,10 @@ import {
     IsBoolean,
     IsArray,
     IsString,
-    IsDecimal,
+    IsNumber,
 } from 'class-validator';
 import { $Enums } from '@prisma/booking';
-import { $Enums as $EventBookingEnums} from '@prisma/eventcenters';
+import { $Enums as $EventBookingEnums } from '@prisma/eventcenters';
 
 export class CreateBookingDto {
 
@@ -23,16 +23,13 @@ export class CreateBookingDto {
     @IsNotEmpty()
     serviceType: $Enums.ServiceType;
 
-    @IsDecimal()
-    @Min(1)
+    @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
     totalBeforeDiscount: number;
 
-    @IsDecimal()
-    @Min(1)
+    @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
     discount?: number;
 
-    @IsDecimal()
-    @Min(1)
+    @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
     totalAfterDiscount: number;
 
     @IsArray()
@@ -56,7 +53,7 @@ export class CreateBookingDto {
     // @IsAlphanumeric()
     // bookingReference: string;
 
-    @IsEnum($Enums.BookingSource, {message: 'invalid booking source, must be web or mobile'})
+    @IsEnum($Enums.BookingSource, { message: 'invalid booking source, must be web or mobile' })
     @IsNotEmpty()
     source: string;
 
@@ -71,7 +68,7 @@ export class CreateBookingDto {
 
     @IsUUID()
     @IsNotEmpty()
-    eventCenterId: string;
+    eventcenterId: string;
 
     @IsString()
     @IsOptional()
@@ -95,7 +92,7 @@ export class CreateBookingDto {
     noOfGuest?: number;
 
     @IsArray()
-    @IsEnum($EventBookingEnums.SpecialRequirement, { each: true }) 
+    @IsEnum($EventBookingEnums.SpecialRequirement, { each: true })
     @IsOptional()
     specialRequirements?: $EventBookingEnums.SpecialRequirement[];
 
@@ -140,7 +137,7 @@ export class CreateEventCenterBookingDto {
 
     @IsOptional()
     @IsArray()
-    @IsEnum($EventBookingEnums.SpecialRequirement, { each: true }) 
+    @IsEnum($EventBookingEnums.SpecialRequirement, { each: true })
     specialRequirements?: $EventBookingEnums.SpecialRequirement[];
 
     @IsArray()

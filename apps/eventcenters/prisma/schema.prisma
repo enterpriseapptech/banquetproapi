@@ -14,70 +14,46 @@ datasource banquestproeventsdb {
   url      = "postgresql://users_admin:usersPassword@2025@localhost:5432/banquestproeventsdb?schema=public"
 }
 
-
-
 // event centers
 
-model EventCenter{
-  id                  String    @id @default(uuid()) // Primary key
-  serviceProviderId String // owner of this service points to a userid 
-  depositAmount       Int
-  totalAmount         Int
-  description         String?
-  pricingType         PricingType //Cost per hour, per day, or full package
-  sittingCapacity     Int
-  venueLayout         String?   //Banquet, Theater, U-Shape, Classroom, etc
-  amenities           Amenities[]
-  images              String[]
-  termsOfUse          String
-  cancellationPolicy  String
-  streetAddress       String
-  streetAddress2      String
-  city                String
-  state               String
-  country             String
-  postal              String
-  status              ServiceStatus 
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  deletedAt           DateTime?
-  deletedBy           String? 
-
-  eventCenterBooking             EventCenterBooking[]
-  @@index([serviceProviderId, city, state, country, status]) 
+model EventCenter {
+  id                 String        @id @default(uuid()) // Primary key
+  serviceProviderId  String // owner of this service points to a userid 
+  depositAmount      Int
+  totalAmount        Int
+  description        String?
+  pricingType        PricingType //Cost per hour, per day, or full package
+  sittingCapacity    Int
+  venueLayout        String? //Banquet, Theater, U-Shape, Classroom, etc
+  amenities          Amenities[]
+  images             String[]
+  termsOfUse         String
+  cancellationPolicy String
+  streetAddress      String
+  streetAddress2     String
+  city               String
+  state              String
+  country            String
+  postal             String
+  status             ServiceStatus
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  deletedAt          DateTime?
+  deletedBy          String?
+  @@index([serviceProviderId, city, state, country, status])
 }
 
-
-model EventCenterBooking {
-  id              String    @id @default(uuid())
-  eventcenterId  String 
-  bookingId      String  // points to the parent booking done as it contains most details about this booking
-  eventName       String?  
-  eventTheme      String?  
-  eventType       String?  
-  description     String?  
-  noOfGuest       Int? 
-  specialRequirements SpecialRequirement[]
-  images          String[] // after events customers can upload images from event
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  deletedAt       DateTime?
-  deletedBy       String?  
-
-  eventcenter EventCenter @relation(fields: [eventcenterId], references: [id])
-  @@index([bookingId, eventName, eventTheme, eventType]) 
-} 
 
 enum ServiceStatus {
   ACTIVE
   INACTIVE
 }
+
 enum Amenities {
   WIFI
   PACKINGSPACE
   SECURITY
 }
-
 
 enum PricingType {
   HOURLY
@@ -104,7 +80,3 @@ enum PaymentStatus {
   CANCELED
 }
 
-enum SpecialRequirement {
-  WHEELCHAIRACCESS
-  TEMPERATUREADJUSTMENT
-}

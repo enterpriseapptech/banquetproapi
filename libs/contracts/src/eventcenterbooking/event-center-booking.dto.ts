@@ -1,6 +1,6 @@
 export class EventCenterBookingDto {
     id: string;
-    eventCenterId: string;
+    eventcenterId: string;
     bookingId: string;
     eventStartDate: Date;
     eventEndDate: Date;
@@ -15,4 +15,9 @@ export class EventCenterBookingDto {
     updatedAt: Date;
     deletedAt?: Date;
     deletedBy?: string;
+}
+
+export class ManyEventCenterBookingsDto {
+    count: number;
+    data: EventCenterBookingDto[];
 }

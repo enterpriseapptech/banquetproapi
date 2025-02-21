@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsNotEmpty, Length, IsOptional } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, Length, IsOptional, IsUUID } from 'class-validator';
 import { $Enums } from '@prisma/users';
 
 export class CreateUserDto {
@@ -30,10 +30,10 @@ export class CreateUserDto {
     @IsEnum($Enums.ServiceType, { message: 'service type must be event centers, catering or all' })
     serviceType: $Enums.ServiceType;
 
-    // @IsOptional()
-    // @Length(2, 50)
-    // serviceProviderId: string
-    // @confirmFieldDecorator('password')
-    // password_confirmation: string;
+    @IsOptional()
+    @IsUUID()
+    @Length(2, 50)
+    serviceProviderId: string
+
 
 }

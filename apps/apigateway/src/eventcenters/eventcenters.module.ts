@@ -16,7 +16,7 @@ import { ClientProxyFactory } from '@nestjs/microservices';
       provide: EVENT_CENTER_CLIENT,
         useFactory: (configService: ClientConfigService) => {
           const eventCenterClientOptions = configService.EventCenterClientOptions;
-            // console.log('Creating ClientProxy with options:', usersClientOptions);
+          console.log('Creating eventCenterClientOptions ClientProxy with options:', eventCenterClientOptions);
           return ClientProxyFactory.create(eventCenterClientOptions);
         },
         inject: [ClientConfigService],

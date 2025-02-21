@@ -1,7 +1,5 @@
 // import { confirmFieldDecorator } from '../../validations/confirm_field.decorator';
 import { $Enums } from "@prisma/eventcenters";
-import { EventCenterBookingDto } from "../booking/booking.dto";
-
 export class EventCenterDto {
     id: string;
     serviceProviderId: string;
@@ -41,8 +39,4 @@ export class ManyEventCentersDto {
     data: EventCenterDto[];
 }
 
-export class ManyEventCenterBookingsDto {
-    count: number;
-    data: EventCenterBookingDto[];
-}
 

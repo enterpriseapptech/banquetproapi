@@ -26,3 +26,8 @@ export * from './booking/update-booking.dto';
 export * from './booking/booking.pattern';
 export * from './booking/booking.dto'
 // export * from './booking/search-event-centers.dto'
+
+export * from './catering/create-catering.dto';
+export * from './catering/update-catering.dto';
+export * from './catering/catering.pattern';
+export * from './catering/catering.dto'

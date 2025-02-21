@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "ServiceType" AS ENUM ('EVENTCENTERS', 'CATERING');
+CREATE TYPE "ServiceType" AS ENUM ('EVENTCENTERS', 'CATERING', 'ALL');
 
 -- CreateEnum
 CREATE TYPE "UserType" AS ENUM ('ADMIN', 'SERVICE_PROVIDER', 'CUSTOMER', 'STAFF');
@@ -97,6 +97,7 @@ CREATE TABLE "PasswordHistory" (
 
 -- CreateTable
 CREATE TABLE "PersonalAccessTokens" (
+    "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
     "token" TEXT NOT NULL,
     "type" "TokenType" NOT NULL,
@@ -105,7 +106,7 @@ CREATE TABLE "PersonalAccessTokens" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deleted_at" TIMESTAMP(3),
 
-    CONSTRAINT "PersonalAccessTokens_pkey" PRIMARY KEY ("user_id")
+    CONSTRAINT "PersonalAccessTokens_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -121,6 +122,9 @@ CREATE TABLE "Permission" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PersonalAccessTokens_user_id_type_key" ON "PersonalAccessTokens"("user_id", "type");
 
 -- AddForeignKey
 ALTER TABLE "Admin" ADD CONSTRAINT "Admin_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

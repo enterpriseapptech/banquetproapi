@@ -1,13 +1,12 @@
 import { Module } from '@nestjs/common';
-import { BookingController } from './booking.controller';
-import { BookingService } from './booking.service';
-import { DatabaseService } from '../database/database.service';
-import { USER_CLIENT, NOTIFICATION_CLIENT, EVENT_CENTER_CLIENT } from './constants';
+import { CateringController } from './catering.controller';
+import { CateringService } from './catering.service';
 import { ConfigModule } from '@nestjs/config';
-import { ClientProxyFactory } from '@nestjs/microservices';
 import { ClientConfigModule } from '../client-config/client-config.module';
+import { DatabaseService } from '../database/database.service';
 import { ClientConfigService } from '../client-config/client-config.service';
-
+import { NOTIFICATION_CLIENT, USER_CLIENT } from './constants';
+import { ClientProxyFactory } from '@nestjs/microservices';
 
 @Module({
     imports: [
@@ -17,15 +16,16 @@ import { ClientConfigService } from '../client-config/client-config.service';
         }),
         ClientConfigModule,
     ],
-    controllers: [BookingController],
+    controllers: [CateringController],
     providers: [
-        BookingService,
+        CateringService,
         DatabaseService,
         ClientConfigService,
         {
             provide: NOTIFICATION_CLIENT,
             useFactory: (configService: ClientConfigService) => {
                 const NotificationsClientOptions = configService.NotificationsClientOptions;
+                // console.log('Creating ClientProxy with options:', usersClientOptions);
                 return ClientProxyFactory.create(NotificationsClientOptions);
             },
             inject: [ClientConfigService],
@@ -34,18 +34,11 @@ import { ClientConfigService } from '../client-config/client-config.service';
             provide: USER_CLIENT,
             useFactory: (configService: ClientConfigService) => {
                 const usersClientOptions = configService.UsersClientOptions;
+                // console.log('Creating ClientProxy with options:', usersClientOptions);
                 return ClientProxyFactory.create(usersClientOptions);
-            },
-            inject: [ClientConfigService],
-        },
-        {
-            provide: EVENT_CENTER_CLIENT,
-            useFactory: (configService: ClientConfigService) => {
-                const EventCenterClientOptions = configService.EventCenterClientOptions;
-                return ClientProxyFactory.create(EventCenterClientOptions);
             },
             inject: [ClientConfigService],
         }
     ],
 })
-export class BookingModule { }
+export class CateringModule { }

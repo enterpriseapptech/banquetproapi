@@ -34,9 +34,10 @@ export class ClientConfigService {
             options: {
                 urls: ['amqp://users_admin:usersPassword@2025@localhost:5672'],
                 queue: 'event_centers_queue',
-                queueOptions: {
-                    durable: false,
-                }
+                queueOptions: { durable: true, autoDelete: false },
+                noAck: true, // Ensure messages are properly acknowledged
+                prefetchCount: 1, // Prevent overloading
+                
             }
         }
     }

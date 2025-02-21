@@ -21,5 +21,5 @@ export class UserDto {
     createdAt: Date;
     updatedAt: Date;
     deletedat?: Date;
-    deletedBy?: Date;
+    deletedBy?: string;
 }

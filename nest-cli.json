@@ -72,6 +72,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/booking/tsconfig.app.json"
       }
+    },
+    "catering": {
+      "type": "application",
+      "root": "apps/catering",
+      "entryFile": "main",
+      "sourceRoot": "apps/catering/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/catering/tsconfig.app.json"
+      }
     }
   }
 }

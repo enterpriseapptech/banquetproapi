@@ -1,0 +1,140 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator eventcenterclient {
+  provider = "prisma-client-js"
+  output   = "../../../node_modules/@prisma/catering"
+}
+
+datasource banquestproeventsdb {
+  provider = "postgresql"
+  url      = "postgresql://users_admin:usersPassword@2025@localhost:5432/banquestprocateringdb?schema=public"
+}
+
+// event centers
+
+model Catering {
+  id                 String        @id @default(uuid()) // Primary key
+  serviceProviderId  String // owner of this service points to a userid 
+  tagLine            String
+  depositAmount      Int
+  amountPerPerson        Int
+  maxCapacity        Int  //maximum count of people the catering service can handle
+  description        String?
+  dishTypes          String[]
+  images             String[]
+  termsOfUse         String
+  cancellationPolicy String
+  streetAddress      String
+  streetAddress2     String
+  city               String
+  state              String
+  country            String
+  postal             String
+  status             ServiceStatus
+  isFeatured         Boolean
+  featureExpiringAt  DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  updatedBy          String?     
+  deletedAt          DateTime?
+  deletedBy          String?
+
+  // relations
+  cuisine           Cuisine[] 
+  dietaryCategory   DietaryCategory[]
+  menu              Menu[]
+  @@index([serviceProviderId, city, state, country, status])
+}
+
+model Cuisine {
+  id                 String @id @default(uuid())
+  name               String @unique // e.g., Italian, Indian, Mexican
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  updatedBy          String?     
+  deletedAt          DateTime?
+  deletedBy          String?
+
+  // relations
+  catering          Catering[]
+  menu              Menu[]
+}
+
+model DietaryCategory {
+  id   String @id @default(uuid())
+  name String @unique // e.g., Vegetarian, Vegan, Halal, Gluten-Free
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  updatedBy          String?     
+  deletedAt          DateTime?
+  deletedBy          String?
+
+
+  // relations
+  menuItem          MenuItem[]
+  catering          Catering[]
+}
+
+model Menu {
+  id               String     @id @default(uuid())
+  cateringId       String
+  cuisineId        String
+  name             String
+  description      String?
+  isCustomizable   Boolean    @default(true)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  updatedBy          String?     
+  deletedAt          DateTime?
+  deletedBy          String?
+
+  // Relationships
+  cateringService   Catering @relation(fields: [cateringId], references: [id])
+  cuisine           Cuisine @relation(fields: [cuisineId], references: [id])
+  menuItems         MenuItem[]
+}
+
+// Food Category (Food, Drinks, Wines, Mocktails)
+model MenuCategory {
+  id    String  @id @default(uuid())
+  name  String  @unique
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  updatedBy          String?     
+  deletedAt          DateTime?
+  deletedBy          String?
+
+  // relation
+  menuItems MenuItem[]
+}
+
+model MenuItem {
+  id                            String  @id @default(uuid())
+  menuId                        String
+  name                          String
+  description                   String?
+  pricePerPerson                Int
+  pricePerTenPerson             Int
+  pricePerFiftyPerson           Int
+  pricePerHundredPerson         Int
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  updatedBy          String?     
+  deletedAt          DateTime?
+  deletedBy          String?
+
+  // Relationships
+  menu                  Menu @relation(fields: [menuId], references: [id])
+  dietaryCategories     DietaryCategory[]
+  menuCategory          MenuCategory[]
+}
+
+
+enum ServiceStatus {
+  ACTIVE
+  INACTIVE
+}

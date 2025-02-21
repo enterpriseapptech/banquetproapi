@@ -17,10 +17,10 @@ datasource banquestprobookingdb {
 
 model Booking {
   id                    String    @id @default(uuid())
-  customerId           String // customer booking the venue, points to an ID on users table
-  confirmedBy          String?  // staff who confirmed the book, points to an ID on users table
+  customerId            String // customer booking the venue, points to an ID on users table
+  confirmedBy           String?  // staff who confirmed the book, points to an ID on users table
   confirmedAt           DateTime?
-  servicebookingId     String? // eventcenterbooking, catering booking , etc
+  servicebookingId      String? // eventcenterbooking, catering booking , etc
   serviceType           ServiceType
   totalBeforeDiscount   Float
   discount              Float?
@@ -46,10 +46,31 @@ model Booking {
   deletedAt                     DateTime?
   deletedBy                     String?  
 
+  eventCenterBooking            EventCenterBooking?
   @@index([customerId, status, paymentStatus, serviceType])
 } // a review must have a booking, booking can have many payments at most 2
 
 
+model EventCenterBooking {
+  id                  String   @id @default(uuid())
+  eventcenterId       String
+  bookingId           String  @unique   @map("booking_id")
+  eventName           String?
+  eventTheme          String?
+  eventType           String?
+  description         String?
+  noOfGuest           Int?
+  specialRequirements SpecialRequirement[]
+  images              String[] // after events customers can upload images from event
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  deletedAt           DateTime?
+  deletedBy           String?
+
+  booking             Booking @relation(fields: [bookingId], references: [id])
+
+  @@index([bookingId, eventcenterId, eventName, eventTheme, eventType])
+}
 
 enum BookingSource {
   WEB
@@ -79,6 +100,10 @@ enum PaymentStatus {
   PARTIALLY_PAID
 }
 
+enum SpecialRequirement {
+  WHEELCHAIRACCESS
+  TEMPERATUREADJUSTMENT
+}
 
 // enum PaymentStatus {
 //   UNPAID
