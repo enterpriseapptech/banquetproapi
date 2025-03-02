@@ -4,7 +4,7 @@ import { UsersController } from './users.controller';
 import { ClientProxyFactory } from '@nestjs/microservices';
 import { ClientConfigModule } from '../client-config/client-config.module';
 import { ClientConfigService } from '../client-config/client-config.service';
-import { USER_CLIENT } from './constants';
+import { USER_CLIENT } from '@shared/contracts';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from '../jwt/jwt.strategy';
 

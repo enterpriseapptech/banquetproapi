@@ -1,1 +1,0 @@
-export const EVENT_CENTER_CLIENT = Symbol('EVENT_CENTER_SERVICE')

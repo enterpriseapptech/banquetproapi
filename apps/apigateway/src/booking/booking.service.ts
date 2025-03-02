@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CreateBookingDto, UpdateBookingDto, BookingDto, BOOKINGPATTERN, ManyBookingDto, ManyRequestBookingDto } from '@shared/contracts';
-import { BOOKING_CLIENT } from './constants';
+import { CreateBookingDto, UpdateBookingDto, BookingDto, BOOKINGPATTERN, ManyBookingDto, ManyRequestBookingDto, BOOKING_CLIENT, TimeslotDto, CreateManyTimeSlotDto, TIMESLOTPATTERN, ManyRequestTimeSlotDto, UpdateTimeslotDto } from '@shared/contracts';
 import { ClientProxy } from '@nestjs/microservices';
 
 
@@ -39,5 +38,56 @@ export class BookingService {
 
     remove(id: string, updaterId: any) {
         return this.bookingClient.send<BookingDto, { id: string, updaterId: string }>(BOOKINGPATTERN.DELETE, { id, updaterId })
+    }
+
+}
+
+
+@Injectable()
+export class TimeSlotService {
+
+    constructor(
+        @Inject(BOOKING_CLIENT) private readonly bookingClient: ClientProxy
+    ) { }
+
+    /**
+     * 
+     * Time slot service layer
+     * 
+     * @see TimeslotDto
+     * @see CreateManyTimeSlotDto
+     * @see TIMESLOTPATTERN
+     * @param createTimeSlotDto 
+     * @returns 
+     */
+
+    create(createTimeSlotDto: CreateManyTimeSlotDto) {
+        return this.bookingClient.send<TimeslotDto, CreateManyTimeSlotDto>(TIMESLOTPATTERN.CREATE, createTimeSlotDto)
+    }
+
+    findAll(limit: number, offset: number, serviceId?: string, date?: Date) {
+        return this.bookingClient.send<TimeslotDto[], ManyRequestTimeSlotDto>(TIMESLOTPATTERN.FINDALL,
+            {
+                limit,
+                offset,
+                serviceId,
+                date,
+            })
+    }
+
+
+    findOne(id: string) {
+        return this.bookingClient.send<TimeslotDto, string>(TIMESLOTPATTERN.FINDONEBYID, id)
+    }
+
+    updateTimeSlot(id: string, updateTimeslotDto: UpdateTimeslotDto) {
+        return this.bookingClient.send<TimeslotDto, { id: string, updateTimeslotDto: UpdateTimeslotDto }>(TIMESLOTPATTERN.UPDATE, {
+            id,
+            updateTimeslotDto
+        })
+    }
+
+    removeTimeSlot(id: string, updaterId: any) {
+        return this.bookingClient.send<TimeslotDto, { id: string, updaterId: string }>(TIMESLOTPATTERN.DELETE, { id, updaterId })
     }
 }

@@ -1,1 +1,0 @@
-export const BOOKING_CLIENT = Symbol('BOOKING_CLIENT_SERVICE')

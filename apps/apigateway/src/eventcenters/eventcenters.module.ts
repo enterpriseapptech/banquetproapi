@@ -3,7 +3,7 @@ import { EventcentersService } from './eventcenters.service';
 import { EventcentersController } from './eventcenters.controller';
 import { ClientConfigModule } from '../client-config/client-config.module';
 import { ClientConfigService } from '../client-config/client-config.service';
-import { EVENT_CENTER_CLIENT } from './constants';
+import { EVENT_CENTER_CLIENT } from '@shared/contracts';
 import { ClientProxyFactory } from '@nestjs/microservices';
 
 @Module({

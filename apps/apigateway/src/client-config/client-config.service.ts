@@ -55,4 +55,18 @@ export class ClientConfigService {
             }
         }
     }
+
+    get CateringClientOptions(): ClientOptions {
+        return {
+            transport: Transport.RMQ,
+            options: {
+                urls: ['amqp://users_admin:usersPassword@2025@localhost:5672'],
+                queue: 'catering_queue',
+                queueOptions: { durable: true, autoDelete: false },
+                noAck: true, // Ensure messages are properly acknowledged
+                prefetchCount: 1, // Prevent overloading
+
+            }
+        }
+    } 
 }

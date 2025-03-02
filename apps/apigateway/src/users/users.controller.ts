@@ -4,11 +4,16 @@ import { CreateUserDto, LoginUserDto, UpdateUserDto } from '@shared/contracts';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
 import { AdminRoleGuard } from '../jwt/admin.guard';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
+
+@ApiTags('users')
 @Controller('users')
 export class UsersController {
     constructor(private readonly usersService: UsersService) { }
     
+    @ApiOperation({ summary: 'Create User' })
+    @ApiResponse({ status: 200, description: 'Success' })
     @Post('create')
     create(@Body() createUserDto: CreateUserDto) {
         return this.usersService.create(createUserDto);
