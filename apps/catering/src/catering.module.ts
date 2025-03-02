@@ -5,8 +5,8 @@ import { ConfigModule } from '@nestjs/config';
 import { ClientConfigModule } from '../client-config/client-config.module';
 import { DatabaseService } from '../database/database.service';
 import { ClientConfigService } from '../client-config/client-config.service';
-import { NOTIFICATION_CLIENT, USER_CLIENT } from './constants';
 import { ClientProxyFactory } from '@nestjs/microservices';
+import { USER_CLIENT, NOTIFICATION_CLIENT } from '@shared/contracts';
 
 @Module({
     imports: [

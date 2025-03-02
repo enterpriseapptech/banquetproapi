@@ -1,4 +1,4 @@
-import {IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsInt, Min, IsArray } from 'class-validator';
+import {IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsInt, Min, IsArray, IsNumber } from 'class-validator';
 import { $Enums } from '@prisma/eventcenters';
 
 export enum PricingType {
@@ -18,14 +18,9 @@ export class CreateEventCenterDto {
     @Length(26, 40)
     serviceProviderId: string;
 
-    @IsInt()
-    @Min(50)
+    @Min(10)
+    @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
     depositAmount: number;
-
-
-    @IsInt()
-    @Min(50)
-    totalAmount: number;
 
 
     @IsOptional()
@@ -33,11 +28,8 @@ export class CreateEventCenterDto {
     @Length(30, 1000)
     description?: string
 
-    @IsNotEmpty()
-    @IsEnum(PricingType, {
-        message: 'pricing type must be one of the following:HOURLY, DAILY, NEGOTIATION',
-    })
-    pricingType: PricingType
+    @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
+    pricingPerSlot: number
 
     @IsInt()
     @Min(10)

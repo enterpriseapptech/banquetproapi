@@ -21,10 +21,12 @@ model Catering {
   serviceProviderId  String // owner of this service points to a userid 
   tagLine            String
   depositAmount      Int
-  amountPerPerson        Int
-  maxCapacity        Int  //maximum count of people the catering service can handle
+  startPrice         Float
+  minCapacity        Int?  //minimum count of people the catering service can handle
+  maxCapacity        Int?  //maximum count of people the catering service can handle
   description        String?
   dishTypes          String[]
+  cuisine            String[]
   images             String[]
   termsOfUse         String
   cancellationPolicy String
@@ -33,9 +35,10 @@ model Catering {
   city               String
   state              String
   country            String
+  location           String
   postal             String
   status             ServiceStatus
-  isFeatured         Boolean
+  isFeatured         Boolean @default(false)
   featureExpiringAt  DateTime?
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
@@ -44,48 +47,16 @@ model Catering {
   deletedBy          String?
 
   // relations
-  cuisine           Cuisine[] 
-  dietaryCategory   DietaryCategory[]
   menu              Menu[]
-  @@index([serviceProviderId, city, state, country, status])
-}
-
-model Cuisine {
-  id                 String @id @default(uuid())
-  name               String @unique // e.g., Italian, Indian, Mexican
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-  updatedBy          String?     
-  deletedAt          DateTime?
-  deletedBy          String?
-
-  // relations
-  catering          Catering[]
-  menu              Menu[]
-}
-
-model DietaryCategory {
-  id   String @id @default(uuid())
-  name String @unique // e.g., Vegetarian, Vegan, Halal, Gluten-Free
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-  updatedBy          String?     
-  deletedAt          DateTime?
-  deletedBy          String?
-
-
-  // relations
-  menuItem          MenuItem[]
-  catering          Catering[]
+  @@index([serviceProviderId, startPrice, city, state, country, status, cuisine])
 }
 
 model Menu {
   id               String     @id @default(uuid())
   cateringId       String
-  cuisineId        String
   name             String
   description      String?
-  isCustomizable   Boolean    @default(true)
+  images           String[] // array to store the image url
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
   updatedBy          String?     
@@ -94,44 +65,9 @@ model Menu {
 
   // Relationships
   cateringService   Catering @relation(fields: [cateringId], references: [id])
-  cuisine           Cuisine @relation(fields: [cuisineId], references: [id])
-  menuItems         MenuItem[]
+  @@index([description])
 }
 
-// Food Category (Food, Drinks, Wines, Mocktails)
-model MenuCategory {
-  id    String  @id @default(uuid())
-  name  String  @unique
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-  updatedBy          String?     
-  deletedAt          DateTime?
-  deletedBy          String?
-
-  // relation
-  menuItems MenuItem[]
-}
-
-model MenuItem {
-  id                            String  @id @default(uuid())
-  menuId                        String
-  name                          String
-  description                   String?
-  pricePerPerson                Int
-  pricePerTenPerson             Int
-  pricePerFiftyPerson           Int
-  pricePerHundredPerson         Int
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-  updatedBy          String?     
-  deletedAt          DateTime?
-  deletedBy          String?
-
-  // Relationships
-  menu                  Menu @relation(fields: [menuId], references: [id])
-  dietaryCategories     DietaryCategory[]
-  menuCategory          MenuCategory[]
-}
 
 
 enum ServiceStatus {

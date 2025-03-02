@@ -1,3 +1,4 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
     IsOptional,
     IsNotEmpty,
@@ -8,164 +9,132 @@ import {
 } from 'class-validator';
 
 
-export class CreateCuisineDto {
-    @IsString()
-    @IsNotEmpty()
-    name: string;
-}
-
-export class CreateMenuItemDto {
-    @IsString()
-    @IsNotEmpty()
-    menuId: string;
-
-    @IsString()
-    @IsNotEmpty()
-    name: string;
-
-    @IsString()
-    @IsOptional()
-    description?: string;
-
-    
-    @IsNotEmpty()
-    @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
-    pricePerPerson: number;
-
-    @IsNotEmpty()
-    @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
-    pricePerTenPerson: number;
-
-    @IsNotEmpty()
-    @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
-    pricePerFiftyPerson: number;
-
-    @IsNotEmpty()
-    @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
-    pricePerHundredPerson: number;
-
-    @IsArray()
-    @IsString({ each: true })
-    @IsOptional()
-    dietaryCategoryIds?: string[];
-
-    @IsArray()
-    @IsString({ each: true })
-    @IsOptional()
-    menuCategoryIds?: string[];
-}
-
-
-export class CreateMenuCategoryDto {
-    @IsString()
-    @IsNotEmpty()
-    name: string;
-}
-
-export class CreateDietaryCategoryDto {
-    @IsString()
-    @IsNotEmpty()
-    name: string;
-}
-
-
 export class CreateCateringDto {
+    @ApiProperty({ type: 'string', required: true })
     @IsString()
     @IsNotEmpty()
     serviceProviderId: string;
 
+    @ApiProperty({ type: 'string', required: true })
     @IsString()
     @IsNotEmpty()
     tagLine: string;
 
+    @ApiProperty({ type: 'number', required: true })
     @IsInt()
     @IsNotEmpty()
+    @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
     depositAmount: number;
 
-    @IsInt()
+    @ApiProperty({ type: 'number', required: true })
     @IsNotEmpty()
-    amountPerPerson: number;
+    @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
+    startPrice: number;
 
+    @ApiPropertyOptional({ type: 'number', required: false })
+    @IsOptional()
     @IsInt()
-    @IsNotEmpty()
-    maxCapacity: number;
+    minCapacity?: number;
 
+    @ApiPropertyOptional({ type: 'number', required: false })
+    @IsOptional()
+    @IsInt()
+    maxCapacity?: number;
+
+    @ApiPropertyOptional({ type: 'array', required: false, example: ["Italian", "Mexican", "Indian"] })
+    @IsOptional()
+    @IsArray()
+    @IsString({ each: true })
+    cuisine?: string[];
+
+    @ApiPropertyOptional({ type: 'string', required: false })
     @IsString()
     @IsOptional()
     description?: string;
 
+    @ApiProperty({ type: 'string', required: true, example: ["Vegetarian", "Non-Vegetarian", "Vegan"] })
     @IsArray()
     @IsString({ each: true })
-    dishTypes: string[];
+    dishTypes?: string[];
 
+    @ApiPropertyOptional({ type: 'array', format: 'binary', required: false })
+    @IsOptional()
     @IsArray()
     @IsString({ each: true })
-    images: string[];
+    images?: any[];
+   
 
+    @ApiProperty({ type: 'string', required: true })
     @IsString()
     @IsNotEmpty()
     termsOfUse: string;
 
+    @ApiProperty({ type: 'string', required: true })
     @IsString()
     @IsNotEmpty()
     cancellationPolicy: string;
 
+    @ApiProperty({ type: 'string', required: true })
     @IsString()
     @IsNotEmpty()
     streetAddress: string;
 
+    @ApiProperty({ type: 'string', required: true })
     @IsString()
     @IsOptional()
     streetAddress2?: string;
 
+    @ApiProperty({ type: 'string', required: true })
     @IsString()
     @IsNotEmpty()
     city: string;
 
+    @ApiProperty({ type: 'string', required: true })
     @IsString()
     @IsNotEmpty()
     state: string;
 
+    @ApiProperty({ type: 'string', required: true })
     @IsString()
     @IsNotEmpty()
     country: string;
 
+    @ApiProperty({ type: 'string', required: true })
     @IsString()
     @IsNotEmpty()
     postal: string;
 
-    @IsArray()
-    @IsString({ each: true })
-    @IsOptional()
-    cuisineIds?: string[];
+    @ApiProperty({ type: 'string', required: true })
+    @IsString()
+    @IsNotEmpty()
+    location
 
-    @IsArray()
-    @IsString({ each: true })
-    @IsOptional()
-    dietaryCategoryIds?: string[];
 }
 
 export class CreateMenuDto {
+    @ApiProperty({ type: 'string', required: true })
     @IsString()
     @IsNotEmpty()
     name: string;
 
+    @ApiProperty({ type: 'string', required: true })
     @IsString()
     @IsOptional()
     description?: string;
 
-    @IsArray()
-    @IsString({ each: true })
-    @IsOptional()
-    cuisineIds?: string[]; // List of cuisine IDs
+    @ApiProperty({ type: 'string', required: true })
+    @IsString()
+    cateringId?: string[]; // List of cuisine IDs
 
     @IsArray()
     @IsString({ each: true })
     @IsOptional()
-    dietaryCategoryIds?: string[]; // List of dietary category IDs
+    cuisine?: string[]; // List of dietary category IDs
 
-    @IsArray()
-    @IsString({ each: true })
-    @IsOptional()
-    menuCategoryIds?: string[]; // List of menu category IDs
+
+    @ApiProperty({ type: 'string', format: 'binary', required: true })
+    image: any; // File input (Handled in Controller)
+
 }
+
+

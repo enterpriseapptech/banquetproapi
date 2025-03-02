@@ -4,6 +4,7 @@ export const NOTIFICATIONPATTERN = {
     FINDNOTIFICATIONBYUSERID: 'notification.findAllByUserId',
     CREATENOTIFICATION: 'notification.create',
     SENDNOTIFICATION: 'notification.send',
+    FINDANDSENDNOTIFICATION: 'notification.send',
     UPDATENOTIFICATION: 'notification.update',
     DELETEUSER: 'notification.delete',
     MARKALLASREAD: 'notification.markAllAsRead',

@@ -1,7 +1,8 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { CreateBookingDto } from './create-booking.dto';
-import { IsArray, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import { CreateBookingDto, CreateTimeslotDto } from './create-booking.dto';
+import { IsArray, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ArrayUnique, } from 'class-validator';
 import { $Enums } from '@prisma/booking';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateBookingDto extends PartialType(CreateBookingDto) {
     @IsUUID()
@@ -68,5 +69,42 @@ export class UpdateEventBookingDto extends PartialType(CreateBookingDto) {
 
     @IsUUID()
     @IsOptional()
+    deletedBy?: string;
+}
+
+export class UpdateCateringBookingDto extends PartialType(CreateBookingDto) {
+
+    @IsDateString()
+    @IsOptional()
+    deletedAt?: Date;
+
+    @IsUUID()
+    @IsOptional()
+    deletedBy?: string;
+}
+
+export class UpdateTimeslotDto extends PartialType(CreateTimeslotDto) {
+
+    
+    @ApiProperty({ type: 'string', required: false })
+    @IsOptional()
+    @IsUUID()
+    bookingId?: string;
+
+    @ApiProperty({ type: 'string', required: false })
+    @IsOptional()
+    @IsArray()
+    @ArrayUnique()
+    @IsString({ each: true })
+    previousBookings?: string;
+
+    @ApiProperty({ type: 'string', required: false })
+    @IsOptional()
+    @IsUUID()
+    updatedBy?: string;
+
+    @ApiProperty({ type: 'string', required: false })
+    @IsOptional()
+    @IsUUID()
     deletedBy?: string;
 }

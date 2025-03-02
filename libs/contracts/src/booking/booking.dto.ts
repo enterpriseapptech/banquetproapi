@@ -1,10 +1,4 @@
 import { $Enums } from '@prisma/booking';
-import { $Enums as $EventBookingEnums } from '@prisma/eventcenters';
-
-// enum SpecialRequirement {
-//     // WHEELCHAIRACCESS = 'WHEELCHAIRACCESS',
-//     TEMPERATUREADJUSTMENT = 'TEMPERATUREADJUSTMENT'
-// }
 
 export class BookingDto {
     id: string;
@@ -49,12 +43,41 @@ export class EventCenterBookingDto {
     eventType?: string;
     description?: string;
     noOfGuest?: number;
-    specialRequirements?: $EventBookingEnums.SpecialRequirement[];
+    specialRequirements?: $Enums.SpecialRequirement[];
     images: string[];
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date;
     deletedBy?: string;
+}
+
+export class TimeslotDto {
+    id: string;
+    serviceId: string;
+    serviceType: string;
+    bookingId: string;
+    startTime: Date;
+    endTime: Date;
+    isAvailable: boolean;
+    previousBookings: string[];
+    createdBy: string;
+    createdAt: Date;
+    updatedAt: Date;
+    updatedBy?: string;
+    deletedAt?: Date;
+    deletedBy?: string;
+}
+
+export class ManyTimeslotDto{
+    count: number;
+    data: TimeslotDto[];
+}
+
+export class ManyRequestTimeSlotDto {
+    limit?: number;
+    offset?: number;
+    serviceId: string;
+    date?: Date;
 }
 
 

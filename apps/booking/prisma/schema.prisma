@@ -46,10 +46,42 @@ model Booking {
   deletedAt                     DateTime?
   deletedBy                     String?  
 
+
   eventCenterBooking            EventCenterBooking?
+  cateringBooking            CateringBooking?
+  timeslot                      TimeSlot[]  // a single booking can contains a list of timeslots, spanning even into days
   @@index([customerId, status, paymentStatus, serviceType])
 } // a review must have a booking, booking can have many payments at most 2
 
+model AvailableLocations {
+  id            String   @id @default(uuid())
+  country       String
+  state         String
+  city          String?
+  status        LocationStatus
+}
+
+model TimeSlot {
+  id                      String   @id @default(uuid())
+  serviceId               String
+  serviceType             ServiceType
+  bookingId               String? 
+  startTime               DateTime
+  endTime                 DateTime
+  isAvailable             Boolean @default(true)
+  previousBookings        String[] // tracking all bookings previously attached to this slot
+  createdBy               String
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  updatedBy               String?
+  deletedAt               DateTime?
+  deletedBy               String? 
+
+
+  // relations
+  booking                 Booking? @relation(fields: [bookingId], references: [id])
+  @@index([serviceId, bookingId, startTime, endTime, isAvailable]) 
+}
 
 model EventCenterBooking {
   id                  String   @id @default(uuid())
@@ -72,12 +104,40 @@ model EventCenterBooking {
   @@index([bookingId, eventcenterId, eventName, eventTheme, eventType])
 }
 
+model CateringBooking {
+  id                  String   @id @default(uuid())
+  cateringId       String
+  bookingId           String  @unique   @map("booking_id")
+  eventName           String?
+  eventType           String?
+  dishTypes          String[]
+  cuisine            String[]
+  description         String?
+  noOfGuest           Int?
+  specialRequirements SpecialRequirement[]
+  images              String[] // after events customers can upload images from event
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  deletedAt           DateTime?
+  deletedBy           String?
+
+  booking             Booking @relation(fields: [bookingId], references: [id])
+
+  @@index([bookingId, cateringId, eventName, cuisine, dishTypes, eventType])
+}
+
+// to do quotes model
+enum LocationStatus {
+  ACTIVE
+  INACTIVE
+  
+}
+
 enum BookingSource {
   WEB
   MOBILE
   
 }
-
 
 
 enum ServiceType {

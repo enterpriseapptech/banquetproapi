@@ -4,9 +4,8 @@ export class EventCenterDto {
     id: string;
     serviceProviderId: string;
     depositAmount: number;
-    totalAmount: number;
     description?: string;
-    pricingType: $Enums.PricingType;
+    pricingPerSlot: number;
     sittingCapacity: number;
     venueLayout?: string;
     amenities: string[];

@@ -2,9 +2,8 @@
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 // import { $Enums as $EventBookingEnums, Prisma as EventBookingPrisma } from '@prisma/eventcenters';
 import { $Enums, Prisma } from '@prisma/booking';
-import { CreateBookingDto, BookingDto, EVENTCENTERBOOKINGPATTERN, NOTIFICATIONPATTERN, EventCenterDto, UserDto, USERPATTERN, ManyEventCentersDto, UpdateEventCenterDto, SearchServiceProviderDto, CreateEventCenterBookingDto, EventCenterBookingDto, EVENTCENTERPATTERN, ManyBookingDto, ManyRequestEventCenterDto } from '@shared/contracts';
+import { EVENT_CENTER_CLIENT, NOTIFICATION_CLIENT, USER_CLIENT, CreateBookingDto, BookingDto, EVENTCENTERBOOKINGPATTERN, NOTIFICATIONPATTERN, EventCenterDto, UserDto, USERPATTERN, ManyEventCentersDto, UpdateEventCenterDto, SearchServiceProviderDto, CreateEventCenterBookingDto, EventCenterBookingDto, EVENTCENTERPATTERN, ManyBookingDto, ManyRequestEventCenterDto, CreateTimeslotDto, TimeslotDto, CreateManyTimeSlotDto, ManyTimeslotDto, CATERING_CLIENT, CateringDto, CATERINGPATTERN, ManyRequestTimeSlotDto, UpdateTimeslotDto } from '@shared/contracts';
 import { DatabaseService } from '../database/database.service';
-import { EVENT_CENTER_CLIENT, NOTIFICATION_CLIENT, USER_CLIENT } from './constants';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { catchError, throwError, firstValueFrom } from 'rxjs';
 
@@ -14,6 +13,7 @@ export class BookingService {
 		@Inject(NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
 		@Inject(USER_CLIENT) private readonly userClient: ClientProxy,
 		@Inject(EVENT_CENTER_CLIENT) private readonly eventClient: ClientProxy,
+		@Inject(CATERING_CLIENT) private readonly cateringClient: ClientProxy,
 		private readonly databaseService: DatabaseService
 	) { }
 
@@ -49,13 +49,18 @@ export class BookingService {
 		try {
 
 			switch (newBookingInput.serviceType) {
-				case 'EVENTCENTER':
-					const eventcenter = await this.eventClient.send<EventCenterDto, string>(EVENTCENTERPATTERN.FINDONEBYID, createBookingDto.eventcenterId)
+				case $Enums.ServiceType.EVENTCENTER:
+					const eventcenter = await this.eventClient.send<EventCenterDto, string>(EVENTCENTERPATTERN.FINDONEBYID, createBookingDto.serviceId)
 					if (!eventcenter) {
 						throw new NotFoundException('event center not found for booking');
 					}
 					break;
-
+				case $Enums.ServiceType.CATERING:
+					const catering = await this.eventClient.send<CateringDto, string>(CATERINGPATTERN.FINDONEBYID, createBookingDto.serviceId)
+					if (!catering) {
+						throw new NotFoundException('catering service not found for booking');
+					}
+					break;
 				default:
 					break;
 			}
@@ -64,18 +69,35 @@ export class BookingService {
 			const newBooking = await this.databaseService.$transaction(async (prisma) => {
 
 				const booking = await prisma.booking.create({ data: newBookingInput });
-				const createEventCenterBookingDto: Prisma.EventCenterBookingCreateInput = {
-					eventcenterId: createBookingDto.eventcenterId,
-					booking: { connect: { id: booking.id } }  ,
-					eventName: createBookingDto.eventName,
-					eventTheme: createBookingDto.eventTheme,
-					eventType: createBookingDto.eventType,
-					description: createBookingDto.description,
-					noOfGuest: createBookingDto.noOfGuest,
-					specialRequirements: createBookingDto.specialRequirements as $Enums.SpecialRequirement[],
+				if ($Enums.ServiceType.EVENTCENTER) {
+					const createEventCenterBookingDto: Prisma.EventCenterBookingCreateInput = {
+						eventcenterId: createBookingDto.serviceId,
+						booking: { connect: { id: booking.id } },
+						eventName: createBookingDto.eventName,
+						eventTheme: createBookingDto.eventTheme,
+						eventType: createBookingDto.eventType,
+						description: createBookingDto.description,
+						noOfGuest: createBookingDto.noOfGuest,
+						specialRequirements: createBookingDto.specialRequirements as $Enums.SpecialRequirement[],
 
+					}
+					const eventCenterBooking = await prisma.eventCenterBooking.create({ data: createEventCenterBookingDto });
+				} else if ($Enums.ServiceType.CATERING) {
+					const createCateringBookingDto: Prisma.CateringBookingCreateInput = {
+						cateringId: createBookingDto.serviceId,
+						booking: { connect: { id: booking.id } },
+						eventName: createBookingDto.eventName,
+						cuisine: createBookingDto.cuisine,
+						dishTypes: createBookingDto.dishTypes, 
+						eventType: createBookingDto.eventType,
+						description: createBookingDto.description,
+						noOfGuest: createBookingDto.noOfGuest,
+						specialRequirements: createBookingDto.specialRequirements as $Enums.SpecialRequirement[],
+
+					}
+					const cateringBooking = await prisma.cateringBooking.create({ data: createCateringBookingDto });
 				}
-				const eventCenterBooking = await prisma.eventCenterBooking.create({ data: createEventCenterBookingDto });
+				
 				return booking;
 			});
 
@@ -99,8 +121,6 @@ export class BookingService {
 			});
 		}
 	}
-
-
 	async findAll(
 		limit: number,
 		offset: number,
@@ -193,9 +213,6 @@ export class BookingService {
 			where: {
 				id: id,
 				deletedAt: null
-			},
-			include: {
-				eventCenterBooking: true
 			}
 		});
 		if (!booking) {
@@ -235,4 +252,217 @@ export class BookingService {
 		// delete the associating service booking e.g eventcenterbooking
 		return booking;
 	}
+
+
+}
+
+
+@Injectable()
+export class TimeSlotService {
+	constructor(
+		@Inject(NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
+		@Inject(USER_CLIENT) private readonly userClient: ClientProxy,
+		@Inject(EVENT_CENTER_CLIENT) private readonly eventClient: ClientProxy,
+		@Inject(CATERING_CLIENT) private readonly cateringClient: ClientProxy,
+		private readonly databaseService: DatabaseService
+	) { }
+
+	async create(createTimeslotDto: CreateManyTimeSlotDto): Promise<TimeslotDto[]> {
+
+		/**
+		 * Time slot generating could either be a manual or automatic process
+		 * A service provider should make time slots for each service he owns, users book these time slots
+		 * To generate an automatic time slots we need to know the start and end date, slot span
+		 *  the start and end time daily from the service provider predefined working hours for each day, 
+		 * the intervals of the slot and any exclusion of days
+		 * 
+		 * this means, a user can generate slot from 01/01/2025  to 31/12/2025, from 8am to 8pm, 4 hours long, 
+		 * and interval of 2 hours and exclude mondays and thursdays every week as defined in their working hours 
+		 * and and also an overlap. so wecould generate a single slot 4 times, depending on the business capacity
+		 * 
+		 * or he could manually provide the input for the slot to generate one slot at a time
+		 * @see CreateTimeslotDto
+		 * @see Prisma.TimeSlotCreateInput
+		 * 
+		*/
+		try {
+			const {
+				serviceId, serviceType,
+				slots, createdBy
+			} = createTimeslotDto;
+
+			let ServiceProvider: string;
+
+			switch (createTimeslotDto.serviceType) {
+				case $Enums.ServiceType.EVENTCENTER:
+					const eventcenter = await firstValueFrom(this.eventClient.send<EventCenterDto, string>(EVENTCENTERPATTERN.FINDONEBYID, serviceId));
+					if (!eventcenter) {
+						throw new NotFoundException('Could not associate this timeslot with any event centers, ensure to select an event center');
+					}
+					ServiceProvider = eventcenter.serviceProviderId
+					break;
+				case $Enums.ServiceType.CATERING:
+					const catering = await firstValueFrom(this.cateringClient.send<CateringDto, string>(CATERINGPATTERN.FINDONEBYID, serviceId));
+					if (!catering) {
+						throw new NotFoundException('Could not associate this timeslot with any event centers, ensure to select an event center');
+					}
+					ServiceProvider = catering.serviceProviderId
+					break;
+					break;
+				default:
+					break;
+			}
+
+			const newTimeSlotInput: Prisma.TimeSlotCreateManyInput[] = slots.map(slot => ({
+				serviceId: serviceId,
+				serviceType: serviceType as $Enums.ServiceType,
+				startTime: slot.startTime,
+				endTime: slot.endTime,
+				createdBy: createdBy
+			}));
+
+
+			// Start a transaction - for an all or fail process
+			const newTimeSlot = await this.databaseService.$transaction(async (prisma) => {
+
+				const timeslot = await prisma.timeSlot.createMany({ data: newTimeSlotInput });
+
+				return prisma.timeSlot.findMany({
+					where: {
+						serviceId: serviceId, // Adjust based on your unique identifier
+					},
+					orderBy: { startTime: 'asc' } // Optional: Order by start time
+				});
+
+			});
+
+
+			//  notify service provider of timeslot
+			const user = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDUSERBYID, ServiceProvider));
+			if (user) {
+				this.notificationClient.emit(NOTIFICATIONPATTERN.FINDANDSENDNOTIFICATION, {
+					type: 'EMAIL',
+					recipientId: ServiceProvider,
+					data: {
+						subject: 'New Timeslot(s) created!',
+						message: `New times slots has been created for a service you provide.`,
+						recipientEmail: user.email,
+					},
+				});
+			}
+
+
+			return newTimeSlot;
+		} catch (error) {
+			console.log(error)
+			throw new InternalServerErrorException(error, {
+				cause: new Error(),
+				description: 'time slot generation failed, please try again!'
+			});
+		}
+	}
+
+
+	async findAll(manyRequestTimeSlotDto: ManyRequestTimeSlotDto): Promise<ManyTimeslotDto> {
+
+		const whereClause: any = { deletedAt: null, serviceId: manyRequestTimeSlotDto.serviceId };
+		if (manyRequestTimeSlotDto.date) {
+			const startOfDay = new Date(manyRequestTimeSlotDto.date);
+			startOfDay.setUTCHours(0, 0, 0, 0); // Set time to 00:00:00.000 UTC
+
+			const endOfDay = new Date(manyRequestTimeSlotDto.date);
+			endOfDay.setUTCHours(23, 59, 59, 999); // Set time to 23:59:59.999 UTC
+
+			whereClause.startTime = {
+				gte: startOfDay,
+				lte: endOfDay
+			};
+		}
+
+		const result = await this.databaseService.$transaction(async (prisma) => {
+
+			const timeslots = await prisma.timeSlot.findMany({
+				where: whereClause,
+				take: manyRequestTimeSlotDto.limit || 100,
+				skip: manyRequestTimeSlotDto.offset || 0,
+			});
+
+
+			const count = await prisma.timeSlot.count({
+				where: whereClause,
+			});
+
+			return { count, data: timeslots };
+		});
+
+		return { count: result.count, data: result.data };
+	}
+
+	async findOne(id: string): Promise<TimeslotDto> {
+
+		const timeslot = await this.databaseService.timeSlot.findUnique({
+			where: {
+				id: id,
+				deletedAt: null
+			}
+		});
+		if (!timeslot) {
+			throw new NotFoundException("Time slot not found or has been deleted")
+		}
+		return timeslot;
+	}
+
+	async update(id: string, updateTimeslotDto: UpdateTimeslotDto): Promise<TimeslotDto> {
+		try {
+
+			const result = await this.databaseService.$transaction(async (prisma) => {
+
+				const existingTimeSlot = await prisma.timeSlot.findUnique({
+					where: { id },
+					select: { previousBookings: true }
+				});
+
+				const updatedPreviousBookings = [
+					...(existingTimeSlot?.previousBookings || []), // Keep existing IDs
+					updateTimeslotDto.previousBookings // Add the new ID
+				];
+
+				const updateTimeSlotInput: Prisma.TimeSlotUpdateInput = {
+					...TimeslotDto,
+					previousBookings: updateTimeslotDto.previousBookings ? updatedPreviousBookings : existingTimeSlot?.previousBookings
+				};
+
+				const timeSlot = await this.databaseService.timeSlot.update({
+					where: { id },
+					data: updateTimeSlotInput
+				});
+
+				return timeSlot;
+			});
+			
+			return result;
+		} catch (error) {
+			throw new ConflictException(error);
+		}
+	}
+
+	async remove(id: string, updaterId: string): Promise<TimeslotDto> {
+		const timeSlot = await this.databaseService.timeSlot.update({
+			where: { id },
+			data: {
+				deletedAt: new Date(),
+				deletedBy: updaterId
+			}
+		});
+
+		// delete the associating service timeSlot
+		return timeSlot;
+	}
+
+
+	
+
+
+
+
 }

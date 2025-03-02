@@ -1,61 +1,15 @@
 import { $Enums } from '@prisma/catering';
 
-export class CuisineDto {
-    id: string;
-    name: string; // e.g., Italian, Indian, Mexican
-    createdAt: Date;
-    updatedAt: Date;
-    updatedBy?: string;
-    deletedAt?: Date;
-    deletedBy?: string;
-}
 
-export class DietaryCategoryDto {
-    id: string;
-    name: string; // e.g., Vegetarian, Vegan, Halal, Gluten-Free
-    createdAt: Date;
-    updatedAt: Date;
-    updatedBy?: string;
-    deletedAt?: Date;
-    deletedBy?: string;
-}
-
-export class MenuCategoryDto {
-    id: string;
-    name: string;
-    createdAt: Date;
-    updatedAt: Date;
-    updatedBy?: string;
-    deletedAt?: Date;
-    deletedBy?: string;
-}
-
-
-export class MenuItemDto {
-    id: string;
-    menuId: string;
-    name: string;
-    description?: string;
-    pricePerPerson: number;
-    pricePerTenPerson: number;
-    pricePerFiftyPerson: number;
-    pricePerHundredPerson: number;
-    createdAt: Date;
-    updatedAt: Date;
-    updatedBy?: string;
-    deletedAt?: Date;
-    deletedBy?: string;
-    dietaryCategories?: DietaryCategoryDto[]; // Assuming these are category names or IDs
-    menuCategory?: MenuCategoryDto[]; // Assuming these are category names or IDs
-}
 
 export class CateringDto {
     id: string;
     serviceProviderId: string; // Owner of the service
     tagLine: string;
     depositAmount: number;
-    amountPerPerson: number;
-    maxCapacity: number;
+    startPrice: number;
+    minCapacity?: number;
+    maxCapacity?: number;
     description?: string;
     dishTypes: string[];
     images: string[];
@@ -75,8 +29,6 @@ export class CateringDto {
     updatedBy?: string;
     deletedAt?: Date;
     deletedBy?: string;
-    cuisine?: CuisineDto[]; // List of cuisines
-    dietaryCategories?: DietaryCategoryDto[]; // List of dietary categories
 }
 
 export class MenuDto {
@@ -91,18 +43,22 @@ export class MenuDto {
     deletedAt?: Date;
     deletedBy?: string;
     cateringService?: CateringDto;
-    cuisine?: CuisineDto[];// Optional if linked to an event center booking
-    menuItems?: MenuItemDto[];
+}
+
+export class ManyCateringDto {
+    count: number;
+    data: CateringDto[];
 }
 
 
-// export class ManyRequestBookingDto {
-//     limit: number;
-//     offset: number;
-//     serviceProvider?: string;
-//     startDate?: Date;
-//     endDate?: Date;
-// }
+export class ManyRequestCateringDto {
+    limit: number;
+    offset: number;
+    serviceProvider?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+}
 
 // export class ManyBookingDto {
 //     count: number;

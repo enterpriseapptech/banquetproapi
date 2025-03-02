@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
-import { BookingController } from './booking.controller';
-import { BookingService } from './booking.service';
+import { BookingController, TimeSlotController } from './booking.controller';
+import { BookingService, TimeSlotService } from './booking.service';
 import { DatabaseService } from '../database/database.service';
-import { USER_CLIENT, NOTIFICATION_CLIENT, EVENT_CENTER_CLIENT } from './constants';
+import { USER_CLIENT, NOTIFICATION_CLIENT, EVENT_CENTER_CLIENT, CATERING_CLIENT } from '@shared/contracts'
 import { ConfigModule } from '@nestjs/config';
 import { ClientProxyFactory } from '@nestjs/microservices';
 import { ClientConfigModule } from '../client-config/client-config.module';
 import { ClientConfigService } from '../client-config/client-config.service';
+
 
 
 @Module({
@@ -17,9 +18,10 @@ import { ClientConfigService } from '../client-config/client-config.service';
         }),
         ClientConfigModule,
     ],
-    controllers: [BookingController],
+    controllers: [BookingController, TimeSlotController],
     providers: [
         BookingService,
+        TimeSlotService,
         DatabaseService,
         ClientConfigService,
         {
@@ -45,7 +47,15 @@ import { ClientConfigService } from '../client-config/client-config.service';
                 return ClientProxyFactory.create(EventCenterClientOptions);
             },
             inject: [ClientConfigService],
+        },
+        {
+            provide: CATERING_CLIENT,
+            useFactory: (configService: ClientConfigService) => {
+                const CateringClientOptions = configService.CateringClientOptions;
+                return ClientProxyFactory.create(CateringClientOptions);
+            },
+            inject: [ClientConfigService],
         }
     ],
-})
+}) 
 export class BookingModule { }

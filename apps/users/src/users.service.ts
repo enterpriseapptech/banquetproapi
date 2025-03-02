@@ -248,7 +248,19 @@ export class UsersService {
                 description: 'no user found'
             });
         }
-        return user;
+
+        return {
+            ...user,
+            serviceProvider: user.serviceProvider
+                ? {
+                    ...user.serviceProvider,
+                    workingHours:
+                        typeof user.serviceProvider.workingHours === 'string'
+                            ? JSON.parse(user.serviceProvider.workingHours)
+                            : user.serviceProvider.workingHours
+                }
+                : null
+        };
 
         
     }

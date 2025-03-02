@@ -19,6 +19,6 @@ async function bootstrap() {
     }
   );
   await app.listen();
-  console.log('event centers Microservice is listening...');
+  console.log('Catering Microservice is listening...');
 }
 bootstrap();

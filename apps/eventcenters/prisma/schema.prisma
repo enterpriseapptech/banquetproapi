@@ -15,14 +15,13 @@ datasource banquestproeventsdb {
 }
 
 // event centers
-
+//  to do add working hours here, dont make it a model of its own
 model EventCenter {
   id                 String        @id @default(uuid()) // Primary key
   serviceProviderId  String // owner of this service points to a userid 
-  depositAmount      Int
-  totalAmount        Int
+  depositAmount      Float
   description        String?
-  pricingType        PricingType //Cost per hour, per day, or full package
+  pricingPerSlot     Float //Cost per hour, per day, or full package
   sittingCapacity    Int
   venueLayout        String? //Banquet, Theater, U-Shape, Classroom, etc
   amenities          Amenities[]
@@ -43,7 +42,6 @@ model EventCenter {
   @@index([serviceProviderId, city, state, country, status])
 }
 
-
 enum ServiceStatus {
   ACTIVE
   INACTIVE
@@ -53,12 +51,6 @@ enum Amenities {
   WIFI
   PACKINGSPACE
   SECURITY
-}
-
-enum PricingType {
-  HOURLY
-  DAILY
-  NEGOTIATION
 }
 
 enum EventType {

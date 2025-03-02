@@ -5,3 +5,12 @@ export const BOOKINGPATTERN = {
     UPDATE: 'booking.update',
     DELETE: 'booking.delete',
 }
+
+
+export const TIMESLOTPATTERN = {
+    FINDALL: 'timeslot.findAll',
+    FINDONEBYID: 'timeslot.findOneById',
+    CREATE: 'timeslot.create',
+    UPDATE: 'timeslot.update',
+    DELETE: 'timeslot.delete',
+}

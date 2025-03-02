@@ -15,12 +15,14 @@ export class EventcentersService {
 
     async create(createEventCenterDto: CreateEventCenterDto): Promise<EventCenterDto> {
 
+        // check sitting capacity to flag event center
+        // check location 
+
         const newEventCenterInput: Prisma.EventCenterCreateInput = {
             serviceProviderId: createEventCenterDto.serviceProviderId,
             depositAmount: createEventCenterDto.depositAmount,
-            totalAmount: createEventCenterDto.totalAmount,
             description: createEventCenterDto.description,
-            pricingType: createEventCenterDto.pricingType as $Enums.PricingType,
+            pricingPerSlot: createEventCenterDto.pricingPerSlot,
             sittingCapacity: createEventCenterDto.sittingCapacity,
             venueLayout: createEventCenterDto.venueLayout,
             amenities: createEventCenterDto.amenities as $Enums.Amenities[],
