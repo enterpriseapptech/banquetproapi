@@ -1,5 +1,6 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateBookingDto, CreateTimeslotDto } from './create-booking.dto';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { IsArray, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ArrayUnique, } from 'class-validator';
 import { $Enums } from '@prisma/booking';
 import { ApiProperty } from '@nestjs/swagger';
@@ -93,8 +94,6 @@ export class UpdateTimeslotDto extends PartialType(CreateTimeslotDto) {
 
     @ApiProperty({ type: 'string', required: false })
     @IsOptional()
-    @IsArray()
-    @ArrayUnique()
     @IsString({ each: true })
     previousBookings?: string;
 

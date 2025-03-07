@@ -21,9 +21,10 @@ export class CreateBookingDto {
     customerId: string;
 
     @ApiProperty({ type: 'string', required: true })
-    @IsUUID()
     @IsNotEmpty()
-    timeslotId: string;
+    @IsArray()
+    @IsString({ each: true })
+    timeslotId: string[];
 
     @ApiProperty({ type: 'string', required: true })
     @IsEnum($Enums.ServiceType)

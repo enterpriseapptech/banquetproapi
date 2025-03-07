@@ -1,0 +1,150 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../../node_modules/@prisma/payments"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// /* PAYMENT METHODS */
+model PaymentMethod {
+  id         String   @id @default(uuid())
+  provider   String?  // e.g., Visa, MasterCard, PayPal, Bank Transfer
+  createdAt  DateTime @default(now())
+  createdBy  String?
+  updatedAt  DateTime @updatedAt
+  deletedAt  DateTime?
+
+  // relations
+  payments    Payment[]
+}
+
+// to do: payments from proseeker to the application for things like kyc, featured, certification e.t.c
+
+/* PAYMENTS */
+model Payment {
+  id                      String    @id @default(uuid())
+  userId                  String
+  paymentMethodId         String
+  amount                  Float
+  amountCharged           Float
+  reference               String  // refernece to track this payment on the payment provider Id
+  paymentAuthorization    Json?
+  // to do - store more details about the payment from the provider
+  currency                String    @default("USD")
+  paymentReason           PaymentReason
+  status                  PaymentStatus
+  transactionId           String    @unique
+  createdAt               DateTime  @default(now())
+
+  // relations
+  refund                  Refund? 
+  dispute                 Dispute?
+  invoice                 Invoice?
+  paymentMethod           PaymentMethod      @relation(fields: [paymentMethodId], references: [id], onDelete: Cascade)
+
+}
+
+
+/* INVOICES */
+model Invoice {
+  id          String    @id @default(uuid())
+  userId      String
+  paymentId   String @unique
+  status      InvoiceStatus
+  dueDate     DateTime
+  createdAt   DateTime  @default(now())
+  deletedAt   DateTime?
+  deletedBy   String?
+
+
+  payment    Payment      @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+}
+
+
+/* REFUNDS */
+model Refund {
+  id             String    @id @default(uuid())
+  paymentId      String     @unique
+  amount         Float
+  reason         String
+  status         RefundStatus
+  createdAt      DateTime  @default(now())
+  updatedBy             String?
+  deletedAt             DateTime?
+  deletedBy             String?
+
+  // relations
+  payment        Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+}
+
+/* DISPUTES */
+model Dispute {
+  id                    String    @id @default(uuid())
+  userId                String
+  paymentId             String    @unique
+  serviceRequestId      String
+  reason                String
+  status                DisputeStatus
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime?
+  updatedBy             String?
+  deletedAt             DateTime?
+  deletedBy             String?
+
+ // relations
+  payment     Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+}
+
+
+
+/* ENUMS */
+enum PaymentReason {
+  WALLETFUNDING
+  SUBSCRIPTION
+  KYC
+  CERTIFICATION
+  FEATURED
+  SERVICEREQUEST
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  OVERDUE
+}
+
+enum RefundStatus {
+  REQUESTED
+  APPROVED
+  DECLINED
+  PROCESSING
+}
+
+enum DisputeStatus {
+  OPEN
+  RESOLVED
+  REJECTED
+}
+
+enum PaymentOption {
+  CASH
+  CARD
+  TRANSFER
+}

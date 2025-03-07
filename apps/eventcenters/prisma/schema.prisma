@@ -19,15 +19,15 @@ datasource banquestproeventsdb {
 model EventCenter {
   id                 String        @id @default(uuid()) // Primary key
   serviceProviderId  String // owner of this service points to a userid 
-  depositAmount      Float
+  depositAmount      Float 
   description        String?
-  pricingPerSlot     Float //Cost per hour, per day, or full package
+  pricingPerSlot     Float   //Cost per hour, per day, or full package
   sittingCapacity    Int
   venueLayout        String? //Banquet, Theater, U-Shape, Classroom, etc
   amenities          Amenities[]
   images             String[]
   termsOfUse         String
-  cancellationPolicy String
+  cancellationPolicy String 
   streetAddress      String
   streetAddress2     String
   city               String

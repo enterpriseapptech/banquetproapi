@@ -57,7 +57,7 @@ export class CreateCateringDto {
     @IsString({ each: true })
     dishTypes?: string[];
 
-    @ApiPropertyOptional({ type: 'array', format: 'binary', required: false })
+    @ApiPropertyOptional({ type: 'array', format: 'string', required: false })
     @IsOptional()
     @IsArray()
     @IsString({ each: true })
@@ -107,7 +107,7 @@ export class CreateCateringDto {
     @ApiProperty({ type: 'string', required: true })
     @IsString()
     @IsNotEmpty()
-    location
+    location: string;
 
 }
 
@@ -132,7 +132,10 @@ export class CreateMenuDto {
     cuisine?: string[]; // List of dietary category IDs
 
 
-    @ApiProperty({ type: 'string', format: 'binary', required: true })
+    @ApiProperty({ type: 'array', format: 'string', required: true })
+    @IsOptional()
+    @IsArray()
+    @IsString({ each: true })
     image: any; // File input (Handled in Controller)
 
 }

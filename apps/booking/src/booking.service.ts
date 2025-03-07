@@ -2,7 +2,7 @@
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 // import { $Enums as $EventBookingEnums, Prisma as EventBookingPrisma } from '@prisma/eventcenters';
 import { $Enums, Prisma } from '@prisma/booking';
-import { EVENT_CENTER_CLIENT, NOTIFICATION_CLIENT, USER_CLIENT, CreateBookingDto, BookingDto, EVENTCENTERBOOKINGPATTERN, NOTIFICATIONPATTERN, EventCenterDto, UserDto, USERPATTERN, ManyEventCentersDto, UpdateEventCenterDto, SearchServiceProviderDto, CreateEventCenterBookingDto, EventCenterBookingDto, EVENTCENTERPATTERN, ManyBookingDto, ManyRequestEventCenterDto, CreateTimeslotDto, TimeslotDto, CreateManyTimeSlotDto, ManyTimeslotDto, CATERING_CLIENT, CateringDto, CATERINGPATTERN, ManyRequestTimeSlotDto, UpdateTimeslotDto } from '@shared/contracts';
+import { EVENT_CENTER_CLIENT, NOTIFICATION_CLIENT, USER_CLIENT, CreateBookingDto, BookingDto, EVENTCENTERBOOKINGPATTERN, NOTIFICATIONPATTERN, EventCenterDto, UserDto, USERPATTERN, ManyEventCentersDto, UpdateEventCenterDto, SearchServiceProviderDto, CreateEventCenterBookingDto, EventCenterBookingDto, EVENTCENTERPATTERN, ManyBookingDto, ManyRequestEventCenterDto, CreateTimeslotDto, TimeslotDto, CreateManyTimeSlotDto, ManyTimeslotDto, CATERING_CLIENT, CateringDto, CATERINGPATTERN, ManyRequestTimeSlotDto, UpdateTimeslotDto, UpdateBookingDto } from '@shared/contracts';
 import { DatabaseService } from '../database/database.service';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { catchError, throwError, firstValueFrom } from 'rxjs';
@@ -18,7 +18,7 @@ export class BookingService {
 	) { }
 
 	async create(createBookingDto: CreateBookingDto): Promise<BookingDto> {
-
+		let notificationSubject: string;
 		const newBookingInput: Prisma.BookingCreateInput = {
 			customerId: createBookingDto.customerId,
 			serviceType: createBookingDto.serviceType as $Enums.ServiceType,
@@ -69,6 +69,15 @@ export class BookingService {
 			const newBooking = await this.databaseService.$transaction(async (prisma) => {
 
 				const booking = await prisma.booking.create({ data: newBookingInput });
+
+				await prisma.timeSlot.updateMany({
+					where: { id: { in: createBookingDto.timeslotId } }, // Replace bookingId with the actual ID
+					data: {
+						bookingId: booking.id,
+						isAvailable: false
+					}, // Replace newTimeslot with the new value
+				});
+
 				if ($Enums.ServiceType.EVENTCENTER) {
 					const createEventCenterBookingDto: Prisma.EventCenterBookingCreateInput = {
 						eventcenterId: createBookingDto.serviceId,
@@ -81,7 +90,8 @@ export class BookingService {
 						specialRequirements: createBookingDto.specialRequirements as $Enums.SpecialRequirement[],
 
 					}
-					const eventCenterBooking = await prisma.eventCenterBooking.create({ data: createEventCenterBookingDto });
+					await prisma.eventCenterBooking.create({ data: createEventCenterBookingDto });
+					notificationSubject = "A customer just booked your Event Center";
 				} else if ($Enums.ServiceType.CATERING) {
 					const createCateringBookingDto: Prisma.CateringBookingCreateInput = {
 						cateringId: createBookingDto.serviceId,
@@ -95,7 +105,8 @@ export class BookingService {
 						specialRequirements: createBookingDto.specialRequirements as $Enums.SpecialRequirement[],
 
 					}
-					const cateringBooking = await prisma.cateringBooking.create({ data: createCateringBookingDto });
+					await prisma.cateringBooking.create({ data: createCateringBookingDto });
+					notificationSubject = "A customer just booked your catering service";
 				}
 				
 				return booking;
@@ -106,8 +117,8 @@ export class BookingService {
 				type: 'EMAIL',
 				recipientId: newBooking.customerId,
 				data: {
-					subject: 'New Event Center Booking!',
-					message: `A customer just booked an event, view details and confirm booking`,
+					subject: notificationSubject,
+					message: `A customer just booked your service, view details and confirm booking`,
 					recipientEmail: customer.email,
 				},
 			});
@@ -221,13 +232,14 @@ export class BookingService {
 		return booking;
 	}
 
-	async update(id: string, updateEventcenterDto: UpdateEventCenterDto): Promise<BookingDto> {
+
+	async update(id: string, updateBookingDto: UpdateBookingDto): Promise<BookingDto> {
 		try {
 			const updateEventCenterInput: Prisma.BookingUpdateInput = {
-				...updateEventcenterDto,
-				paymentStatus: updateEventcenterDto.status ? updateEventcenterDto.status as $Enums.PaymentStatus : undefined,
-				status: updateEventcenterDto.status ? updateEventcenterDto.status as $Enums.BookingStatus : undefined,
-				source: updateEventcenterDto.status ? updateEventcenterDto.status as $Enums.BookingSource : undefined,
+				...updateBookingDto,
+				paymentStatus: updateBookingDto.status ? updateBookingDto.status as $Enums.PaymentStatus : undefined,
+				status: updateBookingDto.status ? updateBookingDto.status as $Enums.BookingStatus : undefined,
+				source: updateBookingDto.status ? updateBookingDto.status as $Enums.BookingSource : undefined,
 			};
 			const booking = await this.databaseService.booking.update({
 				where: { id },
@@ -241,16 +253,146 @@ export class BookingService {
 	}
 
 	async remove(id: string, updaterId: string): Promise<BookingDto> {
-		const booking = await this.databaseService.booking.update({
-			where: { id },
-			data: {
-				deletedAt: new Date(),
-				deletedBy: updaterId
+
+		const deletedBooking = await this.databaseService.$transaction(async (prisma) => {
+			const booking = await this.databaseService.booking.update({
+				where: { id },
+				data: {
+					deletedAt: new Date(),
+					deletedBy: updaterId
+				}
+			});
+
+			switch (booking.serviceType) {
+				case $Enums.ServiceType.EVENTCENTER:
+					const eventServiceBooking = await this.databaseService.eventCenterBooking.update({
+						where: { bookingId: booking.id},
+						data: {
+							deletedAt: new Date(),
+							deletedBy: updaterId
+						}
+					});
+					break;
+				
+				case $Enums.ServiceType.CATERING:
+					const cateringServiceBooking = await this.databaseService.cateringBooking.update({
+						where: { bookingId: booking.id },
+						data: {
+							deletedAt: new Date(),
+							deletedBy: updaterId
+						}
+					});
+					break;
+
+				default:
+					break;
 			}
+
+			return booking
 		});
 
 		// delete the associating service booking e.g eventcenterbooking
-		return booking;
+		return deletedBooking;
+	}
+
+
+	async cancel(id: string, updateBookingDto: UpdateBookingDto): Promise<BookingDto> {
+		
+		try {
+			const cancelledBooking = await this.databaseService.$transaction(async (prisma) => {
+				const booking = await this.databaseService.booking.update({
+					where: { id },
+					data: {
+						cancelledAt: new Date(),
+						cancelledBy: updateBookingDto.cancelledBy,
+						cancelationReason: updateBookingDto.cancellationReason
+					}
+				});
+				await prisma.timeSlot.updateMany({
+					where: { bookingId: booking.id}, // Replace bookingId with the actual ID
+					data: {
+						bookingId: null,
+						isAvailable: true,
+						previousBookings: { push: booking.id }  
+					}, // Replace newTimeslot with the new value
+				});
+
+				return booking
+			});
+			// to do notification
+			return cancelledBooking;
+		} catch (error) {
+			throw new InternalServerErrorException(error);
+		}
+	}
+
+	async reschedule(id: string, updateBookingDto: UpdateBookingDto): Promise<BookingDto> {
+
+		try {
+			const rescheduleBooking = await this.databaseService.$transaction(async (prisma) => {
+				const timeslots = await this.databaseService.timeSlot.findMany({
+					where: {
+						bookingId: id
+					}
+				});
+				const previousDatesArray = timeslots.map(slot =>`${slot.startTime.toISOString()} - ${slot.endTime.toISOString()}`);
+
+				const freedTimeSlots = await prisma.timeSlot.updateMany({
+					where: { bookingId: id },
+					data: {
+						bookingId: null,
+						isAvailable: true,
+						previousBookings: { push: id }
+					}, 
+				});
+
+				const booking = await this.databaseService.booking.update({
+					where: { id },
+					data: {
+						rescheduledAt: new Date(),
+						rescheduledBy: updateBookingDto.rescheduledBy,
+						previousDates: { push: previousDatesArray }  
+
+					}
+				});
+
+				await prisma.timeSlot.updateMany({
+					where: { id: { in: updateBookingDto.timeslotId } },
+					data: {
+						bookingId: booking.id,
+						isAvailable: false
+					}, 
+				});
+
+				return booking
+			});
+			// to do notification
+			return rescheduleBooking;
+		} catch (error) {
+			throw new InternalServerErrorException(error);
+		}
+	}
+
+	async confirm(id: string, updateBookingDto: UpdateBookingDto): Promise<BookingDto> {
+
+		try {
+			const confirmedBooking = await this.databaseService.$transaction(async (prisma) => {
+				const booking = await this.databaseService.booking.update({
+					where: { id },
+					data: {
+						confirmedBy: updateBookingDto.confirmedBy,
+						confirmedAt: new Date()
+					}
+				});
+
+				return booking
+			});
+
+			// to do notification
+			return confirmedBooking;
+		} catch (error) {
+			throw new InternalServerErrorException(error);
+		}
 	}
 
 

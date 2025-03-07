@@ -39,12 +39,16 @@ model User {
   deletedBy       String?
   
   // Relations
-  admin           Admin? 
-  serviceProvider ServiceProvider? 
-  customer        Customer?        
-  staff           Staff?  
-  personalAccessToken PersonalAccessTokens[]    
-    
+  admin                     Admin? 
+  serviceProvider           ServiceProvider? 
+  customer                  Customer?        
+  staff                     Staff?  
+  personalAccessToken       PersonalAccessTokens[]   
+  kycVerification           KYCVerification?
+  featured                  Featured[]
+  subscription              Subscription?
+  passwordHistory           PasswordHistory[]
+  
 }
 
 model Admin {
@@ -104,9 +108,11 @@ model Staff {
 }
 
 model PasswordHistory{
-  id        String @id @default(uuid()) @map("user_id") // Foreign key to User table
-  password  String
-  createdAt DateTime @default(now())
+  id          String @id @default(uuid()) @map("user_id") // Foreign key to User table
+  password    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime?                
+  user        User     @relation(fields: [id], references: [id], onDelete: Cascade)
 }
 
 model PersonalAccessTokens {
@@ -131,6 +137,81 @@ model Permission {
   action    String  // e.g., "READ", "WRITE", "DELETE"
   resource  String  // e.g., "POST", "USER"
   condition Json?   // Optional: Extra rules (ABAC)
+}
+
+// subscription plans
+// features of a subscription plan 
+/**
+* timeframe, actions, 
+*/
+
+model SubscriptionPlan {
+    id                          String    @id @default(uuid()) @map("user_id")
+
+}
+
+
+/* KYCVerification - know your cusomers for both proseekers and profixers*/
+model KYCVerification {
+  id                          String    @id @default(uuid()) @map("user_id")
+  facialVerificationImage     String?   
+  idCardType                  String?
+  idNumber                    String?
+  expiryDate                  DateTime?
+  facialVerificationStatus    VerificationStatus
+  idVerificationStatus        VerificationStatus
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime @updatedAt
+  user              User      @relation(fields: [id], references: [id], onDelete: Cascade)
+}
+
+model Featured {
+  id            String   @id @default(uuid())
+  paymentId     String // tracks all payments made for a subscription over time, last in the array is the current one
+  userId        String   @unique
+  featurePlanId String
+  // question - will this be tracked by slots or 
+  startDate     DateTime @default(now())
+  endDate       DateTime
+  createdAt     DateTime @default(now())
+  updatededAt   DateTime @updatedAt
+  updatedBy     String?
+  deletedAt     DateTime?
+  deletedBy     String?
+
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+// this model tracks subscription for accepting reqest quotes for a period of 
+// time regardless of how many quotes were accepted inbetween
+
+model Subscription {
+  id                      String    @id @default(uuid()) @map("user_id") 
+  paymentId               String[] // tracks all payments made for a subscription over time, last in the array is the current one
+  subscriptionPlanId      String
+  status                  SUBSCRIPTIONSTATUS
+  startDate   DateTime
+  endDate     DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?
+  deletedAt   DateTime?
+  deletedBy   String?
+
+  // relations
+  user        User     @relation(fields: [id], references: [id])
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+
+enum SUBSCRIPTIONSTATUS {
+  ACTIVE
+  INACTIVE
 }
 
 enum ServiceType {
