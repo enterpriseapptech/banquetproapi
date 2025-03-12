@@ -42,11 +42,10 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 # COPY --from=builder /app/prisma ./prisma
 
-# 10. Apply Prisma migrations (specific to this microservice)
-RUN yarn prisma migrate deploy || true
 
 # 11. Expose service port (change per service)
 EXPOSE 8001
 
 # 12. Start the microservice
-CMD ["yarn", "start:prod"]
+CMD ["sh", "-c", "yarn prisma migrate deploy --schema=/app/apps/users/prisma/schema.prisma && yarn start:prod"]
+# CMD ["yarn", "start:prod"]
