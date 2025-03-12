@@ -11,8 +11,14 @@ COPY package.json yarn.lock   ./
 RUN yarn install --frozen-lockfile
 
 # 5. Copy the entire project
-COPY . .
-RUN echo "Current directory contents:" && ls -la /app
+
+COPY apps/users ./apps/users
+COPY libs/contracts/src/users libs/contracts/src/contracts.module.ts libs/contracts/src/index.ts  ./libs/contracts/src/
+COPY libs/contracts/src/contracts.service.spec.ts libs/contracts/src/contracts.service.ts  ./libs/contracts/src/
+COPY libs/contracts/tsconfig.lib.json ./libs/contracts/
+COPY libs/interfaces ./libs/interfaces
+
+RUN echo "Current directory contents  libs/contracts:" && ls -la /libs/contracts
 
 # Move into the microservice directory
 WORKDIR /app/apps/users
