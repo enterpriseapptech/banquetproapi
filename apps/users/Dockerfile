@@ -4,16 +4,8 @@ FROM node:18-alpine AS builder
 # 2. Set working directory
 WORKDIR /app
 
-# 3. Copy package files
-# 3. List files to debug
-# 3. Debug: List files before copying
-RUN echo "Current directory contents:" && ls -la /app
-
 
 COPY package.json yarn.lock   ./
-# COPY ../../yarn.lock  ./
-RUN echo "Current directory contents:" && ls -la /app
-
 
 # 4. Install dependencies
 RUN yarn install --frozen-lockfile
@@ -24,7 +16,7 @@ RUN echo "Current directory contents:" && ls -la /app
 
 # Move into the microservice directory
 WORKDIR /app/apps/users
-
+RUN echo "Current directory contents in apps/users:" && ls -la
 # 6. Generate Prisma Client for this microservice
 RUN yarn prisma generate --schema=/app/apps/users/prisma/schema.prisma
 
