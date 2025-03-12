@@ -18,6 +18,13 @@ RUN rm -rf libs/contracts/src/eventcenterbooking libs/contracts/src/booking libs
 RUN rm -rf libs/contracts/src/booking.ts  libs/contracts/src/payments.ts libs/contracts/src/eventcenters.ts
 RUN echo "Current directory contents in contracts:" && ls -la libs/contracts/src
 
+# RUN echo "Current directory contents :" && ls -la /libs/contracts
+
+# Move into the microservice directory
+# WORKDIR /app/apps/users
+
+# RUN echo "Current directory contents in apps/users:" && ls -la
+
 # 6. Generate Prisma Client for this microservice
 RUN yarn prisma generate --schema=/app/apps/users/prisma/schema.prisma
 
@@ -27,9 +34,9 @@ RUN yarn build users
 # 8. Create a smaller runtime image
 FROM node:18-alpine AS runner
 
-RUN echo "Current directory contents in before apps:" && ls -la /app
+# RUN echo "Current directory contents in before apps:" && ls -la /app
 
-WORKDIR /app
+# WORKDIR /app
 
 RUN echo "Current directory contents in just after apps:" && ls -la
 
