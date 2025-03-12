@@ -5,7 +5,10 @@ FROM node:18-alpine AS builder
 WORKDIR /app
 
 # 3. Copy package files
-COPY ../../package.json ../../yarn.lock ./
+# 3. List files to debug
+RUN ls -la ../../
+COPY ../../package.json  ./
+COPY ../../package.json  ./
 
 # 4. Install dependencies
 RUN yarn install --frozen-lockfile
