@@ -2,7 +2,8 @@
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { $Enums, Prisma } from '@prisma/users';
-import { CreateUserDto, NOTIFICATIONPATTERN, UpdateUserDto, UserDto, LoginUserDto } from '@shared/contracts';
+import { CreateUserDto, UpdateUserDto, UserDto, LoginUserDto } from '@shared/contracts/users';
+import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
 import { DatabaseService } from '../database/database.service';
 import { NOTIFICATION_CLIENT } from './constants';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
