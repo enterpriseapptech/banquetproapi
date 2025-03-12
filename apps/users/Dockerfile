@@ -36,7 +36,7 @@ FROM node:18-alpine AS runner
 
 # RUN echo "Current directory contents in before apps:" && ls -la /app
 
-# WORKDIR /app
+WORKDIR /app
 
 RUN echo "Current directory contents in just after apps:" && ls -la
 
