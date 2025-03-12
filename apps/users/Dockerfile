@@ -33,9 +33,13 @@ RUN yarn build users
 
 # 8. Create a smaller runtime image
 FROM node:18-alpine AS runner
-RUN echo "Current directory contents in before apps:" && ls -la
+
+RUN echo "Current directory contents in before apps:" && ls -la /app
+
 WORKDIR /app
+
 RUN echo "Current directory contents in just after apps:" && ls -la
+
 # 9. Copy only necessary files from the builder
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
