@@ -8,22 +8,25 @@ WORKDIR /app
 # 3. List files to debug
 # 3. Debug: List files before copying
 RUN echo "Current directory contents:" && ls -la /app
-RUN echo "Root directory contents:" && ls -la /
+
 
 COPY package.json yarn.lock   ./
 # COPY ../../yarn.lock  ./
+RUN echo "Current directory contents:" && ls -la /app
+
 
 # 4. Install dependencies
 RUN yarn install --frozen-lockfile
 
 # 5. Copy the entire project
 COPY . .
+RUN echo "Current directory contents:" && ls -la /app
 
 # Move into the microservice directory
 WORKDIR /app/apps/auth-service
 
 # 6. Generate Prisma Client for this microservice
-RUN yarn prisma generate 
+RUN yarn prisma generate --schema=C:/Users/DELL/Documents/profixers-api/apps/users/prisma/schema.prisma
 
 # 7. Build the NestJS service
 RUN yarn build users
