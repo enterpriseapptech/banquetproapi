@@ -53,5 +53,5 @@ RUN echo "Current directory contents in after apps:" && ls -la
 EXPOSE 8001
 
 # 12. Start the microservice
-CMD ["sh", "-c", "yarn prisma migrate deploy --schema=/app/apps/users/prisma/schema.prisma && yarn start:prod"]
+CMD ["sh", "-c", "yarn prisma migrate deploy --schema=/app/apps/users/prisma/schema.prisma && yarn start:prodUsers"]
 # CMD ["yarn", "start:prod"]
