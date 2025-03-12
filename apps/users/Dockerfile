@@ -4,25 +4,26 @@ FROM node:18-alpine AS builder
 # 2. Set working directory
 WORKDIR /app
 
-
+# 2. copy package files
 COPY package.json yarn.lock   ./
 
 # 4. Install dependencies
 RUN yarn install --frozen-lockfile
 
 # 5. Copy the entire project
+COPY . .
+# 6. Remove unnecessary microservices (Keep only `users`)
+RUN rm -rf apps/apigateway apps/booking apps/catering  apps/notifications apps/payments apps/eventcenters  
+RUN rm -rf libs/contracts/src/eventcenterbooking libs/contracts/src/booking libs/contracts/src/catering  libs/contracts/src/notifications libs/contracts/src/payments libs/contracts/src/eventcenters  
+RUN echo "Current directory contents in apps/users:" && ls -la libs/contracts/src
 
-COPY apps/users ./
-# COPY libs/contracts/src/users libs/contracts/src/contracts.module.ts libs/contracts/src/index.ts  ./libs/contracts/src/
-# COPY libs/contracts/src/contracts.service.spec.ts libs/contracts/src/contracts.service.ts  ./libs/contracts/src/
-# COPY libs/contracts/tsconfig.lib.json ./libs/contracts/
-# COPY libs/interfaces ./libs/interfaces
-
-RUN echo "Current directory contents :" && ls -la /libs/contracts
+# RUN echo "Current directory contents :" && ls -la /libs/contracts
 
 # Move into the microservice directory
 WORKDIR /app/apps/users
+
 RUN echo "Current directory contents in apps/users:" && ls -la
+
 # 6. Generate Prisma Client for this microservice
 RUN yarn prisma generate --schema=/app/apps/users/prisma/schema.prisma
 
