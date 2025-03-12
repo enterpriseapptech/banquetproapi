@@ -14,7 +14,7 @@ RUN yarn install --frozen-lockfile
 COPY . .
 
 # Move into the microservice directory
-WORKDIR /app/apps/auth-service  # Change to the correct microservice
+WORKDIR /app/apps/auth-service
 
 # 6. Generate Prisma Client for this microservice
 RUN yarn prisma generate 
