@@ -41,7 +41,7 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 # COPY --from=builder /app/prisma ./prisma
-RUN echo "Current directory contents in apps/users:" && ls -la apps/users/prisma
+RUN echo "Current directory contents in apps/users:" && ls -la
 # 11. Expose service port (change per service)
 EXPOSE 8001
 
