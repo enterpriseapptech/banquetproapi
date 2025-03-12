@@ -6,7 +6,10 @@ WORKDIR /app
 
 # 3. Copy package files
 # 3. List files to debug
-RUN ls -la ../../
+# 3. Debug: List files before copying
+RUN echo "Current directory contents:" && ls -la /app
+RUN echo "Root directory contents:" && ls -la /
+
 COPY ../../package.json  ./
 COPY ../../package.json  ./
 
