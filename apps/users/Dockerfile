@@ -10,8 +10,8 @@ WORKDIR /app
 RUN echo "Current directory contents:" && ls -la /app
 RUN echo "Root directory contents:" && ls -la /
 
-COPY ../../package.json  ./
-COPY ../../package.json  ./
+COPY package.json yarn.lock   ./
+# COPY ../../yarn.lock  ./
 
 # 4. Install dependencies
 RUN yarn install --frozen-lockfile
