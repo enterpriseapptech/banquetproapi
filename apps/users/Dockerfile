@@ -23,10 +23,10 @@ COPY . .
 RUN echo "Current directory contents:" && ls -la /app
 
 # Move into the microservice directory
-WORKDIR /app/apps/auth-service
+WORKDIR /app/apps/users
 
 # 6. Generate Prisma Client for this microservice
-RUN yarn prisma generate --schema=C:/Users/DELL/Documents/profixers-api/apps/users/prisma/schema.prisma
+RUN yarn prisma generate --schema=/app/apps/users/prisma/schema.prisma
 
 # 7. Build the NestJS service
 RUN yarn build users
