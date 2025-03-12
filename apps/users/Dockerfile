@@ -18,13 +18,6 @@ RUN rm -rf libs/contracts/src/eventcenterbooking libs/contracts/src/booking libs
 RUN rm -rf libs/contracts/src/booking.ts  libs/contracts/src/payments.ts libs/contracts/src/eventcenters.ts
 RUN echo "Current directory contents in contracts:" && ls -la libs/contracts/src
 
-# RUN echo "Current directory contents :" && ls -la /libs/contracts
-
-# Move into the microservice directory
-WORKDIR /app/apps/users
-
-RUN echo "Current directory contents in apps/users:" && ls -la
-
 # 6. Generate Prisma Client for this microservice
 RUN yarn prisma generate --schema=/app/apps/users/prisma/schema.prisma
 
@@ -44,6 +37,8 @@ RUN echo "Current directory contents in just after apps:" && ls -la
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/apps ./apps
+# COPY --from=builder /app/apps/users/prisma ./apps/users/prisma
 
 # COPY --from=builder /app/prisma ./prisma
 RUN echo "Current directory contents in after apps:" && ls -la
