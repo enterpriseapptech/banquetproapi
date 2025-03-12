@@ -13,8 +13,11 @@ RUN yarn install --frozen-lockfile
 # 5. Copy the entire project
 COPY . .
 
+# Move into the microservice directory
+WORKDIR /app/apps/auth-service  # Change to the correct microservice
+
 # 6. Generate Prisma Client for this microservice
-RUN yarn prisma generate
+RUN yarn prisma generate 
 
 # 7. Build the NestJS service
 RUN yarn build users
