@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Controller, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UpdateUserDto, CreateUserDto, USERPATTERN, LoginUserDto } from '@shared/contracts';
+import { UpdateUserDto, CreateUserDto, USERPATTERN, LoginUserDto } from '@shared/contracts/users';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { RpcException } from '@nestjs/microservices';
 import { catchError } from 'rxjs/operators';
