@@ -14,8 +14,8 @@ RUN yarn install --frozen-lockfile
 COPY . .
 # 6. Remove unnecessary microservices (Keep only `users`)
 RUN rm -rf apps/apigateway apps/booking apps/catering  apps/notifications apps/payments apps/eventcenters  
-RUN rm -rf libs/contracts/src/eventcenterbooking libs/contracts/src/booking libs/contracts/src/catering  libs/contracts/src/notifications libs/contracts/src/payments libs/contracts/src/eventcenters  
-RUN rm -rf libs/contracts/src/booking.ts libs/contracts/src/notifications.ts libs/contracts/src/payments.ts libs/contracts/src/eventcenters.ts
+RUN rm -rf libs/contracts/src/eventcenterbooking libs/contracts/src/booking libs/contracts/src/catering libs/contracts/src/payments libs/contracts/src/eventcenters  
+RUN rm -rf libs/contracts/src/booking.ts  libs/contracts/src/payments.ts libs/contracts/src/eventcenters.ts
 RUN echo "Current directory contents in contracts:" && ls -la libs/contracts/src
 
 # RUN echo "Current directory contents :" && ls -la /libs/contracts
