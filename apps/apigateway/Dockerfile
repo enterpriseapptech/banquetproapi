@@ -8,7 +8,8 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 
 # Install dependencies
-RUN yarn install --only=production
+RUN yarn install --frozen-lockfile
+
 
 # Copy the entire project
 COPY . .
@@ -17,7 +18,7 @@ COPY . .
 RUN yarn build apigateway
 
 # Create a smaller final image
-FROM node:18-alpine
+FROM node:18-alpine AS runner
 
 WORKDIR /app
 
@@ -27,7 +28,8 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 
 # Expose the microservice port (adjust as needed)
-EXPOSE 3000
+EXPOSE 8000
 
 # Start the application
-CMD ["node", "dist/main.js"]
+CMD ["yarn", "start:prod"]
+
