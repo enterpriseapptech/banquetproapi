@@ -6,7 +6,7 @@ import { CreateUserDto, UpdateUserDto, UserDto, LoginUserDto } from '@shared/con
 import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
 import { DatabaseService } from '../database/database.service';
 import { NOTIFICATION_CLIENT } from './constants';
-import { ClientProxy, RpcException } from '@nestjs/microservices';
+import { ClientProxy } from '@nestjs/microservices';
 import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class UsersService {

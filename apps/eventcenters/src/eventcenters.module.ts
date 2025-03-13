@@ -2,17 +2,17 @@ import { Module } from '@nestjs/common';
 import { EventcentersController } from './eventcenters.controller';
 import { EventcentersService } from './eventcenters.service';
 import { DatabaseService } from '../database/database.service';
-import { USER_CLIENT } from './constants';
 import { ConfigModule } from '@nestjs/config';
 import { ClientProxyFactory } from '@nestjs/microservices';
 import { ClientConfigModule } from '../client-config/client-config.module';
 import { ClientConfigService } from '../client-config/client-config.service';
-import { NOTIFICATION_CLIENT } from './constants';
+import { NOTIFICATION_CLIENT, USER_CLIENT } from '@shared/contracts';
+
 @Module({
     imports: [
         ConfigModule.forRoot({
             isGlobal: true,
-            envFilePath: '.env',
+            envFilePath: '../env',
         }),
         ClientConfigModule,
     ],

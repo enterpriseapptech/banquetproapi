@@ -2,7 +2,9 @@ import { NestFactory } from '@nestjs/core';
 import { UsersModule } from './users.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import * as dotenv from 'dotenv';
-import express from 'express';
+import * as express from 'express';
+
+
 
 dotenv.config({ path: './apps/users/.env' });
 async function bootstrap() {

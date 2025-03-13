@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { ClientOptions, Transport } from '@nestjs/microservices';
 import * as dotenv from 'dotenv';
 
-dotenv.config({ path: './apps/users/.env' });
+dotenv.config({ path: './apps/eventcenters/.env' });
 @Injectable()
 export class ClientConfigService {
 
@@ -34,8 +34,8 @@ export class ClientConfigService {
         return {
             transport: Transport.RMQ,
             options: {
-                urls: ['amqp://users_admin:usersPassword@2025@localhost:5672'],
-                queue: 'users_queue',
+                urls: [process.env.USERSURL],
+                queue: process.env.USERSQUEUE,
                 queueOptions: {
                     durable: false,
                 }
