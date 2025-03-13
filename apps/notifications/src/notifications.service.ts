@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable } from '@nestjs/common';
-import { CreateNotificationDto, UpdateNotificationDto } from '@shared/contracts';
+import { CreateNotificationDto, UpdateNotificationDto } from '@shared/contracts/notifications';
 import { NotificationInterface } from '@shared/interfaces/Notification/notification.interface';
 import { MailerService } from '@nestjs-modules/mailer';
 

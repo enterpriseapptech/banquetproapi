@@ -2,12 +2,13 @@
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { $Enums, Prisma } from '@prisma/users';
-import { CreateUserDto, UpdateUserDto, UserDto, LoginUserDto } from '@shared/contracts/users';
+import { CreateUserDto, UpdateUserDto, UserDto, LoginUserDto, UserType, UserStatus, ServiceType } from '@shared/contracts/users';
 import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
 import { DatabaseService } from '../database/database.service';
 import { NOTIFICATION_CLIENT } from './constants';
 import { ClientProxy } from '@nestjs/microservices';
 import { JwtService } from '@nestjs/jwt';
+
 @Injectable()
 export class UsersService {
     constructor(
@@ -120,8 +121,13 @@ export class UsersService {
                     recipientEmail: account.user.email,
                 },
             });
+            const userAccount: UserDto = {
+                ...account.user,
+                userType: account.user.userType as unknown as UserType,
+                status: account.user.status as unknown as UserStatus,
+            };
+            return userAccount;
 
-            return account.user;
         } catch (error) {
             console.log(error)
             throw new ConflictException('sever error could not create user', {
@@ -218,7 +224,7 @@ export class UsersService {
     }
     
     async findAll(limit: number, offset: number): Promise<UserDto[]> {
-        const users = this.databaseService.user.findMany({
+        const users = await this.databaseService.user.findMany({
             take: limit, // Number of records to retrieve
             skip: offset,
         })
@@ -226,7 +232,8 @@ export class UsersService {
         if (!users) {
             return [];
         }
-        return users;
+        return users.map(user => this.mapToUserDto(user));
+
     }
 
     async findOne(id: string): Promise<UserDto> {
@@ -252,9 +259,12 @@ export class UsersService {
 
         return {
             ...user,
+            status: user.status as unknown as UserStatus,
+            userType: user.userType as unknown as UserType,
             serviceProvider: user.serviceProvider
                 ? {
                     ...user.serviceProvider,
+                    serviceType: user.serviceProvider.serviceType as  unknown as ServiceType,
                     workingHours:
                         typeof user.serviceProvider.workingHours === 'string'
                             ? JSON.parse(user.serviceProvider.workingHours)
@@ -369,5 +379,18 @@ export class UsersService {
             },
         });
         return user 
+    }
+
+
+    /**
+     * 
+     * Maps a raw event center from the database to EventCenterDto.
+     */
+    private mapToUserDto(user: any): UserDto {
+        return {
+            ...user,
+            userType: user.userType as unknown as UserType,
+            status: user.status as unknown as UserStatus,
+        };
     }
 }
