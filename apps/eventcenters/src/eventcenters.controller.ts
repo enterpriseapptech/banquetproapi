@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { EventcentersService } from './eventcenters.service';
-import { CreateEventCenterDto, EVENTCENTERPATTERN, UpdateEventCenterDto } from '@shared/contracts';
+import { CreateEventCenterDto, EVENTCENTERPATTERN, UpdateEventCenterDto } from '@shared/contracts/eventcenters';
 import { MessagePattern, Payload, RpcException, RmqContext, Ctx } from '@nestjs/microservices';
 import { catchError, from, throwError } from 'rxjs';
 
