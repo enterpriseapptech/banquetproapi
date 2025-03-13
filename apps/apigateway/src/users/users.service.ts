@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { HttpException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { UpdateUserDto, CreateUserDto, USERPATTERN, UserDto, LoginUserDto, USER_CLIENT } from '@shared/contracts';
+import { UpdateUserDto, CreateUserDto, USERPATTERN, UserDto, LoginUserDto, } from '@shared/contracts/users';
+import { USER_CLIENT } from '@shared/contracts';
 
 
 @Injectable()

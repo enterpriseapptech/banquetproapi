@@ -1,10 +1,13 @@
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { $Enums, Prisma } from '@prisma/eventcenters';
-import { CreateEventCenterDto, NOTIFICATIONPATTERN, EventCenterDto, UserDto, USERPATTERN, ManyEventCentersDto, UpdateEventCenterDto } from '@shared/contracts';
+import { CreateEventCenterDto, EventCenterDto, ManyEventCentersDto, UpdateEventCenterDto } from '@shared/contracts/eventcenters';
+import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
+import { UserDto, USERPATTERN } from '@shared/contracts/users';
 import { DatabaseService } from '../database/database.service';
-import { NOTIFICATION_CLIENT, USER_CLIENT } from './constants';
+import { NOTIFICATION_CLIENT, USER_CLIENT } from '@shared/contracts';
 import { ClientProxy } from '@nestjs/microservices';
 import {firstValueFrom } from 'rxjs';
+
 @Injectable()
 export class EventcentersService {
     constructor(
