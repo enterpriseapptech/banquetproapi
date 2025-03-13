@@ -83,6 +83,6 @@ export class CreateEventCenterDto {
 
     @IsNotEmpty()
     @IsEnum(ServiceStatus, {message: 'service status must either be active or inactive'})
-    status: string
+    status: ServiceStatus
 
 }

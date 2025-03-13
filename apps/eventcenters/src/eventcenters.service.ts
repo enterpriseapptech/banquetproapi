@@ -1,6 +1,6 @@
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { $Enums, Prisma } from '@prisma/eventcenters';
-import { CreateEventCenterDto, EventCenterDto, ManyEventCentersDto, UpdateEventCenterDto } from '@shared/contracts/eventcenters';
+import { CreateEventCenterDto, EventCenterDto, ManyEventCentersDto, ServiceStatus, UpdateEventCenterDto } from '@shared/contracts/eventcenters';
 import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
 import { UserDto, USERPATTERN } from '@shared/contracts/users';
 import { DatabaseService } from '../database/database.service';
@@ -69,8 +69,11 @@ export class EventcentersService {
                     recipientEmail: serviceProvider.email,
                 },
             });
-
-            return neweventCenter;
+            const eventCenterDto: EventCenterDto = {
+                ...neweventCenter,
+                status: neweventCenter.status as unknown as ServiceStatus,
+            };
+            return eventCenterDto;
         } catch (error) {
             console.log(error)
             throw new InternalServerErrorException(error, {
@@ -79,32 +82,34 @@ export class EventcentersService {
             });
         }
         
-
-
-
-
-
     }
 
-    async findAll(limit: number, offset: number, serviceProvider: string, city: string, state: string, country: string): Promise<ManyEventCentersDto> {
-        
+    async findAll(
+        limit: number,
+        offset: number,
+        serviceProvider: string,
+        city: string,
+        state: string,
+        country: string
+    ): Promise<ManyEventCentersDto> {
         if (serviceProvider) {
             const eventCenters = await this.databaseService.eventCenter.findMany({
-                where: { serviceProviderId: serviceProvider, deletedAt: null }, // Filter by serviceProviderId
+                where: { serviceProviderId: serviceProvider, deletedAt: null },
                 take: limit,
                 skip: offset,
             });
+
             const count = await this.databaseService.eventCenter.count({
-                where: { serviceProviderId: serviceProvider, deletedAt: null }
+                where: { serviceProviderId: serviceProvider, deletedAt: null },
             });
+
             return {
                 count,
-                data: eventCenters
-            }
+                data: eventCenters.map(eventCenter => this.mapToEventCenterDto(eventCenter))
+            };
         }
-        
-        const whereClause: any = {};
-        whereClause.deletedAt = null
+
+        const whereClause: any = { deletedAt: null };
         if (state) whereClause.state = { equals: state, mode: "insensitive" };
         if (country) whereClause.country = { equals: country, mode: "insensitive" };
         if (city) whereClause.city = { equals: city, mode: "insensitive" };
@@ -118,36 +123,41 @@ export class EventcentersService {
 
             const count = await this.databaseService.eventCenter.count({ where: whereClause });
 
-            return { count, data: eventCenters };
+            return {
+                count,
+                data: eventCenters.map(eventCenter => this.mapToEventCenterDto(eventCenter))
+            };
         }
 
         const eventCenters = await this.databaseService.eventCenter.findMany({
             take: limit,
             skip: offset,
-        })
-        const count = await this.databaseService.eventCenter.count()
+        });
+
+        const count = await this.databaseService.eventCenter.count();
+
         return {
             count,
-            data: eventCenters
-        }
-        
-        
-
-
+            data: eventCenters.map(eventCenter => this.mapToEventCenterDto(eventCenter))
+        };
     }
 
     async findOne(id: string): Promise<EventCenterDto> {
        
-            const eventCenter = await this.databaseService.eventCenter.findUnique({
-                where: {
-                    id: id,
-                    deletedAt: null
-                }
-            });
+        const eventCenter = await this.databaseService.eventCenter.findUnique({
+            where: {
+                id: id,
+                deletedAt: null
+            }
+        });
         if (!eventCenter) {
             throw new NotFoundException("Event center not found or has been deleted")
         }
-        return eventCenter;
+        const eventCenterDto: EventCenterDto = {
+            ...eventCenter,
+            status: eventCenter.status as unknown as ServiceStatus,
+        };
+        return eventCenterDto;
     }
 
     async update(id: string, updateEventcenterDto: UpdateEventCenterDto): Promise<EventCenterDto> {
@@ -161,8 +171,11 @@ export class EventcentersService {
                 where: { id },
                 data: updateEventCenterInput
             });
-
-            return eventCenter;
+            const eventCenterDto: EventCenterDto = {
+                ...eventCenter,
+                status: eventCenter.status as unknown as ServiceStatus,
+            };
+            return eventCenterDto;
         } catch (error) {
             throw new ConflictException(error);
         }
@@ -170,13 +183,17 @@ export class EventcentersService {
 
     async remove(id: string, updaterId: string): Promise<EventCenterDto> {
         const eventCenter = await this.databaseService.eventCenter.update({
-                where: { id },
-                data: {
-                    deletedAt: new Date(),
-                    deletedBy: updaterId
-                }
-            });
-        return eventCenter;
+            where: { id },
+            data: {
+                deletedAt: new Date(),
+                deletedBy: updaterId
+            }
+        });
+        const eventCenterDto: EventCenterDto = {
+            ...eventCenter,
+            status: eventCenter.status as unknown as ServiceStatus,
+        };
+        return eventCenterDto;
     }
 
     // async searchServiceProviders(searchParams: SearchServiceProviderDto): Promise<EventCenterDto[]> {
@@ -209,6 +226,17 @@ export class EventcentersService {
 
     //     return users;
     // }
+
+    /**
+     * 
+     * Maps a raw event center from the database to EventCenterDto.
+     */
+    private mapToEventCenterDto(eventCenter: any): EventCenterDto {
+        return {
+            ...eventCenter,
+            status: eventCenter.status as unknown as ServiceStatus,
+        };
+    }
 }
 
 // @Injectable()
