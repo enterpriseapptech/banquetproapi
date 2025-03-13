@@ -1,12 +1,16 @@
-import { $Enums } from '@prisma/users';
+import { ServiceType, UserType } from './create-user.dto';
 
-
+export enum UserStatus{
+    ACTIVE = 'ACTIVE',
+    DEACTIVATED = 'DEACTIVATED',
+    RESTRICTED = 'RESTRICTED'
+};
 
 export class ServiceProviderDto {
  
     id: string;
     businessName: string;
-    serviceType:  $Enums.ServiceType  // Type of service (e.g., catering, event center)
+    serviceType:  ServiceType  // Type of service (e.g., catering, event center)
     businessLogo?: string; // URL to business logo
     pricingInfo? : string;    // Pricing details (could be JSON for flexibility)
     regulations? : string;   
@@ -32,8 +36,8 @@ export class UserDto {
     lastName?: string;
     businessName?: string;
     password: string;
-    userType: $Enums.UserType;
-    status: $Enums.UserStatus; 
+    userType: UserType;
+    status: UserStatus; 
     refreshToken?: string;
     lastLoginAt?: Date;
     streetAddress?: string;

@@ -1,5 +1,4 @@
-// import { confirmFieldDecorator } from '../../validations/confirm_field.decorator';
-import { $Enums } from "@prisma/eventcenters";
+import { ServiceStatus } from "./create-event-center.dto";
 export class EventCenterDto {
     id: string;
     serviceProviderId: string;
@@ -17,7 +16,7 @@ export class EventCenterDto {
     state: string;
     country: string;
     postal: string;
-    status: $Enums.ServiceStatus;
+    status: ServiceStatus;
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date;
