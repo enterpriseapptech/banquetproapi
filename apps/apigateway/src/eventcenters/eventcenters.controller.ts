@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req } from '@nestjs/common';
 import { EventcentersService } from './eventcenters.service';
-import { CreateEventCenterDto, UpdateEventCenterDto, UserDto } from '@shared/contracts';
+import { CreateEventCenterDto, UpdateEventCenterDto, } from '@shared/contracts/eventcenters';
+import { UserDto } from '@shared/contracts/users';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
 import { firstValueFrom } from 'rxjs';

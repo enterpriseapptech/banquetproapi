@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { CanActivate, ExecutionContext, UnauthorizedException } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
-import { UserDto } from "@shared/contracts";
+import { UserDto } from "@shared/contracts/users";
 import { firstValueFrom } from "rxjs";
 
 export class VerificationGuard extends AuthGuard('jwt') implements CanActivate {

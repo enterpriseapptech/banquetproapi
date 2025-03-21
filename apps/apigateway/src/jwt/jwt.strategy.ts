@@ -3,7 +3,8 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import * as dotenv from 'dotenv';
 import { ClientProxy } from '@nestjs/microservices';
-import { USERPATTERN, UserDto, USER_CLIENT } from '@shared/contracts';
+import { USERPATTERN, UserDto  } from '@shared/contracts/users';
+import { USER_CLIENT } from '@shared/contracts';
 
 dotenv.config({ path: './apps/users/.env' });
 @Injectable()
