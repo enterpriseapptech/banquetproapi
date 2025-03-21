@@ -1,35 +1,41 @@
-# Use Node.js base image
+# 1. Use lightweight Node.js image
 FROM node:18-alpine AS builder
 
-# Set working directory
+# 2. Set working directory
 WORKDIR /app
 
-# Copy package files for caching
-COPY package.json yarn.lock ./
+# 3. copy package files
+COPY package.json yarn.lock   ./
 
-# Install dependencies
+# 4. Install dependencies
 RUN yarn install --frozen-lockfile
 
-
-# Copy the entire project
+# 5. Copy the entire project
 COPY . .
 
-# Build the NestJS microservice
-RUN yarn build apigateway
+# 6. Remove unnecessary microservices and their dependencies
+RUN rm -rf apps/users apps/booking apps/catering  apps/notifications apps/payments apps/eventcenters  
 
-# Create a smaller final image
+RUN echo "Current directory contents in contracts:" && ls -la libs/contracts/src
+
+# 7. Build the NestJS service
+RUN yarn build
+
+# 8. Create a smaller runtime image
 FROM node:18-alpine AS runner
 
+# 9. reSet working directory 
 WORKDIR /app
 
-# Copy the built files from the previous stage
+# 11. Copy only necessary files from the builder
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/apps ./apps
 
-# Expose the microservice port (adjust as needed)
-EXPOSE 8000
+# 12. Expose service port (change per service)
+EXPOSE 8001
 
-# Start the application
-CMD ["yarn", "start:prod"]
-
+# 13. Start the microservice
+CMD ["sh", "-c", "yarn start:prod"]
+# CMD ["yarn", "start:prod"]

@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { CATERING_CLIENT, CreateCateringDto, UpdateCateringDto, CateringDto, CATERINGPATTERN, ManyCateringDto, ManyRequestCateringDto } from '@shared/contracts';
-
+import { CreateCateringDto, UpdateCateringDto, CateringDto, CATERINGPATTERN, ManyCateringDto, ManyRequestCateringDto } from '@shared/contracts/catering';
+import { CATERING_CLIENT } from '@shared/contracts';
 
 @Injectable()
 export class CateringService {

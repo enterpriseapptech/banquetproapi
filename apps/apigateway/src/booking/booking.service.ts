@@ -1,6 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CreateBookingDto, UpdateBookingDto, BookingDto, BOOKINGPATTERN, ManyBookingDto, ManyRequestBookingDto, BOOKING_CLIENT, TimeslotDto, CreateManyTimeSlotDto, TIMESLOTPATTERN, ManyRequestTimeSlotDto, UpdateTimeslotDto } from '@shared/contracts';
+// import { CreateBookingDto, UpdateBookingDto, BookingDto, , , , BOOKING_CLIENT, , CreateManyTimeSlotDto, TIMESLOTPATTERN, ,  } from '@shared/contracts';
 import { ClientProxy } from '@nestjs/microservices';
+import { CreateBookingDto, CreateManyTimeSlotDto, UpdateBookingDto, ManyRequestBookingDto, UpdateTimeslotDto, BOOKINGPATTERN, ManyBookingDto, TimeslotDto, TIMESLOTPATTERN, ManyRequestTimeSlotDto, BookingDto,  } from '@shared/contracts/booking';
+import { BOOKING_CLIENT } from '@shared/contracts';
 
 
 @Injectable()

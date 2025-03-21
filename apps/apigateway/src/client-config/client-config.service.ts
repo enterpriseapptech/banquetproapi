@@ -19,7 +19,7 @@ export class ClientConfigService {
         return {
             transport: Transport.RMQ,
             options: {
-                urls: ['amqp://users_admin:usersPassword@2025@localhost:5672'],
+                urls: ['amqps://ktqrzwaf:Tz9V_shsKq9UpCnexKpdTM6h9hglR1eE@shrimp.rmq.cloudamqp.com/ktqrzwaf'],
                 queue: 'users_queue',
                 queueOptions: {
                     durable: false,
@@ -32,7 +32,7 @@ export class ClientConfigService {
         return {
             transport: Transport.RMQ,
             options: {
-                urls: ['amqp://users_admin:usersPassword@2025@localhost:5672'],
+                urls: ['amqps://ktqrzwaf:Tz9V_shsKq9UpCnexKpdTM6h9hglR1eE@shrimp.rmq.cloudamqp.com/ktqrzwaf'],
                 queue: 'event_centers_queue',
                 queueOptions: { durable: true, autoDelete: false },
                 noAck: true, // Ensure messages are properly acknowledged
@@ -47,7 +47,7 @@ export class ClientConfigService {
         return {
             transport: Transport.RMQ,
             options: {
-                urls: ['amqp://users_admin:usersPassword@2025@localhost:5672'],
+                urls: ['amqps://ktqrzwaf:Tz9V_shsKq9UpCnexKpdTM6h9hglR1eE@shrimp.rmq.cloudamqp.com/ktqrzwaf'],
                 queue: 'booking_queue',
                 queueOptions: {
                     durable: false,
@@ -60,7 +60,7 @@ export class ClientConfigService {
         return {
             transport: Transport.RMQ,
             options: {
-                urls: ['amqp://users_admin:usersPassword@2025@localhost:5672'],
+                urls: ['amqps://ktqrzwaf:Tz9V_shsKq9UpCnexKpdTM6h9hglR1eE@shrimp.rmq.cloudamqp.com/ktqrzwaf'],
                 queue: 'catering_queue',
                 queueOptions: { durable: true, autoDelete: false },
                 noAck: true, // Ensure messages are properly acknowledged

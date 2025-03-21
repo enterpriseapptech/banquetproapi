@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req } from '@nestjs/common';
 import { CateringService } from './catering.service';
-import { CreateCateringDto, UpdateCateringDto, UserDto } from '@shared/contracts';
+import { CreateCateringDto, UpdateCateringDto } from '@shared/contracts/catering';
+import { UserDto } from '@shared/contracts/users';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
 import { firstValueFrom } from 'rxjs';

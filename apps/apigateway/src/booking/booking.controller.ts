@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req } from '@nestjs/common';
 import { BookingService, TimeSlotService } from './booking.service';
-import { CreateBookingDto, CreateManyTimeSlotDto, UpdateBookingDto, UpdateTimeslotDto, UserDto } from '@shared/contracts';
+import { CreateBookingDto, CreateManyTimeSlotDto, UpdateBookingDto, UpdateTimeslotDto,  } from '@shared/contracts/booking';
+import { UserDto } from '@shared/contracts/users';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
 import { firstValueFrom } from 'rxjs';
