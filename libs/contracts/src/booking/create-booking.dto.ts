@@ -12,8 +12,9 @@ import {
     IsDateString,
 
 } from 'class-validator';
-import { $Enums } from '@prisma/booking';
+
 import { ApiProperty } from '@nestjs/swagger';
+import { BookingSource, ServiceType, SpecialRequirement } from './booking.dto';
 export class CreateBookingDto {
     @ApiProperty({ type: 'string', required: true })
     @IsUUID()
@@ -27,9 +28,9 @@ export class CreateBookingDto {
     timeslotId: string[];
 
     @ApiProperty({ type: 'string', required: true })
-    @IsEnum($Enums.ServiceType)
+    @IsEnum(ServiceType)
     @IsNotEmpty()
-    serviceType: $Enums.ServiceType;
+    serviceType:ServiceType;
 
     @ApiProperty({ type: 'number', required: true })
     @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
@@ -65,7 +66,7 @@ export class CreateBookingDto {
     isLiabilityWaiverSigned: boolean;
 
     @ApiProperty({ type: 'string', required: true })
-    @IsEnum($Enums.BookingSource, { message: 'invalid booking source, must be web or mobile' })
+    @IsEnum(BookingSource, { message: 'invalid booking source, must be web or mobile' })
     @IsNotEmpty()
     source: string;
 
@@ -125,9 +126,9 @@ export class CreateBookingDto {
 
     @ApiProperty({ type: 'string', required: false })
     @IsArray()
-    @IsEnum($Enums.SpecialRequirement, { each: true })
+    @IsEnum(SpecialRequirement, { each: true })
     @IsOptional()
-    specialRequirements?: $Enums.SpecialRequirement[];
+    specialRequirements?:SpecialRequirement[];
 
     @ApiProperty({ type: 'array', format: 'binary', required: false })
     @IsArray()
@@ -171,8 +172,8 @@ export class CreateEventCenterBookingDto {
 
     @IsOptional()
     @IsArray()
-    @IsEnum($Enums.SpecialRequirement, { each: true })
-    specialRequirements?: $Enums.SpecialRequirement[];
+    @IsEnum(SpecialRequirement, { each: true })
+    specialRequirements?:SpecialRequirement[];
 
     @IsArray()
     @IsString({ each: true })
@@ -201,7 +202,7 @@ export class CreateManyTimeSlotDto{
 
     @ApiProperty({
         type: 'string', required: true, example: 'CATERING || EVENTCENTER' })
-    @IsEnum($Enums.ServiceType)
+    @IsEnum(ServiceType)
     serviceType: string;
 
     @ApiProperty({

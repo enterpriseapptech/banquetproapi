@@ -2,13 +2,14 @@ import { PartialType } from '@nestjs/mapped-types';
 import { CreateCateringDto, CreateMenuDto } from './create-catering.dto';
 import { IsBoolean, IsDate, IsDateString,  IsEnum,  IsOptional, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
-import { $Enums } from '@prisma/catering';
+import { ServiceStatus } from './catering.dto';
+
 
 export class UpdateCateringDto extends PartialType(CreateCateringDto) {
 
     @IsOptional()
-    @IsEnum($Enums.ServiceStatus)
-    status: $Enums.ServiceStatus;
+    @IsEnum(ServiceStatus)
+    status: ServiceStatus;
     
     @IsOptional()
     @IsBoolean()

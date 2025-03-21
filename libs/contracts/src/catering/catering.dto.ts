@@ -1,6 +1,7 @@
-import { $Enums } from '@prisma/catering';
-
-
+export enum ServiceStatus {
+    ACTIVE ="ACTIVE",
+  INACTIVE ="INACTIVE"
+}
 
 export class CateringDto {
     id: string;
@@ -21,7 +22,7 @@ export class CateringDto {
     state: string;
     country: string;
     postal: string;
-    status: $Enums.ServiceStatus;
+    status: ServiceStatus;
     isFeatured: boolean;
     featureExpiringAt?: Date;
     createdAt: Date;

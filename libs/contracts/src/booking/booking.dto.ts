@@ -1,4 +1,39 @@
-import { $Enums } from '@prisma/booking';
+
+export enum LocationStatus {
+    ACTIVE = "ACTIVE",
+    INACTIVE = "INACTIVE"
+}
+
+export enum BookingSource {
+    WEB = "WEB",
+    MOBILE = "MOBILE"
+}
+
+export enum ServiceType {
+    CATERING = "CATERING",
+    EVENTCENTER = "EVENTCENTER"
+}
+
+export enum BookingStatus {
+    PENDING = "PENDING",
+    BOOKED = "BOOKED",
+    RESERVED = "RESERVED",
+    POSTPONED = "POSTPONED",
+    CANCELED = "CANCELED"
+}
+
+export enum PaymentStatus {
+    UNPAID = "UNPAID",
+    FULLY_PAID = "FULLY_PAID",
+    PARTIALLY_PAID = "PARTIALLY_PAID"
+}
+
+export enum SpecialRequirement {
+    WHEELCHAIRACCESS = "WHEELCHAIRACCESS",
+    TEMPERATUREADJUSTMENT = "TEMPERATUREADJUSTMENT"
+}
+
+
 
 export class BookingDto {
     id: string;
@@ -6,18 +41,18 @@ export class BookingDto {
     confirmedBy?: string;
     confirmedAt?: Date;
     servicebooking_id?: string;
-    serviceType: $Enums.ServiceType;
+    serviceType: ServiceType;
     totalBeforeDiscount: number;
     discount?: number;
     totalAfterDiscount: number;
-    paymentStatus: $Enums.PaymentStatus;
-    status: $Enums.BookingStatus;
+    paymentStatus: PaymentStatus;
+    status: BookingStatus;
     bookingDates: string[];
     isTermsAccepted: boolean;
     isCancellationPolicyAccepted: boolean;
     isLiabilityWaiverSigned: boolean;
     bookingReference: string;
-    source?: $Enums.BookingSource;
+    source?: BookingSource;
     serviceNotes?: string;
     customerNotes?: string;
     rescheduledBy?: string;
@@ -43,7 +78,7 @@ export class EventCenterBookingDto {
     eventType?: string;
     description?: string;
     noOfGuest?: number;
-    specialRequirements?: $Enums.SpecialRequirement[];
+    specialRequirements?: SpecialRequirement[];
     images: string[];
     createdAt: Date;
     updatedAt: Date;
