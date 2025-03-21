@@ -402,6 +402,16 @@ export class BookingService {
 	}
 
 
+	/**
+	 * 
+	 * Maps a raw event center from the database to EventCenterDto.
+	 */
+	private mapToBookingDto(catering: any): CateringDto {
+		return {
+			...catering,
+			status: catering.status as unknown as ServiceStatus,
+		};
+	}
 }
 
 

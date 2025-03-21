@@ -1,6 +1,6 @@
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { $Enums, Prisma } from '@prisma/catering';
-import { CreateCateringDto, CateringDto, ManyCateringDto, UpdateCateringDto } from '@shared/contracts/catering';
+import { CreateCateringDto, CateringDto, ManyCateringDto, UpdateCateringDto, ServiceStatus } from '@shared/contracts/catering';
 import { DatabaseService } from '../database/database.service';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
@@ -69,8 +69,11 @@ export class CateringService {
                     recipientEmail: serviceProvider.email,
                 },
             });
-
-            return newcatering;
+            const cateringDto: CateringDto = {
+                ...newcatering,
+                status: newcatering.status as unknown as ServiceStatus,
+            };
+            return cateringDto;
         } catch (error) {
             throw new InternalServerErrorException(error, {
                 cause: new Error(),
@@ -98,7 +101,7 @@ export class CateringService {
             });
             return {
                 count,
-                data: caterings
+                data: caterings.map(eventCenter => this.mapToCateringDto(eventCenter))  
             }
         }
 
@@ -117,7 +120,7 @@ export class CateringService {
 
             const count = await this.databaseService.catering.count({ where: whereClause });
 
-            return { count, data: caterings };
+            return { count, data: caterings.map(catering => this.mapToCateringDto(catering)) };
         }
 
         const caterings = await this.databaseService.catering.findMany({
@@ -127,7 +130,7 @@ export class CateringService {
         const count = await this.databaseService.catering.count()
         return {
             count,
-            data: caterings
+            data: caterings.map(catering => this.mapToCateringDto(catering))  
         }
 
 
@@ -146,7 +149,11 @@ export class CateringService {
         if (!catering) {
             throw new NotFoundException("Event center not found or has been deleted")
         }
-        return catering;
+        const cateringDto: CateringDto = {
+            ...catering,
+            status: catering.status as unknown as ServiceStatus,
+        };
+        return cateringDto;
     }
 
     async update(id: string, updateEventcenterDto: UpdateCateringDto): Promise<CateringDto> {
@@ -159,8 +166,11 @@ export class CateringService {
                 where: { id },
                 data: updateEventCenterInput
             });
-
-            return catering;
+            const cateringDto: CateringDto = {
+                ...catering,
+                status: catering.status as unknown as ServiceStatus,
+            };
+            return cateringDto;
         } catch (error) {
             throw new ConflictException(error);
         }
@@ -174,7 +184,23 @@ export class CateringService {
                 deletedBy: updaterId
             }
         });
-        return catering;
+
+        const cateringDto: CateringDto = {
+                    ...catering,
+                    status: catering.status as unknown as ServiceStatus,
+                };
+        return cateringDto;
     }
 
+
+    /**
+     * 
+     * Maps a raw event center from the database to EventCenterDto.
+     */
+    private mapToCateringDto(catering: any): CateringDto {
+        return {
+            ...catering,
+            status: catering.status as unknown as ServiceStatus,
+        };
+    }
 }
