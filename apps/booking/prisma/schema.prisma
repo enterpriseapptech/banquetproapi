@@ -12,7 +12,7 @@ generator client {
 
 datasource banquestprobookingdb {
   provider = "postgresql"
-  url      = "postgresql://users_admin:usersPassword@2025@localhost:5432/banquestprobookingdb?schema=public"
+  url      = env("DATABASE_URL")
 }
 
 model Booking {

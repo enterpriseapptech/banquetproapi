@@ -2,7 +2,7 @@
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 // import { $Enums as $EventBookingEnums, Prisma as EventBookingPrisma } from '@prisma/eventcenters';
 import { $Enums, Prisma } from '@prisma/booking';
-import { CreateBookingDto, BookingDto, ManyBookingDto, TimeslotDto, CreateManyTimeSlotDto, ManyTimeslotDto, ManyRequestTimeSlotDto, UpdateTimeslotDto, UpdateBookingDto } from '@shared/contracts/booking';
+import { CreateBookingDto, BookingDto, ManyBookingDto, TimeslotDto, CreateManyTimeSlotDto, ManyTimeslotDto, ManyRequestTimeSlotDto, UpdateTimeslotDto, UpdateBookingDto, PaymentStatus, ServiceType, BookingStatus, BookingSource } from '@shared/contracts/booking';
 import { EventCenterDto, EVENTCENTERPATTERN, ManyRequestEventCenterDto } from '@shared/contracts/eventcenters';
 import { ManyEventCentersDto } from '@shared/contracts/eventcenters';
 import { UserDto, USERPATTERN, } from '@shared/contracts/users';
@@ -128,8 +128,16 @@ export class BookingService {
 					recipientEmail: customer.email,
 				},
 			});
+			const bookingDto: BookingDto = {
+				...newBooking,
+				status: newBooking.status as unknown as BookingStatus,
+				paymentStatus: newBooking.paymentStatus as unknown as PaymentStatus,
+				serviceType: newBooking.serviceType as unknown as ServiceType,
+				source: newBooking.source as unknown as BookingSource
+			};
 
-			return newBooking;
+			return bookingDto;
+
 		} catch (error) {
 			console.log(error)
 			throw new InternalServerErrorException(error, {
@@ -209,7 +217,7 @@ export class BookingService {
 				return { count, data: bookings };
 			});
 
-			return { count: result.count, data: result.data };
+			return { count: result.count, data: result.data.map(booking => this.mapToBookingDto(booking)) };
 		}
 
 		const bookings = await this.databaseService.booking.findMany({
@@ -220,7 +228,7 @@ export class BookingService {
 
 		const count = await this.databaseService.booking.count({ where: whereClause });
 
-		return { count, data: bookings };
+		return { count, data: bookings.map(booking => this.mapToBookingDto(booking)) };
 	}
 
 	
@@ -235,7 +243,16 @@ export class BookingService {
 		if (!booking) {
 			throw new NotFoundException("Event center not found or has been deleted")
 		}
-		return booking;
+		const bookingDto: BookingDto = {
+			...booking,
+			status: booking.status as unknown as BookingStatus,
+			paymentStatus: booking.paymentStatus as unknown as PaymentStatus,
+			serviceType: booking.serviceType as unknown as ServiceType,
+			source: booking.source as unknown as BookingSource
+		};
+
+		return bookingDto;
+
 	}
 
 
@@ -243,16 +260,24 @@ export class BookingService {
 		try {
 			const updateEventCenterInput: Prisma.BookingUpdateInput = {
 				...updateBookingDto,
-				paymentStatus: updateBookingDto.status ? updateBookingDto.status as $Enums.PaymentStatus : undefined,
+				paymentStatus: updateBookingDto.paymentStatus ? updateBookingDto.paymentStatus as $Enums.PaymentStatus : undefined,
 				status: updateBookingDto.status ? updateBookingDto.status as $Enums.BookingStatus : undefined,
-				source: updateBookingDto.status ? updateBookingDto.status as $Enums.BookingSource : undefined,
+				source: updateBookingDto.source ? updateBookingDto.source as $Enums.BookingSource : undefined,
 			};
 			const booking = await this.databaseService.booking.update({
 				where: { id },
 				data: updateEventCenterInput
 			});
 
-			return booking;
+			const bookingDto: BookingDto = {
+				...booking,
+				status: booking.status as unknown as BookingStatus,
+				paymentStatus: booking.paymentStatus as unknown as PaymentStatus,
+				serviceType: booking.serviceType as unknown as ServiceType,
+				source: booking.source as unknown as BookingSource
+			};
+
+			return bookingDto;
 		} catch (error) {
 			throw new ConflictException(error);
 		}
@@ -296,9 +321,16 @@ export class BookingService {
 
 			return booking
 		});
+		const bookingDto: BookingDto = {
+			...deletedBooking,
+			status: deletedBooking.status as unknown as BookingStatus,
+			paymentStatus: deletedBooking.paymentStatus as unknown as PaymentStatus,
+			serviceType: deletedBooking.serviceType as unknown as ServiceType,
+			source: deletedBooking.source as unknown as BookingSource
+		};
 
-		// delete the associating service booking e.g eventcenterbooking
-		return deletedBooking;
+		return bookingDto;
+
 	}
 
 
@@ -326,7 +358,16 @@ export class BookingService {
 				return booking
 			});
 			// to do notification
-			return cancelledBooking;
+
+			const bookingDto: BookingDto = {
+				...cancelledBooking,
+				status: cancelledBooking.status as unknown as BookingStatus,
+				paymentStatus: cancelledBooking.paymentStatus as unknown as PaymentStatus,
+				serviceType: cancelledBooking.serviceType as unknown as ServiceType,
+				source: cancelledBooking.source as unknown as BookingSource
+			};
+
+			return bookingDto;
 		} catch (error) {
 			throw new InternalServerErrorException(error);
 		}
@@ -373,7 +414,15 @@ export class BookingService {
 				return booking
 			});
 			// to do notification
-			return rescheduleBooking;
+			const bookingDto: BookingDto = {
+				...rescheduleBooking,
+				status: rescheduleBooking.status as unknown as BookingStatus,
+				paymentStatus: rescheduleBooking.paymentStatus as unknown as PaymentStatus,
+				serviceType: rescheduleBooking.serviceType as unknown as ServiceType,
+				source: rescheduleBooking.source as unknown as BookingSource
+			};
+
+			return bookingDto;
 		} catch (error) {
 			throw new InternalServerErrorException(error);
 		}
@@ -395,7 +444,15 @@ export class BookingService {
 			});
 
 			// to do notification
-			return confirmedBooking;
+			const bookingDto: BookingDto = {
+				...confirmedBooking,
+				status: confirmedBooking.status as unknown as BookingStatus,
+				paymentStatus: confirmedBooking.paymentStatus as unknown as PaymentStatus,
+				serviceType: confirmedBooking.serviceType as unknown as ServiceType,
+				source: confirmedBooking.source as unknown as BookingSource
+			};
+
+			return bookingDto;
 		} catch (error) {
 			throw new InternalServerErrorException(error);
 		}
@@ -406,12 +463,17 @@ export class BookingService {
 	 * 
 	 * Maps a raw event center from the database to EventCenterDto.
 	 */
-	private mapToBookingDto(catering: any): CateringDto {
+	private mapToBookingDto(booking: any): BookingDto {
 		return {
-			...catering,
-			status: catering.status as unknown as ServiceStatus,
+			...booking,
+			status: booking.status as unknown as BookingStatus,
+			paymentStatus: booking.paymentStatus as unknown as PaymentStatus,
+			serviceType: booking.serviceType as unknown as ServiceType,
+			source: booking.source as unknown as BookingSource
 		};
 	}
+
+	
 }
 
 

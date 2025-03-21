@@ -11,7 +11,7 @@ generator eventcenterclient {
 
 datasource banquestproeventsdb {
   provider = "postgresql"
-  url      = "postgresql://users_admin:usersPassword@2025@localhost:5432/banquestprocateringdb?schema=public"
+  url      = env("DATABASE_URL")
 }
 
 // event centers
