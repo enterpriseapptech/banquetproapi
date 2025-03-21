@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ClientOptions, Transport } from '@nestjs/microservices';
 import * as dotenv from 'dotenv';
 
-dotenv.config({ path: './apps/users/.env' });
+dotenv.config({ path: './apps/booking/.env' });
 @Injectable()
 export class ClientConfigService {
 

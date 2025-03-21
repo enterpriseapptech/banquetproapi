@@ -2,7 +2,7 @@ import { Controller } from '@nestjs/common';
 import { BookingService, TimeSlotService } from './booking.service';
 import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import { catchError, from, throwError } from 'rxjs';
-import { BOOKINGPATTERN, CreateBookingDto, CreateManyTimeSlotDto, ManyRequestTimeSlotDto, TIMESLOTPATTERN, UpdateBookingDto, UpdateTimeslotDto } from '@shared/contracts';
+import { BOOKINGPATTERN, CreateBookingDto, CreateManyTimeSlotDto, ManyRequestTimeSlotDto, TIMESLOTPATTERN, UpdateBookingDto, UpdateTimeslotDto } from '@shared/contracts/booking';
 
 @Controller()
 export class BookingController {

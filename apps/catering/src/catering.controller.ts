@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { CateringService } from './catering.service';
 import { MessagePattern, Payload, RpcException, RmqContext, Ctx } from '@nestjs/microservices';
-import { CATERINGPATTERN, CreateCateringDto, UpdateCateringDto } from '@shared/contracts';
+import { CATERINGPATTERN, CreateCateringDto, UpdateCateringDto } from '@shared/contracts/catering';
 import { catchError, from, throwError } from 'rxjs';
 
 

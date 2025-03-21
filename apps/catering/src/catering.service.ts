@@ -1,9 +1,12 @@
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { $Enums, Prisma } from '@prisma/catering';
-import { NOTIFICATION_CLIENT, USER_CLIENT,  NOTIFICATIONPATTERN, UserDto, USERPATTERN, CreateCateringDto, CateringDto, ManyCateringDto, UpdateCateringDto } from '@shared/contracts';
+import { CreateCateringDto, CateringDto, ManyCateringDto, UpdateCateringDto } from '@shared/contracts/catering';
 import { DatabaseService } from '../database/database.service';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
+import { NOTIFICATION_CLIENT, USER_CLIENT } from '@shared/contracts';
+import { USERPATTERN, UserDto } from '@shared/contracts/users';
+import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
 
 @Injectable()
 export class CateringService {
