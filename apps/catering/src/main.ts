@@ -2,7 +2,9 @@ import { NestFactory } from '@nestjs/core';
 import { CateringModule } from './catering.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import * as dotenv from 'dotenv';
-dotenv.config({ path: './apps/eventcenters/.env' });
+import * as express from 'express';
+
+dotenv.config({ path: './apps/catering/.env' });
 
 async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
@@ -20,5 +22,9 @@ async function bootstrap() {
   );
   await app.listen();
   console.log('Catering Microservice is listening...');
+      // Dummy Express Server to satisfy Render
+  const dummyApp = express();
+  const port = process.env.PORT || 8003;
+  dummyApp.listen(port, () => console.log(`Dummy server running on port ${port}`));
 }
 bootstrap();

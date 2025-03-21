@@ -14,16 +14,16 @@ RUN yarn install --frozen-lockfile
 COPY . .
 
 # 6. Remove unnecessary microservices and their dependencies
-RUN rm -rf apps/apigateway apps/booking apps/catering  apps/notifications apps/payments apps/eventcenters  
-RUN rm -rf libs/contracts/src/eventcenterbooking libs/contracts/src/booking libs/contracts/src/catering libs/contracts/src/payments libs/contracts/src/eventcenters  
-RUN rm -rf libs/contracts/src/booking.ts  libs/contracts/src/payments.ts libs/contracts/src/eventcenters.ts
+RUN rm -rf apps/apigateway apps/booking apps/catering  apps/users apps/payments apps/eventcenters  
+RUN rm -rf libs/contracts/src/eventcenterbooking libs/contracts/src/booking libs/contracts/src/catering libs/contracts/src/payments libs/contracts/src/eventcenters  libs/contracts/src/payments libs/contracts/src/users
+RUN rm -rf libs/contracts/src/booking.ts  libs/contracts/src/payments.ts libs/contracts/src/eventcenters.ts libs/contracts/src/users.ts
 RUN echo "Current directory contents in contracts:" && ls -la libs/contracts/src
 
 # 7. Generate Prisma Client for this microservice
-RUN yarn prisma generate --schema=/app/apps/users/prisma/schema.prisma
+RUN yarn prisma generate --schema=/app/apps/notifications/prisma/schema.prisma
 
 # 8. Build the NestJS service
-RUN yarn build users
+RUN yarn build notifications
 
 # 9. Create a smaller runtime image
 FROM node:18-alpine AS runner
@@ -41,5 +41,5 @@ COPY --from=builder /app/apps ./apps
 EXPOSE 8003
 
 # 13. Start the microservice
-CMD ["sh", "-c", "yarn prisma migrate deploy --schema=/app/apps/users/prisma/schema.prisma && yarn start:prodUsers"]
+CMD ["sh", "-c", "yarn prisma migrate deploy --schema=/app/apps/notifications/prisma/schema.prisma && yarn start:prodNotifications"]
 # CMD ["yarn", "start:prod"]
