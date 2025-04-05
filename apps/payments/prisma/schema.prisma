@@ -105,9 +105,57 @@ model Dispute {
   payment     Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade)
 }
 
+model Fees {
+  id                    String   @id @default(uuid())
+  name                  FeesType
+  amount                Decimal
+  status                Status 
+  createdAt             DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  updatedBy             String?
+  deletedAt             DateTime?
+  deletedBy             String?
+}
 
+model SubscriptionPlans {
+  id                    String   @id @default(uuid())
+  plan                  String
+  amount                Decimal
+  timeFrame             Int  // number of days this subscription covers
+  status                Status  
+  createdAt     DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  updatedBy     String?
+  deletedAt     DateTime?
+  deletedBy     String?
+}
+
+model FeaturedPlans {
+  id                    String   @id @default(uuid())
+  plan                  String
+  amount                Decimal
+  timeFrame             Int  // number of days this subscription covers
+  status                Status  
+  createdAt     DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  updatedBy     String?
+  deletedAt     DateTime?
+  deletedBy     String?
+}
 
 /* ENUMS */
+
+enum FeesType {
+  KYC
+  CERTIFICATION
+}
+
+
+enum Status {
+  ACTIVE
+  INACTIVE
+}
+
 enum PaymentReason {
   WALLETFUNDING
   SUBSCRIPTION

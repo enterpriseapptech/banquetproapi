@@ -45,7 +45,7 @@ model Catering {
   updatedBy          String?     
   deletedAt          DateTime?
   deletedBy          String?
-
+  paymentRequired   Boolean? @default(false)
   // relations
   menu              Menu[]
   @@index([serviceProviderId, startPrice, city, state, country, status, cuisine])

@@ -1,5 +1,5 @@
 # 1. Use lightweight Node.js image
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 # 2. Set working directory
 WORKDIR /app
@@ -22,7 +22,7 @@ RUN echo "Current directory contents in contracts:" && ls -la libs/contracts/src
 RUN yarn build
 
 # 8. Create a smaller runtime image
-FROM node:18-alpine AS runner
+FROM node:20-alpine AS runner
 
 # 9. reSet working directory 
 WORKDIR /app
@@ -34,7 +34,7 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/apps ./apps
 
 # 12. Expose service port (change per service)
-EXPOSE 8001
+EXPOSE 8000
 
 # 13. Start the microservice
 CMD ["sh", "-c", "yarn start:prod"]
