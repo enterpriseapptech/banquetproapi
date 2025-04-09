@@ -10,7 +10,7 @@ import { CreateSubscriptionPlanDto } from '@shared/contracts/payments/create-pay
 import { UpdateSubscriptionPlanDto } from '@shared/contracts/payments/update-payments.dto';
 
 @Controller()
-export class SubscriptionPlanSController {
+export class SubscriptionPlansController {
   constructor(private readonly SubscriptionPlansService: SubscriptionPlansService) { }
 
   @MessagePattern(SUBSCRIPTIONPLANSPATTERN.CREATE)
