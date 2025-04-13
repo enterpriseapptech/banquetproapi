@@ -44,7 +44,10 @@ model Payment {
   status                  PaymentStatus
   transactionId           String    @unique
   createdAt               DateTime  @default(now())
-
+  updatedAt               DateTime      @updatedAt
+  updatedBy               String?     
+  deletedAt               DateTime?
+  deletedBy               String?
   // relations
   refund                  Refund? 
   dispute                 Dispute?
@@ -62,6 +65,7 @@ model Invoice {
   status      InvoiceStatus
   dueDate     DateTime
   createdAt   DateTime  @default(now())
+  updatedAt   DateTime      @updatedAt
   deletedAt   DateTime?
   deletedBy   String?
 
@@ -79,6 +83,7 @@ model Refund {
   reason         String
   status         RefundStatus
   createdAt      DateTime  @default(now())
+  updatedAt               DateTime      @updatedAt
   updatedBy             String?
   deletedAt             DateTime?
   deletedBy             String?
@@ -169,6 +174,7 @@ enum PaymentStatus {
   PENDING
   COMPLETED
   FAILED
+  DISPUTED
   REFUNDED
 }
 

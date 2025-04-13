@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsNumber, IsInt } from 'class-validator';
+import { IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsNumber, IsInt, IsDateString, IsJSON } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export enum FeesType {
@@ -51,6 +51,164 @@ export enum PaymentOption {
     CARD = 'CARD',
     TRANSFER = 'TRANSFER',
 }
+
+export class CreatePaymentMethodDto {
+    @ApiProperty({ example: 'Visa', description: 'Payment provider name' })
+    @IsOptional()
+    @IsString()
+    provider?: string;
+  
+    @ApiProperty({ example: 'user-id', required: false })
+    @IsOptional()
+    @IsString()
+    createdBy?: string;
+  }
+
+  
+export class CreatePaymentDto {
+    @ApiProperty()
+    @IsString()
+    userId: string;
+  
+    @ApiProperty()
+    @IsString()
+    paymentMethodId: string;
+  
+    @ApiProperty()
+    @IsNumber()
+    amount: number;
+  
+    @ApiProperty()
+    @IsNumber()
+    amountCharged: number;
+  
+    @ApiProperty()
+    @IsString()
+    reference: string;
+  
+    @ApiProperty({ required: false, type: Object })
+    @IsOptional()
+    @IsJSON()
+    paymentAuthorization?: Record<string, any>;
+  
+    @ApiProperty({ default: 'USD' })
+    @IsOptional()
+    @IsString()
+    currency?: string;
+  
+    @ApiProperty({ enum: PaymentReason })
+    @IsEnum(PaymentReason)
+    paymentReason: PaymentReason;
+  
+    @ApiProperty({ enum: PaymentStatus })
+    @IsEnum(PaymentStatus)
+    status: PaymentStatus;
+  
+    @ApiProperty()
+    @IsString()
+    transactionId: string;
+  
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsString()
+    updatedBy?: string;
+  
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsString()
+    deletedBy?: string;
+}
+
+
+export class CreateInvoiceDto {
+    @ApiProperty()
+    @IsString()
+    userId: string;
+  
+    @ApiProperty()
+    @IsString()
+    paymentId: string;
+  
+    @ApiProperty({ enum: InvoiceStatus })
+    @IsEnum(InvoiceStatus)
+    status: InvoiceStatus;
+  
+    @ApiProperty()
+    @IsDateString()
+    dueDate: string;
+  
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsString()
+    updatedBy?: string;
+  
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsString()
+    deletedBy?: string;
+}
+  
+export class CreateRefundDto {
+    @ApiProperty()
+    @IsString()
+    paymentId: string;
+  
+    @ApiProperty()
+    @IsNumber()
+    amount: number;
+  
+    @ApiProperty()
+    @IsString()
+    reason: string;
+  
+    @ApiProperty({ enum: RefundStatus })
+    @IsEnum(RefundStatus)
+    status: RefundStatus;
+  
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsString()
+    updatedBy?: string;
+  
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsString()
+    deletedBy?: string;
+}
+  
+
+export class CreateDisputeDto {
+    @ApiProperty()
+    @IsString()
+    userId: string;
+  
+    @ApiProperty()
+    @IsString()
+    paymentId: string;
+  
+    @ApiProperty()
+    @IsString()
+    serviceRequestId: string;
+  
+    @ApiProperty()
+    @IsString()
+    reason: string;
+  
+    @ApiProperty({ enum: DisputeStatus })
+    @IsEnum(DisputeStatus)
+    status: DisputeStatus;
+  
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsString()
+    updatedBy?: string;
+  
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsString()
+    deletedBy?: string;
+}
+
 
 export class CreateFeeDto {
     @ApiProperty({ example: 'test@gmail.com', description: 'email of the user' })

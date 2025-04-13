@@ -1,8 +1,15 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { IsOptional, IsUUID, } from 'class-validator';
 import { ApiProperty} from '@nestjs/swagger';
-import { CreateFeaturedPlanDto, CreateFeeDto, CreateSubscriptionPlanDto } from './create-payments.dto';
+import { CreateDisputeDto, CreateFeaturedPlanDto, CreateFeeDto, CreateInvoiceDto, CreatePaymentDto, CreatePaymentMethodDto, CreateRefundDto, CreateSubscriptionPlanDto } from './create-payments.dto';
 
+
+
+export class UpdateDisputeDto extends PartialType(CreateDisputeDto) {}
+export class UpdateRefundDto extends PartialType(CreateRefundDto) {}
+export class UpdatePaymentDto extends PartialType(CreatePaymentDto) {}
+export class UpdatePaymentMethodDto extends PartialType(CreatePaymentMethodDto) {}
+export class UpdateInvoiceDto extends PartialType(CreateInvoiceDto) {}
 
 export class UpdateFeeDto extends PartialType(CreateFeeDto) {
 
