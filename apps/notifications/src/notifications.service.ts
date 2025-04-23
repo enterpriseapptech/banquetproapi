@@ -38,6 +38,7 @@ export class NotificationsService {
 		// Handle other types like IN_APP, SMS, etc.
 	}
 
+	// pending a job or task or service that would handle the sending of emails
 	private async sendEmail(payload: NotificationInterface): Promise<void> {
 		const { type, recipientId, data } = payload;
 		const sendMail = await this.mailService.sendMail({
