@@ -1,18 +1,16 @@
-import { PaymentStatus } from "../booking";
-import { FeesType, InvoiceStatus, PaymentReason, RefundStatus, Status } from "./create-payments.dto";
+
+import { FeesType, InvoiceStatus, PaymentReason, RefundStatus, Status, IPaymentStatus } from "./create-payments.dto";
 
 
 export class PaymentMethodDto {
     id: string;
     provider: string;
-    amount: number;
-    timeFrame: number;
+    providerLogo: string;
     status: Status;
     createdAt: Date;
+    createdBy?: string;
     updatedAt: Date;
-    deletedat?: Date;
-    deletedBy?: string;
-
+    deletedAt?: Date;
 }
 
 
@@ -23,17 +21,17 @@ export class PaymentDto {
     amount: number;
     amountCharged: number;
     reference: string;
-    paymentAuthorization: string;
+    paymentAuthorization: Record<string, any>;
     currency: string;
     paymentReason: PaymentReason;
-    status: PaymentStatus;
+    status: IPaymentStatus;
     transactionId: string;
     createdAt: Date;
     updatedAt: Date;
     updatedBy?: string
     deletedat?: Date;
     deletedBy?: string;
-    paymentMethod: PaymentMethodDto;
+    paymentMethod: PaymentMethodDto | string;
 }
 
 

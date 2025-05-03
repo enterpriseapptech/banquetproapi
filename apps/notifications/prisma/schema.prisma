@@ -28,6 +28,31 @@ model Notification {
 
 }
 
+
+model Review {
+  id            String   @id @default(uuid())
+  userId        String                                   // The customer who wrote the review
+  bookingId     String
+  serviceId     String                                   // The product being reviewed
+  serviceType   ServiceType
+  rating        Int                                      // Rating (e.g., 1–5)
+  comment       String?
+  isApproved    Boolean   @default(false)                // Admin/Provider must approve
+  approvedBy    String?                                  // Admin or service provider
+  deletedAt     DateTime?
+  deletedBy     String?                                  // Admin or service provider
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+}
+
+
+enum ServiceType {
+  CATERING
+  EVENTCENTER
+  
+}
+
 enum NotificationType {
   INFO
   WARNING

@@ -1,5 +1,6 @@
-import { IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsNumber, IsInt, IsDateString, IsJSON } from 'class-validator';
+import { IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsNumber, IsInt, IsDateString, IsJSON, IsUrl } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsImageFile } from '../Media/images';
 
 export enum FeesType {
     CERTIFICATION = 'CERTIFICATION',
@@ -20,11 +21,12 @@ export enum PaymentReason {
     SERVICEREQUEST = 'SERVICEREQUEST'
 }
 
-export enum PaymentStatus {
+export enum IPaymentStatus {
     PENDING = 'PENDING',
     COMPLETED = 'COMPLETED',
     FAILED = 'FAILED',
     REFUNDED = 'REFUNDED',
+    DISPUTED = 'DISPUTED'
 }
 
 export enum InvoiceStatus {
@@ -54,14 +56,38 @@ export enum PaymentOption {
 
 export class CreatePaymentMethodDto {
     @ApiProperty({ example: 'Visa', description: 'Payment provider name' })
-    @IsOptional()
     @IsString()
-    provider?: string;
+    @IsNotEmpty()
+    provider: string;
   
-    @ApiProperty({ example: 'user-id', required: false })
-    @IsOptional()
+    @ApiProperty({
+        type: 'string',
+        format: 'binary',
+        required: true,
+        description: 'Logo image file for the provider',
+    })
+    @IsImageFile({ message: 'providerLogo must be a valid image file' })
+    providerLogoFile?: string;
+
+    @ApiProperty({
+        type: 'string',
+        format: 'url',
+        required: true,
+        description: 'Logo image file for the provider',
+    })
+    @IsUrl({}, { message: 'providerLogo must be a valid URL' })
+    providerLogoUrl?: string;
+
+
+    @ApiProperty({ example: 'Visa', description: 'Payment provider name' })
+    @IsNotEmpty()
     @IsString()
-    createdBy?: string;
+    status: Status
+
+    @ApiProperty({ example: 'user-id', required: false })
+    @IsNotEmpty()
+    @IsString()
+    createdBy: string;
   }
 
   
@@ -100,9 +126,9 @@ export class CreatePaymentDto {
     @IsEnum(PaymentReason)
     paymentReason: PaymentReason;
   
-    @ApiProperty({ enum: PaymentStatus })
-    @IsEnum(PaymentStatus)
-    status: PaymentStatus;
+    @ApiProperty({ enum: IPaymentStatus })
+    @IsEnum(IPaymentStatus)
+    status: IPaymentStatus;
   
     @ApiProperty()
     @IsString()

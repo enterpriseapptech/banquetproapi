@@ -119,7 +119,7 @@ export class BookingService {
 			});
 
 			//  notify service provider of booking
-			this.notificationClient.emit(NOTIFICATIONPATTERN.SENDNOTIFICATION, {
+			this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
 				type: 'EMAIL',
 				recipientId: newBooking.customerId,
 				data: {
@@ -560,7 +560,7 @@ export class TimeSlotService {
 			//  notify service provider of timeslot
 			const user = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDUSERBYID, ServiceProvider));
 			if (user) {
-				this.notificationClient.emit(NOTIFICATIONPATTERN.FINDANDSENDNOTIFICATION, {
+				this.notificationClient.emit(NOTIFICATIONPATTERN.FINDANDSEND, {
 					type: 'EMAIL',
 					recipientId: ServiceProvider,
 					data: {

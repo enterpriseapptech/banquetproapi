@@ -60,7 +60,7 @@ export class EventcentersService {
             });
 
             //  emit a email notification - notification event
-            this.notificationClient.emit(NOTIFICATIONPATTERN.SENDNOTIFICATION, {
+            this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
                 type: 'EMAIL',
                 recipientId: serviceProvider,
                 data: {

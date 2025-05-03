@@ -16,12 +16,14 @@ datasource db {
 
 // /* PAYMENT METHODS */
 model PaymentMethod {
-  id         String   @id @default(uuid())
-  provider   String?  // e.g., Visa, MasterCard, PayPal, Bank Transfer
-  createdAt  DateTime @default(now())
-  createdBy  String?
-  updatedAt  DateTime @updatedAt
-  deletedAt  DateTime?
+  id              String   @id @default(uuid())
+  provider        String?  // e.g., Visa, MasterCard, PayPal, Bank Transfer
+  providerLogo    String?
+  status          Status
+  createdAt       DateTime @default(now())
+  createdBy       String?
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
 
   // relations
   payments    Payment[]
@@ -34,8 +36,8 @@ model Payment {
   id                      String    @id @default(uuid())
   userId                  String
   paymentMethodId         String
-  amount                  Float
-  amountCharged           Float
+  amount                  Decimal
+  amountCharged           Decimal
   reference               String  // refernece to track this payment on the payment provider Id
   paymentAuthorization    Json?
   // to do - store more details about the payment from the provider

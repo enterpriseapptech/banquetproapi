@@ -1,8 +1,12 @@
 
 export class NotificationDto {
     id: string;
-    email: string;
-    createdAt: Date;;
-    updatedAt: Date;;
-    deleted_at?: Date;;
+    userId: string;
+    message: string;
+    type: string;
+    isRead: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt?: Date;
+    deletedBy: string;
 }

@@ -112,7 +112,7 @@ export class UsersService {
             });
 
             //  emit a email verification - notification event
-            this.notificationClient.emit(NOTIFICATIONPATTERN.SENDNOTIFICATION, {
+            this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
                 type: 'EMAIL',
                 recipientId: account.user.id,
                 data: {
@@ -369,7 +369,7 @@ export class UsersService {
         }
 
         //  emit a email verification - notification event
-        this.notificationClient.emit(NOTIFICATIONPATTERN.SENDNOTIFICATION, {
+        this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
             type: 'EMAIL',
             recipientId: user.id,
             data: {

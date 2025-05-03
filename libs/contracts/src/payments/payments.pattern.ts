@@ -1,4 +1,4 @@
-export const PaymentPATTERN = {
+export const PAYMENTPATTERN = {
     FINDALL: 'payment.findAll',
     FINDBYID: 'payment.findOneById',
     CREATE: 'payment.create',
@@ -6,7 +6,7 @@ export const PaymentPATTERN = {
     DELETE: 'payment.delete',
 }
 
-export const PaymentMethodPATTERN = {
+export const PAYMENTMETHODPATTERN = {
     FINDALL: 'paymentmethod.findAll',
     FINDBYID: 'paymentmethod.findOneById',
     CREATE: 'paymentmethod.create',
