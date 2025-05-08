@@ -53,6 +53,8 @@ export class PaymentMethodService {
     ) { }
 
     create(createPaymentMethodDto: CreatePaymentMethodDto) {
+        // upload to cloudinary here
+        // createPaymentMethodDto.providerLogo = cloduinary.url
         return this.paymentMethodClient.send<PaymentMethodDto, CreatePaymentMethodDto>(PAYMENTMETHODPATTERN.CREATE, createPaymentMethodDto)
     }
 

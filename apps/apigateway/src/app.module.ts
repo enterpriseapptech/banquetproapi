@@ -7,15 +7,21 @@ import { EventcentersModule } from './eventcenters/eventcenters.module';
 import { BookingModule } from './booking/booking.module';
 import { CateringModule } from './catering/catering.module';
 import { PaymentModule } from './payment/payment.module';
+import { ConfigModule } from '@nestjs/config';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     UsersModule,
     ClientConfigModule,
     EventcentersModule,
     BookingModule,
     CateringModule,
     PaymentModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
