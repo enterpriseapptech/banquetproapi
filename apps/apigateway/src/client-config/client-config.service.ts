@@ -86,4 +86,19 @@ export class ClientConfigService {
             }
         }
     } 
+
+
+    get PaymentClientOptions(): ClientOptions {
+        return {
+            transport: Transport.RMQ,
+            options: {
+                urls: [process.env.PAYMENTURL],
+                queue: process.env.PAYMENTQUEUE,
+                queueOptions: { durable: true, autoDelete: false },
+                noAck: true, // Ensure messages are properly acknowledged
+                prefetchCount: 1, // Prevent overloading
+
+            }
+        }
+    } 
 }
