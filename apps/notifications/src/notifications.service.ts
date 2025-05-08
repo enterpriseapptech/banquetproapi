@@ -47,23 +47,39 @@ export class NotificationsService {
 		}
 	}
 
-	async findAll(limit: number, offset: number, search?: string): Promise<NotificationDto[]> {
-		const notifications = await this.databaseService.notification.findMany({
-			take: limit,
-			skip: offset,
-			where: {
-				deletedAt: null,
-				...(search && {
-					message: {
-						contains: search,
-						mode: 'insensitive', // case-insensitive search
-					},
-				}),
-			},
-			orderBy: { createdAt: 'asc' },
-		});
+	async findAll(limit: number, offset: number, search?: string): Promise<{ count: number; docs: NotificationDto[] }> {
+		const [notifications, count] = await this.databaseService.$transaction([
+			this.databaseService.notification.findMany({
+				take: limit,
+				skip: offset,
+				where: {
+					deletedAt: null,
+					...(search && {
+						message: {
+							contains: search,
+							mode: 'insensitive', // case-insensitive search
+						},
+					})},
+				orderBy: { createdAt: 'asc' },
+			}),
 
-		return notifications.map(notification => this.mapToNotification(notification));
+			this.databaseService.review.count({
+				where: {
+					deletedAt: null,
+					...(search && {
+						message: {
+							contains: search,
+							mode: 'insensitive', // case-insensitive search
+						},
+					})},
+			}),
+		]);
+
+		return {
+			count,
+			docs:notifications.map(notification => this.mapToNotification(notification))
+		};
+
 	}
 
 

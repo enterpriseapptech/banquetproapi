@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { NotificationsController } from './notifications.controller';
-import { NotificationsService } from './notifications.service';
+import { NotificationsController, ReviewController } from './notifications.controller';
+import { NotificationsService, ReviewService } from './notifications.service';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ClientConfigService } from '../client-config/client-config.service';
 import { BOOKING_CLIENT, USER_CLIENT } from '@shared/contracts';
@@ -22,8 +22,9 @@ import { ClientConfigModule } from '../client-config/client-config.module';
             }
         }),
     ],
-    controllers: [NotificationsController],
+    controllers: [NotificationsController, ReviewController],
     providers: [
+        ReviewService,
         NotificationsService,
         ClientConfigService,
         {

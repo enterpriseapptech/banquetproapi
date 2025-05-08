@@ -2,7 +2,7 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload, EventPattern } from '@nestjs/microservices';
 import { NotificationsService, ReviewService } from './notifications.service';
-import { CreateNotificationDto, UpdateNotificationDto, NotificationDto, NOTIFICATIONPATTERN, CreateReviewDto, UpdateReviewDto, ReviewFilter } from '@shared/contracts/notifications'
+import { CreateNotificationDto, UpdateNotificationDto, NotificationDto, NOTIFICATIONPATTERN, CreateReviewDto, UpdateReviewDto, ReviewFilter, REVIEWPATTERN } from '@shared/contracts/notifications'
 import { NotificationInterface } from '@shared/interfaces/Notification/notification.interface';
 
 @Controller()
@@ -62,23 +62,23 @@ export class NotificationsController {
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
-  @MessagePattern({ cmd: 'create_review' })
+  @MessagePattern(REVIEWPATTERN.CREATE)
   create(@Payload() dto: CreateReviewDto) {
     return this.reviewService.create(dto);
   }
 
-  @MessagePattern({ cmd: 'update_review' })
+  @MessagePattern(REVIEWPATTERN.UPDATE)
   update(@Payload() data: { reviewId: string; dto: UpdateReviewDto }) {
     return this.reviewService.update(data.reviewId, data.dto);
   }
 
-  @MessagePattern({ cmd: 'delete_review' })
+  @MessagePattern(REVIEWPATTERN.PERMENENTDELETE)
   delete(@Payload() id: string ) {
     return this.reviewService.permanentDelete(id);
   }
 
 
-  @MessagePattern({ cmd: 'get_user_reviews' })
+  @MessagePattern(REVIEWPATTERN.FINDALL)
   findAll(@Payload() data: {limit: number, offset: number, search?: string, filter?: ReviewFilter}) {
     return this.reviewService.findAll(data.limit, data.offset, data.search, data.filter );
   }
