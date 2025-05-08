@@ -66,7 +66,7 @@ export class PaymentMethodController {
         }
 
         // Upload file to Cloudinary
-        const uploadResult = await this.cloudinaryService.uploadStream(providerLogo.buffer, 'payment-methods');
+        const uploadResult = await this.cloudinaryService.uploadStream(providerLogo.buffer, 'entapp-api/payment-methods/logo');
         // Build full DTO with Cloudinary image URL
         const createPaymentMethodUpdatedDto: CreatePaymentMethodDto = {
             ...createPaymentMethodDto,
