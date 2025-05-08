@@ -39,7 +39,7 @@ model Booking {
   rescheduledAt                 DateTime?
   previousDates                 String[]
   cancelledBy                   String?  //  whoever cancelled the book, points to an ID on users table
-  cancelledAt                    DateTime?
+  canceledAt                    DateTime?
   cancelationReason             String?
   createdAt                     DateTime  @default(now())
   updatedAt                     DateTime  @updatedAt

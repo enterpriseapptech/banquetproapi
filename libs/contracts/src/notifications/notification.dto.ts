@@ -1,3 +1,4 @@
+import { ServiceType } from "./create-notification.dto";
 
 export class NotificationDto {
     id: string;
@@ -10,3 +11,19 @@ export class NotificationDto {
     deletedAt?: Date;
     deletedBy: string;
 }
+
+export class ReviewDto {
+    id: string;
+    userId: string;
+    bookingId: string;
+    serviceId: string;
+    serviceType: ServiceType;
+    rating: number;
+    comment?: string;
+    isApproved: boolean;
+    approvedBy?: string;
+    deletedAt?: Date | null;
+    deletedBy?: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }

@@ -22,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     async validate(payload: { sub: string }) {
         try {
-            const user = await this.userClient.send<UserDto, string>(USERPATTERN.FINDUSERBYID, payload.sub);
+            const user = await this.userClient.send<UserDto, string>(USERPATTERN.FINDBYID, payload.sub);
 
             if (!user) {
                 throw new UnauthorizedException('user is unauthorized', {

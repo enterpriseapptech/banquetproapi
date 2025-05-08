@@ -42,7 +42,7 @@ export class EventcentersService {
         }
 
         // validate service provider
-        const serviceProvider = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDUSERBYID, newEventCenterInput.serviceProviderId));
+        const serviceProvider = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDBYID, newEventCenterInput.serviceProviderId));
 
         if (!serviceProvider) {
             throw new NotFoundException("could not verify service provider account")

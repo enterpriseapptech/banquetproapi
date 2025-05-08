@@ -1,11 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ForbiddenException, Injectable, InternalServerErrorException } from '@nestjs/common';
-import { CreateNotificationDto, CreateReviewDto, NotificationDto, NotificationType, UpdateNotificationDto, UpdateReviewDto } from '@shared/contracts/notifications';
+import { ForbiddenException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { CreateNotificationDto, CreateReviewDto, NotificationDto, NotificationType, ReviewDto, ReviewFilter, ServiceType, UpdateNotificationDto, UpdateReviewDto } from '@shared/contracts/notifications';
 import { NotificationInterface } from '@shared/interfaces/Notification/notification.interface';
 import { MailerService } from '@nestjs-modules/mailer';
 import { DatabaseService } from '../database/database.service';
 import { $Enums, Prisma } from '@prisma/notifications';
-
+import { BookingDto, BOOKINGPATTERN } from '@shared/contracts/booking';
+import { BOOKING_CLIENT, USER_CLIENT } from '@shared/contracts';
+import { ClientProxy } from '@nestjs/microservices';
+import { firstValueFrom } from 'rxjs';
+import { UserDto, USERPATTERN } from '@shared/contracts/users';
 @Injectable()
 export class NotificationsService {
 	constructor(
@@ -45,23 +49,23 @@ export class NotificationsService {
 
 	async findAll(limit: number, offset: number, search?: string): Promise<NotificationDto[]> {
 		const notifications = await this.databaseService.notification.findMany({
-		  take: limit,
-		  skip: offset,
-		  where: {
-			deletedAt: null,
-			...(search && {
-			  message: {
-				contains: search,
-				mode: 'insensitive', // case-insensitive search
-			  },
-			}),
-		  },
-		  orderBy: { createdAt: 'asc' },
+			take: limit,
+			skip: offset,
+			where: {
+				deletedAt: null,
+				...(search && {
+					message: {
+						contains: search,
+						mode: 'insensitive', // case-insensitive search
+					},
+				}),
+			},
+			orderBy: { createdAt: 'asc' },
 		});
-	  
+
 		return notifications.map(notification => this.mapToNotification(notification));
 	}
-	  
+
 
 	async findOne(id: string): Promise<NotificationDto> {
 
@@ -100,14 +104,14 @@ export class NotificationsService {
 		}
 	}
 
-	
+
 	async read(id: string): Promise<NotificationDto> {
 		try {
 
 			const notification = await this.databaseService.notification.update({
 				where: { id },
-				data:{
-					isRead: true	
+				data: {
+					isRead: true
 				}
 			});
 
@@ -124,17 +128,17 @@ export class NotificationsService {
 
 	async readAll(userId: string): Promise<{ count: number }> {
 		try {
-		  const result = await this.databaseService.notification.updateMany({
-			where: { userId, isRead: false },
-			data: { isRead: true },
-		  });
-	  
-		  return { count: result.count };
+			const result = await this.databaseService.notification.updateMany({
+				where: { userId, isRead: false },
+				data: { isRead: true },
+			});
+
+			return { count: result.count };
 		} catch (error) {
-		  throw new InternalServerErrorException(error);
+			throw new InternalServerErrorException(error);
 		}
 	}
-	  
+
 
 	async remove(id: string): Promise<NotificationDto> {
 
@@ -229,72 +233,165 @@ export class NotificationsService {
 
 @Injectable()
 export class ReviewService {
-  constructor(private readonly databaseService: DatabaseService,) {}
+	constructor(
+		@Inject(BOOKING_CLIENT) private readonly bookingClient: ClientProxy,
+		@Inject(USER_CLIENT) private readonly userClient: ClientProxy,
+		private readonly databaseService: DatabaseService,
+	) { }
 
-//   async create(dto: CreateReviewDto) {
-//     // Validate that the booking belongs to the user and is completed
-//     const booking = await this.databaseService.booking.findFirst({
-//       where: {
-//         id: dto.bookingId,
-//         userId: dto.userId,
-//         status: 'COMPLETED',
-//       },
-//     });
+	async create(createReviewDto: CreateReviewDto) {
+		
+		try {
+			// Validate that the booking belongs to the user and is completed
+			const booking = await firstValueFrom(this.bookingClient.send<BookingDto, string>(BOOKINGPATTERN.FINDONEBYID, createReviewDto.bookingId)) 
 
-//     if (!booking) {
-//       throw new ForbiddenException('You can only review after booking is completed');
-//     }
+			if (!booking) {
+				throw new ForbiddenException('The booking you selected for review does not exist');
+			}
+			
+			if(booking.status != 'BOOKED' || booking.customerId != createReviewDto.userId 
+				|| booking.serviceType !== createReviewDto.serviceType 
+				||  booking.canceledAt)
+				{
+					throw new ForbiddenException('You can not review this booking');
+		
+				}
+			
+			const newReviewInput: Prisma.ReviewCreateInput = {
+				userId: createReviewDto.userId,
+				bookingId: booking.id,
+				serviceId: createReviewDto.serviceId,
+				serviceType: createReviewDto.serviceType as $Enums.ServiceType,
+				rating: createReviewDto.rating,
+				comment: createReviewDto.comment,
+			}	
+			// Start a transaction - for an all or fail process of creating a user
+			const review = await this.databaseService.$transaction(async (prisma) => {
 
-//     return this.databaseService.review.create({
-//       data: { ...dto },
-//     });
-//   }
+				// Create the user
+				const review = await prisma.review.create({ data: newReviewInput });
+				return review; // Return created user
+			});
 
-  async update(reviewId: string, dto: UpdateReviewDto) {
-    return this.databaseService.review.update({
-      where: { id: reviewId },
-      data: { ...dto },
-    });
-  }
+			return {
+				...review,
+				serviceType: review.serviceType as unknown as ServiceType
+			};
 
-  async approve(reviewId: string, approverId: string) {
-    return this.databaseService.review.update({
-      where: { id: reviewId },
-      data: {
-        isApproved: true,
-        approvedBy: approverId,
-      },
-    });
-  }
+		} catch (error) {
+			throw new InternalServerErrorException('sever error could not create review ', {
+				cause: new Error(),
+				description: 'notification creation failed, please try again'
+			});
+		}
+		
+	}
 
-  async softDelete(reviewId: string, deletedBy: string) {
-    return this.databaseService.review.update({
-      where: { id: reviewId },
-      data: {
-        deletedAt: new Date(),
-        deletedBy,
-      },
-    });
-  }
+	async update(id: string, updateReviewDto: UpdateReviewDto) {
+		try {
+			if (updateReviewDto.approvedBy) {
+				// Validate that the booking belongs to the user and is completed
+				const user = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDBYID, updateReviewDto.approvedBy)) 
 
-  async getApprovedReviews(serviceId: string) {
-    return this.databaseService.review.findMany({
-      where: {
-        serviceId,
-        isApproved: true,
-        deletedAt: null,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
+				if (!user && (user.userType !== 'ADMIN' && user.userType !== 'SERVICE_PROVIDER')) {
+					throw new ForbiddenException('Only admin or the owner of the service been reviewed can approve it');
+				}
+			}
+			const updateReviewInput: Prisma.ReviewUpdateInput = {
+				...updateReviewDto
+			};
 
-  async getAll(userId: string) {
-    return this.databaseService.review.findMany({
-      where: {
-        userId,
-        deletedAt: null,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
+			const review = await this.databaseService.review.update({
+				where: { id },
+				data: updateReviewInput
+			});
+
+
+			return {
+				...review,
+				serviceType: review.serviceType as unknown as ServiceType
+			};
+			
+		} catch (error) {
+			throw new InternalServerErrorException('sever error could not update review ', {
+				cause: new Error(),
+				description: error.message
+			});
+		}
+
+	}
+
+	async findAll(limit: number, offset: number, search?: string, filter?: ReviewFilter): Promise<{ count: number; docs: ReviewDto[] }> {
+		const whereClause: any = {};
+    
+		if (search) {
+            whereClause.OR = [
+                { comment: { contains: search, mode: "insensitive" } }
+            ];
+        }
+
+		if (filter.approvedBy) {
+			whereClause.approvedBy = filter.approvedBy;
+		}
+		
+		if (filter.serviceId) {
+			whereClause.serviceId = filter.serviceId;
+		}
+		
+
+		if (filter.serviceType) {
+			whereClause.serviceType = filter.serviceType;
+		}
+		
+
+		if (filter.isApproved) {
+			whereClause.isApproved = filter.isApproved;
+		}
+		
+
+		const [reviews, count] = await this.databaseService.$transaction([
+			this.databaseService.review.findMany({
+				take: limit,
+				skip: offset,
+				where: whereClause,
+				orderBy: { createdAt: 'asc' },
+			}),
+			this.databaseService.review.count({
+				where: whereClause,
+			}),
+		]);
+
+		return {
+			count,
+			docs: reviews.map(review => this.mapToReviewDto(review)),
+		};
+	}
+	
+	async permanentDelete(id: string): Promise<ReviewDto> {
+
+		const review = await this.databaseService.$transaction(async (prisma) => {
+			const deletedNotification = await prisma.review.delete({
+				where: { id },
+			});
+			return deletedNotification
+		});
+
+		return {
+			...review,
+			serviceType: review.serviceType as unknown as ServiceType
+		};
+
+	}
+
+
+	/**
+	 * 
+	 * Maps a raw event center from the database to EventCenterDto.
+	 */
+	private mapToReviewDto(review: any): ReviewDto {
+		return {
+			...review,
+			serviceType: review.serviceType as unknown as ServiceType
+		};
+	}
 }

@@ -2,7 +2,7 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload, EventPattern } from '@nestjs/microservices';
 import { NotificationsService, ReviewService } from './notifications.service';
-import { CreateNotificationDto, UpdateNotificationDto, NotificationDto, NOTIFICATIONPATTERN, CreateReviewDto, UpdateReviewDto } from '@shared/contracts/notifications'
+import { CreateNotificationDto, UpdateNotificationDto, NotificationDto, NOTIFICATIONPATTERN, CreateReviewDto, UpdateReviewDto, ReviewFilter } from '@shared/contracts/notifications'
 import { NotificationInterface } from '@shared/interfaces/Notification/notification.interface';
 
 @Controller()
@@ -62,33 +62,24 @@ export class NotificationsController {
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
-  // @MessagePattern({ cmd: 'create_review' })
-  // create(@Payload() dto: CreateReviewDto) {
-  //   return this.reviewService.create(dto);
-  // }
+  @MessagePattern({ cmd: 'create_review' })
+  create(@Payload() dto: CreateReviewDto) {
+    return this.reviewService.create(dto);
+  }
 
   @MessagePattern({ cmd: 'update_review' })
   update(@Payload() data: { reviewId: string; dto: UpdateReviewDto }) {
     return this.reviewService.update(data.reviewId, data.dto);
   }
 
-  @MessagePattern({ cmd: 'approve_review' })
-  approve(@Payload() data: { reviewId: string; approverId: string }) {
-    return this.reviewService.approve(data.reviewId, data.approverId);
-  }
-
   @MessagePattern({ cmd: 'delete_review' })
-  delete(@Payload() data: { reviewId: string; deletedBy: string }) {
-    return this.reviewService.softDelete(data.reviewId, data.deletedBy);
+  delete(@Payload() id: string ) {
+    return this.reviewService.permanentDelete(id);
   }
 
-  @MessagePattern({ cmd: 'get_approved_reviews' })
-  getApproved(@Payload() serviceId: string) {
-    return this.reviewService.getApprovedReviews(serviceId);
-  }
 
   @MessagePattern({ cmd: 'get_user_reviews' })
-  getAll(@Payload() userId: string) {
-    return this.reviewService.getAll(userId);
+  findAll(@Payload() data: {limit: number, offset: number, search?: string, filter?: ReviewFilter}) {
+    return this.reviewService.findAll(data.limit, data.offset, data.search, data.filter );
   }
 }

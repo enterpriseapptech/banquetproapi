@@ -42,7 +42,7 @@ export class CateringService {
         }
 
         // validate service provider
-        const serviceProvider = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDUSERBYID, newCateringInput.serviceProviderId));
+        const serviceProvider = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDBYID, newCateringInput.serviceProviderId));
 
         if (!serviceProvider) {
             throw new NotFoundException("could not verify service provider account")

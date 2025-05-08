@@ -42,7 +42,7 @@ export class BookingService {
 		}
 
 		// validate customer account
-		const customer = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDUSERBYID, newBookingInput.customerId));
+		const customer = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDBYID, newBookingInput.customerId));
 
 		if (!customer) {
 			throw new NotFoundException("could not verify user account")
@@ -558,7 +558,7 @@ export class TimeSlotService {
 
 
 			//  notify service provider of timeslot
-			const user = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDUSERBYID, ServiceProvider));
+			const user = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDBYID, ServiceProvider));
 			if (user) {
 				this.notificationClient.emit(NOTIFICATIONPATTERN.FINDANDSEND, {
 					type: 'EMAIL',

@@ -48,7 +48,7 @@ export class UsersService {
     }
 
     findOne(id: string) {
-        return this.userClient.send<UserDto, string>(USERPATTERN.FINDUSERBYID, id)
+        return this.userClient.send<UserDto, string>(USERPATTERN.FINDBYID, id)
     }
 
     update(id: number, updateUserDto: UpdateUserDto) {
