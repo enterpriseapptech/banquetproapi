@@ -12,6 +12,7 @@ export const PAYMENTMETHODPATTERN = {
     CREATE: 'paymentmethod.create',
     UPDATE: 'paymentmethod.update',
     DELETE: 'paymentmethod.delete',
+    PERMANENTDELETE: 'paymentmethod.permanentdelete'
 }
 
 export const DISPUTEPATTERN = {
