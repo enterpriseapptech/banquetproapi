@@ -6,6 +6,7 @@ import { ClientConfigService } from '../client-config/client-config.service';
 import { BOOKING_CLIENT, USER_CLIENT } from '@shared/contracts';
 import { ClientProxyFactory } from '@nestjs/microservices';
 import { ClientConfigModule } from '../client-config/client-config.module';
+import { DatabaseService } from '../database/database.service';
 @Module({
     imports: [
         ClientConfigModule,
@@ -26,6 +27,7 @@ import { ClientConfigModule } from '../client-config/client-config.module';
     providers: [
         ReviewService,
         NotificationsService,
+        DatabaseService,
         ClientConfigService,
         {
             provide: BOOKING_CLIENT,

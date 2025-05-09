@@ -26,7 +26,7 @@ async function bootstrap() {
 
     // Dummy Express Server to satisfy Render
     const dummyApp = express();
-    const port = process.env.PORT || 8001;
+    const port = process.env.PORT || 8003;
     dummyApp.listen(port, () => console.log(`Dummy server running on port ${port}`));
 }
 bootstrap();
