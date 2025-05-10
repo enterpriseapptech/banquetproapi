@@ -1,8 +1,9 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { CreateUserDto } from './create-user.dto';
-import { IsOptional, IsPhoneNumber, IsPostalCode, IsString, Length, IsObject, ValidateNested, } from 'class-validator';
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { CreateUserDto,} from './create-user.dto';
+import { IsOptional, IsPhoneNumber, IsPostalCode, IsString, Length, IsObject, ValidateNested, IsEnum } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
+import { UserStatus } from './user.dto';
 
 class WorkingHoursDay {
     @IsOptional()
@@ -16,13 +17,13 @@ class WorkingHoursDay {
 export class UpdateUserDto extends PartialType(CreateUserDto) {
 
 
-    @ApiPropertyOptional({ type: 'string', required: false })
+    @ApiProperty({ type: 'string', required: false })
     @IsOptional()
     @IsPhoneNumber()
     @Length(10, 15)
-    phoneNumber
+    phoneNumber: any
 
-    @ApiPropertyOptional({
+    @ApiProperty({
         type: 'object',
         additionalProperties: {
             type: 'object',
@@ -79,7 +80,7 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
     @ApiPropertyOptional({ type: 'string', required: false })
     @IsOptional()
     @IsString()
-    street
+    street?: string
 
     @ApiPropertyOptional({ type: 'string', required: false })
     @IsOptional()
@@ -96,7 +97,7 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
     @ApiPropertyOptional({ type: 'string', required: false })
     @IsOptional()
     @IsString()
-    companyName
+    companyName?: string
 
     @ApiPropertyOptional({ type: 'string', required: false })
     @IsOptional()
@@ -108,4 +109,112 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
     @IsString()
     businessSlogan?: string
 
+
+    @IsOptional()
+    @IsEnum(UserStatus)
+    status?: UserStatus;
+
 }
+
+// export class UpdateAdminDto {
+//   @IsOptional()
+//   @IsString()
+//   role?: string;
+// }
+
+// export class UpdateServiceProviderDto {
+//   @IsOptional()
+//   businessName?: string;
+
+//   @IsOptional()
+//   @IsEnum(ServiceType)
+//   serviceType?: ServiceType;
+
+//   @IsOptional()
+//   businessLogo?: string;
+
+//   @IsOptional()
+//   pricingInfo?: string;
+
+//   @IsOptional()
+//   regulations?: string;
+
+//   @IsOptional()
+//   additionalInformation?: string;
+
+//     @ApiProperty({
+//         type: 'object',
+//         additionalProperties: {
+//             type: 'object',
+//             properties: {
+//                 startTime: { type: 'string', example: '09:00' },
+//                 endTime: { type: 'string', example: '17:00' },
+//             },
+//             nullable: true,
+//         },
+//         example: {
+//             0: { startTime: "09:00", endTime: "17:00" },
+//             1: { startTime: "09:00", endTime: "17:00" },
+//             2: { startTime: "09:00", endTime: "17:00" },
+//             3: { startTime: "09:00", endTime: "17:00" },
+//             4: { startTime: "09:00", endTime: "17:00" },
+//             5: { startTime: "10:00", endTime: "14:00" },
+//             6: null // Closed on Sunday
+//         },
+//     })
+//     @IsOptional()
+//     @IsObject()
+//     @ValidateNested()
+//     @Type(() => Object)
+//     @Transform(({ value }) => {
+//         try {
+//             return JSON.parse(value); // Convert string to JSON object
+//         } catch {
+//             return value; // Return as-is if parsing fails
+//         }
+//     })
+//     workingHours?: Record<number, WorkingHoursDay>;
+
+// }
+
+// export class UpdateUserDto {
+//   @IsOptional()
+//   firstName?: string;
+
+//   @IsOptional()
+//   lastName?: string;
+
+//   @IsOptional()
+//   @IsEnum(UserStatus)
+//   status?: UserStatus;
+
+//   @IsOptional()
+//   @IsEnum(UserType)
+//   userType?: UserType;
+
+//   @IsOptional()
+//   city?: string;
+
+//   @IsOptional()
+//   state?: string;
+
+//   @IsOptional()
+//   country?: string;
+
+//   @IsOptional()
+//   streetAddress?: string;
+
+//   @IsOptional()
+//   streetAddress2?: string;
+
+//   @IsOptional()
+//   location?: string;
+
+//   @IsOptional()
+//   admin?: UpdateAdminDto;
+
+//   @IsOptional()
+//   serviceProvider?: UpdateServiceProviderDto;
+
+//   // Add similar optional fields for customer or staff if needed
+// }

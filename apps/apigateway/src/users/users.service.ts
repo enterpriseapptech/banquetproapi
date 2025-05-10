@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { HttpException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { UpdateUserDto, CreateUserDto, USERPATTERN, UserDto, LoginUserDto, } from '@shared/contracts/users';
+import { UpdateUserDto, CreateUserDto, USERPATTERN, UserDto, LoginUserDto, UserFilterDto, } from '@shared/contracts/users';
 import { USER_CLIENT } from '@shared/contracts';
 
 
@@ -43,16 +43,16 @@ export class UsersService {
         return this.userClient.send<UserDto, { id: string }>(USERPATTERN.RESENDUSER, { id })    
     }
     
-    findAll(limit: number, offset: number) {
-        return this.userClient.send<UserDto[], { limit: number, offset: number }>(USERPATTERN.FINDALLUSERS, { limit, offset })
+    findAll(limit: number, offset: number, search?: string, filter?: UserFilterDto) {
+        return this.userClient.send<UserDto[], { limit: number, offset: number, search?: string, filter?: UserFilterDto }>(USERPATTERN.FINDALLUSERS, { limit, offset, search, filter })
     }
 
     findOne(id: string) {
         return this.userClient.send<UserDto, string>(USERPATTERN.FINDBYID, id)
     }
 
-    update(id: number, updateUserDto: UpdateUserDto) {
-        return `This action updates a #${id} user`;
+    update(id: string, updateUserDto: UpdateUserDto) {
+        return this.userClient.send<UserDto, {id: string, updateUserDto: UpdateUserDto}>(USERPATTERN.UPDATE, {id, updateUserDto})
     }
 
     remove(id: number) {

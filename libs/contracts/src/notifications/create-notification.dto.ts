@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEnum, IsNotEmpty, IsUUID, IsInt, Min, Max, IsString, IsOptional } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsUUID, IsInt, Min, Max, IsString, IsOptional, ValidateIf, IsBoolean } from 'class-validator';
 
 
 export enum NotificationType {
@@ -15,6 +15,45 @@ export enum ServiceType {
   
 }
 
+export class NotificationFilter {
+  @ApiProperty({ description: 'Filter unread notifications' })
+  @IsOptional()
+  @IsBoolean()
+  unread?: boolean;
+
+  @ApiProperty({ description: 'Filter read notifications' })
+  @IsOptional()
+  @IsBoolean()
+  read?: boolean;
+
+  @ApiProperty({ description: 'Filter notifications sent today' })
+  @IsOptional()
+  @IsBoolean()
+  today?: boolean;
+
+  @ApiProperty({ description: 'Filter by sender ID (must be UUID)' })
+  @IsOptional()
+  @IsUUID()
+  senderId?: string;
+
+  @ApiProperty({ description: 'Filter by receiver ID (must be UUID)' })
+  @IsOptional()
+  @IsUUID()
+  recieverId?: string;
+
+  @ApiProperty({ description: 'Filter system-generated notifications' })
+  @IsOptional()
+  @IsBoolean()
+  systemNotification?: boolean;
+
+
+  @ApiProperty({ example: 'INFO', enum: NotificationType, description: 'Type of notification' })
+  @IsEnum(NotificationType)
+  @IsOptional()
+  type?: NotificationType;
+}
+
+
 export class CreateNotificationDto {
 
     @ApiProperty({ description: 'ID of the user receiving the notification' })
@@ -22,6 +61,19 @@ export class CreateNotificationDto {
     @IsNotEmpty()
     userId: string;
   
+    @IsOptional()
+    internalId?: string
+
+    @ApiProperty({
+      description: 'Sender ID (must be UUID, system_notification is restricted to internal use)',
+      example: 'c56a4180-65aa-42ec-a945-5fd21dec0538',
+    })
+    @ValidateIf((o) => !o.internalId)
+    @IsOptional()
+    @IsUUID()
+    senderId?: string
+
+
     @ApiProperty({ example: 'You have a new message', description: 'Notification message' })
     @IsString()
     @IsNotEmpty()

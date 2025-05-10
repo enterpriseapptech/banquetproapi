@@ -9,6 +9,7 @@ import { CateringModule } from './catering/catering.module';
 import { PaymentModule } from './payment/payment.module';
 import { ConfigModule } from '@nestjs/config';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     CateringModule,
     PaymentModule,
     CloudinaryModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

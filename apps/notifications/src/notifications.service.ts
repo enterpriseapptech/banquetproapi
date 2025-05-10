@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ForbiddenException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
-import { CreateNotificationDto, CreateReviewDto, NotificationDto, NotificationType, ReviewDto, ReviewFilter, ServiceType, UpdateNotificationDto, UpdateReviewDto } from '@shared/contracts/notifications';
+import { CreateNotificationDto, CreateReviewDto, NotificationDto, NotificationFilter, NotificationType, ReviewDto, ReviewFilter, ServiceType, UpdateNotificationDto, UpdateReviewDto } from '@shared/contracts/notifications';
 import { NotificationInterface } from '@shared/interfaces/Notification/notification.interface';
 import { MailerService } from '@nestjs-modules/mailer';
 import { DatabaseService } from '../database/database.service';
@@ -47,40 +47,57 @@ export class NotificationsService {
 		}
 	}
 
-	async findAll(limit: number, offset: number, search?: string): Promise<{ count: number; docs: NotificationDto[] }> {
+	async findAll(limit: number, offset: number, search?: string, filter?: NotificationFilter
+		): Promise<{ count: number; docs: NotificationDto[] }> {
+		const now = new Date();
+		const startOfDay = new Date(now.setHours(0, 0, 0, 0));
+		const endOfDay = new Date(now.setHours(23, 59, 59, 999));
+
+		const whereClause: any = {
+			deletedAt: null,
+			...(search && {
+			message: {
+				contains: search,
+				mode: 'insensitive',
+			},
+			}),
+			...(filter?.senderId && { senderId: filter.senderId }),
+			...(filter?.recieverId && { recieverId: filter.recieverId }),
+			...(filter?.read && { isRead: true }),
+			...(filter?.unread && { isRead: false }),
+			...(filter?.type && { type: filter.type }),
+			...(filter?.systemNotification !== undefined && {
+			senderId: filter.systemNotification ? 'SYSTEM_NOTIFICATION' : { not: 'SYSTEM_NOTIFICATION' },
+			}),
+			...(filter?.today && {
+			createdAt: {
+				gte: startOfDay,
+				lte: endOfDay,
+			},
+			}),
+		};
+
 		const [notifications, count] = await this.databaseService.$transaction([
 			this.databaseService.notification.findMany({
-				take: limit,
-				skip: offset,
-				where: {
-					deletedAt: null,
-					...(search && {
-						message: {
-							contains: search,
-							mode: 'insensitive', // case-insensitive search
-						},
-					})},
-				orderBy: { createdAt: 'asc' },
+			take: limit,
+			skip: offset,
+			where: whereClause,
+			orderBy: { createdAt: 'asc' },
 			}),
 
-			this.databaseService.review.count({
-				where: {
-					deletedAt: null,
-					...(search && {
-						message: {
-							contains: search,
-							mode: 'insensitive', // case-insensitive search
-						},
-					})},
+			this.databaseService.notification.count({
+			where: whereClause,
 			}),
 		]);
 
 		return {
 			count,
-			docs:notifications.map(notification => this.mapToNotification(notification))
+			docs: notifications.map((notification) =>
+			this.mapToNotification(notification)
+			),
 		};
-
 	}
+
 
 
 	async findOne(id: string): Promise<NotificationDto> {

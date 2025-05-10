@@ -9,3 +9,5 @@ export interface NotificationInterface {
         url?: string;     // Optional link (e.g., for email verification)
     };
 }
+
+

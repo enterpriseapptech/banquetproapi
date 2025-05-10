@@ -1,5 +1,6 @@
-import { IsEmail, IsEnum, IsNotEmpty, Length, IsOptional, IsUUID } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, Length, IsOptional, IsUUID, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { UserStatus } from './user.dto';
 
 export enum UserType {
     ADMIN = 'ADMIN',
@@ -15,6 +16,33 @@ export enum ServiceType {
     
 }
 
+
+export class UserFilterDto {
+  @ApiProperty({ description: 'Filter by user type', enum: UserType })
+  @IsOptional()
+  @IsEnum(UserType)
+  userType?: UserType;
+
+  @ApiProperty({ description: 'Filter by user status', enum: UserStatus })
+  @IsOptional()
+  @IsEnum(UserStatus)
+  status?: UserStatus;
+
+  @ApiProperty({ description: 'Filter by city' })
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @ApiProperty({ description: 'Filter by state' })
+  @IsOptional()
+  @IsString()
+  state?: string;
+
+  @ApiProperty({ description: 'Filter by country' })
+  @IsOptional()
+  @IsString()
+  country?: string;
+}
 
 export class CreateUserDto {
     @ApiProperty({ example: 'test@gmail.com', description: 'email of the user' })

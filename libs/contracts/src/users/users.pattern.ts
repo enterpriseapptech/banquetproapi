@@ -5,6 +5,6 @@ export const USERPATTERN = {
     LOGINUSER: 'users.login',
     VERIFYUSER: 'users.verify',
     RESENDUSER: 'users.resend',
-    UPDATEUSER: 'users.update',
-    DELETEUSER: 'users.delete',
+    UPDATE: 'users.update',
+    DELETE: 'users.delete',
 }

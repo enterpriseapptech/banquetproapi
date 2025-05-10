@@ -13,7 +13,7 @@ async function bootstrap() {
       transport: Transport.RMQ,
       options: {
         urls: [process.env.CATERINGURL],
-        queue: process.env.CATERINGQUEUE,
+        queue: `${process.env.CATERINGQUEUE}_${process.env.NODE_ENV}`,
         queueOptions: { durable: true, autoDelete: false },
         noAck: true, // Ensure messages are properly acknowledged
         prefetchCount: 1, // Prevent overloading

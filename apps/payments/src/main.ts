@@ -12,7 +12,7 @@ async function bootstrap() {
             transport: Transport.RMQ,
             options: {
                 urls: [process.env.PAYMENTURL],
-                queue: process.env.PAYMENTQUEUE,
+                queue: `${process.env.PAYMENTQUEUE}_${process.env.NODE_ENV}`,
                 queueOptions: {
                     durable: false
                 },

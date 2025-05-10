@@ -2,7 +2,7 @@
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { $Enums, Prisma } from '@prisma/users';
-import { CreateUserDto, UpdateUserDto, UserDto, LoginUserDto, UserType, UserStatus, ServiceType } from '@shared/contracts/users';
+import { CreateUserDto, UpdateUserDto, UserDto, LoginUserDto, UserType, UserStatus, ServiceType, UserFilterDto } from '@shared/contracts/users';
 import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
 import { DatabaseService } from '../database/database.service';
 import { NOTIFICATION_CLIENT } from './constants';
@@ -223,18 +223,43 @@ export class UsersService {
         
     }
     
-    async findAll(limit: number, offset: number): Promise<UserDto[]> {
-        const users = await this.databaseService.user.findMany({
-            take: limit, // Number of records to retrieve
+    async findAll(limit: number, offset: number, search?: string, filter?: UserFilterDto): Promise<{ count: number; docs: UserDto[] }> {
+        const whereClause:any = {
+            deletedAt: null,
+            ...(filter?.userType && { userType: filter.userType }),
+            ...(filter?.status && { status: filter.status }),
+            ...(filter?.city && { city: filter.city }),
+            ...(filter?.state && { state: filter.state }),
+            ...(filter?.country && { country: filter.country }),
+            ...(search && {
+            OR: [
+                { firstName: { contains: search, mode: 'insensitive' } },
+                { lastName: { contains: search, mode: 'insensitive' } },
+                { email: { contains: search, mode: 'insensitive' } },
+                { location: { contains: search, mode: 'insensitive' } },
+                { city: { contains: search, mode: 'insensitive' } },
+                { state: { contains: search, mode: 'insensitive' } },
+                { country: { contains: search, mode: 'insensitive' } },
+            ],
+            }),
+        };
+
+        const [users, count] = await this.databaseService.$transaction([
+            this.databaseService.user.findMany({
+            where: whereClause,
+            take: limit,
             skip: offset,
-        })
+            orderBy: { createdAt: 'desc' },
+            }),
+            this.databaseService.user.count({ where: whereClause }),
+        ]);
 
-        if (!users) {
-            return [];
-        }
-        return users.map(user => this.mapToUserDto(user));
-
+        return {
+            count,
+            docs: users.map(user => this.mapToUserDto(user)),
+        };
     }
+
 
     async findOne(id: string): Promise<UserDto> {
         
@@ -276,9 +301,85 @@ export class UsersService {
         
     }
 
-    update(id: number, updateUserDto: UpdateUserDto) {
-        return `This action updates a #${id} user`;
+    async update(id: string, updateUserDto: UpdateUserDto): Promise<UserDto> {
+        const {...userData } = updateUserDto;
+
+       
+
+        const account = await this.databaseService.$transaction(async (prisma) => {
+            const user = await prisma.user.findUnique({
+                where: { id },
+                include: {
+                admin: true,
+                serviceProvider: true,
+                },
+            });
+
+            if (!user) {
+                throw new NotFoundException('User not found');
+            }
+
+            const userUpdated =  prisma.user.update({
+                where: { id },
+                data: userData,
+                })
+
+
+            return userUpdated; // Return created user
+        });
+       
+    	return  {
+            ...account,
+            status: account.status as unknown as UserStatus,
+            userType: account.userType as unknown as UserType,
+            serviceProvider: account.serviceProvider
+                ? {
+                    ...account.serviceProvider,
+                    serviceType: account.serviceProvider.serviceType as  unknown as ServiceType,
+                    workingHours:
+                        typeof user.serviceProvider.workingHours === 'string'
+                            ? JSON.parse(user.serviceProvider.workingHours)
+                            : user.serviceProvider.workingHours
+                }
+                : null
+        };;
+        // // Update Admin model if data exists
+        // if (admin && user.admin) {
+        //     updateOperations.push(
+        //     this.databaseService.admin.update({
+        //         where: { id },
+        //         data: admin,
+        //     })
+        //     );
+        // }
+
+        // Update or create ServiceProvider
+        // if (serviceProvider) {
+        //     if (user.serviceProvider) {
+        //     updateOperations.push(
+        //         this.databaseService.serviceProvider.update({
+        //         where: { id },
+        //         data: serviceProvider,
+        //         })
+        //     );
+        //     } else {
+        //     updateOperations.push(
+        //         this.databaseService.serviceProvider.create({
+        //         data: {
+        //             id, // same as userId
+        //             ...serviceProvider,
+        //         },
+        //         })
+        //     );
+        //     }
+        // }
+
+        // Run all updates concurrently
+        return await this.databaseService.$transaction(updateOperations);
+
+        // return { message: 'User updated successfully' };
     }
+
 
     remove(id: number) {
         return `This action removes a #${id} user`;

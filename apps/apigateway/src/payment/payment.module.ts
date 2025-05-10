@@ -7,7 +7,8 @@ import { ClientProxyFactory } from '@nestjs/microservices';
 import { ClientConfigModule } from '../client-config/client-config.module';
 
 @Module({
-    controllers: [PaymentController, ClientConfigModule],
+    imports: [ClientConfigModule],
+    controllers: [PaymentController],
     providers: [PaymentService,
         ClientConfigService,
         {

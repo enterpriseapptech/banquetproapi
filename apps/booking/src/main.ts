@@ -12,7 +12,7 @@ async function bootstrap() {
       transport: Transport.RMQ,
       options: {
         urls: [process.env.BOOKINGURL],
-        queue: process.env.BOOKINGQUEUE,
+        queue: `${process.env.BOOKINGQUEUE}_${process.env.NODE_ENV}`,
         queueOptions: {
           durable: false
         },

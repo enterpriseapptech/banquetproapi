@@ -1,6 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto, LoginUserDto, UpdateUserDto } from '@shared/contracts/users';
+import { CreateUserDto, LoginUserDto, UpdateUserDto, UserFilterDto } from '@shared/contracts/users';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
 import { AdminRoleGuard } from '../jwt/admin.guard';
@@ -39,10 +39,11 @@ export class UsersController {
         
     }
 
-    @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
+    // @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
     @Get()
-    findAll(@Param('limit') limit: number, @Param('offset') offset: number) {
-        return this.usersService.findAll(limit, offset);
+    findAll(@Query('limit') limit: number, @Query('offset') offset: number, @Query('search') search?: string, @Query('filter')  filter?: UserFilterDto) {
+        console.log({limit})
+        return this.usersService.findAll(limit, offset, search, filter);
     }
 
     @Get(':id')
@@ -52,7 +53,7 @@ export class UsersController {
 
     @Patch(':id')
     update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-        return this.usersService.update(+id, updateUserDto);
+        return this.usersService.update(id, updateUserDto);
     }
 
     @Delete(':id')

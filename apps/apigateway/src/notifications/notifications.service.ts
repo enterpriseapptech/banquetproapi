@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CreateNotificationDto, CreateReviewDto, NotificationDto, NOTIFICATIONPATTERN, ReviewDto, REVIEWPATTERN, UpdateNotificationDto, UpdateReviewDto } from '@shared/contracts/notifications';
+import { CreateNotificationDto, CreateReviewDto, NotificationDto, NotificationFilter, NOTIFICATIONPATTERN, ReviewDto, REVIEWPATTERN, UpdateNotificationDto, UpdateReviewDto } from '@shared/contracts/notifications';
 import { ClientProxy } from '@nestjs/microservices';
 import { NOTIFICATION_CLIENT, REVIEW_CLIENT } from '@shared/contracts';
 import { NotificationInterface } from '@shared/interfaces/Notification/notification.interface';
@@ -15,8 +15,8 @@ export class NotificationService {
         return this.notificationClient.send<NotificationDto, CreateNotificationDto>(NOTIFICATIONPATTERN.CREATE, createNotificationDto)
     }
 
-    findAll(limit: number, offset: number, search?: string) {
-        return this.notificationClient.send<{ count: number; docs: NotificationDto[] }, {limit: number, offset: number, search?: string}>(NOTIFICATIONPATTERN.FINDALL, {limit, offset, search})
+    findAll(limit: number, offset: number, search?: string, filter?: NotificationFilter) {
+        return this.notificationClient.send<{ count: number; docs: NotificationDto[] }, {limit: number, offset: number, search?: string, filter?: NotificationFilter}>(NOTIFICATIONPATTERN.FINDALL, {limit, offset, search, filter})
     }
 
     findOne(id: string) {

@@ -12,7 +12,7 @@ async function bootstrap() {
       transport: Transport.RMQ,
       options: {
         urls: [process.env.NOTIFICATIONURL],
-        queue: process.env.NOTIFICATIONQUEUE,
+        queue: `${process.env.NOTIFICATIONQUEUE}_${process.env.NODE_ENV}`,
         queueOptions: {
           durable: false
         },

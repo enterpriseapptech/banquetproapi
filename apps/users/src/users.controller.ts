@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Controller, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UpdateUserDto, CreateUserDto, USERPATTERN, LoginUserDto } from '@shared/contracts/users';
+import { UpdateUserDto, CreateUserDto, USERPATTERN, LoginUserDto, UserFilterDto } from '@shared/contracts/users';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { RpcException } from '@nestjs/microservices';
 import { catchError } from 'rxjs/operators';
@@ -73,8 +73,9 @@ export class UsersController {
 	}
 	
 	@MessagePattern(USERPATTERN.FINDALLUSERS)
-	findAll(@Payload() limit: number, @Payload() offset: number) {
-		return from(this.userService.findAll(limit, offset)).pipe(
+	findAll(@Payload() data: {limit: number, offset: number, search?: string, filter?: UserFilterDto}) {
+		console.log({data})
+		return from(this.userService.findAll(data.limit, data.offset, data.search, data.filter)).pipe(
 			catchError((err) => {
 				console.error("Error in UsersService:", err);
 				return throwError(() => new RpcException({
@@ -102,15 +103,11 @@ export class UsersController {
 		);
 	}
 
-	@MessagePattern(USERPATTERN.FINDALLUSERS)
-	findSome(@Payload() limit: number, @Payload() offset: number) {
-		return this.userService.findAll(limit, offset);
-	}
 
-	// @MessagePattern('updateUser')
-	// update(@Payload() updateUserDto: UpdateUserDto) {
-	//   return this.userService.update(updateUserDto.id, updateUserDto);
-	// }
+	@MessagePattern(USERPATTERN.UPDATE)
+	update(@Payload() data: {id:string, updateUserDto: UpdateUserDto}) {
+	  return this.userService.update(data.id, data.updateUserDto);
+	}
 
 	@MessagePattern('removeUser')
 	remove(@Payload() id: number) {
