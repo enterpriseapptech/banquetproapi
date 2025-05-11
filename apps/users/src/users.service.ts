@@ -332,16 +332,16 @@ export class UsersService {
             ...account,
             status: account.status as unknown as UserStatus,
             userType: account.userType as unknown as UserType,
-            serviceProvider: account.serviceProvider
-                ? {
-                    ...account.serviceProvider,
-                    serviceType: account.serviceProvider.serviceType as  unknown as ServiceType,
-                    workingHours:
-                        typeof user.serviceProvider.workingHours === 'string'
-                            ? JSON.parse(user.serviceProvider.workingHours)
-                            : user.serviceProvider.workingHours
-                }
-                : null
+            // serviceProvider: account.serviceProvider
+            //     ? {
+            //         ...account.serviceProvider,
+            //         serviceType: account.serviceProvider.serviceType as  unknown as ServiceType,
+            //         workingHours:
+            //             typeof user.serviceProvider.workingHours === 'string'
+            //                 ? JSON.parse(user.serviceProvider.workingHours)
+            //                 : user.serviceProvider.workingHours
+            //     }
+            //     : null
         };;
         // // Update Admin model if data exists
         // if (admin && user.admin) {
