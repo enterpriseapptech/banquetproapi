@@ -375,7 +375,7 @@ export class UsersService {
         // }
 
         // Run all updates concurrently
-        return await this.databaseService.$transaction(updateOperations);
+        // return await this.databaseService.$transaction(updateOperations);
 
         // return { message: 'User updated successfully' };
     }
