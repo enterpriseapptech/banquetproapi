@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CreateNotificationDto, CreateReviewDto, NotificationDto, NotificationFilter, NOTIFICATIONPATTERN, ReviewDto, REVIEWPATTERN, UpdateNotificationDto, UpdateReviewDto } from '@shared/contracts/notifications';
+import { CreateNotificationDto, NotificationDto, NotificationFilter, NOTIFICATIONPATTERN, ReviewDto, REVIEWPATTERN, UpdateNotificationDto, UpdateReviewDto } from '@shared/contracts/notifications';
 import { ClientProxy } from '@nestjs/microservices';
 import { NOTIFICATION_CLIENT, REVIEW_CLIENT } from '@shared/contracts';
 import { NotificationInterface } from '@shared/interfaces/Notification/notification.interface';
