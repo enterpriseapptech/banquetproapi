@@ -52,33 +52,33 @@ export class NotificationService {
     
 }
 
-@Injectable()
-export class ReviewService {
-    constructor(
-        @Inject(REVIEW_CLIENT) private readonly reviewClient: ClientProxy
-    ) { }
+// @Injectable()
+// export class ReviewService {
+//     constructor(
+//         @Inject(REVIEW_CLIENT) private readonly reviewClient: ClientProxy
+//     ) { }
 
-    create(createReviewDto: CreateReviewDto) {
-        return this.reviewClient.send<ReviewDto, CreateReviewDto>(REVIEWPATTERN.CREATE, createReviewDto)
-    }
+//     create(createReviewDto: CreateReviewDto) {
+//         return this.reviewClient.send<ReviewDto, CreateReviewDto>(REVIEWPATTERN.CREATE, createReviewDto)
+//     }
 
-    findAll(limit: number, offset: number, search?: string) {
-        return this.reviewClient.send<{ count: number; docs: NotificationDto[] }, {limit: number, offset: number, search?: string}>(NOTIFICATIONPATTERN.FINDALL, {limit, offset, search})
-    }
+//     findAll(limit: number, offset: number, search?: string) {
+//         return this.reviewClient.send<{ count: number; docs: NotificationDto[] }, {limit: number, offset: number, search?: string}>(NOTIFICATIONPATTERN.FINDALL, {limit, offset, search})
+//     }
 
 
-    findOne(id: string) {
-        return this.reviewClient.send<ReviewDto, string>(REVIEWPATTERN.FINDBYID, id)
-    }
+//     findOne(id: string) {
+//         return this.reviewClient.send<ReviewDto, string>(REVIEWPATTERN.FINDBYID, id)
+//     }
 
-    update(id: string, updateReviewDto: UpdateReviewDto) {
-        return this.reviewClient.send<ReviewDto, { id: string, updateReviewDto: UpdateReviewDto }>(REVIEWPATTERN.UPDATE, {
-            id,
-            updateReviewDto
-        })
-    }
+//     update(id: string, updateReviewDto: UpdateReviewDto) {
+//         return this.reviewClient.send<ReviewDto, { id: string, updateReviewDto: UpdateReviewDto }>(REVIEWPATTERN.UPDATE, {
+//             id,
+//             updateReviewDto
+//         })
+//     }
 
-    permanentDelete(id: string) {
-        return this.reviewClient.send<ReviewDto, { id: string}>(REVIEWPATTERN.PERMENENTDELETE, { id})
-    }
-}
+//     permanentDelete(id: string) {
+//         return this.reviewClient.send<ReviewDto, { id: string}>(REVIEWPATTERN.PERMENENTDELETE, { id})
+//     }
+// }
