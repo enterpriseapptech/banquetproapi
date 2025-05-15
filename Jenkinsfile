@@ -29,7 +29,7 @@ pipeline {
                     checkout([
                         $class: 'GitSCM',
                         branches: [[name: "*/${branchName}"]],
-                        userRemoteConfigs: [[url: "https://${GITHUB_TOKEN}@github.com/company/api.git"]]
+                        userRemoteConfigs: [[url: "https://${GITHUB_TOKEN}@github.com/enterpriseapptech/banquetproapi.git"]]
                     ])
                 }
                 // git url: 'https://github.com/enterpriseapptech/banquetproapi.git', branch: 'main'
