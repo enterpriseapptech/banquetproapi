@@ -4,6 +4,7 @@ pipeline {
     environment {
         AWS_REGION = 'us-east-1'
         ACCOUNT_ID = '123456789012'  // <-- Change this
+        GITHUB_TOKEN = credentials('GITHUB_ACCESS_TOKEN')
     }
 
     options {
@@ -12,6 +13,13 @@ pipeline {
     }
 
     stages {
+
+        stage('Example') {
+            steps {
+                echo "Using GitHub Token: ${GITHUB_TOKEN}"
+            }
+        }
+
         stage('Checkout code') {
             steps {
                 echo 'Checking out the source code...'
