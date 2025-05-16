@@ -4,7 +4,7 @@ pipeline {
     environment {
         AWS_REGION = 'us-east-1'
         ACCOUNT_ID = '123456789012'  // <-- Change this
-        GITHUB_TOKEN = credentials('GITHUB_ACCESS_TOKEN')
+        GITHUB_TOKEN = credentials('GITHUB-ACCESS-TOKEN')
     }
 
     options {
@@ -29,7 +29,7 @@ pipeline {
                     checkout([
                         $class: 'GitSCM',
                         branches: [[name: "*/${branchName}"]],
-                        userRemoteConfigs: [[url: "https://${GITHUB_TOKEN}@github.com/company/api.git"]]
+                        userRemoteConfigs: [[url: "https://${GITHUB_TOKEN}@github.com/enterpriseapptech/banquetproapi.git"]]
                     ])
                 }
                 // git url: 'https://github.com/enterpriseapptech/banquetproapi.git', branch: 'main'
