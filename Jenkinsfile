@@ -25,7 +25,13 @@ pipeline {
                 echo 'Checking out the source code...'
                 script {
                     // Dynamically determine the branch to check out
-                    def branchName = env.GITHUB_PR_SOURCE_BRANCH ?: 'master'
+                    def branchName = env.GITHUB_PR_SOURCE_BRANCH ?: 'main'
+                    script {
+                        echo "Checking out the source code for branch : ${branchName}..."
+                        // setting default branch name to master, this will be updated if triggered by PR
+                        env.BRANCH_NAME = 'main'
+                        // Install additional tools or environment setup here if needed
+                    }
                     checkout([
                         $class: 'GitSCM',
                         branches: [[name: "*/${branchName}"]],
