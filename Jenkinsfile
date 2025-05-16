@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'ubuntu-main' }
+    agent any
 
     environment {
         AWS_REGION = 'us-east-1'
@@ -43,7 +43,7 @@ pipeline {
         }
 
 
-        stage('Setup Environment') {
+        stage('Setup Environmentc') {
             steps {
                 script {
                     echo 'Setting up the environment...'
