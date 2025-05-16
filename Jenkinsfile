@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         AWS_REGION = 'us-east-1'
-        ACCOUNT_ID = '123456789012'  // <-- Change this
+        ACCOUNT_ID = credentials('aws_account_id')aws_account_id  // <-- Change this
         GITHUB_TOKEN = credentials('GITHUB-ACCESS-TOKEN')
     }
 
