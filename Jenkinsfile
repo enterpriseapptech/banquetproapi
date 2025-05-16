@@ -1,9 +1,9 @@
 pipeline {
-    agent { label 'ubuntu-main' }
+    agent any
 
     environment {
         AWS_REGION = 'us-east-1'
-        ACCOUNT_ID = credentials('aws_account_id')aws_account_id  // <-- Change this
+        ACCOUNT_ID = credentials('aws_account_id')  // <-- Change this
         GITHUB_TOKEN = credentials('GITHUB-ACCESS-TOKEN')
     }
 
