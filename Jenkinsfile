@@ -16,7 +16,7 @@ pipeline {
 
         stage('Example') {
             steps {
-                echo "Using GitHub Token: ${GITHUB_TOKEN}"
+                echo "Using GitHub Token acess: ${GITHUB_TOKEN}"
             }
         }
 
