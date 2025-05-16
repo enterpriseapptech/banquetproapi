@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'ubuntu-master' }
+    agent { label 'ubuntu-main' }
 
     environment {
         AWS_REGION = 'us-east-1'
@@ -28,7 +28,7 @@ pipeline {
                     def branchName = env.GITHUB_PR_SOURCE_BRANCH ?: 'main'
                     script {
                         echo "Checking out the source code for branch : ${branchName}..."
-                        // setting default branch name to master, this will be updated if triggered by PR
+                        // setting default branch name to main, this will be updated if triggered by PR
                         env.BRANCH_NAME = 'main'
                         // Install additional tools or environment setup here if needed
                     }
@@ -47,7 +47,7 @@ pipeline {
             steps {
                 script {
                     echo 'Setting up the environment...'
-                    // setting default branch name to master, this will be updated if triggered by PR
+                    // setting default branch name to main, this will be updated if triggered by PR
                     env.BRANCH_NAME = 'main'
                     // Install additional tools or environment setup here if needed
                 }
