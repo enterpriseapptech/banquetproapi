@@ -2,8 +2,8 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } f
 import { UsersService } from './users.service';
 import { CreateUserDto, LoginUserDto, UpdateUserDto, UserFilterDto } from '@shared/contracts/users';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
-import { VerificationGuard } from '../jwt/verification.guard';
-import { AdminRoleGuard } from '../jwt/admin.guard';
+// import { VerificationGuard } from '../jwt/verification.guard';
+// import { AdminRoleGuard } from '../jwt/admin.guard';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 
