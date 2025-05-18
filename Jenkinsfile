@@ -22,7 +22,7 @@ pipeline {
 
         stage('Checkout code') {
             steps {
-                echo 'Checking out the source code...'
+                echo 'Checking out the source code.fff..'
                 script {
                     // Dynamically determine the branch to check out
                     def branchName = env.GITHUB_PR_SOURCE_BRANCH ?: 'main'
@@ -58,7 +58,7 @@ pipeline {
             steps {
                 script {
                     echo 'Installing npm dependencies...'
-                    sh 'npm ci --prefer-offline' // Use offline cache if available
+                    sh 'yarn install --frozen-lockfile' // Use offline cache if available
                 }
             }
         }
@@ -67,7 +67,7 @@ pipeline {
             steps {
                 script {
                     echo 'Running TypeScript type checks...'
-                    sh 'npm run check-types' // Add this script to check types
+                    sh 'yarn check-types' // Add this script to check types
                     echo 'TypeScript checks completed.'
                 }
             }
@@ -78,7 +78,7 @@ pipeline {
                 script {
                     echo 'Building the project...'
                     timeout(time: 120, unit: 'MINUTES') {
-                        sh 'npm run build'
+                        sh 'yarn build'
                     }
                     echo 'Build completed successfully.'
                 }
