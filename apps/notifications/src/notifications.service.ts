@@ -212,12 +212,9 @@ export class NotificationsService {
 
 	async send(payload: NotificationInterface): Promise<void> {
 		const { type, recipientId, data } = payload;
-
 		if (type === 'EMAIL') {
 			await this.retryOperation(() => this.sendEmail(payload));
 		}
-
-		// Handle other types like IN_APP, SMS, etc.
 	}
 
 	// pending a job or task or service that would handle the sending of emails
