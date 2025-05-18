@@ -227,7 +227,6 @@ export class NotificationsService {
 			text: data.message,
 			html: data.html
 		});
-		console.log({sendMail})
 	}
 
 	private async retryOperation<T>(
