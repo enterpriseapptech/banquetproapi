@@ -48,6 +48,7 @@ export class UsersController {
 
     @Get(':id')
     findOne(@Param('id') id: string) {
+        console.log("pr trigger")
         return this.usersService.findOne(id);
     }
 
