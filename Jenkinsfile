@@ -106,7 +106,9 @@ pipeline {
                             aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
                             echo "Building image for ${repo}"
-                            docker build -t ${repo}:${BUILD_NUMBER} ${path}
+                            docker build -f ${path}/Dockerfile -t ${repo}:${BUILD_NUMBER} .
+
+                            echo "Tagging image as ${image}"
                             docker tag ${repo}:${BUILD_NUMBER} ${image}
 
                             echo "Pushing image to ECR"
