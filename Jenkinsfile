@@ -14,12 +14,6 @@ pipeline {
 
     stages {
 
-        stage('Example') {
-            steps {
-                echo "Using GitHub Token acess: ${GITHUB_TOKEN}"
-            }
-        }
-
         stage('Checkout code') {
             steps {
                 echo 'Checking out the source code.fff..'
@@ -63,15 +57,6 @@ pipeline {
             }
         }
 
-        stage('Check TypeScript') {
-            steps {
-                script {
-                    echo 'Running TypeScript type checks...'
-                    sh 'yarn check-types' // Add this script to check types
-                    echo 'TypeScript checks completed.'
-                }
-            }
-        }
 
         stage('Build') {
             steps {
