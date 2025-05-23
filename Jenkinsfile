@@ -14,11 +14,11 @@ pipeline {
 
     stages {
 
-        stage('Example') {
-            steps {
-                echo "Using GitHub Token acess: ${GITHUB_TOKEN}"
-            }
-        }
+        // stage('Example') {
+        //     steps {
+        //         echo "Using GitHub Token acess: ${GITHUB_TOKEN}"
+        //     }
+        // }
 
         stage('Checkout code') {
             steps {
