@@ -78,16 +78,20 @@ pipeline {
                
                 withCredentials([file(credentialsId: 'APIGATEWAY_ENV_FILE', variable: 'APIGATEWAY_DOTENV_FILE')]) {
                     sh '''
-                        cp $APIGATEWAY_DOTENV_FILE .env
+                    cp $APIGATEWAY_DOTENV_FILE .env
 
-                        echo "[" > env.json
-                        grep -v '^#' .env | grep '=' | while IFS='=' read -r key value; do
-                        clean_value=$(echo "$value" | tr -d '"')  # Remove existing quotes
-                        echo "  { \"name\": \"${key}\", \"value\": \"${clean_value}\" }," >> env.json
-                        done
-                        # Remove the last comma and close the array
-                        sed -i '$ s/,$//' env.json
-                        echo "]" >> env.json
+                    echo "[" > env.json
+                    grep -v '^#' .env | grep '=' | while IFS='=' read -r key value; do
+                        # Escape backslashes and double quotes
+                        clean_key=$(printf '%s' "$key" | sed 's/\\/\\\\/g; s/"/\\"/g')
+                        clean_value=$(printf '%s' "$value" | sed 's/\\/\\\\/g; s/"/\\"/g')
+
+                        echo "  { \"name\": \"${clean_key}\", \"value\": \"${clean_value}\" }," >> env.json
+                    done
+
+                    # Remove the last comma
+                    sed -i '$ s/,$//' env.json
+                    echo "]" >> env.json
                     '''
                 }
 
