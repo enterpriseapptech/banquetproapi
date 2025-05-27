@@ -5,6 +5,7 @@ pipeline {
         AWS_REGION = 'eu-north-1'
         ACCOUNT_ID = credentials('aws_account_id')  // <-- Change this
         GITHUB_TOKEN = credentials('GITHUB-ACCESS-TOKEN')
+        ECS_CLUSTER = 'banquetpro-cluster'
     }
 
     options {
@@ -160,7 +161,7 @@ pipeline {
 
                             echo "Updating ECS service: ${serviceName}"
                             aws ecs update-service \
-                                --cluster banquetpro-cluster \
+                                --cluster ${ECS_CLUSTER} \
                                 --service ${serviceName} \
                                 --task-definition ${taskDefName} \
                                 --force-new-deployment
