@@ -153,7 +153,7 @@ pipeline {
                                     cpu: .cpu,
                                     memory: .memory
                                 }')
-
+                            mkdir -p banquetpro
                             echo "\$NEW_TASK_DEF" > ${repo}-new-task-def.json
 
                             aws ecs register-task-definition --cli-input-json file://${repo}-new-task-def.json
