@@ -160,7 +160,7 @@ pipeline {
 
                             echo "Updating ECS service: ${serviceName}"
                             aws ecs update-service \
-                                --cluster default \
+                                --cluster banquetpro-cluster \
                                 --service ${serviceName} \
                                 --task-definition ${taskDefName} \
                                 --force-new-deployment
