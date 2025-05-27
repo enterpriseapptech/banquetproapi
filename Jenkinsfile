@@ -77,18 +77,20 @@ pipeline {
             steps {
                
                 withCredentials([string(credentialsId: 'APIGATEWAY_ENV_TEXT', variable: 'APIGATEWAY_DOTENV')]) {
-                    writeFile file: '.env', text: APIGATEWAY_DOTENV
-
+                    // Convert escaped newlines (\\n) into real newlines
+                    sh """
+                    echo -e "${APIGATEWAY_DOTENV}" > .env
+                    """
+                    
                     sh '''
-                        jq -Rn '
-                        [ inputs
-                            | select(length > 0 and test("^#") | not)
-                            | split("="; "")
-                            | {name: .[0], value: (.[1:] | join("=")) }
-                        ]
-                        ' < .env > env.json
+                    jq -Rn '
+                    [ inputs
+                        | select(length > 0 and test("^#") | not)
+                        | split("="; "")
+                        | {name: .[0], value: (.[1:] | join("=")) }
+                    ]
+                    ' < .env > env.json
                     '''
-
                 }
 
             }
