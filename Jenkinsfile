@@ -99,11 +99,11 @@ pipeline {
                         def path = svc.path
                         def taskDefName = svc.taskDefinition
                         def serviceName = svc.service
-                        def image = "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${repo}:${BUILD_NUMBER}"
+                        def image = "865433495757.dkr.ecr.${AWS_REGION}.amazonaws.com/${repo}:${BUILD_NUMBER}"
 
                         sh """
                             echo "Logging into ECR for ${repo}"
-                            aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+                            aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin 865433495757.dkr.ecr.${AWS_REGION}.amazonaws.com
 
                             echo "Building image for ${repo}"
                             docker build -f ${path}/Dockerfile -t ${repo}:${BUILD_NUMBER} .
@@ -147,43 +147,5 @@ pipeline {
             }
         }
 
-
-        // stage('Deploy Microservices') {
-        //     steps {
-        //         script {
-        //             def services = [
-        //                 [name: 'apigateway', path: 'apps/apigateway'],
-        //                 [name: 'user-service', path: 'apps/users'],
-        //                 [name: 'notifications-service', path: 'apps/payment-service']
-        //             ]
-
-        //             for (svc in services) {
-        //                 def repo = svc.name
-        //                 def path = svc.path
-        //                 def image = "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${repo}:${BUILD_NUMBER}"
-
-        //                 sh """
-        //                     echo "Logging into ECR for ${repo}"
-        //                     aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
-
-        //                     echo "Building image for ${repo}"
-        //                     docker build -t ${repo}:${BUILD_NUMBER} ${path}
-        //                     docker tag ${repo}:${BUILD_NUMBER} ${image}
-
-        //                     echo "Pushing image to ECR"
-        //                     docker push ${image}
-
-        //                     echo "Updating ECS task definition and service for ${repo}"
-
-        //                     TASK_DEF=\$(aws ecs describe-task-definition --task-definition ${repo})
-        //                     NEW_TASK_DEF=\$(echo \$TASK_DEF | jq --arg IMAGE "${image}" '.taskDefinition | .containerDefinitions[0].image = $IMAGE | {family: .family, containerDefinitions: [.containerDefinitions[0]]}')
-        //                     echo \$NEW_TASK_DEF > ${repo}-new-task-def.json
-        //                     aws ecs register-task-definition --cli-input-json file://${repo}-new-task-def.json
-        //                     aws ecs update-service --cluster ${repo}-cluster --service ${repo}-service --force-new-deployment
-        //                 """
-        //             }
-        //         }
-        //     }
-        // }
     }
 }
