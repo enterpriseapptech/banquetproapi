@@ -1,6 +1,6 @@
 import { IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsNumber, IsInt, IsDateString, IsJSON, IsUrl } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsImageFile } from '../Media/images';
+import { IsImageFile } from '../media/images';
 
 export enum FeesType {
     CERTIFICATION = 'CERTIFICATION',
