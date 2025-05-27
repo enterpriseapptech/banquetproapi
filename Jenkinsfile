@@ -80,12 +80,14 @@ pipeline {
                     writeFile file: '.env', text: APIGATEWAY_DOTENV
 
                     sh '''
-                        echo "[" > env.json
-                        grep -v '^#' .env | grep '=' | while IFS='=' read -r key value; do
-                        echo "  { \\"name\\": \\"${key}\\", \\"value\\": \\"${value}\\" }," >> env.json
-                        done
-                        sed -i '$ s/,$//' env.json
-                        echo "]" >> env.json
+                        jq -Rn '
+                        [ inputs 
+                            | select(length > 0 and startswith("#") | not)
+                            | split("="; "") 
+                            | {name: .[0], value: .[1]} 
+                        ]
+                        ' < .env > env.json
+
                     '''
                 }
 
