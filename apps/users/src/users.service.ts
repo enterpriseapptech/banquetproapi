@@ -41,7 +41,7 @@ export class UsersService {
 
         // if email is not unique and contains a value, throw error cos user exists already
         if (IsEmailNotUnique) {
-            console.log("We have an existing user with this email, kindly login to your account - this log is used to trgger commits and pr changes")
+            console.log("We have an existing user with this email qww, kindly login to your account - this log is used to trgger commits and pr changes")
             throw new ConflictException('This email has been used, kindly login to your account', {
                 cause: new Error(),
                 description: 'existing user'
