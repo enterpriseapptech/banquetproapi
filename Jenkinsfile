@@ -81,13 +81,12 @@ pipeline {
 
                     sh '''
                         jq -Rn '
-                        [ inputs 
-                            | select(length > 0 and startswith("#") | not)
-                            | split("="; "") 
-                            | {name: .[0], value: .[1]} 
+                        [ inputs
+                            | select(length > 0 and test("^#") | not)
+                            | split("="; "")
+                            | {name: .[0], value: (.[1:] | join("=")) }
                         ]
                         ' < .env > env.json
-
                     '''
                 }
 
