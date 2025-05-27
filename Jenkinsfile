@@ -73,11 +73,13 @@ pipeline {
             when {
                 expression { env.DEPLOY_APIGATEWAY_TO_DEV == 'true' }
             }
+            
             steps {
-                withCredentials([file(credentialsId: 'APIGATEWAY_ENV_FILE', variable: 'APIGATEWAY_DOTENV_FILE')]) {
-                    sh '''
-                        cp $APIGATEWAY_DOTENV_FILE .env
+               
+                withCredentials([string(credentialsId: 'APIGATEWAY_ENV_FILE', variable: 'DOTENV')]) {
+                    writeFile file: '.env', text: DOTENV
 
+                    sh '''
                         echo "[" > env.json
                         grep -v '^#' .env | grep '=' | while IFS='=' read -r key value; do
                         echo "  { \\"name\\": \\"${key}\\", \\"value\\": \\"${value}\\" }," >> env.json
