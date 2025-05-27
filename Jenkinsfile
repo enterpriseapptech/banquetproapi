@@ -32,7 +32,7 @@ pipeline {
                         userRemoteConfigs: [[url: "https://${GITHUB_TOKEN}@github.com/enterpriseapptech/banquetproapi.git"]]
                     ])
                 }
-                // git url: 'https://github.com/enterpriseapptech/banquetproapi.git', branch: 'main'
+                
             }
         }
 
@@ -70,7 +70,30 @@ pipeline {
             }
         }
 
+        stage('Deployment Decision') {
+            steps {
+                script {
+                    try {
+                        timeout(time: 30, unit: 'MINUTES') {  // Set timeout to 30 minutes or adjust as needed
+                            def userInput = input(
+                                id: 'deployToDev',
+                                message: 'Would you like to deploy to the development environment?',
+                                parameters: [booleanParam(name: 'DEPLOY_TO_DEV', defaultValue: false, description: 'Select to deploy to the development environment')]
+                            )
+                            env.DEPLOY_TO_DEV = userInput ? 'true' : 'false'
+                        }
+                    } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
+                        echo 'Deployment input timeout reached. Skipping deployment.'
+                        env.DEPLOY_TO_DEV = 'false'
+                    }
+                }
+            }
+        }
+
         stage('Deploy Microservices') {
+            when {
+                expression { env.DEPLOY_TO_DEV == 'true' }
+            }
             steps {
                 script {
                     def services = [
@@ -147,5 +170,54 @@ pipeline {
             }
         }
 
+    }
+        post {
+        success {
+            echo "Build succeeded."
+            script {
+                updateGitHubStatus('success', 'The build succeeded.')
+            }
+        }
+        failure {
+            echo "Build failed."
+            script {
+                updateGitHubStatus('failure', 'The build failed.')
+            }
+        }
+        unstable {
+            echo "Build is unstable."
+            script {
+                updateGitHubStatus('failure', 'The build is unstable.')
+            }
+        }
+    }
+}
+def updateGitHubStatus(status, description) {
+    def repoOwner = 'enterpriseapptech'
+    def repoName = 'banquetproapi'
+    def apiUrl = "https://api.github.com/repos/${repoOwner}/${repoName}/statuses/${GIT_COMMIT}"
+
+    def payload = new groovy.json.JsonBuilder([
+        state      : status,
+        description: description,
+        context    : "continuous-integration/jenkins"
+    ]).toString()
+
+    echo "Generated JSON Payload for GitHub Status Update: ${payload}"
+
+    withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_TOKEN')]) {
+        def response = sh(
+            script: """
+            curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -d '${payload}' \
+            ${apiUrl}
+            """,
+            returnStdout: true
+        ).trim()
+        echo "GitHub Status updated successfully: ${response}"
     }
 }
