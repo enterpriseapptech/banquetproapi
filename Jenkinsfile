@@ -63,7 +63,7 @@ pipeline {
             steps {
                 script {
                     echo 'Building the project...'
-                    timeout(time: 120, unit: 'MINUTES') {
+                    timeout(time: 10, unit: 'MINUTES') {
                         sh 'yarn build'
                     }
                     echo 'Build completed successfully.'
