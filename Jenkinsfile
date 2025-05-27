@@ -79,7 +79,8 @@ pipeline {
                         repo: 'banquetpro/apigateway',
                         path: 'apps/apigateway',
                         taskDefinition: 'apigateway-task-definition',
-                        service: 'apigateway-service'
+                        service: 'apigateway-service',
+                        envFile: "${APIGATEWAY_DOTENV_FILE}"
                     )
                 }
             }
