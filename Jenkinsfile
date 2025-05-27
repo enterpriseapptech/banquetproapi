@@ -82,10 +82,13 @@ pipeline {
 
                         echo "[" > env.json
                         grep -v '^#' .env | grep '=' | while IFS='=' read -r key value; do
-                        echo "  { \\"name\\": \\"${key}\\", \\"value\\": \\"${value}\\" }," >> env.json
+                        clean_value=$(echo "$value" | tr -d '"')  # Remove existing quotes
+                        echo "  { \"name\": \"${key}\", \"value\": \"${clean_value}\" }," >> env.json
                         done
+                        # Remove the last comma and close the array
                         sed -i '$ s/,$//' env.json
                         echo "]" >> env.json
+
                     '''
                 }
 
