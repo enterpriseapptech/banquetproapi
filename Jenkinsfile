@@ -77,35 +77,35 @@ pipeline {
             steps {
                
                 withCredentials([file(credentialsId: 'APIGATEWAY_ENV_FILE', variable: 'APIGATEWAY_DOTENV_FILE')]) {
-                    sh '''
-                        cp $APIGATEWAY_DOTENV_FILE .env
+                    sh '''#!/bin/bash
+                    cp $APIGATEWAY_DOTENV_FILE .env
 
-                        echo "[" > env.json
+                    echo "[" > env.json
 
-                        # Prepare array to hold lines
-                        lines=()
+                    # Prepare array to hold lines
+                    lines=()
 
-                        # Read from .env file and filter out comments or blank lines
-                        while IFS='=' read -r key value; do
-                        [[ "$key" =~ ^#.*$ || -z "$value" ]] && continue
+                    # Read from .env file and filter out comments or blank lines
+                    while IFS='=' read -r key value; do
+                    [[ "$key" =~ ^#.*$ || -z "$value" ]] && continue
 
-                        # Strip surrounding quotes and escape internal quotes
-                        clean_value=$(echo "$value" | sed 's/^["'\'']//; s/["'\'']$//' | tr -d '\r\n' | sed 's/"/\\"/g')
-                        lines+=("  { \"name\": \"${key}\", \"value\": \"${clean_value}\" }")
-                        done < <(grep -v '^#' .env | grep '=')
+                    # Strip surrounding quotes and escape internal quotes
+                    clean_value=$(echo "$value" | sed 's/^["'\\'']//; s/["'\\'']$//' | tr -d '\r\n' | sed 's/"/\\\\\\"/g')
+                    lines+=("  { \\"name\\": \\"${key}\\", \\"value\\": \\"${clean_value}\\" }")
+                    done < <(grep -v '^#' .env | grep '=')
 
-                        # Write the lines into env.json with proper comma placement
-                        for i in "${!lines[@]}"; do
-                        if [[ $i -lt $((${#lines[@]} - 1)) ]]; then
-                            echo "${lines[$i]}," >> env.json
-                        else
-                            echo "${lines[$i]}" >> env.json
-                        fi
-                        done
+                    # Write the lines into env.json with proper comma placement
+                    for i in "${!lines[@]}"; do
+                    if [[ $i -lt $((${#lines[@]} - 1)) ]]; then
+                        echo "${lines[$i]}," >> env.json
+                    else
+                        echo "${lines[$i]}" >> env.json
+                    fi
+                    done
 
-                        echo "]" >> env.json
-
+                    echo "]" >> env.json
                     '''
+
                 }
 
             }
