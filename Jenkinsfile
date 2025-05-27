@@ -76,8 +76,8 @@ pipeline {
             
             steps {
                
-                withCredentials([string(credentialsId: 'APIGATEWAY_ENV_FILE', variable: 'DOTENV')]) {
-                    writeFile file: '.env', text: DOTENV
+                withCredentials([string(credentialsId: 'APIGATEWAY_ENV_TEXT', variable: 'APIGATEWAY_DOTENV')]) {
+                    writeFile file: '.env', text: APIGATEWAY_DOTENV
 
                     sh '''
                         echo "[" > env.json
