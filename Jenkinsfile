@@ -99,11 +99,11 @@ pipeline {
                         def path = svc.path
                         def taskDefName = svc.taskDefinition
                         def serviceName = svc.service
-                        def image = "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${repo}:${BUILD_NUMBER}"
+                        def image = "865433495757.dkr.ecr.${AWS_REGION}.amazonaws.com/${repo}:${BUILD_NUMBER}"
 
                         sh """
                             echo "Logging into ECR for ${repo}"
-                            aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+                            aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin 865433495757.dkr.ecr.${AWS_REGION}.amazonaws.com
 
                             echo "Building image for ${repo}"
                             docker build -f ${path}/Dockerfile -t ${repo}:${BUILD_NUMBER} .
@@ -160,11 +160,11 @@ pipeline {
         //             for (svc in services) {
         //                 def repo = svc.name
         //                 def path = svc.path
-        //                 def image = "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${repo}:${BUILD_NUMBER}"
+        //                 def image = "865433495757.dkr.ecr.${AWS_REGION}.amazonaws.com/${repo}:${BUILD_NUMBER}"
 
         //                 sh """
         //                     echo "Logging into ECR for ${repo}"
-        //                     aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+        //                     aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin 865433495757.dkr.ecr.${AWS_REGION}.amazonaws.com
 
         //                     echo "Building image for ${repo}"
         //                     docker build -t ${repo}:${BUILD_NUMBER} ${path}
