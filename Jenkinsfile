@@ -256,7 +256,6 @@ def deployService(Map svc) {
             family: .family,
             networkMode: .networkMode,
             executionRoleArn: .executionRoleArn,
-            taskRoleArn: .taskRoleArn,
             containerDefinitions: (
             .containerDefinitions | map(
                 .image = \$IMAGE | .environment = \$env
@@ -266,6 +265,7 @@ def deployService(Map svc) {
             cpu: .cpu,
             memory: .memory
         }'
+        + (if .taskRoleArn != null then {taskRoleArn: .taskRoleArn} else {} end)
         )
         mkdir -p banquetpro
         echo "\$NEW_TASK_DEF" > ${repo}-taskdef-final.json
