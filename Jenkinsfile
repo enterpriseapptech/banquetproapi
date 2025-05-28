@@ -80,7 +80,7 @@ pipeline {
                         path: 'apps/apigateway',
                         taskDefinition: 'apigateway-task-definition',
                         service: 'apigateway-service',
-                        envFile: "APIGATEWAY_DOTENV_FILE"
+                        envFile: "APIGATEWAY_ENV_FILE"
                     )
                 }
             }
