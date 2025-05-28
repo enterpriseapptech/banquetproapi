@@ -136,15 +136,21 @@ def deployService(Map svc) {
             # Skip blank lines or comments
             [[ -z "$key" || "$key" =~ ^# ]] && continue
 
-            # Trim carriage returns, strip surrounding single/double quotes
-            clean_key=$(echo "$key" | tr -d '\r\n')
-            clean_value=$(echo "$value" | sed -E 's/^["'\''"]+|["'\''"]+$//g' | tr -d '\r\n' | sed 's/"/\\\\\\"/g')
+            # Trim carriage returns
+            key=$(echo "$key" | tr -d '\r\n')
+            value=$(echo "$value" | tr -d '\r\n')
 
-            # Append formatted JSON line
-            lines+=("  { \\"name\\": \\"${clean_key}\\", \\"value\\": \\"${clean_value}\\" }")
+            # Remove surrounding quotes from value (single or double)
+            if [[ "$value" =~ ^\".*\"$ || "$value" =~ ^\'.*\'$ ]]; then
+                value="${value:1:-1}"
+            fi
+
+            # Escape inner double quotes
+            value=$(echo "$value" | sed 's/"/\\\\\\"/g')
+
+            lines+=("  { \\"name\\": \\"${key}\\", \\"value\\": \\"${value}\\" }")
         done < .env
 
-        # Write all lines to env.json
         for i in "${!lines[@]}"; do
             if [[ $i -lt $((${#lines[@]} - 1)) ]]; then
                 echo "${lines[$i]}," >> env.json
@@ -159,6 +165,7 @@ def deployService(Map svc) {
         cat env.json
         '''
     }
+
 
 
 
