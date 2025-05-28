@@ -222,7 +222,7 @@ def deployService(Map svc) {
             memory: .memory
         }'
         )
-
+        mkdir -p banquetpro
         echo "\$NEW_TASK_DEF" > ${repo}-taskdef-final.json
 
         echo "Registering updated task definition"
