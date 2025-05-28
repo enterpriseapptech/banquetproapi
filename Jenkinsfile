@@ -166,62 +166,58 @@ def deployService(Map svc) {
         '''
     }
 
-
-
-
-
     // // Part 2: Docker build, tag, push and ECS update with double triple quotes
-    // withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
-    //     sh """#!/bin/bash
-    //     set -e
+    withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
+        sh """#!/bin/bash
+        set -e
 
-    //     echo "Logging into ECR"
-    //     aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+        echo "Logging into ECR"
+        aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
-    //     echo "Building Docker image"
-    //     echo "Using local image tag: ${localImage}"
-    //     docker build -f ${path}/Dockerfile -t ${localImage} .
+        echo "Building Docker image"
+        echo "Using local image tag: ${localImage}"
+        docker build -f ${path}/Dockerfile -t ${localImage} .
 
-    //     echo "Tagging image for ECR"
-    //     docker tag ${localImage} ${image}
+        echo "Tagging image for ECR"
+        docker tag ${localImage} ${image}
 
-    //     echo "Pushing image to ECR"
-    //     docker push ${image}
+        echo "Pushing image to ECR"
+        docker push ${image}
 
-    //     echo "Fetching existing task definition"
-    //     TASK_DEF=\$(aws ecs describe-task-definition --task-definition ${taskDefName})
+        echo "Fetching existing task definition"
+        TASK_DEF=\$(aws ecs describe-task-definition --task-definition ${taskDefName})
 
-    //     echo "Injecting env and updating image"
-    //     echo "=== Contents of env.json before injecting ==="
-    //     cat env.json
-    //     NEW_TASK_DEF=\$(echo "\$TASK_DEF" | jq --arg IMAGE "${image}" --argjson env \$(cat env.json) '
-    //         .taskDefinition |
-    //         {
-    //             family: .family,
-    //             networkMode: .networkMode,
-    //             executionRoleArn: .executionRoleArn,
-    //             taskRoleArn: .taskRoleArn,
-    //             containerDefinitions: (.containerDefinitions | map(
-    //                 .image = \$IMAGE | .environment = \$env
-    //             )),
-    //             requiresCompatibilities: .requiresCompatibilities,
-    //             cpu: .cpu,
-    //             memory: .memory
-    //         }')
+        echo "Injecting env and updating image"
+        echo "=== Contents of env.json before injecting ==="
+        cat env.json
+        NEW_TASK_DEF=\$(echo "\$TASK_DEF" | jq --arg IMAGE "${image}" --argjson env \$(cat env.json) '
+            .taskDefinition |
+            {
+                family: .family,
+                networkMode: .networkMode,
+                executionRoleArn: .executionRoleArn,
+                taskRoleArn: .taskRoleArn,
+                containerDefinitions: (.containerDefinitions | map(
+                    .image = \$IMAGE | .environment = \$env
+                )),
+                requiresCompatibilities: .requiresCompatibilities,
+                cpu: .cpu,
+                memory: .memory
+            }')
 
-    //     echo "\$NEW_TASK_DEF" > ${repo}-taskdef-final.json
+        echo "\$NEW_TASK_DEF" > ${repo}-taskdef-final.json
 
-    //     echo "Registering updated task definition"
-    //     aws ecs register-task-definition --cli-input-json file://${repo}-taskdef-final.json
+        echo "Registering updated task definition"
+        aws ecs register-task-definition --cli-input-json file://${repo}-taskdef-final.json
 
-    //         echo "Updating ECS service"
-    //         aws ecs update-service \
-    //             --cluster ${ECS_CLUSTER} \
-    //             --service ${serviceName} \
-    //             --task-definition ${taskDefName} \
-    //             --force-new-deployment
-    //         """
-    // }
+            echo "Updating ECS service"
+            aws ecs update-service \
+                --cluster ${ECS_CLUSTER} \
+                --service ${serviceName} \
+                --task-definition ${taskDefName} \
+                --force-new-deployment
+            """
+    }
     
 }
 
