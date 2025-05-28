@@ -136,16 +136,22 @@ def deployService(Map svc) {
         cp $ENV_FILE .env
 
         echo "[" > env.json
+
+        # Prepare array to hold lines
         lines=()
 
+        # Read from .env file and filter out comments or blank lines
         while IFS='=' read -r key value; do
             [[ "$key" =~ ^#.*$ || -z "$value" ]] && continue
-            clean_value=$(echo "$value" | sed 's/^["'\''"]//;s/["'\''"]$//' | tr -d '\r\n' | sed 's/"/\\\\\\"/g')
-            lines+=("  { \\"name\\": \\"$key\\", \\"value\\": \\"$clean_value\\" }")
+
+            # Strip surrounding quotes and escape internal quotes
+            clean_value=$(echo "$value" | sed 's/^["'\''"]//; s/["'\''"]$//' | tr -d '\r\n' | sed 's/"/\\"/g')
+            lines+=("  { \"name\": \"${key}\", \"value\": \"${clean_value}\" }")
         done < <(grep -v '^#' .env | grep '=')
 
-        for ((i=0; i<${#lines[@]}; i++)); do
-            if [ $i -lt $((${#lines[@]} - 1)) ]; then
+        # Write the lines into env.json with proper comma placement
+        for i in "${!lines[@]}"; do
+            if [[ $i -lt $((${#lines[@]} - 1)) ]]; then
                 echo "${lines[$i]}," >> env.json
             else
                 echo "${lines[$i]}" >> env.json
@@ -153,6 +159,7 @@ def deployService(Map svc) {
         done
 
         echo "]" >> env.json
+
 
         echo "Fetching existing task definition"
         TASK_DEF=$(aws ecs describe-task-definition --task-definition ${taskDefName})
