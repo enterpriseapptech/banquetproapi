@@ -130,7 +130,7 @@ def deployService(Map svc) {
         echo "Copying env file: $ENV_FILE"
         cp "$ENV_FILE" .env
 
-        echo "[" > env.json
+        echo "[" > apienv.json
 
         lines=()
 
@@ -153,16 +153,16 @@ def deployService(Map svc) {
 
         for i in "${!lines[@]}"; do
             if [[ $i -lt $((${#lines[@]} - 1)) ]]; then
-                echo "${lines[$i]}," >> env.json
+                echo "${lines[$i]}," >> apienv.json
             else
-                echo "${lines[$i]}" >> env.json
+                echo "${lines[$i]}" >> apienv.json
             fi
         done
 
-        echo "]" >> env.json
+        echo "]" >> apienv.json
 
-        echo "=== Contents of env.json enc changed ==="
-        cat env.json
+        echo "=== Contents of apienv.json enc changed ==="
+        cat apienv.json
         '''
     }
 
