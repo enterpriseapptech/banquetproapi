@@ -87,6 +87,45 @@ pipeline {
                 }
             }
         }
+
+        // stage('Deployment Decision Users') {
+        //     steps {
+        //         script {
+        //             try {
+        //                 timeout(time: 30, unit: 'MINUTES') {
+        //                     def userInput = input(
+        //                         id: 'deployUsersToDev',
+        //                         message: 'Deploy USERS to development?',
+        //                         parameters: [booleanParam(name: 'DEPLOY_USERS_TO_DEV', defaultValue: false)]
+        //                     )
+        //                     env.DEPLOY_USERS_TO_DEV = userInput ? 'true' : 'false'
+        //                 }
+        //             } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
+        //                 echo 'Deployment input timeout. Skipping apigateway deployment.'
+        //                 env.DEPLOY_USERS_TO_DEV = 'false'
+        //             }
+        //         }
+        //     }
+        // }
+
+        stage('Deploy Users') {
+            // when {
+            //     expression { env.DEPLOY_USERS_TO_DEV == 'true' }
+            // }
+            steps {
+                script {
+                    deployService(
+                        repo: 'banquetpro/users',
+                        path: 'apps/users',
+                        taskDefinition: 'users-task-definition',
+                        service: 'users-service',
+                        envFile: "USERS_ENV_FILE",
+                        localImage: "users-image"
+
+                    )
+                }
+            }
+        }
     }
 
     post {
@@ -190,36 +229,44 @@ def deployService(Map svc) {
         echo "Injecting env and updating image"
         echo "=== Contents of apienv.json before injecting the data ==="
         cat apienv.json
-        NEW_TASK_DEF=\$(echo "\$TASK_DEF" | jq --arg IMAGE "${image}" --argjson env \$(cat apienv.json) '
-            .taskDefinition |
-            {
-                family: .family,
-                networkMode: .networkMode,
-                executionRoleArn: .executionRoleArn,
-                taskRoleArn: .taskRoleArn,
-                containerDefinitions: (.containerDefinitions | map(
-                    .image = \$IMAGE | .environment = \$env
-                )),
-                requiresCompatibilities: .requiresCompatibilities,
-                cpu: .cpu,
-                memory: .memory
-            }')
+
+        ENV_JSON=\$(cat apienv.json)
+
+        NEW_TASK_DEF=\$(echo "\$TASK_DEF" | jq --arg IMAGE "${image}" --argjson env "\$ENV_JSON" '
+        .taskDefinition |
+        {
+            family: .family,
+            networkMode: .networkMode,
+            executionRoleArn: .executionRoleArn,
+            taskRoleArn: .taskRoleArn,
+            containerDefinitions: (
+            .containerDefinitions | map(
+                .image = \$IMAGE | .environment = \$env
+            )
+            ),
+            requiresCompatibilities: .requiresCompatibilities,
+            cpu: .cpu,
+            memory: .memory
+        }'
+        )
 
         echo "\$NEW_TASK_DEF" > ${repo}-taskdef-final.json
 
         echo "Registering updated task definition"
         aws ecs register-task-definition --cli-input-json file://${repo}-taskdef-final.json
 
-            echo "Updating ECS service"
-            aws ecs update-service \
-                --cluster ${ECS_CLUSTER} \
-                --service ${serviceName} \
-                --task-definition ${taskDefName} \
-                --force-new-deployment
+        echo "Updating ECS service"
+        aws ecs update-service \
+            --cluster ${ECS_CLUSTER} \
+            --service ${serviceName} \
+            --task-definition ${taskDefName} \
+            --force-new-deployment
 
-            
-            """
+        echo "Cleaning up temporary files"
+        rm -f apienv.json .env env.json
+        """
     }
+
     
 }
 
@@ -239,20 +286,20 @@ def updateGitHubStatus(status, description) {
 
     echo "Sending GitHub status update..."
 
-    withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_TOKEN')]) {
-        def response = sh(
-            script: """
-            curl -L \
-                -X POST \
-                -H "Accept: application/vnd.github+json" \
-                -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-                -H "X-GitHub-Api-Version: 2022-11-28" \
-                -d '${payload}' \
-                ${apiUrl}
-            """,
-            returnStdout: true
-        ).trim()
 
-        echo "GitHub Status Response: ${response}"
-    }
+    def response = sh(
+        script: """
+        curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -d '${payload}' \
+            ${apiUrl}
+        """,
+        returnStdout: true
+    ).trim()
+
+    echo "GitHub Status Response: ${response}"
+    
 }
