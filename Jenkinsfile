@@ -88,9 +88,6 @@ pipeline {
             }
         }
         stage('Cleanup Workspace for next build') {
-            when {
-                expression { env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'develop' }
-            }
             steps {
                 cleanWs()
             }
