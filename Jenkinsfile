@@ -108,6 +108,85 @@ pipeline {
         }
     }
 }
+def deployService(Map svc) {
+    def repo = svc.repo
+    def path = svc.path
+    def taskDefName = svc.taskDefinition
+    def serviceName = svc.service
+    def envFileCredentialId = svc.envFile
+    def image = "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${repo}:${BUILD_NUMBER}"
+
+    withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
+        sh '''#!/bin/bash
+        set -e
+
+        echo "Logging into ECR"
+        aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+
+        echo "Building Docker image for ${repo}"
+        docker build -f ${path}/Dockerfile -t ${repo}:${BUILD_NUMBER} .
+
+        echo "Tagging image"
+        docker tag ${repo}:${BUILD_NUMBER} ${image}
+
+        echo "Pushing image to ECR"
+        docker push ${image}
+
+        echo "Copying env file: $ENV_FILE"
+        cp $ENV_FILE .env
+
+        echo "[" > env.json
+        lines=()
+
+        while IFS='=' read -r key value; do
+            [[ "$key" =~ ^#.*$ || -z "$value" ]] && continue
+            clean_value=$(echo "$value" | sed 's/^["'\''"]//;s/["'\''"]$//' | tr -d '\r\n' | sed 's/"/\\\\\\"/g')
+            lines+=("  { \\"name\\": \\"$key\\", \\"value\\": \\"$clean_value\\" }")
+        done < <(grep -v '^#' .env | grep '=')
+
+        for ((i=0; i<${#lines[@]}; i++)); do
+            if [ $i -lt $((${#lines[@]} - 1)) ]; then
+                echo "${lines[$i]}," >> env.json
+            else
+                echo "${lines[$i]}" >> env.json
+            fi
+        done
+
+        echo "]" >> env.json
+
+        echo "Fetching existing task definition"
+        TASK_DEF=$(aws ecs describe-task-definition --task-definition ${taskDefName})
+
+        echo "Injecting env and updating image"
+        NEW_TASK_DEF=$(echo $TASK_DEF | jq --arg IMAGE "${image}" --argjson env $(cat env.json) '
+            .taskDefinition |
+            {
+                family: .family,
+                networkMode: .networkMode,
+                executionRoleArn: .executionRoleArn,
+                taskRoleArn: .taskRoleArn,
+                containerDefinitions: (.containerDefinitions | map(
+                    .image = $IMAGE | .environment = $env
+                )),
+                requiresCompatibilities: .requiresCompatibilities,
+                cpu: .cpu,
+                memory: .memory
+            }')
+
+        echo "$NEW_TASK_DEF" > ${repo}-taskdef-final.json
+
+        echo "Registering updated task definition"
+        aws ecs register-task-definition --cli-input-json file://${repo}-taskdef-final.json
+
+        echo "Updating ECS service"
+        aws ecs update-service \
+            --cluster ${ECS_CLUSTER} \
+            --service ${serviceName} \
+            --task-definition ${taskDefName} \
+            --force-new-deployment
+        '''
+    }
+}
 
 // def deployService(Map svc) {
 //     def repo = svc.repo
@@ -158,79 +237,79 @@ pipeline {
 //     """
 // }
 
-def deployService(Map svc) {
-    def repo = svc.repo
-    def path = svc.path
-    def taskDefName = svc.taskDefinition
-    def serviceName = svc.service
-    def envFile = svc.envFile
-    def image = "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${repo}:${BUILD_NUMBER}"
+// def deployService(Map svc) {
+//     def repo = svc.repo
+//     def path = svc.path
+//     def taskDefName = svc.taskDefinition
+//     def serviceName = svc.service
+//     def envFile = svc.envFile
+//     def image = "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${repo}:${BUILD_NUMBER}"
 
-    sh """
-        echo "Logging into ECR"
-        aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+//     sh """
+//         echo "Logging into ECR"
+//         aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
-        echo "Building Docker image for ${repo}"
-        docker build -f ${path}/Dockerfile -t ${repo}:${BUILD_NUMBER} .
+//         echo "Building Docker image for ${repo}"
+//         docker build -f ${path}/Dockerfile -t ${repo}:${BUILD_NUMBER} .
 
-        echo "Tagging image"
-        docker tag ${repo}:${BUILD_NUMBER} ${image}
+//         echo "Tagging image"
+//         docker tag ${repo}:${BUILD_NUMBER} ${image}
 
-        echo "Pushing image to ECR"
-        docker push ${image}
+//         echo "Pushing image to ECR"
+//         docker push ${image}
 
-        echo "Copying env file: \$ENV_FILE"
-        cp ${envFile} .env
+//         echo "Copying env file: \$ENV_FILE"
+//         cp ${envFile} .env
 
-        echo "[" > env.json
-        lines=()
-        while IFS='=' read -r key value; do
-          [[ "\$key" =~ ^#.*\$ || -z "\$value" ]] && continue
-          clean_value=\$(echo "\$value" | sed 's/^["'\''"]//;s/["'\''"]\$//' | tr -d '\\r\\n' | sed 's/"/\\\\\\"/g')
-          lines+=("  { \\"name\\": \\"\$key\\", \\"value\\": \\"\$clean_value\\" }")
-        done < <(grep -v '^#' .env | grep '=')
+//         echo "[" > env.json
+//         lines=()
+//         while IFS='=' read -r key value; do
+//           [[ "\$key" =~ ^#.*\$ || -z "\$value" ]] && continue
+//           clean_value=\$(echo "\$value" | sed 's/^["'\''"]//;s/["'\''"]\$//' | tr -d '\\r\\n' | sed 's/"/\\\\\\"/g')
+//           lines+=("  { \\"name\\": \\"\$key\\", \\"value\\": \\"\$clean_value\\" }")
+//         done < <(grep -v '^#' .env | grep '=')
 
-        for i in "\${!lines[@]}"; do
-          if [[ \$i -lt \$(\${#lines[@]} - 1) ]]; then
-              echo "\${lines[\$i]}," >> env.json
-          else
-              echo "\${lines[\$i]}" >> env.json
-          fi
-        done
-        echo "]" >> env.json
+//         for i in "\${!lines[@]}"; do
+//           if [[ \$i -lt \$(\${#lines[@]} - 1) ]]; then
+//               echo "\${lines[\$i]}," >> env.json
+//           else
+//               echo "\${lines[\$i]}" >> env.json
+//           fi
+//         done
+//         echo "]" >> env.json
 
-        echo "Fetching existing task definition"
-        TASK_DEF=\$(aws ecs describe-task-definition --task-definition ${taskDefName})
+//         echo "Fetching existing task definition"
+//         TASK_DEF=\$(aws ecs describe-task-definition --task-definition ${taskDefName})
 
-        echo "Injecting env and updating image"
-        NEW_TASK_DEF=\$(echo \$TASK_DEF | jq --arg IMAGE "${image}" --argjson env \$(cat env.json) '
-            .taskDefinition |
-            {
-                family: .family,
-                networkMode: .networkMode,
-                executionRoleArn: .executionRoleArn,
-                taskRoleArn: .taskRoleArn,
-                containerDefinitions: (.containerDefinitions | map(
-                    .image = \$IMAGE | .environment = \$env
-                )),
-                requiresCompatibilities: .requiresCompatibilities,
-                cpu: .cpu,
-                memory: .memory
-            }')
+//         echo "Injecting env and updating image"
+//         NEW_TASK_DEF=\$(echo \$TASK_DEF | jq --arg IMAGE "${image}" --argjson env \$(cat env.json) '
+//             .taskDefinition |
+//             {
+//                 family: .family,
+//                 networkMode: .networkMode,
+//                 executionRoleArn: .executionRoleArn,
+//                 taskRoleArn: .taskRoleArn,
+//                 containerDefinitions: (.containerDefinitions | map(
+//                     .image = \$IMAGE | .environment = \$env
+//                 )),
+//                 requiresCompatibilities: .requiresCompatibilities,
+//                 cpu: .cpu,
+//                 memory: .memory
+//             }')
 
-        echo "\$NEW_TASK_DEF" > ${repo}-taskdef-final.json
+//         echo "\$NEW_TASK_DEF" > ${repo}-taskdef-final.json
 
-        echo "Registering updated task definition"
-        aws ecs register-task-definition --cli-input-json file://${repo}-taskdef-final.json
+//         echo "Registering updated task definition"
+//         aws ecs register-task-definition --cli-input-json file://${repo}-taskdef-final.json
 
-        echo "Updating ECS service"
-        aws ecs update-service \
-            --cluster ${ECS_CLUSTER} \
-            --service ${serviceName} \
-            --task-definition ${taskDefName} \
-            --force-new-deployment
-    """
-}
+//         echo "Updating ECS service"
+//         aws ecs update-service \
+//             --cluster ${ECS_CLUSTER} \
+//             --service ${serviceName} \
+//             --task-definition ${taskDefName} \
+//             --force-new-deployment
+//     """
+// }
 
 
 def updateGitHubStatus(status, description) {
