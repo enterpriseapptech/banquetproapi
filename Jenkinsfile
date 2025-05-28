@@ -247,20 +247,20 @@ def updateGitHubStatus(status, description) {
 
     echo "Sending GitHub status update..."
 
-    withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_TOKEN')]) {
-        def response = sh(
-            script: """
-            curl -L \
-                -X POST \
-                -H "Accept: application/vnd.github+json" \
-                -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-                -H "X-GitHub-Api-Version: 2022-11-28" \
-                -d '${payload}' \
-                ${apiUrl}
-            """,
-            returnStdout: true
-        ).trim()
 
-        echo "GitHub Status Response: ${response}"
-    }
+    def response = sh(
+        script: """
+        curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -d '${payload}' \
+            ${apiUrl}
+        """,
+        returnStdout: true
+    ).trim()
+
+    echo "GitHub Status Response: ${response}"
+    
 }
