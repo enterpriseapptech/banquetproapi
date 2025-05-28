@@ -179,6 +179,10 @@ def deployService(Map svc) {
         sh '''#!/bin/bash
         set -e
 
+        echo "Preparing to copy env file: $ENV_FILE"
+        rm -f .env || true
+        touch .env
+        chmod +w .env
         echo "Copying env file: $ENV_FILE"
         cp "$ENV_FILE" .env
 
