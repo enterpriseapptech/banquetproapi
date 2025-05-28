@@ -210,7 +210,7 @@ def deployService(Map svc) {
         echo "Registering updated task definition"
         aws ecs register-task-definition --cli-input-json file://${repo}-taskdef-final.json
 
-            echo "Updating ECS service"
+            echo "Updating ECS service update"
             aws ecs update-service \
                 --cluster ${ECS_CLUSTER} \
                 --service ${serviceName} \
