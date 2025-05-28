@@ -130,20 +130,21 @@ def deployService(Map svc) {
 
         echo "[" > env.json
 
-        # Prepare array
         lines=()
 
-        while IFS='=' read -r key value; do
-            # Skip if key is blank or comment
-            [[ "$key" =~ ^#.*$ || -z "$value" ]] && continue
+        while IFS='=' read -r key value || [ -n "$key" ]; do
+            # Skip blank lines or comments
+            [[ -z "$key" || "$key" =~ ^# ]] && continue
 
-            # Strip surrounding quotes and escape internal double quotes
-            clean_value=$(echo "$value" | sed -E 's/^["'\''"]+//; s/["'\''"]+$//' | tr -d '\r\n' | sed 's/"/\\\\\\"/g')
+            # Trim carriage returns, strip surrounding single/double quotes
+            clean_key=$(echo "$key" | tr -d '\r\n')
+            clean_value=$(echo "$value" | sed -E 's/^["'\''"]+|["'\''"]+$//g' | tr -d '\r\n' | sed 's/"/\\\\\\"/g')
 
-            # Safely append JSON line
-            lines+=("  { \\"name\\": \\"${key}\\", \\"value\\": \\"${clean_value}\\" }")
-        done < <(grep -v '^#' .env | grep '=')
+            # Append formatted JSON line
+            lines+=("  { \\"name\\": \\"${clean_key}\\", \\"value\\": \\"${clean_value}\\" }")
+        done < .env
 
+        # Write all lines to env.json
         for i in "${!lines[@]}"; do
             if [[ $i -lt $((${#lines[@]} - 1)) ]]; then
                 echo "${lines[$i]}," >> env.json
@@ -154,10 +155,11 @@ def deployService(Map svc) {
 
         echo "]" >> env.json
 
-        echo "=== Contents of env.json from echo ==="
+        echo "=== Contents of env.json ==="
         cat env.json
         '''
     }
+
 
 
 
