@@ -121,38 +121,52 @@ def deployService(Map svc) {
     def localImage = "${svc.localImage}:${BUILD_NUMBER}"
 
     // Part 1: Generate env.json with single triple quotes
+    
+    // Part 1: Generate env.json with single triple quotes
     withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
         sh '''#!/bin/bash
         set -e
 
-        echo "Copying env file: \$ENV_FILE"
-        cp \$ENV_FILE .env
+        echo "Copying env file: $ENV_FILE"
+        cp "$ENV_FILE" .env
 
-        echo "[" > env.json
+        echo "[" > apienv.json
 
             lines=()
 
-            while IFS='=' read -r key value; do
-                [[ "$key" =~ ^#.*$ || -z "$value" ]] && continue
-                clean_value=$(echo "$value" | sed 's/^["'\\''"]//; s/["'\\''"]$//' | tr -d '\\r\\n' | sed 's/"/\\"/g')
-                lines+=("  { \"name\": \"${key}\", \"value\": \"${clean_value}\" }")
-            done < <(grep -v '^#' .env | grep '=')
+        while IFS='=' read -r key value || [ -n "$key" ]; do
+            # Skip empty or commented lines
+            [[ "$key" =~ ^#.*$ || -z "$key" || -z "$value" ]] && continue
 
-            for i in "${!lines[@]}"; do
-                if [[ $i -lt $((${#lines[@]} - 1)) ]]; then
-                    echo "${lines[$i]}," >> env.json
-                else
-                    echo "${lines[$i]}" >> env.json
-                fi
-            done
+            key=$(echo "$key" | tr -d '\r\n')
+            value=$(echo "$value" | tr -d '\r\n')
 
-            echo "]" >> env.json
-            echo "=== Contents of env.json ==="
-            cat env.json
-            '''
+            # Strip all surrounding single/double quotes
+            value=$(echo "$value" | sed -E 's/^[\'\\"']+//; s/[\'\\"']+$//')
+
+            # Escape any inner double quotes for JSON
+            value=$(echo "$value" | sed 's/"/\\\\\\"/g')
+
+            # Append properly quoted JSON line
+            lines+=("  { \\"name\\": \\"${key}\\", \\"value\\": \\"${value}\\" }")
+        done < .env
+
+        for i in "${!lines[@]}"; do
+            if [[ $i -lt $((${#lines[@]} - 1)) ]]; then
+                echo "${lines[$i]}," >> apienv.json
+            else
+                echo "${lines[$i]}" >> apienv.json
+            fi
+        done
+
+        echo "]" >> apienv.json
+
+        echo "=== Contents of apienv.json enc changed ==="
+        cat apienv.json
+        '''
     }
 
-    // Part 2: Docker build, tag, push and ECS update with double triple quotes
+    // // Part 2: Docker build, tag, push and ECS update with double triple quotes
     withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
         sh """#!/bin/bash
         set -e
@@ -174,7 +188,9 @@ def deployService(Map svc) {
         TASK_DEF=\$(aws ecs describe-task-definition --task-definition ${taskDefName})
 
         echo "Injecting env and updating image"
-        NEW_TASK_DEF=\$(echo "\$TASK_DEF" | jq --arg IMAGE "${image}" --argjson env \$(cat env.json) '
+        echo "=== Contents of apienv.json before injecting ==="
+        cat apienv.json
+        NEW_TASK_DEF=\$(echo "\$TASK_DEF" | jq --arg IMAGE "${image}" --argjson env \$(cat apienv.json) '
             .taskDefinition |
             {
                 family: .family,
@@ -200,10 +216,13 @@ def deployService(Map svc) {
                 --service ${serviceName} \
                 --task-definition ${taskDefName} \
                 --force-new-deployment
+
+            
             """
     }
     
 }
+
 
 
 
