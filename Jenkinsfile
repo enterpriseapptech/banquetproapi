@@ -180,6 +180,7 @@ def deployService(Map svc) {
         set -e
 
         echo "Preparing to copy env file: $ENV_FILE"
+        ls -la
         rm -f .env || true
         touch .env
         chmod +w .env
