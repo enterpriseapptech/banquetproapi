@@ -122,39 +122,39 @@ def deployService(Map svc) {
 
     // Part 1: Generate env.json with single triple quotes
     withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
-        sh '''#!/bin/bash
-        set -e
+    sh '''#!/bin/bash
+    set -e
 
-        echo "Copying env file: $ENV_FILE"
-        cp "$ENV_FILE" .env
+    echo "Copying env file: $ENV_FILE"
+    cp "$ENV_FILE" .env
 
-        echo "[" > env.json
+    echo "[" > env.json
 
-        lines=()
+    lines=()
 
-        while IFS='=' read -r key value || [ -n "$key" ]; do
-            # Skip empty or commented lines
-            [[ "$key" =~ ^#.*$ || -z "$key" || -z "$value" ]] && continue
+    while IFS='=' read -r key value || [ -n "$key" ]; do
+        # Skip empty or commented lines
+        [[ "$key" =~ ^#.*$ || -z "$key" || -z "$value" ]] && continue
 
-            key=$(echo "$key" | tr -d '\r\n')
-            value=$(echo "$value" | tr -d '\r\n')
+        key=$(echo "$key" | tr -d '\r\n')
+        value=$(echo "$value" | tr -d '\r\n')
 
-            # Strip all surrounding single/double quotes
-            value=$(echo "$value" | sed -E "s/^[\"']*(.*?)[\"']*\$/\\1/")
+        # Strip all surrounding single/double quotes
+        value=$(echo "$value" | sed -E 's/^[\'\\"']+//; s/[\'\\"']+$//')
 
-            # Escape any inner double quotes for JSON
-            value=$(echo "$value" | sed 's/"/\\\\\\"/g')
+        # Escape any inner double quotes for JSON
+        value=$(echo "$value" | sed 's/"/\\\\\\"/g')
 
-            # Append properly quoted JSON line
-            lines+=("  { \\"name\\": \\"${key}\\", \\"value\\": \\"${value}\\" }")
-        done < .env
+        # Append properly quoted JSON line
+        lines+=("  { \\"name\\": \\"${key}\\", \\"value\\": \\"${value}\\" }")
+    done < .env
 
-        for i in "${!lines[@]}"; do
-            if [[ $i -lt $((${#lines[@]} - 1)) ]]; then
-                echo "${lines[$i]}," >> env.json
-            else
-                echo "${lines[$i]}" >> env.json
-            fi
+    for i in "${!lines[@]}"; do
+        if [[ $i -lt $((${#lines[@]} - 1)) ]]; then
+            echo "${lines[$i]}," >> env.json
+        else
+            echo "${lines[$i]}" >> env.json
+        fi
         done
 
         echo "]" >> env.json
