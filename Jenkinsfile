@@ -264,9 +264,9 @@ def deployService(Map svc) {
             requiresCompatibilities: .requiresCompatibilities,
             cpu: .cpu,
             memory: .memory
-        }'
+        }
         + (if .taskRoleArn != null then {taskRoleArn: .taskRoleArn} else {} end)
-        )
+        ')
         mkdir -p banquetpro
         echo "\$NEW_TASK_DEF" > ${repo}-taskdef-final.json
 
