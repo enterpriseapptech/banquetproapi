@@ -117,7 +117,7 @@ pipeline {
                     deployService(
                         repo: 'banquetpro/users',
                         path: 'apps/users',
-                        taskDefinition: 'users-task-definition',
+                        taskDefinition: 'users-task-defiition',
                         service: 'users-service',
                         envFile: "USERS_ENV_FILE",
                         localImage: "users-image"
