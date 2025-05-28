@@ -161,9 +161,6 @@ def deployService(Map svc) {
     }
 
 
-
-
-
     // Part 2: Docker build, tag, push and ECS update with double triple quotes
     withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
         sh """#!/bin/bash
