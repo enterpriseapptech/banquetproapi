@@ -128,7 +128,7 @@ def deployService(Map svc) {
         aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
         echo "Building Docker image"
-        echo "Using local image tag: ${localImage}"
+        echo "Using local image tag: ${repo}"
         docker build -f ${path}/Dockerfile -t ${localImage} .
 
         echo "Tagging image for ECR"
