@@ -87,6 +87,11 @@ pipeline {
                 }
             }
         }
+        stage('Cleanup Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
     }
 
     post {
@@ -107,6 +112,13 @@ pipeline {
             script {
                 updateGitHubStatus('failure', 'The build is unstable.')
             }
+        }
+
+        always {
+            echo 'Cleaning up Docker resources to free up disk space...'
+            sh 'docker system prune -a -f --volumes'
+            sh 'sudo docker builder prune -a -f'
+
         }
     }
 }
