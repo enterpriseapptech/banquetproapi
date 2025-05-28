@@ -125,31 +125,31 @@ def deployService(Map svc) {
         sh '''#!/bin/bash
         set -e
 
-        echo "Copying env file: $ENV_FILE"
-        cp $ENV_FILE .env
+        echo "Copying env file: \$ENV_FILE"
+        cp \$ENV_FILE .env
 
         echo "[" > env.json
 
-        lines=()
+            lines=()
 
-        while IFS='=' read -r key value; do
-            [[ "$key" =~ ^#.*$ || -z "$value" ]] && continue
-            clean_value=$(echo "$value" | sed 's/^["'\\''"]//; s/["'\\''"]$//' | tr -d '\\r\\n' | sed 's/"/\\"/g')
-            lines+=("  { \"name\": \"${key}\", \"value\": \"${clean_value}\" }")
-        done < <(grep -v '^#' .env | grep '=')
+            while IFS='=' read -r key value; do
+                [[ "$key" =~ ^#.*$ || -z "$value" ]] && continue
+                clean_value=$(echo "$value" | sed 's/^["'\\''"]//; s/["'\\''"]$//' | tr -d '\\r\\n' | sed 's/"/\\"/g')
+                lines+=("  { \"name\": \"${key}\", \"value\": \"${clean_value}\" }")
+            done < <(grep -v '^#' .env | grep '=')
 
-        for i in "${!lines[@]}"; do
-            if [[ $i -lt $((${#lines[@]} - 1)) ]]; then
-                echo "${lines[$i]}," >> env.json
-            else
-                echo "${lines[$i]}" >> env.json
-            fi
-        done
+            for i in "${!lines[@]}"; do
+                if [[ $i -lt $((${#lines[@]} - 1)) ]]; then
+                    echo "${lines[$i]}," >> env.json
+                else
+                    echo "${lines[$i]}" >> env.json
+                fi
+            done
 
-        echo "]" >> env.json
-        echo "=== Contents of env.json ==="
-        cat env.json
-        '''
+            echo "]" >> env.json
+            echo "=== Contents of env.json ==="
+            cat env.json
+            '''
     }
 
     // Part 2: Docker build, tag, push and ECS update with double triple quotes
@@ -194,16 +194,17 @@ def deployService(Map svc) {
         echo "Registering updated task definition"
         aws ecs register-task-definition --cli-input-json file://${repo}-taskdef-final.json
 
-        echo "Updating ECS service"
-        aws ecs update-service \
-            --cluster ${ECS_CLUSTER} \
-            --service ${serviceName} \
-            --task-definition ${taskDefName} \
-            --force-new-deployment
-        """
+            echo "Updating ECS service"
+            aws ecs update-service \
+                --cluster ${ECS_CLUSTER} \
+                --service ${serviceName} \
+                --task-definition ${taskDefName} \
+                --force-new-deployment
+            """
     }
     
 }
+
 
 
 
