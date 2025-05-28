@@ -154,7 +154,7 @@ def deployService(Map svc) {
 
         echo "]" >> env.json
 
-        echo "=== Contents of env.json from echo==="
+        echo "=== Contents of env.json from echo ==="
         cat env.json
         '''
     }
