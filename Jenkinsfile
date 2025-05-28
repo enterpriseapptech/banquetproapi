@@ -137,10 +137,10 @@ def deployService(Map svc) {
             # Skip if key is blank or comment
             [[ "$key" =~ ^#.*$ || -z "$value" ]] && continue
 
-            # Remove leading/trailing single or double quotes and escape internal double quotes
-            clean_value=$(echo "$value" | sed 's/^["'\\''"]//; s/["'\\''"]$//' | tr -d '\r\n' | sed 's/"/\\\\\\"/g')
+            # Strip surrounding quotes and escape internal double quotes
+            clean_value=$(echo "$value" | sed -E 's/^["'\''"]+//; s/["'\''"]+$//' | tr -d '\r\n' | sed 's/"/\\\\\\"/g')
 
-            # Safely append JSON line with double quotes
+            # Safely append JSON line
             lines+=("  { \\"name\\": \\"${key}\\", \\"value\\": \\"${clean_value}\\" }")
         done < <(grep -v '^#' .env | grep '=')
 
@@ -158,6 +158,7 @@ def deployService(Map svc) {
         cat env.json
         '''
     }
+
 
 
 
