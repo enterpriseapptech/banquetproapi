@@ -49,90 +49,38 @@ pipeline {
             }
         }
 
-        stage('Deployment Decision Apigateway') {
-            steps {
-                script {
-                    try {
-                        timeout(time: 30, unit: 'MINUTES') {
-                            def userInput = input(
-                                id: 'deployApigatewayToDev',
-                                message: 'Deploy apigateway to development?',
-                                parameters: [booleanParam(name: 'DEPLOY_APIGATEWAY_TO_DEV', defaultValue: false)]
-                            )
-                            env.DEPLOY_APIGATEWAY_TO_DEV = userInput ? 'true' : 'false'
-                        }
-                    } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
-                        echo 'Deployment input timeout. Skipping apigateway deployment.'
-                        env.DEPLOY_APIGATEWAY_TO_DEV = 'false'
-                    }
-                }
-            }
-        }
-
-        stage('Inject apigateway environment variables') {
-            when {
-                expression { env.DEPLOY_APIGATEWAY_TO_DEV == 'true' }
-            }
-            
-            steps {
-               
-                withCredentials([file(credentialsId: 'APIGATEWAY_ENV_FILE', variable: 'APIGATEWAY_DOTENV_FILE')]) {
-                    sh '''
-                        cp $APIGATEWAY_DOTENV_FILE .env
-
-                        echo "[" > env.json
-
-                        # Prepare array to hold lines
-                        lines=()
-
-                        # Read from .env file and filter out comments or blank lines
-                        while IFS='=' read -r key value; do
-                        [[ "$key" =~ ^#.*$ || -z "$value" ]] && continue
-
-                        # Strip surrounding quotes and escape internal quotes
-                        clean_value=$(echo "$value" | sed 's/^["'\'']//; s/["'\'']$//' | tr -d '\r\n' | sed 's/"/\\"/g')
-                        lines+=("  { \"name\": \"${key}\", \"value\": \"${clean_value}\" }")
-                        done < <(grep -v '^#' .env | grep '=')
-
-                        # Write the lines into env.json with proper comma placement
-                        for i in "${!lines[@]}"; do
-                        if [[ $i -lt $((${#lines[@]} - 1)) ]]; then
-                            echo "${lines[$i]}," >> env.json
-                        else
-                            echo "${lines[$i]}" >> env.json
-                        fi
-                        done
-
-                        echo "]" >> env.json
-
-                    '''
-                }
-
-
-            }
-        }
-
-        stage('Inject into Apigateway Task Definition') {
-            steps {
-                sh '''
-                jq --argjson env "$(cat env.json)" \
-                    '.containerDefinitions[0].environment = $env' \
-                    ecs/taskdef.template.json > taskdef.final.json
-                '''
-            }
-        }
+        // stage('Deployment Decision Apigateway') {
+        //     steps {
+        //         script {
+        //             try {
+        //                 timeout(time: 30, unit: 'MINUTES') {
+        //                     def userInput = input(
+        //                         id: 'deployApigatewayToDev',
+        //                         message: 'Deploy apigateway to development?',
+        //                         parameters: [booleanParam(name: 'DEPLOY_APIGATEWAY_TO_DEV', defaultValue: false)]
+        //                     )
+        //                     env.DEPLOY_APIGATEWAY_TO_DEV = userInput ? 'true' : 'false'
+        //                 }
+        //             } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
+        //                 echo 'Deployment input timeout. Skipping apigateway deployment.'
+        //                 env.DEPLOY_APIGATEWAY_TO_DEV = 'false'
+        //             }
+        //         }
+        //     }
+        // }
 
         stage('Deploy Apigateway') {
-            when {
-                expression { env.DEPLOY_APIGATEWAY_TO_DEV == 'true' }
-            }
+            // when {
+            //     expression { env.DEPLOY_APIGATEWAY_TO_DEV == 'true' }
+            // }
             steps {
                 script {
                     deployService(
                         repo: 'banquetpro/apigateway',
                         path: 'apps/apigateway',
                         taskDefinition: 'apigateway-task-definition',
-                        service: 'apigateway-service'
+                        service: 'apigateway-service',
+                        envFile: "${APIGATEWAY_DOTENV_FILE}"
                     )
                 }
             }
@@ -161,11 +109,61 @@ pipeline {
     }
 }
 
+// def deployService(Map svc) {
+//     def repo = svc.repo
+//     def path = svc.path
+//     def taskDefName = svc.taskDefinition
+//     def serviceName = svc.service
+//     def image = "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${repo}:${BUILD_NUMBER}"
+
+//     sh """
+//         echo "Logging into ECR"
+//         aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+
+//         echo "Building Docker image for ${repo}"
+//         docker build -f ${path}/Dockerfile -t ${repo}:${BUILD_NUMBER} .
+
+//         echo "Tagging image"
+//         docker tag ${repo}:${BUILD_NUMBER} ${image}
+
+//         echo "Pushing image to ECR"
+//         docker push ${image}
+
+//         echo "Describing existing task definition"
+//         TASK_DEF=\$(aws ecs describe-task-definition --task-definition ${taskDefName})
+
+//         echo "Registering new task definition revision"
+//         NEW_TASK_DEF=\$(echo \$TASK_DEF | jq --arg IMAGE "${image}" '
+//             .taskDefinition |
+//             {
+//                 family: .family,
+//                 networkMode: .networkMode,
+//                 executionRoleArn: .executionRoleArn,
+//                 taskRoleArn: .taskRoleArn,
+//                 containerDefinitions: (.containerDefinitions | map(.image = \$IMAGE)),
+//                 requiresCompatibilities: .requiresCompatibilities,
+//                 cpu: .cpu,
+//                 memory: .memory
+//             }')
+
+//         echo "\$NEW_TASK_DEF" > ${repo}-new-task-def.json
+//         aws ecs register-task-definition --cli-input-json file://${repo}-new-task-def.json
+
+//         echo "Updating ECS service"
+//         aws ecs update-service \
+//             --cluster ${ECS_CLUSTER} \
+//             --service ${serviceName} \
+//             --task-definition ${taskDefName} \
+//             --force-new-deployment
+//     """
+// }
+
 def deployService(Map svc) {
     def repo = svc.repo
     def path = svc.path
     def taskDefName = svc.taskDefinition
     def serviceName = svc.service
+    def envFile = svc.envFile
     def image = "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${repo}:${BUILD_NUMBER}"
 
     sh """
@@ -181,25 +179,49 @@ def deployService(Map svc) {
         echo "Pushing image to ECR"
         docker push ${image}
 
-        echo "Describing existing task definition"
+        echo "Copying env file: \$ENV_FILE"
+        cp ${envFile} .env
+
+        echo "[" > env.json
+        lines=()
+        while IFS='=' read -r key value; do
+          [[ "\$key" =~ ^#.*\$ || -z "\$value" ]] && continue
+          clean_value=\$(echo "\$value" | sed 's/^["'\''"]//;s/["'\''"]\$//' | tr -d '\\r\\n' | sed 's/"/\\\\\\"/g')
+          lines+=("  { \\"name\\": \\"\$key\\", \\"value\\": \\"\$clean_value\\" }")
+        done < <(grep -v '^#' .env | grep '=')
+
+        for i in "\${!lines[@]}"; do
+          if [[ \$i -lt \$(\${#lines[@]} - 1) ]]; then
+              echo "\${lines[\$i]}," >> env.json
+          else
+              echo "\${lines[\$i]}" >> env.json
+          fi
+        done
+        echo "]" >> env.json
+
+        echo "Fetching existing task definition"
         TASK_DEF=\$(aws ecs describe-task-definition --task-definition ${taskDefName})
 
-        echo "Registering new task definition revision"
-        NEW_TASK_DEF=\$(echo \$TASK_DEF | jq --arg IMAGE "${image}" '
+        echo "Injecting env and updating image"
+        NEW_TASK_DEF=\$(echo \$TASK_DEF | jq --arg IMAGE "${image}" --argjson env \$(cat env.json) '
             .taskDefinition |
             {
                 family: .family,
                 networkMode: .networkMode,
                 executionRoleArn: .executionRoleArn,
                 taskRoleArn: .taskRoleArn,
-                containerDefinitions: (.containerDefinitions | map(.image = \$IMAGE)),
+                containerDefinitions: (.containerDefinitions | map(
+                    .image = \$IMAGE | .environment = \$env
+                )),
                 requiresCompatibilities: .requiresCompatibilities,
                 cpu: .cpu,
                 memory: .memory
             }')
 
-        echo "\$NEW_TASK_DEF" > ${repo}-new-task-def.json
-        aws ecs register-task-definition --cli-input-json file://${repo}-new-task-def.json
+        echo "\$NEW_TASK_DEF" > ${repo}-taskdef-final.json
+
+        echo "Registering updated task definition"
+        aws ecs register-task-definition --cli-input-json file://${repo}-taskdef-final.json
 
         echo "Updating ECS service"
         aws ecs update-service \
@@ -209,6 +231,7 @@ def deployService(Map svc) {
             --force-new-deployment
     """
 }
+
 
 def updateGitHubStatus(status, description) {
     def repoOwner = 'enterpriseapptech'
