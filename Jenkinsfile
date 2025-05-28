@@ -87,6 +87,45 @@ pipeline {
                 }
             }
         }
+
+        // stage('Deployment Decision Users') {
+        //     steps {
+        //         script {
+        //             try {
+        //                 timeout(time: 30, unit: 'MINUTES') {
+        //                     def userInput = input(
+        //                         id: 'deployUsersToDev',
+        //                         message: 'Deploy USERS to development?',
+        //                         parameters: [booleanParam(name: 'DEPLOY_USERS_TO_DEV', defaultValue: false)]
+        //                     )
+        //                     env.DEPLOY_USERS_TO_DEV = userInput ? 'true' : 'false'
+        //                 }
+        //             } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
+        //                 echo 'Deployment input timeout. Skipping apigateway deployment.'
+        //                 env.DEPLOY_USERS_TO_DEV = 'false'
+        //             }
+        //         }
+        //     }
+        // }
+
+        stage('Deploy Users') {
+            // when {
+            //     expression { env.DEPLOY_USERS_TO_DEV == 'true' }
+            // }
+            steps {
+                script {
+                    deployService(
+                        repo: 'banquetpro/users',
+                        path: 'apps/users',
+                        taskDefinition: 'users-task-definition',
+                        service: 'users-service',
+                        envFile: "USERS_ENV_FILE",
+                        localImage: "users-image"
+
+                    )
+                }
+            }
+        }
     }
 
     post {
@@ -184,7 +223,7 @@ def deployService(Map svc) {
         echo "Pushing image to ECR"
         docker push ${image}
 
-        echo "Fetching existing task definition hoping to update"
+        echo "Fetching existing task definition"
         TASK_DEF=\$(aws ecs describe-task-definition --task-definition ${taskDefName})
 
         echo "Injecting env and updating image"
