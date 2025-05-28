@@ -133,17 +133,19 @@ def deployService(Map svc) {
         lines=()
 
         while IFS='=' read -r key value || [ -n "$key" ]; do
+            # Skip empty or commented lines
             [[ "$key" =~ ^#.*$ || -z "$key" || -z "$value" ]] && continue
 
             key=$(echo "$key" | tr -d '\r\n')
             value=$(echo "$value" | tr -d '\r\n')
 
-            # ✅ Strip any leading/trailing single or double quotes
-            value=$(echo "$value" | sed -E "s/^[\"']*(.*?)[\"']*\$/\\1/")
+            # Strip all surrounding single/double quotes
+            value=$(echo "$value" | sed -E 's/^[\"\047]*(.*?)[\"\047]*$/\1/')
 
-            # Escape inner double quotes
+            # Escape any inner double quotes for JSON
             value=$(echo "$value" | sed 's/"/\\\\\\"/g')
 
+            # Append properly quoted JSON line
             lines+=("  { \\"name\\": \\"${key}\\", \\"value\\": \\"${value}\\" }")
         done < .env
 
