@@ -140,7 +140,7 @@ def deployService(Map svc) {
             value=$(echo "$value" | tr -d '\r\n')
 
             # Strip all surrounding single/double quotes
-            value=$(echo "$value" | sed -E 's/^[\"\047]*(.*?)[\"\047]*$/\1/')
+            value=$(echo "$value" | sed -E 's/^[\'\\"']+//; s/[\'\\"']+$//')
 
             # Escape any inner double quotes for JSON
             value=$(echo "$value" | sed 's/"/\\\\\\"/g')
