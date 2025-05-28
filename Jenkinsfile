@@ -130,26 +130,31 @@ def deployService(Map svc) {
 
         echo "[" > env.json
 
-            lines=()
+        # Prepare array to hold lines
+        lines=()
 
-            while IFS='=' read -r key value; do
-                [[ "$key" =~ ^#.*$ || -z "$value" ]] && continue
-                clean_value=$(echo "$value" | sed 's/^["'\\''"]//; s/["'\\''"]$//' | tr -d '\\r\\n' | sed 's/"/\\"/g')
-                lines+=("  { \"name\": \"${key}\", \"value\": \"${clean_value}\" }")
-            done < <(grep -v '^#' .env | grep '=')
+        # Read from .env file and filter out comments or blank lines
+        while IFS='=' read -r key value; do
+            [[ "$key" =~ ^#.*$ || -z "$value" ]] && continue
 
-            for i in "${!lines[@]}"; do
-                if [[ $i -lt $((${#lines[@]} - 1)) ]]; then
-                    echo "${lines[$i]}," >> env.json
-                else
-                    echo "${lines[$i]}" >> env.json
-                fi
-            done
+            # Strip surrounding quotes and escape internal quotes
+            clean_value=$(echo "$value" | sed 's/^["'\''"]//; s/["'\''"]$//' | tr -d '\r\n' | sed 's/"/\\"/g')
+            lines+=("  { \"name\": \"${key}\", \"value\": \"${clean_value}\" }")
+        done < <(grep -v '^#' .env | grep '=')
 
-            echo "]" >> env.json
-            echo "=== Contents of env.json ==="
-            cat env.json
-            '''
+        # Write the lines into env.json with proper comma placement
+        for i in "${!lines[@]}"; do
+            if [[ $i -lt $((${#lines[@]} - 1)) ]]; then
+                echo "${lines[$i]}," >> env.json
+            else
+                echo "${lines[$i]}" >> env.json
+            fi
+        done
+
+        echo "]" >> env.json
+        echo "=== Contents of env.json ==="
+        cat env.json
+        '''
     }
 
     // Part 2: Docker build, tag, push and ECS update with double triple quotes
