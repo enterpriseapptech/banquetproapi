@@ -121,6 +121,8 @@ def deployService(Map svc) {
     def localImage = "${svc.localImage}:${BUILD_NUMBER}"
 
     // Part 1: Generate env.json with single triple quotes
+    
+    // Part 1: Generate env.json with single triple quotes
     withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
         sh '''#!/bin/bash
         set -e
@@ -132,18 +134,22 @@ def deployService(Map svc) {
 
         lines=()
 
-        while IFS='=' read -r key value; do
-            # Skip comments and empty lines
-            [[ "$key" =~ ^#.*$ || -z "$value" ]] && continue
+        while IFS='=' read -r key value || [ -n "$key" ]; do
+            # Skip empty or commented lines
+            [[ "$key" =~ ^#.*$ || -z "$key" || -z "$value" ]] && continue
 
-            # Strip leading/trailing single or double quotes
-            clean_value=$(echo "$value" | sed -E 's/^[\'\\\"']*(.*?)[\'\\\"']*$/'"'"'\\1'"'"'/')
+            key=$(echo "$key" | tr -d '\r\n')
+            value=$(echo "$value" | tr -d '\r\n')
 
-            # Escape internal double quotes
-            clean_value=$(echo "$clean_value" | sed 's/"/\\\\"/g')
+            # Strip all surrounding single/double quotes
+            value=$(echo "$value" | sed -E 's/^[\'\\"']+//; s/[\'\\"']+$//')
 
-            lines+=("  { \\"name\\": \\"$key\\", \\"value\\": \\"$clean_value\\" }")
-        done < <(grep -v '^#' .env | grep '=')
+            # Escape any inner double quotes for JSON
+            value=$(echo "$value" | sed 's/"/\\\\\\"/g')
+
+            # Append properly quoted JSON line
+            lines+=("  { \\"name\\": \\"${key}\\", \\"value\\": \\"${value}\\" }")
+        done < .env
 
         for i in "${!lines[@]}"; do
             if [[ $i -lt $((${#lines[@]} - 1)) ]]; then
@@ -159,7 +165,6 @@ def deployService(Map svc) {
         cat env.json
         '''
     }
-
 
 
 
