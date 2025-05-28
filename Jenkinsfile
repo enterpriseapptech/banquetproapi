@@ -130,27 +130,19 @@ def deployService(Map svc) {
 
         echo "[" > env.json
 
+        # Prepare array to hold lines
         lines=()
 
-        while IFS='=' read -r key value || [ -n "$key" ]; do
-            # Skip blank lines or comments
-            [[ -z "$key" || "$key" =~ ^# ]] && continue
+        # Read from .env file and filter out comments or blank lines
+        while IFS='=' read -r key value; do
+            [[ "$key" =~ ^#.*$ || -z "$value" ]] && continue
 
-            # Trim carriage returns
-            key=$(echo "$key" | tr -d '\r\n')
-            value=$(echo "$value" | tr -d '\r\n')
+            # Strip surrounding quotes and escape internal quotes
+            clean_value=$(echo "$value" | sed 's/^["'\''"]//; s/["'\''"]$//' | tr -d '\r\n' | sed 's/"/\\"/g')
+            lines+=("  { \"name\": \"${key}\", \"value\": \"${clean_value}\" }")
+        done < <(grep -v '^#' .env | grep '=')
 
-            # Remove surrounding quotes from value (single or double)
-            if [[ "$value" =~ ^\".*\"$ || "$value" =~ ^\'.*\'$ ]]; then
-                value="${value:1:-1}"
-            fi
-
-            # Escape inner double quotes
-            value=$(echo "$value" | sed 's/"/\\\\\\"/g')
-
-            lines+=("  { \\"name\\": \\"${key}\\", \\"value\\": \\"${value}\\" }")
-        done < .env
-
+        # Write the lines into env.json with proper comma placement
         for i in "${!lines[@]}"; do
             if [[ $i -lt $((${#lines[@]} - 1)) ]]; then
                 echo "${lines[$i]}," >> env.json
