@@ -49,30 +49,30 @@ pipeline {
             }
         }
 
-        // stage('Deployment Decision Apigateway') {
-        //     steps {
-        //         script {
-        //             try {
-        //                 timeout(time: 30, unit: 'MINUTES') {
-        //                     def userInput = input(
-        //                         id: 'deployApigatewayToDev',
-        //                         message: 'Deploy apigateway to development?',
-        //                         parameters: [booleanParam(name: 'DEPLOY_APIGATEWAY_TO_DEV', defaultValue: false)]
-        //                     )
-        //                     env.DEPLOY_APIGATEWAY_TO_DEV = userInput ? 'true' : 'false'
-        //                 }
-        //             } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
-        //                 echo 'Deployment input timeout. Skipping apigateway deployment.'
-        //                 env.DEPLOY_APIGATEWAY_TO_DEV = 'false'
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Deployment Decision Apigateway') {
+            steps {
+                script {
+                    try {
+                        timeout(time: 30, unit: 'MINUTES') {
+                            def userInput = input(
+                                id: 'deployApigatewayToDev',
+                                message: 'Deploy apigateway to development?',
+                                parameters: [booleanParam(name: 'DEPLOY_APIGATEWAY_TO_DEV', defaultValue: false)]
+                            )
+                            env.DEPLOY_APIGATEWAY_TO_DEV = userInput ? 'true' : 'false'
+                        }
+                    } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
+                        echo 'Deployment input timeout. Skipping apigateway deployment.'
+                        env.DEPLOY_APIGATEWAY_TO_DEV = 'false'
+                    }
+                }
+            }
+        }
 
         stage('Deploy Apigateway') {
-            // when {
-            //     expression { env.DEPLOY_APIGATEWAY_TO_DEV == 'true' }
-            // }
+            when {
+                expression { env.DEPLOY_APIGATEWAY_TO_DEV == 'true' }
+            }
             steps {
                 script {
                     deployService(
@@ -87,6 +87,46 @@ pipeline {
                 }
             }
         }
+
+        stage('Deployment Decision Users') {
+            steps {
+                script {
+                    try {
+                        timeout(time: 30, unit: 'MINUTES') {
+                            def userInput = input(
+                                id: 'deployUsersToDev',
+                                message: 'Deploy USERS to development?',
+                                parameters: [booleanParam(name: 'DEPLOY_USERS_TO_DEV', defaultValue: false)]
+                            )
+                            env.DEPLOY_USERS_TO_DEV = userInput ? 'true' : 'false'
+                        }
+                    } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
+                        echo 'Deployment input timeout. Skipping apigateway deployment.'
+                        env.DEPLOY_USERS_TO_DEV = 'false'
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Users') {
+            when {
+                expression { env.DEPLOY_USERS_TO_DEV == 'true' }
+            }
+            steps {
+                script {
+                    deployService(
+                        repo: 'banquetpro/users',
+                        path: 'apps/users',
+                        taskDefinition: 'users-task-definition',
+                        service: 'users-service',
+                        envFile: "USERS_ENV_FILE",
+                        localImage: "users-image"
+
+                    )
+                }
+            }
+        }
+
         stage('Cleanup Workspace for next build') {
             steps {
                 cleanWs()
@@ -259,20 +299,19 @@ def updateGitHubStatus(status, description) {
 
     echo "Sending GitHub status update..."
 
-    withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_TOKEN')]) {
-        def response = sh(
-            script: """
-            curl -L \
-                -X POST \
-                -H "Accept: application/vnd.github+json" \
-                -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-                -H "X-GitHub-Api-Version: 2022-11-28" \
-                -d '${payload}' \
-                ${apiUrl}
-            """,
-            returnStdout: true
-        ).trim()
+    def response = sh(
+        script: """
+        curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -d '${payload}' \
+            ${apiUrl}
+        """,
+        returnStdout: true
+    ).trim()
 
-        echo "GitHub Status Response: ${response}"
-    }
+    echo "GitHub Status Response: ${response}"
+    
 }
