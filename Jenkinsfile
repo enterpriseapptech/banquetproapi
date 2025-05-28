@@ -118,7 +118,7 @@ def deployService(Map svc) {
     def serviceName = svc.service
     def envFileCredentialId = svc.envFile
     def image = "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${repo}:${BUILD_NUMBER}"
-    def localImage = "${svc.localImage}:${BUILD_NUMBER}"
+    def localImage = svc.localImage
 
     withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
         sh '''#!/bin/bash
@@ -128,7 +128,7 @@ def deployService(Map svc) {
         aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
         echo "Building Docker image"
-        echo "Using local image tag: ${svc.localImage}"
+        echo "Using local image tag: ${localImage}"
         docker build -f ${path}/Dockerfile -t ${localImage} .
 
         echo "Tagging image for ECR"
