@@ -121,14 +121,14 @@ def deployService(Map svc) {
     def localImage = "localImagtag"
 
     withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
-        sh '''#!/bin/bash
+        sh """#!/bin/bash
         set -e
 
         echo "Logging into ECR"
         aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
         echo "Building Docker image"
-        echo "Using local image tag: ${ACCOUNT_ID}"
+        echo "Using local image tag: ${localImage}"
         docker build -f ${path}/Dockerfile -t ${localImage} .
 
         echo "Tagging image for ECR"
@@ -196,7 +196,7 @@ def deployService(Map svc) {
             --service ${serviceName} \
             --task-definition ${taskDefName} \
             --force-new-deployment
-        '''
+        """
     }
 }
 
