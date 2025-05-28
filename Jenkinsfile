@@ -190,20 +190,28 @@ def deployService(Map svc) {
         echo "Injecting env and updating image"
         echo "=== Contents of apienv.json before injecting ==="
         cat apienv.json
-        NEW_TASK_DEF=\$(echo "\$TASK_DEF" | jq --arg IMAGE "${image}" --argjson env \$(cat apienv.json) '
-            .taskDefinition |
-            {
-                family: .family,
-                networkMode: .networkMode,
-                executionRoleArn: .executionRoleArn,
-                taskRoleArn: .taskRoleArn,
-                containerDefinitions: (.containerDefinitions | map(
-                    .image = \$IMAGE | .environment = \$env
-                )),
-                requiresCompatibilities: .requiresCompatibilities,
-                cpu: .cpu,
-                memory: .memory
-            }')
+        ENV_JSON=$(cat apienv.json)
+
+        # Create the new task definition JSON using jq
+        NEW_TASK_DEF=$(echo "${TASK_DEF}" | jq \
+        --arg IMAGE "${image}" \
+        --argjson env "${ENV_JSON}" \
+        '
+        .taskDefinition |
+        {
+            family: .family,
+            networkMode: .networkMode,
+            executionRoleArn: .executionRoleArn,
+            taskRoleArn: .taskRoleArn,
+            containerDefinitions: (
+            .containerDefinitions | map(
+                .image = ${IMAGE} | .environment = ${env}
+            )
+            ),
+            requiresCompatibilities: .requiresCompatibilities,
+            cpu: .cpu,
+            memory: .memory
+        }')
 
         echo "\$NEW_TASK_DEF" > ${repo}-taskdef-final.json
 
