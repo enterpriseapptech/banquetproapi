@@ -114,12 +114,12 @@ pipeline {
             }
         }
 
-        always {
-            echo 'Cleaning up Docker resources to free up disk space...'
-            sh 'docker system prune -a -f --volumes'
-            sh 'sudo docker builder prune -a -f'
+        // always {
+        //     echo 'Cleaning up Docker resources to free up disk space...'
+        //     sh 'docker system prune -a -f --volumes'
+        //     sh 'sudo docker builder prune -a -f'
 
-        }
+        // }
     }
 }
 
