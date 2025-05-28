@@ -121,7 +121,7 @@ def deployService(Map svc) {
     def localImage = "${svc.localImage}:${BUILD_NUMBER}"
 
     // Part 1: Generate env.json with single triple quotes
-        withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
+    withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
         sh '''#!/bin/bash
         set -e
 
@@ -140,7 +140,7 @@ def deployService(Map svc) {
             value=$(echo "$value" | tr -d '\r\n')
 
             # Strip all surrounding single/double quotes
-            value=$(echo "$value" | sed -E 's/^[\'\\"']+//; s/[\'\\"']+$//')
+            value=$(echo "$value" | sed -E "s/^[\"']*(.*?)[\"']*\$/\\1/")
 
             # Escape any inner double quotes for JSON
             value=$(echo "$value" | sed 's/"/\\\\\\"/g')
