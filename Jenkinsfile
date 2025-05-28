@@ -184,7 +184,7 @@ def deployService(Map svc) {
         echo "Pushing image to ECR"
         docker push ${image}
 
-        echo "Fetching existing task definition"
+        echo "Fetching existing task definition hoping to update"
         TASK_DEF=\$(aws ecs describe-task-definition --task-definition ${taskDefName})
 
         echo "Injecting env and updating image"
