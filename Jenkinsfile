@@ -216,7 +216,11 @@ def deployService(Map svc) {
                 --service ${serviceName} \
                 --task-definition ${taskDefName} \
                 --force-new-deployment
-            """
+
+            echo "Cleaning up temporary files"
+            rm -f apienv.json .env
+            rm -f env.json .env
+            echo "${repo} Deployment completed successfully.""
     }
     
 }
