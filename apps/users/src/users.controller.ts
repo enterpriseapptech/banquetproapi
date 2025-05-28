@@ -33,7 +33,7 @@ export class UsersController {
 				console.error("Error in UsersService:", err);
 				return throwError(() => new RpcException({
 					statusCode: err.response.statusCode || 500,
-					message: err.message || "Internal Server Error",
+					message: err.message || "Internal Server Error in login",
 					error: err.response.error || "Sever error",
 				}));
 
