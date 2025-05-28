@@ -173,7 +173,7 @@ def deployService(Map svc) {
 
         echo "]" >> apienv.json
 
-        echo "=== Contents of apienv.json enc changed ==="
+        echo "=== Contents of apienv.json ==="
         cat apienv.json
         '''
     }
