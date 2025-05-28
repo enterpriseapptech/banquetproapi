@@ -188,7 +188,7 @@ def deployService(Map svc) {
         TASK_DEF=\$(aws ecs describe-task-definition --task-definition ${taskDefName})
 
         echo "Injecting env and updating image"
-        echo "=== Contents of apienv.json before injecting ==="
+        echo "=== Contents of apienv.json before injecting the data ==="
         cat apienv.json
         NEW_TASK_DEF=\$(echo "\$TASK_DEF" | jq --arg IMAGE "${image}" --argjson env \$(cat apienv.json) '
             .taskDefinition |
