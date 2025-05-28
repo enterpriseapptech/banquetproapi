@@ -135,7 +135,6 @@ def deployService(Map svc) {
         echo "Pushing image to ECR"
         docker push ${image}
 
-
         echo "Copying env file: $ENV_FILE"
         cp $ENV_FILE .env
 
