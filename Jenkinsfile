@@ -118,7 +118,7 @@ def deployService(Map svc) {
     def serviceName = svc.service
     def envFileCredentialId = svc.envFile
     def image = "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${repo}:${BUILD_NUMBER}"
-    def localImage = "localImagtag"
+    def localImage = "${svc.localImage}:${BUILD_NUMBER}"
 
     withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
     sh """#!/bin/bash
