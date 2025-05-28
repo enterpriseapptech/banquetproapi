@@ -190,13 +190,10 @@ def deployService(Map svc) {
         echo "Injecting env and updating image"
         echo "=== Contents of apienv.json before injecting ==="
         cat apienv.json
-        ENV_JSON=$(cat apienv.json)
 
-        # Create the new task definition JSON using jq
-        NEW_TASK_DEF=$(echo "${TASK_DEF}" | jq \
-        --arg IMAGE "${image}" \
-        --argjson env "${ENV_JSON}" \
-        '
+        ENV_JSON=\$(cat apienv.json)
+
+        NEW_TASK_DEF=\$(echo "\$TASK_DEF" | jq --arg IMAGE "${image}" --argjson env "\$ENV_JSON" '
         .taskDefinition |
         {
             family: .family,
@@ -205,20 +202,21 @@ def deployService(Map svc) {
             taskRoleArn: .taskRoleArn,
             containerDefinitions: (
             .containerDefinitions | map(
-                .image = ${IMAGE} | .environment = ${env}
+                .image = \$IMAGE | .environment = \$env
             )
             ),
             requiresCompatibilities: .requiresCompatibilities,
             cpu: .cpu,
             memory: .memory
-        }')
+        }'
+        )
 
         echo "\$NEW_TASK_DEF" > ${repo}-taskdef-final.json
 
         echo "Registering updated task definition"
         aws ecs register-task-definition --cli-input-json file://${repo}-taskdef-final.json
 
-        echo "Updating ECS service update"
+        echo "Updating ECS service"
         aws ecs update-service \
             --cluster ${ECS_CLUSTER} \
             --service ${serviceName} \
@@ -226,10 +224,10 @@ def deployService(Map svc) {
             --force-new-deployment
 
         echo "Cleaning up temporary files"
-        rm -f apienv.json .env
-        rm -f env.json
+        rm -f apienv.json .env env.json
         """
     }
+
     
 }
 
