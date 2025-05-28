@@ -80,7 +80,9 @@ pipeline {
                         path: 'apps/apigateway',
                         taskDefinition: 'apigateway-task-definition',
                         service: 'apigateway-service',
-                        envFile: "APIGATEWAY_ENV_FILE"
+                        envFile: "APIGATEWAY_ENV_FILE",
+                        localImage: "apigateway-image"
+
                     )
                 }
             }
@@ -108,6 +110,7 @@ pipeline {
         }
     }
 }
+
 def deployService(Map svc) {
     def repo = svc.repo
     def path = svc.path
@@ -115,6 +118,7 @@ def deployService(Map svc) {
     def serviceName = svc.service
     def envFileCredentialId = svc.envFile
     def image = "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${repo}:${BUILD_NUMBER}"
+    def localImage = "${svc.localImage}:${BUILD_NUMBER}"
 
     withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
         sh '''#!/bin/bash
@@ -123,11 +127,11 @@ def deployService(Map svc) {
         echo "Logging into ECR"
         aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
-        echo "Building Docker image for ${repo}"
-        docker build -f ${path}/Dockerfile -t ${repo}:${BUILD_NUMBER} .
+        echo "Building Docker image"
+        docker build -f ${path}/Dockerfile -t ${localImage} .
 
-        echo "Tagging image"
-        docker tag ${repo}:${BUILD_NUMBER} ${image}
+        echo "Tagging image for ECR"
+        docker tag ${localImage} ${image}
 
         echo "Pushing image to ECR"
         docker push ${image}
@@ -340,17 +344,17 @@ def deployService(Map svc) {
 //     def image = "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${repo}:${BUILD_NUMBER}"
 
 //     sh """
-//         echo "Logging into ECR"
-//         aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+        // echo "Logging into ECR"
+        // aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
-//         echo "Building Docker image for ${repo}"
-//         docker build -f ${path}/Dockerfile -t ${repo}:${BUILD_NUMBER} .
+        // echo "Building Docker image for ${repo}"
+        // docker build -f ${path}/Dockerfile -t ${repo}:${BUILD_NUMBER} .
 
-//         echo "Tagging image"
-//         docker tag ${repo}:${BUILD_NUMBER} ${image}
+        // echo "Tagging image"
+        // docker tag ${repo}:${BUILD_NUMBER} ${image}
 
-//         echo "Pushing image to ECR"
-//         docker push ${image}
+        // echo "Pushing image to ECR"
+        // docker push ${image}
 
 //         echo "Copying env file: \$ENV_FILE"
 //         cp ${envFile} .env
