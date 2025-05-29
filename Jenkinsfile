@@ -257,8 +257,6 @@ def deployService(Map svc) {
 
         echo "]" >> apienv.json
 
-        echo "=== Contents of apienv.json ==="
-        cat apienv.json
         '''
     }
 
@@ -284,8 +282,6 @@ def deployService(Map svc) {
         TASK_DEF=\$(aws ecs describe-task-definition --task-definition ${taskDefName})
 
         echo "Injecting env and updating image"
-        echo "=== Contents of apienv.json before injecting ==="
-        cat apienv.json
 
         ENV_JSON=\$(cat apienv.json)
 
