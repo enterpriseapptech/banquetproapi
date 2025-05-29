@@ -20,6 +20,7 @@ export class NotificationsService {
 	async create(createNotificationDto: CreateNotificationDto): Promise<NotificationDto> {
 		const newNotificationInput: Prisma.NotificationCreateInput = {
 			userId: createNotificationDto.userId,
+			senderId: createNotificationDto.senderId,
 			message: createNotificationDto.message,
 			type: createNotificationDto.type as $Enums.NotificationType,
 			isRead: createNotificationDto.isRead
