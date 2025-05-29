@@ -1,5 +1,5 @@
 # 1. Use lightweight Node.js image
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 # 2. Set working directory
 WORKDIR /app
@@ -15,8 +15,8 @@ COPY . .
 
 # 6. Remove unnecessary microservices and their dependencies
 RUN rm -rf apps/apigateway apps/booking apps/catering  apps/users apps/payments apps/eventcenters  
-RUN rm -rf libs/contracts/src/eventcenterbooking libs/contracts/src/booking libs/contracts/src/catering libs/contracts/src/payments libs/contracts/src/eventcenters  libs/contracts/src/payments libs/contracts/src/users
-RUN rm -rf libs/contracts/src/booking.ts  libs/contracts/src/payments.ts libs/contracts/src/eventcenters.ts libs/contracts/src/users.ts
+RUN rm -rf libs/contracts/src/eventcenterbooking libs/contracts/src/catering libs/contracts/src/payments libs/contracts/src/eventcenters  libs/contracts/src/payments
+RUN rm -rf libs/contracts/src/payments.ts libs/contracts/src/eventcenters.ts 
 RUN echo "Current directory contents in contracts:" && ls -la libs/contracts/src
 
 # 7. Generate Prisma Client for this microservice
@@ -26,7 +26,7 @@ RUN yarn prisma generate --schema=/app/apps/notifications/prisma/schema.prisma
 RUN yarn build notifications
 
 # 9. Create a smaller runtime image
-FROM node:18-alpine AS runner
+FROM node:20-alpine AS runner
 
 # 10. reSet working directory 
 WORKDIR /app
