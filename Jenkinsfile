@@ -127,6 +127,45 @@ pipeline {
             }
         }
 
+        // stage('Deployment Decision Notifications') {
+        //     steps {
+        //         script {
+        //             try {
+        //                 timeout(time: 30, unit: 'MINUTES') {
+        //                     def userInput = input(
+        //                         id: 'deployNotificationsToDev',
+        //                         message: 'Deploy NOTIFICATIONS to development?',
+        //                         parameters: [booleanParam(name: 'DEPLOY_NOTIFICATIONS_TO_DEV', defaultValue: false)]
+        //                     )
+        //                     env.DEPLOY_NOTIFICATIONS_TO_DEV = userInput ? 'true' : 'false'
+        //                 }
+        //             } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
+        //                 echo 'Deployment input timeout. Skipping apigateway deployment.'
+        //                 env.DEPLOY_NOTIFICATIONS_TO_DEV = 'false'
+        //             }
+        //         }
+        //     }
+        // }
+
+        stage('Deploy Notifications') {
+            // when {
+            //     expression { env.DEPLOY_NOTIFICATIONS_TO_DEV == 'true' }
+            // }
+            steps {
+                script {
+                    deployService(
+                        repo: 'banquetpro/notifications',
+                        path: 'apps/notifications',
+                        taskDefinition: 'notifications-task-definition',
+                        service: 'notifications-service',
+                        envFile: "NOTFICATIONS_ENV_FILE",
+                        localImage: "notifications-image"
+
+                    )
+                }
+            }
+        }
+
         stage('Cleanup Workspace for next build') {
             steps {
                 cleanWs()
@@ -287,8 +326,6 @@ def deployService(Map svc) {
 
     
 }
-
-
 
 
 def updateGitHubStatus(status, description) {
