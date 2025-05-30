@@ -305,7 +305,7 @@ def deployService(Map svc) {
         mkdir -p banquetpro
         echo "\$NEW_TASK_DEF" > ${repo}-taskdef-final.json
 
-        echo "Registering updated task definition"
+        echo "Registering updated task definition for new deployment"
         aws ecs register-task-definition --cli-input-json file://${repo}-taskdef-final.json
 
         echo "Updating ECS service"
