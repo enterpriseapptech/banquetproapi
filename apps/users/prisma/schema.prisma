@@ -6,7 +6,7 @@
 
 generator usersclient {
   provider = "prisma-client-js"
-  output   = "../../../node_modules/@prisma/users"
+  output   = "@prisma/users"
   binaryTargets = ["native", "linux-musl"] // or "linux-musl" if you're using Alpine
 }
 

@@ -1,5 +1,5 @@
 import { Injectable, INestApplication, OnModuleInit } from '@nestjs/common';
-import { PrismaClient } from '@prisma/notifications';
+import { PrismaClient } from '../prisma/@prisma/notifications';
 
 
 @Injectable()

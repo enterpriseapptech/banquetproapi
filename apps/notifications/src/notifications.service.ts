@@ -4,7 +4,7 @@ import { CreateNotificationDto, CreateReviewDto, NotificationDto, NotificationFi
 import { NotificationInterface } from '@shared/interfaces/Notification/notification.interface';
 import { MailerService } from '@nestjs-modules/mailer';
 import { DatabaseService } from '../database/database.service';
-import { $Enums, Prisma } from '@prisma/notifications';
+import { $Enums, Prisma } from '../prisma/@prisma/notifications';
 import { BookingDto, BOOKINGPATTERN } from '@shared/contracts/booking';
 import { BOOKING_CLIENT, USER_CLIENT } from '@shared/contracts';
 import { ClientProxy } from '@nestjs/microservices';
