@@ -78,7 +78,7 @@ export class ClientConfigService {
             transport: Transport.RMQ,
             options: {
                 urls: [process.env.NOTIFICATIONURL],
-                queue: process.env.NOTIFICATIONQUEUE,
+                queue: `${process.env.NOTIFICATIONQUEUE}_${process.env.NODE_ENV}`,
                 queueOptions: { durable: true, autoDelete: false },
                 noAck: true, // Ensure messages are properly acknowledged
                 prefetchCount: 1, // Prevent overloading

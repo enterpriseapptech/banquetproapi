@@ -6,6 +6,8 @@ import * as express from 'express';
 
 dotenv.config({ path: './apps/notifications/.env' });
 async function bootstrap() {
+  const queueName = `${process.env.NOTIFICATIONQUEUE}_${process.env.NODE_ENV}`;
+  console.log(`Connecting to queue: ${queueName}`);
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     NotificationsModule,
     {

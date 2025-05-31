@@ -9,51 +9,51 @@ import { NotificationInterface } from '@shared/interfaces/Notification/notificat
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) { }
 
-  @EventPattern(NOTIFICATIONPATTERN.CREATE)
-  create(@Payload() createNotificationDto: CreateNotificationDto) {
-    return this.notificationsService.create(createNotificationDto);
-  }
+  // @EventPattern(NOTIFICATIONPATTERN.CREATE)
+  // create(@Payload() createNotificationDto: CreateNotificationDto) {
+  //   return this.notificationsService.create(createNotificationDto);
+  // }
 
-  @MessagePattern(NOTIFICATIONPATTERN.FINDALL)
-  findAll(@Payload() data: {limit: number, offset: number, search?: string}) {
-    return this.notificationsService.findAll(data.limit, data.offset, data.search);
-  }
+  // @MessagePattern(NOTIFICATIONPATTERN.FINDALL)
+  // findAll(@Payload() data: {limit: number, offset: number, search?: string}) {
+  //   return this.notificationsService.findAll(data.limit, data.offset, data.search);
+  // }
 
-  @MessagePattern(NOTIFICATIONPATTERN.FINDBYID)
-  findOne(@Payload() id: string) {
-    return this.notificationsService.findOne(id);
-  }
+  // @MessagePattern(NOTIFICATIONPATTERN.FINDBYID)
+  // findOne(@Payload() id: string) {
+  //   return this.notificationsService.findOne(id);
+  // }
 
-  @MessagePattern(NOTIFICATIONPATTERN.SEND)
-  update(@Payload()  data: {id: string,updateNotificationDto: UpdateNotificationDto}) {
-    return this.notificationsService.update(data.id, data.updateNotificationDto);
-  }
+  // @MessagePattern(NOTIFICATIONPATTERN.SEND)
+  // update(@Payload()  data: {id: string,updateNotificationDto: UpdateNotificationDto}) {
+  //   return this.notificationsService.update(data.id, data.updateNotificationDto);
+  // }
 
-  @EventPattern(NOTIFICATIONPATTERN.MARKASREAD)
-  read(@Payload() id: string) {
-    return this.notificationsService.read(id);
-  }
+  // @EventPattern(NOTIFICATIONPATTERN.MARKASREAD)
+  // read(@Payload() id: string) {
+  //   return this.notificationsService.read(id);
+  // }
 
-  @EventPattern(NOTIFICATIONPATTERN.MARKALLASREAD)
-  readAll(@Payload() userId: string) {
-    return this.notificationsService.read(userId);
-  }
+  // @EventPattern(NOTIFICATIONPATTERN.MARKALLASREAD)
+  // readAll(@Payload() userId: string) {
+  //   return this.notificationsService.read(userId);
+  // }
 
 
-  @MessagePattern(NOTIFICATIONPATTERN.DELETE)
-  remove(@Payload() id: string) {
-    return this.notificationsService.remove(id);
-  }
+  // @MessagePattern(NOTIFICATIONPATTERN.DELETE)
+  // remove(@Payload() id: string) {
+  //   return this.notificationsService.remove(id);
+  // }
 
-  @MessagePattern(NOTIFICATIONPATTERN.PERMENENTDELETE)
-  permanentDelete(@Payload() id: string) {
-    return this.notificationsService.remove(id);
-  }
+  // @MessagePattern(NOTIFICATIONPATTERN.PERMENENTDELETE)
+  // permanentDelete(@Payload() id: string) {
+  //   return this.notificationsService.remove(id);
+  // }
 
   @EventPattern(NOTIFICATIONPATTERN.SEND)
   send(@Payload() createNotificationDto: NotificationInterface) {
-    console.log('receiving notifications ..., payload:', createNotificationDto)
-    // return this.notificationsService.create(createNotificationDto);
+    // console.log('receiving notifications ..., payload:', createNotificationDto)
+    return this.notificationsService.send(createNotificationDto);
   }
 }
 

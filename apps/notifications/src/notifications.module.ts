@@ -7,9 +7,16 @@ import { BOOKING_CLIENT, USER_CLIENT } from '@shared/contracts';
 import { ClientProxyFactory } from '@nestjs/microservices';
 import { ClientConfigModule } from '../client-config/client-config.module';
 import { DatabaseService } from '../database/database.service';
+import { ConfigModule } from '@nestjs/config';
+import * as dotenv from 'dotenv';
 
+dotenv.config({ path: './apps/notifications/.env' });
 @Module({
     imports: [
+        ConfigModule.forRoot({
+                    isGlobal: true,
+                    envFilePath: '../env',
+                }),
         ClientConfigModule,
         MailerModule.forRoot({
             transport: {

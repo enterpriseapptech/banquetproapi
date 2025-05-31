@@ -22,7 +22,7 @@ export class ClientConfigService {
             transport: Transport.RMQ,
             options: {
                 urls: [process.env.NOTIFICATIONURL],  // RabbitMQ URL for the Notification Microservice
-                queue: process.env.NOTIFICATIONQUEUE, // The queue name
+                queue: `${process.env.NOTIFICATIONQUEUE}_${process.env.NODE_ENV}`, // The queue name
                 queueOptions: {
                     durable: false,
                 }
