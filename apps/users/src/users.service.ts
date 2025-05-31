@@ -121,6 +121,7 @@ export class UsersService {
                     recipientEmail: account.user.email,
                 },
             });
+            
             const userAccount: UserDto = {
                 ...account.user,
                 userType: account.user.userType as unknown as UserType,
@@ -157,7 +158,7 @@ export class UsersService {
         }
 
         if (user.status === $Enums.UserStatus.RESTRICTED || user.status === $Enums.UserStatus.DEACTIVATED) {
-            throw new UnauthorizedException('Unauthorized error, user account is not restricted.');
+            throw new UnauthorizedException('Unauthorized error, user account is restricted.');
         }
 
         const lastLoginTime = user.lastLoginAt ? new Date(user.lastLoginAt) : null;

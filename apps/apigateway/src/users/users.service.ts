@@ -12,7 +12,7 @@ export class UsersService {
     ) { }
 
     create(createUserDto: CreateUserDto) {
-        console.log('Gateway sending login message...');
+        console.log('Gateway sending create User message...');
         return this.userClient.send(USERPATTERN.CREATEUSER, createUserDto) 
     }
 
