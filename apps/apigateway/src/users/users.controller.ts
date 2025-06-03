@@ -24,7 +24,7 @@ export class UsersController {
         return this.usersService.login(loginUserDto);
     }
 
-    @UseGuards(JwtAuthGuard)
+
     @Post('verify')
     verify(@Body() { id, token }) {
         const verify = this.usersService.verify(id, token)
@@ -32,7 +32,6 @@ export class UsersController {
         return verify;
     }
 
-    @UseGuards(JwtAuthGuard)
     @Post('resend-verification')
     resend(@Body() { id}) {
         return this.usersService.resend(id)
