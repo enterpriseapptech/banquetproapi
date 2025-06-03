@@ -2,7 +2,7 @@
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { $Enums, Prisma } from '../prisma/@prisma/users';
-import { CreateUserDto, UpdateUserDto, UserDto, LoginUserDto, UserType, UserStatus, ServiceType, UserFilterDto } from '@shared/contracts/users';
+import { CreateUserDto, UpdateUserDto, UserDto, LoginUserDto, UserType, UserStatus, ServiceType, UserFilterDto, UpdateUserPasswordDto } from '@shared/contracts/users';
 import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
 import { DatabaseService } from '../database/database.service';
 import { NOTIFICATION_CLIENT } from './constants';
@@ -483,6 +483,176 @@ export class UsersService {
         return user 
     }
 
+    async forgotPassword(email: string): Promise<string> {
+        
+        try {
+            
+            // Start a transaction - for an all or fail process of creating a user
+            const account = await this.databaseService.$transaction(async (prisma) => {
+                const user = await this.databaseService.user.findUnique({
+                    where: {
+                        email
+                    }
+                });
+
+                if (!user) {
+                    throw new NotFoundException('We could not find an account associated with this email', {
+                        cause: new Error(),
+                        description: 'No existing user'
+                    });
+
+                }
+                
+                // create personal access token for user account verification
+                const hexCode = Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0");
+                const expiry = new Date();
+                expiry.setHours(expiry.getHours() + 3);
+                const hashedHexCode = await bcrypt.hash(hexCode, 10);
+                const personalAccessToken = await prisma.personalAccessTokens.upsert({
+                    where: {
+                        userId_type: {
+                            userId: user.id,
+                            type: 'PASSWORDRESET' as $Enums.TokenType
+                        }
+                    },
+                    update: {
+                        token: hashedHexCode,
+                        expiry: expiry
+                    },
+                    create: {
+                        user: { connect: { id: user.id } },
+                        token: hashedHexCode,
+                        type: 'PASSWORDRESET' as $Enums.TokenType,
+                        expiry: expiry
+                    }
+                });
+
+                return { user, hashedHexCode, personalAccessToken }; // Return created user
+            });
+
+            //  emit a email verification - notification event
+            this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
+                type: 'EMAIL',
+                recipientId: account.user.id,
+                data: {
+                    subject: 'Request to reset your password',
+                    message: `You recently requested to change your password. click the link ${process.env.FRONTEND_URL}/resetpassword?resettoken=${account.hashedHexCode}&tokendata=${account.personalAccessToken.id}`,
+                    recipientEmail: account.user.email,
+                    html: `<div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; background-color: #f9f9f9; border-radius: 8px;">
+                        <h2 style="color: #2d2d2d;">Forgot Your Password?</h2>
+                        <p style="font-size: 16px; color: #555;">
+                            Hello, <br/><br/>
+                            We received a request to reset your password. click on the button below to proceed:
+                        </p>
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a href="${process.env.FRONTEND_URL}/resetpassword?resettoken=${account.hashedHexCode}&tokendata=${account.personalAccessToken.id}" style="display: inline-block; font-size: 28px; letter-spacing: 4px; background-color: #fff; padding: 12px 20px; border-radius: 6px; border: 1px solid #ddd; font-weight: bold;">
+                            Change Password
+                            </a>
+                        </div>
+                        <p style="font-size: 14px; color: #777;">
+                            This code will expire in 15 minutes. If you didn’t request this, you can safely ignore this email.
+                        </p>
+                        <p style="margin-top: 40px; font-size: 13px; color: #aaa;">
+                            — Banquet Pro Team
+                        </p>
+                        </div>`
+                    
+                },
+            });
+
+            return "We sent you an email containing details to reset your password";
+
+        } catch (error) {
+            throw new Error(error);
+        }
+
+
+
+    }
+
+    private async verifyPasswordToken(token: string, tokenId: string): Promise<{isMatch: boolean, userId: string}> {
+        try {
+            const account = await this.databaseService.$transaction(async (prisma) => {
+                
+                const personalAccessToken = await prisma.personalAccessTokens.findUnique({
+                    where: {
+                        id: tokenId
+                    },
+                    select: {userId: true, token: true}
+                });
+                const isMatch = token === personalAccessToken.token
+
+                return { isMatch, userId: personalAccessToken.userId }; // Return created user
+            })
+
+            return { isMatch: account.isMatch, userId: account.userId 
+          };
+
+        } catch (error) {
+            throw new Error(error);
+        }
+    }
+
+    async changePassword(updateUserPasswordDto: UpdateUserPasswordDto): Promise<any> {
+        try {
+            // console.log({updateUserPasswordDto})
+            if (!updateUserPasswordDto.oldPassword && !updateUserPasswordDto.token ) {
+                throw new UnauthorizedException('unauthorized request, no token or previous password provided', {
+                    cause: new Error(),
+                    description: 'unauthorized'
+                });
+            }
+
+            let UserId: string
+            if (updateUserPasswordDto.token) {
+                const verifyToken = await this.verifyPasswordToken(updateUserPasswordDto.token, updateUserPasswordDto.id )
+                if (!verifyToken.isMatch) throw new UnauthorizedException('Unauthorized request! Change password token mismatch');
+                UserId = verifyToken.userId
+            } else {
+
+                const userPasword = await this.databaseService.user.findUnique({
+                    where: { id: updateUserPasswordDto.userId },
+                    select: { password: true, id: true }
+                });
+
+                const isMatch = await bcrypt.compare(updateUserPasswordDto.oldPassword, userPasword.password);
+                if (!isMatch) throw new UnauthorizedException('Incorrect old password, could not update password');
+                UserId =userPasword.id
+            }
+
+            const User = await this.databaseService.$transaction(async (prisma) => {
+                const userPasword = await prisma.user.findUnique({
+                    where: { id: UserId },
+                    select:{password:true, id: true}
+                });
+
+                const passwordHistoryInput: Prisma.PasswordHistoryCreateInput = {
+                    user: { connect: { id: userPasword.id } },
+                    password: userPasword.password
+                }
+
+                const passwordHistory = await prisma.passwordHistory.create({ data: passwordHistoryInput })
+                const hashedPassword = await bcrypt.hash(updateUserPasswordDto.password, 10);
+                const user = await prisma.user.update({
+                    where: { id: userPasword.id },
+                    data: {
+                        password: hashedPassword,
+
+                    }
+                });
+
+                return user
+            });
+            const userAccount: UserDto = {
+                ...User,
+                userType: User.userType as unknown as UserType,
+                status: User.status as unknown as UserStatus,
+            };
+            return userAccount;
+        } catch (error) {
+            throw new ConflictException(error);
+        }
+    }
 
     /**
      * 

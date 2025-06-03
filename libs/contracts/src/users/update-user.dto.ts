@@ -1,6 +1,6 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateUserDto,} from './create-user.dto';
-import { IsOptional, IsPhoneNumber, IsPostalCode, IsString, Length, IsObject, ValidateNested, IsEnum } from 'class-validator';
+import { IsOptional, IsPhoneNumber, IsPostalCode, IsString, Length, IsObject, ValidateNested, IsEnum, IsUUID, IsNotEmpty, IsStrongPassword } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { UserStatus } from './user.dto';
@@ -14,6 +14,35 @@ class WorkingHoursDay {
     @IsString()
     end?: string; // Format: "HH:MM"
 }
+export class UpdateUserPasswordDto{
+    @ApiProperty({ type: 'string', required: false })
+    @IsUUID()
+    @IsOptional()
+    id?: string; // this is not a user ID but the personalAccesstoken Id
+
+    @ApiProperty({ type: 'string', required: false })
+    @IsUUID()
+    @IsOptional()
+    userId?: string; // this is a user ID for logged in users
+
+    @ApiProperty({ type: 'string', required: false })
+    @IsOptional()
+    @IsStrongPassword()
+    @Length(10, 15)
+    oldPassword?: string;
+
+    @ApiProperty({ type: 'string', required: true })
+    @IsOptional()
+    @IsStrongPassword()
+    @Length(10, 15)
+    password: string;
+
+    @ApiProperty({ type: 'string', required: false })
+    @IsString()
+    @IsOptional()
+    token?: string;
+}
+
 export class UpdateUserDto extends PartialType(CreateUserDto) {
 
 

@@ -7,4 +7,6 @@ export const USERPATTERN = {
     RESENDUSER: 'users.resend',
     UPDATE: 'users.update',
     DELETE: 'users.delete',
+    RESETPASSWORD: 'users.resetPassword',
+    CHANGEPASSWORD: 'users.changePassword',
 }

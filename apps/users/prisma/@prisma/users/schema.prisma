@@ -116,7 +116,7 @@ model PasswordHistory {
 model PersonalAccessTokens {
   id        String    @id @default(uuid())
   userId    String    @map("user_id")
-  token     String
+  token     String    @unique
   type      TokenType
   expiry    DateTime
   createdAt DateTime  @default(now())

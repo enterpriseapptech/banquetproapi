@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { HttpException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { UpdateUserDto, CreateUserDto, USERPATTERN, UserDto, LoginUserDto, UserFilterDto, } from '@shared/contracts/users';
+import { UpdateUserDto, CreateUserDto, USERPATTERN, UserDto, LoginUserDto, UserFilterDto, UpdateUserPasswordDto, } from '@shared/contracts/users';
 import { USER_CLIENT } from '@shared/contracts';
 
 
@@ -58,4 +58,14 @@ export class UsersService {
     remove(id: number) {
         return `This action removes a #${id} user`;
     }
+
+    forgotPassword(email: string) {
+		return this.userClient.send<UserDto, string>(USERPATTERN.RESETPASSWORD, email)
+
+	}
+
+
+	changePassword(updateUserPasswordDto: UpdateUserPasswordDto) {
+		return this.userClient.send<UserDto, UpdateUserPasswordDto>(USERPATTERN.CHANGEPASSWORD, updateUserPasswordDto)
+	}
 }

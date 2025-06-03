@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto, LoginUserDto, UpdateUserDto, UserFilterDto } from '@shared/contracts/users';
+import { CreateUserDto, LoginUserDto, UpdateUserDto, UpdateUserPasswordDto, UserFilterDto } from '@shared/contracts/users';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
 // import { VerificationGuard } from '../jwt/verification.guard';
 // import { AdminRoleGuard } from '../jwt/admin.guard';
@@ -58,5 +58,17 @@ export class UsersController {
     @Delete(':id')
     remove(@Param('id') id: string) {
         return this.usersService.remove(+id);
+    }
+
+    @Post('forgot-password')
+    forgotPassword(@Body()  {email}) {
+        return this.usersService.forgotPassword(email)
+        
+    }
+
+    @Post('change-password')
+    changePassword(@Body()  updateUserPasswordDto: UpdateUserPasswordDto) {
+        return this.usersService.changePassword(updateUserPasswordDto)
+        
     }
 }

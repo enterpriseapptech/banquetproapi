@@ -16208,18 +16208,18 @@ export namespace Prisma {
 
   export type PersonalAccessTokensWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    token?: string
     userId_type?: PersonalAccessTokensUserIdTypeCompoundUniqueInput
     AND?: PersonalAccessTokensWhereInput | PersonalAccessTokensWhereInput[]
     OR?: PersonalAccessTokensWhereInput[]
     NOT?: PersonalAccessTokensWhereInput | PersonalAccessTokensWhereInput[]
     userId?: StringFilter<"PersonalAccessTokens"> | string
-    token?: StringFilter<"PersonalAccessTokens"> | string
     type?: EnumTokenTypeFilter<"PersonalAccessTokens"> | $Enums.TokenType
     expiry?: DateTimeFilter<"PersonalAccessTokens"> | Date | string
     createdAt?: DateTimeFilter<"PersonalAccessTokens"> | Date | string
     updatedAt?: DateTimeFilter<"PersonalAccessTokens"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }, "id" | "userId_type">
+  }, "id" | "token" | "userId_type">
 
   export type PersonalAccessTokensOrderByWithAggregationInput = {
     id?: SortOrder

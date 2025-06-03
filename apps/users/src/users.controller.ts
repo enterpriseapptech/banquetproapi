@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Controller, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UpdateUserDto, CreateUserDto, USERPATTERN, LoginUserDto, UserFilterDto } from '@shared/contracts/users';
+import { UpdateUserDto, CreateUserDto, USERPATTERN, LoginUserDto, UserFilterDto, UpdateUserPasswordDto } from '@shared/contracts/users';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { RpcException } from '@nestjs/microservices';
 import { catchError } from 'rxjs/operators';
@@ -123,4 +123,36 @@ export class UsersController {
 			})
 		);
 	}
+	
+	
+    @MessagePattern(USERPATTERN.RESETPASSWORD)
+    forgotPassword(@Payload() email: string) {
+        return from(this.userService.forgotPassword(email)).pipe(
+            catchError((err) => {
+                console.error("Error in UsersService:", err);
+                return throwError(() => new RpcException({
+                    statusCode: err.response.statusCode || 500,
+                    message: err.message || "Internal Server Error",
+                    error: err.response.error || "Sever error",
+                }));
+
+            })
+        );
+    }
+
+    @MessagePattern(USERPATTERN.CHANGEPASSWORD)
+    changePassword(@Payload() updateUserPasswordDto: UpdateUserPasswordDto) {
+        return from(this.userService.changePassword(updateUserPasswordDto)).pipe(
+            catchError((err) => {
+                console.error("Error in UsersService:", err);
+                return throwError(() => new RpcException({
+                    statusCode: err.response.statusCode || 500,
+                    message: err.message || "Internal Server Error",
+                    error: err.response.error || "Sever error",
+                }));
+
+            })
+        );
+    }
+
 }
