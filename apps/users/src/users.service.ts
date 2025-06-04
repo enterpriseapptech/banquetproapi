@@ -147,6 +147,12 @@ export class UsersService {
         const user = await this.databaseService.user.findUnique({
             where: {
                 email: email
+            },
+            include: {
+                admin: true,
+                serviceProvider: true,
+                staff: true,
+                customer: true
             }
         });
 
