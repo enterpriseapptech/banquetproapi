@@ -109,11 +109,12 @@ model Staff {
 }
 
 model PasswordHistory{
-  id          String @id @default(uuid()) @map("user_id") // Foreign key to User table
+  id          String @default(uuid()) @id // Foreign key to User table
+  user_id     String @map("user_id")
   password    String
   createdAt   DateTime @default(now())
   updatedAt   DateTime?                
-  user        User     @relation(fields: [id], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model PersonalAccessTokens {

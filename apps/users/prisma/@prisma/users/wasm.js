@@ -183,6 +183,7 @@ exports.Prisma.StaffScalarFieldEnum = {
 
 exports.Prisma.PasswordHistoryScalarFieldEnum = {
   id: 'id',
+  user_id: 'user_id',
   password: 'password',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
