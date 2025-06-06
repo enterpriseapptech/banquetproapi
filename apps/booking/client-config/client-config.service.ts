@@ -11,7 +11,7 @@ export class ClientConfigService {
             transport: Transport.RMQ,
             options: {
                 urls: [process.env.BOOKINGURL],  // RabbitMQ URL for the Notification Microservice
-                queue: process.env.BOOKINGQUEUE, // The queue name
+                queue: `${process.env.BOOKINGQUEUE}_${process.env.NODE_ENV}`, // The queue name
                 queueOptions: {
                     durable: false,
                 }
@@ -23,8 +23,8 @@ export class ClientConfigService {
         return {
             transport: Transport.RMQ,
             options: {
-                urls: ['amqp://users_admin:usersPassword@2025@localhost:5672'],
-                queue: 'users_queue',
+                urls: [process.env.USERSURL],
+                queue: `${process.env.USERSQUEUE}_${process.env.NODE_ENV}`,
                 queueOptions: {
                     durable: false,
                 }
@@ -36,8 +36,8 @@ export class ClientConfigService {
         return {
             transport: Transport.RMQ,
             options: {
-                urls: ['amqp://users_admin:usersPassword@2025@localhost:5672'],
-                queue: 'event_centers_queue',
+                urls: [process.env.EVENTSURL],
+                queue: `${process.env.EVENTSQUEUE}_${process.env.NODE_ENV}`,
                 queueOptions: { durable: true, autoDelete: false },
                 noAck: true, // Ensure messages are properly acknowledged
                 prefetchCount: 1, // Prevent overloading
@@ -50,8 +50,8 @@ export class ClientConfigService {
         return {
             transport: Transport.RMQ,
             options: {
-                urls: ['amqp://users_admin:usersPassword@2025@localhost:5672'],
-                queue: 'catering_queue',
+                                urls: [process.env.CATERINGURL],
+                queue: `${process.env.CATERINGQUEUE}_${process.env.NODE_ENV}`,
                 queueOptions: { durable: true, autoDelete: false },
                 noAck: true, // Ensure messages are properly acknowledged
                 prefetchCount: 1, // Prevent overloading

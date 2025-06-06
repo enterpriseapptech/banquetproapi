@@ -40,10 +40,10 @@ export class EventcentersService {
             postal: createEventCenterDto.postal,
             status: createEventCenterDto.status as $Enums.ServiceStatus
         }
-
+        console.log({newEventCenterInput})
         // validate service provider
         const serviceProvider = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDBYID, newEventCenterInput.serviceProviderId));
-
+        console.log({serviceProvider})
         if (!serviceProvider) {
             throw new NotFoundException("could not verify service provider account")
         }

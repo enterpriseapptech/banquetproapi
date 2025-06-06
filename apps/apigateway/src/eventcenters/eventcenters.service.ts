@@ -10,6 +10,7 @@ export class EventcentersService {
     ) { }
 
     create(createEventcenterDto: CreateEventCenterDto) {
+         console.log('Gateway sending createEventcenterDto  message...');
         return this.eventClient.send<EventCenterDto, CreateEventCenterDto>(EVENTCENTERPATTERN.CREATEEVENTCENTER, createEventcenterDto)
     }
 

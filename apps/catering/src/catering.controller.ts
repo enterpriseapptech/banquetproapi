@@ -11,10 +11,6 @@ export class CateringController {
 
   @MessagePattern(CATERINGPATTERN.CREATE)
       create(@Payload() createCateringDto: CreateCateringDto, @Ctx() context: RmqContext,) {
-          // const channel = context.getChannelRef();
-          const message = context.getMessage();
-          // console.log('Received message channel:', channel);
-          console.log('Received message :', message);
           return from(this.cateringService.create(createCateringDto)).pipe(
                   catchError((err) => {
                       console.error("Error in UsersService:", err);

@@ -36,9 +36,7 @@ export class ClientConfigService {
             options: {
                 urls: [process.env.EVENTSURL],
                 queue: `${process.env.EVENTSQUEUE}_${process.env.NODE_ENV}`,
-                queueOptions: { durable: true, autoDelete: false },
-                noAck: true, // Ensure messages are properly acknowledged
-                prefetchCount: 1, // Prevent overloading
+                queueOptions: { durable: false }
                 
             }
         }

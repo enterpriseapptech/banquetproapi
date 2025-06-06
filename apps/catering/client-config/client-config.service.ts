@@ -34,8 +34,8 @@ export class ClientConfigService {
         return {
             transport: Transport.RMQ,
             options: {
-                urls: ['amqp://users_admin:usersPassword@2025@localhost:5672'],
-                queue: 'users_queue',
+                urls: [process.env.USERSURL],
+                queue: `${process.env.USERSQUEUE}_${process.env.NODE_ENV}`,
                 queueOptions: {
                     durable: false,
                 }

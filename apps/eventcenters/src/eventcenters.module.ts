@@ -7,12 +7,14 @@ import { ClientProxyFactory } from '@nestjs/microservices';
 import { ClientConfigModule } from '../client-config/client-config.module';
 import { ClientConfigService } from '../client-config/client-config.service';
 import { NOTIFICATION_CLIENT, USER_CLIENT } from '@shared/contracts';
+import * as dotenv from 'dotenv';
 
+dotenv.config({ path: './apps/apigateway/.env' });
 @Module({
     imports: [
         ConfigModule.forRoot({
             isGlobal: true,
-            envFilePath: '../env',
+            envFilePath: './apps/apigateway/.env',
         }),
         ClientConfigModule,
     ],

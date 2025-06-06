@@ -35,7 +35,7 @@ export class ClientConfigService {
             transport: Transport.RMQ,
             options: {
                 urls: [process.env.USERSURL],
-                queue: process.env.USERSQUEUE,
+                queue: `${process.env.USERSQUEUE}_${process.env.NODE_ENV}`,
                 queueOptions: {
                     durable: false,
                 }
