@@ -123,7 +123,7 @@ export class UsersService {
             });
             
             const userAccount: UserDto = {
-                ...account.user,
+                ...account.user ,
                 userType: account.user.userType as unknown as UserType,
                 status: account.user.status as unknown as UserStatus,
             };
@@ -162,6 +162,11 @@ export class UsersService {
                 description: "we could not find a user with this email"
             });
         }
+
+        if (!user.isEmailVerified) {
+            throw new UnauthorizedException('Verification error!, kindly verifify your email before logging in.');
+        }
+
 
         if (user.status === $Enums.UserStatus.RESTRICTED || user.status === $Enums.UserStatus.DEACTIVATED) {
             throw new UnauthorizedException('Unauthorized error, user account is restricted.');
@@ -218,9 +223,9 @@ export class UsersService {
                 refreshToken: refreshToken
              }
         });
-
+        
         return {
-            user: user,
+            user: {...user, refreshToken:undefined, password: undefined,},
             access_token: this.jwtService.sign({ sub: user.id, type: user.userType, isEmailVerified: user.isEmailVerified }, {
                 secret: process.env.JWT_ACCESS_TOKEN_SECRET,
                 expiresIn: '59m', 
@@ -229,7 +234,52 @@ export class UsersService {
         };
         
     }
-    
+
+    async logout(userId: string): Promise<boolean> {
+        await this.databaseService.user.update({
+            where: { id: userId },
+            data: {
+            refreshToken: null
+            },
+        });
+
+        return true;
+    }
+
+    async refreshLogin(token: string): Promise<{ access_token: string; refresh_token: string }> {
+        const user = await this.databaseService.user.findFirst({
+            where: { refreshToken: token }
+        });
+
+        if (!user) {
+            throw new UnauthorizedException('Refresh token is invalid or expired');
+        }
+
+        // Generate new tokens
+       const refreshToken = this.jwtService.sign({ sub: user.id, type: user.userType, isEmailVerified: user.isEmailVerified }, {
+            secret: process.env.JWT_REFRESH_TOKEN_SECRET,
+            expiresIn: '7d',
+        });
+
+        const accessToken = this.jwtService.sign({ sub: user.id, type: user.userType, isEmailVerified: user.isEmailVerified }, {
+                secret: process.env.JWT_ACCESS_TOKEN_SECRET,
+                expiresIn: '59m', 
+        });
+
+        // Store new refresh token
+        await this.databaseService.user.update({
+            where: { id: user.id },
+            data: {
+                refreshToken: refreshToken
+             }
+        });
+
+        return {
+            access_token: accessToken,
+            refresh_token: refreshToken,
+        };
+    }
+
     async findAll(limit: number, offset: number, search?: string, filter?: UserFilterDto): Promise<{ count: number; docs: UserDto[] }> {
         const whereClause:any = {
             deletedAt: null,
@@ -291,6 +341,8 @@ export class UsersService {
 
         return {
             ...user,
+            refreshToken: undefined,
+            password: undefined,
             status: user.status as unknown as UserStatus,
             userType: user.userType as unknown as UserType,
             serviceProvider: user.serviceProvider
@@ -667,6 +719,8 @@ export class UsersService {
     private mapToUserDto(user: any): UserDto {
         return {
             ...user,
+            password: undefined,
+            refreshToken: undefined,
             userType: user.userType as unknown as UserType,
             status: user.status as unknown as UserStatus,
         };

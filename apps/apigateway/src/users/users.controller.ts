@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Request } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto, LoginUserDto, UpdateUserDto, UpdateUserPasswordDto, UserFilterDto } from '@shared/contracts/users';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
-// import { VerificationGuard } from '../jwt/verification.guard';
+import { VerificationGuard } from '../jwt/verification.guard';
 // import { AdminRoleGuard } from '../jwt/admin.guard';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
@@ -24,6 +24,18 @@ export class UsersController {
         return this.usersService.login(loginUserDto);
     }
 
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Post('logout')
+    logout(@Body() id: string) {
+        return this.usersService.logout(id);
+    }
+
+
+    @Post('refresh-login')
+    refreshlogin(@Body() token: string) {
+        return this.usersService.refreshlogin(token);
+    }
+
 
     @Post('verify')
     verify(@Body() { id, token }) {
@@ -38,7 +50,7 @@ export class UsersController {
         
     }
 
-    // @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
+    @UseGuards(JwtAuthGuard, VerificationGuard)
     @Get()
     findAll(@Query('limit') limit: number, @Query('offset') offset: number, @Query('search') search?: string, @Query('filter')  filter?: UserFilterDto) {
         console.log({limit})

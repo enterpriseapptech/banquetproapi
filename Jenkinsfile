@@ -166,6 +166,86 @@ pipeline {
             }
         }
 
+        stage('Deployment Decision EventCenters') {
+            steps {
+                script {
+                    try {
+                        timeout(time: 30, unit: 'MINUTES') {
+                            def userInput = input(
+                                id: 'deployEventCentersToDev',
+                                message: 'Deploy EVENTCENTERS to development?',
+                                parameters: [booleanParam(name: 'DEPLOY_EVENTCENTERS_TO_DEV', defaultValue: false)]
+                            )
+                            env.DEPLOY_EVENTCENTERS_TO_DEV = userInput ? 'true' : 'false'
+                        }
+                    } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
+                        echo 'Deployment input timeout. Skipping EventCenters deployment.'
+                        env.DEPLOY_EVENTCENTERS_TO_DEV = 'false'
+                    }
+                }
+            }
+        }
+
+        stage('Deploy EventCenters') {
+            when {
+                expression { env.DEPLOY_EVENTCENTERS_TO_DEV == 'true' }
+            }
+            steps {
+                script {
+                    deployService(
+                        repo: 'banquetpro/eventcenters',
+                        path: 'apps/eventcenters',
+                        taskDefinition: 'eventcenters-task-definition',
+                        service: 'eventcenters-service',
+                        envFile: "EVENTCENTERS_ENV_FILE",
+                        localImage: "eventcenters-image"
+
+                    )
+                }
+            }
+        }
+
+
+        stage('Deployment Decision Catering') {
+            steps {
+                script {
+                    try {
+                        timeout(time: 30, unit: 'MINUTES') {
+                            def userInput = input(
+                                id: 'deployCateringToDev',
+                                message: 'Deploy CATERING to development?',
+                                parameters: [booleanParam(name: 'DEPLOY_CATERING_TO_DEV', defaultValue: false)]
+                            )
+                            env.DEPLOY_CATERING_TO_DEV = userInput ? 'true' : 'false'
+                        }
+                    } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
+                        echo 'Deployment input timeout. Skipping Catering deployment.'
+                        env.DEPLOY_CATERING_TO_DEV = 'false'
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Catering') {
+            when {
+                expression { env.DEPLOY_CATERING_TO_DEV == 'true' }
+            }
+            steps {
+                script {
+                    deployService(
+                        repo: 'banquetpro/catering',
+                        path: 'apps/catering',
+                        taskDefinition: 'catering-task-definition',
+                        service: 'catering-service',
+                        envFile: "CATERING_ENV_FILE",
+                        localImage: "catering-image"
+
+                    )
+                }
+            }
+        }
+
+
         stage('Cleanup Workspace for next build') {
             steps {
                 cleanWs()

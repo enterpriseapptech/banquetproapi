@@ -41,6 +41,35 @@ export class UsersController {
 		);
 	}
 	
+	@MessagePattern(USERPATTERN.LOGOUT)
+	logout(@Payload() payload: {id: string}) {
+		return from(this.userService.logout(payload.id)).pipe(
+			catchError((err) => {
+				console.error("Error in UsersService:", err);
+				return throwError(() => new RpcException({
+					statusCode: err.response.statusCode || 500,
+					message: err.message || "Internal Server Error",
+					error: err.response.error || "Sever error",
+				}));
+
+			})
+		);
+	}
+
+	@MessagePattern(USERPATTERN.REFRESHLOGIN)
+	refreshLogin(@Payload()  payload: {token: string}) {
+		return from(this.userService.refreshLogin(payload.token)).pipe(
+			catchError((err) => {
+				console.error("Error in UsersService:", err);
+				return throwError(() => new RpcException({
+					statusCode: err.response.statusCode || 500,
+					message: err.message || "Internal Server Error",
+					error: err.response.error || "Sever error",
+				}));
+
+			})
+		);
+	}
 	
 	@MessagePattern(USERPATTERN.VERIFYUSER)
 	verify(@Payload() { id, token }) {

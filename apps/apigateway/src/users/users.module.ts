@@ -7,9 +7,16 @@ import { ClientConfigService } from '../client-config/client-config.service';
 import { USER_CLIENT } from '@shared/contracts';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from '../jwt/jwt.strategy';
+import { ConfigModule } from '@nestjs/config';
+import * as dotenv from 'dotenv';
 
+dotenv.config({ path: './apps/apigateway/.env' });
 @Module({
     imports: [
+        ConfigModule.forRoot({
+            isGlobal: true,
+            envFilePath: './apps/apigateway/.env',
+        }),
         ClientConfigModule,
         JwtModule.register({
             secret: process.env.JWT_ACCESS_TOKEN_SECRET,

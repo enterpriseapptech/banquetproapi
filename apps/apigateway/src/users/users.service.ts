@@ -27,6 +27,17 @@ export class UsersService {
 
     }
 
+    refreshlogin(token: string) {
+        console.log('Gateway sending login message...');
+        return this.userClient.send<string>(USERPATTERN.REFRESHLOGIN, token)
+    }
+
+
+    logout(id: string) {
+        console.log('Gateway sending logout message...');
+        return this.userClient.send<string>(USERPATTERN.LOGOUT, id);
+    }
+
     verify(id: string, token: string) {
         try {
             return this.userClient.send<UserDto, { id: string, token: string }>(USERPATTERN.VERIFYUSER, { id, token })

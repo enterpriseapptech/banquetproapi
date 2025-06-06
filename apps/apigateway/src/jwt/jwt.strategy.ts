@@ -6,7 +6,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { USERPATTERN, UserDto  } from '@shared/contracts/users';
 import { USER_CLIENT } from '@shared/contracts';
 
-dotenv.config({ path: './apps/users/.env' });
+dotenv.config({ path: './apps/apigateway/.env' });
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
 
