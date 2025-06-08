@@ -163,9 +163,9 @@ export class UsersService {
             });
         }
 
-        if (!user.isEmailVerified) {
-            throw new UnauthorizedException('Verification error!, kindly verifify your email before logging in.');
-        }
+        // if (!user.isEmailVerified) {
+        //     throw new UnauthorizedException('Verification error!, kindly verifify your email before logging in.');
+        // }
 
 
         if (user.status === $Enums.UserStatus.RESTRICTED || user.status === $Enums.UserStatus.DEACTIVATED) {
