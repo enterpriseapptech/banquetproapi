@@ -14,6 +14,7 @@ class WorkingHoursDay {
     @IsString()
     end?: string; // Format: "HH:MM"
 }
+
 export class UpdateUserPasswordDto{
     @ApiProperty({ type: 'string', required: false })
     @IsUUID()

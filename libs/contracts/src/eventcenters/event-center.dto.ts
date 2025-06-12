@@ -2,6 +2,8 @@ import { ServiceStatus } from "./create-event-center.dto";
 export class EventCenterDto {
     id: string;
     serviceProviderId: string;
+    name: string;
+    eventTypes: string[];
     depositAmount: number;
     description?: string;
     pricingPerSlot: number;
@@ -13,10 +15,12 @@ export class EventCenterDto {
     cancellationPolicy: string;
     streetAddress: string;
     city: string;
-    state: string;
-    country: string;
+    location: string;
     postal: string;
     status: ServiceStatus;
+    paymentRequired?: boolean;
+    rating?: number;
+    contact?: string;
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date;

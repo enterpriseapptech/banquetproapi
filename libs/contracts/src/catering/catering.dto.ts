@@ -6,6 +6,8 @@ export enum ServiceStatus {
 export class CateringDto {
     id: string;
     serviceProviderId: string; // Owner of the service
+    name: string;
+    eventTypes: string[];
     tagLine: string;
     depositAmount: number;
     startPrice: number;
@@ -19,12 +21,14 @@ export class CateringDto {
     streetAddress: string;
     streetAddress2: string;
     city: string;
-    state: string;
-    country: string;
+    location: string;
     postal: string;
     status: ServiceStatus;
     isFeatured: boolean;
     featureExpiringAt?: Date;
+    paymentRequired?: boolean;
+    rating?: number;
+    contact?: string;
     createdAt: Date;
     updatedAt: Date;
     updatedBy?: string;

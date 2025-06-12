@@ -19,6 +19,8 @@ datasource banquestproeventsdb {
 //  to do add working hours here, dont make it a model of its own
 model EventCenter {
   id                 String        @id @default(uuid()) // Primary key
+  name               String
+  eventTypes         String[]
   serviceProviderId  String // owner of this service points to a userid 
   depositAmount      Float 
   description        String?
@@ -32,16 +34,25 @@ model EventCenter {
   streetAddress      String
   streetAddress2     String
   city               String
-  state              String
-  country            String
+  location           String  // this is a uuid of a state who is connected to country
   postal             String
   status             ServiceStatus
+  paymentRequired    Boolean? @default(false)
+  rating             Int?
+  contact            String?
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
   deletedAt          DateTime?
   deletedBy          String?
-  paymentRequired   Boolean? @default(false)
-  @@index([serviceProviderId, city, state, country, status])
+
+
+  @@index([serviceProviderId])
+  @@index([status])
+  @@index([name])
+  @@index([rating])
+  @@index([location])
+  @@index([amenities])
+  @@index([eventTypes])
 }
 
 enum ServiceStatus {

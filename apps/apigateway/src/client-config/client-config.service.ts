@@ -99,4 +99,18 @@ export class ClientConfigService {
             }
         }
     } 
+
+    get ManagementClientOptions(): ClientOptions {
+        return {
+            transport: Transport.RMQ,
+            options: {
+                urls: [process.env.MANAGEMENTURL],
+                queue: `${process.env.MANAGEMENTQUEUE}_${process.env.NODE_ENV}`,
+                queueOptions: {
+                    durable: false,
+                }
+            }
+        }
+    }
+
 }

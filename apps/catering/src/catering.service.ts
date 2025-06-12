@@ -20,6 +20,8 @@ export class CateringService {
 
         const newCateringInput: Prisma.CateringCreateInput = {
             serviceProviderId: createCateringDto.serviceProviderId,
+            name: createCateringDto.name,
+            eventTypes: createCateringDto.eventTypes,
             tagLine: createCateringDto.tagLine,
             depositAmount: createCateringDto.depositAmount,
             startPrice: createCateringDto.startPrice,
@@ -34,10 +36,9 @@ export class CateringService {
             streetAddress: createCateringDto.streetAddress,
             streetAddress2: createCateringDto.streetAddress2,
             city: createCateringDto.city,
-            state: createCateringDto.state,
-            country: createCateringDto.country,
             postal: createCateringDto.postal,
             location: createCateringDto.postal,
+            contact: createCateringDto.contact,
             status: $Enums.ServiceStatus.ACTIVE
         }
 

@@ -88,6 +88,46 @@ pipeline {
             }
         }
 
+        stage('Deployment Decision Management') {
+            steps {
+                script {
+                    try {
+                        timeout(time: 30, unit: 'MINUTES') {
+                            def userInput = input(
+                                id: 'deployManagementToDev',
+                                message: 'Deploy MANAGEMENT to development?',
+                                parameters: [booleanParam(name: 'DEPLOY_MANAGEMENT_TO_DEV', defaultValue: false)]
+                            )
+                            env.DEPLOY_MANAGEMENT_TO_DEV = userInput ? 'true' : 'false'
+                        }
+                    } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
+                        echo 'Deployment input timeout. Skipping MANAGEMENT deployment.'
+                        env.DEPLOY_MANAGEMENT_TO_DEV = 'false'
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Management') {
+            when {
+                expression { env.DEPLOY_MANAGEMENT_TO_DEV == 'true' }
+            }
+            steps {
+                script {
+                    deployService(
+                        repo: 'banquetpro/management',
+                        path: 'apps/management',
+                        taskDefinition: 'management-task-defiition',
+                        service: 'management-service',
+                        envFile: "MANAGEMENT_ENV_FILE",
+                        localImage: "management-image"
+
+                    )
+                }
+            }
+        }
+
+
         stage('Deployment Decision Users') {
             steps {
                 script {

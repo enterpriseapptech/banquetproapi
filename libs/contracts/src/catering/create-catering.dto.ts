@@ -6,6 +6,9 @@ import {
     IsArray,
     IsString,
     IsNumber,
+    IsDecimal,
+    Min,
+    Max,
 } from 'class-validator';
 
 
@@ -14,6 +17,28 @@ export class CreateCateringDto {
     @IsString()
     @IsNotEmpty()
     serviceProviderId: string;
+
+
+    @ApiProperty({
+        description: 'Name of the event center',
+        minLength: 3,
+        maxLength: 40,
+        example: 'Virtues Event place'
+    })
+    @IsString()
+    @IsNotEmpty()
+    name: string;
+
+
+    @ApiProperty({
+        description: 'List of event types supported (e.g. weddings, conferences)',
+        example: ['wedding', 'conference', 'birthday'],
+        type: [String]
+    })
+    @IsString({ each: true })
+    @IsArray()
+    eventTypes: string[];
+    
 
     @ApiProperty({ type: 'string', required: true })
     @IsString()
@@ -89,26 +114,48 @@ export class CreateCateringDto {
     @IsNotEmpty()
     city: string;
 
-    @ApiProperty({ type: 'string', required: true })
-    @IsString()
-    @IsNotEmpty()
-    state: string;
-
-    @ApiProperty({ type: 'string', required: true })
-    @IsString()
-    @IsNotEmpty()
-    country: string;
+    @ApiProperty({ type: 'string', 
+        required: true, 
+        example: ["550e8400-e29b-41d4-a716-446655440000",
+             "550e8400-e29b-41d4-a716-446655440000"] 
+    })
+    @IsArray()
+    @IsString({ each: true })
+    location: string;
 
     @ApiProperty({ type: 'string', required: true })
     @IsString()
     @IsNotEmpty()
     postal: string;
 
-    @ApiProperty({ type: 'string', required: true })
-    @IsString()
-    @IsNotEmpty()
-    location: string;
+    @ApiPropertyOptional({
+        description: 'Average rating of the event center (1.0 to 5.0)',
+        example: 4.5,
+        minimum: 1,
+        maximum: 5.0,
+        type: Number
+    })
+    @IsDecimal()
+    @Min(1)
+    @Max(5.0)
+    rating?: number;
 
+    @ApiPropertyOptional({
+        description: 'Indicates if payment is required upfront',
+        example: 'true',
+        type: Boolean
+    })
+    @IsOptional()
+    @IsString()
+    paymentRequired?: boolean;
+
+    @ApiPropertyOptional({
+        description: 'Contact information (e.g. phone number or email)',
+        example: '+2348012345678'
+    })
+    @IsOptional()
+    @IsString()
+    contact?: string;
 }
 
 export class CreateMenuDto {

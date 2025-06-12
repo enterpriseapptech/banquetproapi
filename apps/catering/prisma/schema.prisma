@@ -18,6 +18,8 @@ datasource banquestproeventsdb {
 
 model Catering {
   id                 String        @id @default(uuid()) // Primary key
+  name               String
+  eventTypes         String[]
   serviceProviderId  String // owner of this service points to a userid 
   tagLine            String
   depositAmount      Int
@@ -33,9 +35,7 @@ model Catering {
   streetAddress      String
   streetAddress2     String
   city               String
-  state              String
-  country            String
-  location           String
+  location           String // list of locations this catering service should be listed at
   postal             String
   status             ServiceStatus
   isFeatured         Boolean @default(false)
@@ -45,10 +45,19 @@ model Catering {
   updatedBy          String?     
   deletedAt          DateTime?
   deletedBy          String?
+  rating             Int?
   paymentRequired   Boolean? @default(false)
+  contact            String?
   // relations
   menu              Menu[]
-  @@index([serviceProviderId, startPrice, city, state, country, status, cuisine])
+
+  @@index([serviceProviderId])
+  @@index([status])
+  @@index([name])
+  @@index([rating])
+  @@index([location])
+  @@index([cuisine])
+  @@index([startPrice])
 }
 
 model Menu {
