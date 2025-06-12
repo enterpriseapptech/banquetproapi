@@ -14,7 +14,7 @@ RUN yarn install --frozen-lockfile
 COPY . .
 
 # 6. Remove unnecessary microservices and their dependencies
-RUN rm -rf apps/users apps/booking apps/catering  apps/notifications apps/payments apps/eventcenters  
+RUN rm -rf apps/users apps/booking apps/catering  apps/notifications apps/payments apps/eventcenters apps/management 
 
 RUN echo "Current directory contents in contracts:" && ls -la libs/contracts/src
 

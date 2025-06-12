@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { CityService, CountryService, FeaturedPlanService, FeesService, ServiceCategoryService, ServiceService, ServiceSubCategoryService, StateService } from './management.service';
-import { CityController, CountryController, ServiceCategoryController, ServiceController, ServiceSubCategoryController, StateController } from './management.controller';
+import { CountryService,  StateService } from './management.service';
+import { CountryController, StateController } from './management.controller';
 import { ClientConfigModule } from '../client-config/client-config.module';
 import { ClientConfigService } from '../client-config/client-config.service';
 import { COUNTRY_CLIENT, APP_SETTINGS_CLIENT, STATE_CLIENT } from '@shared/contracts';
@@ -11,22 +11,15 @@ import { ClientProxyFactory } from '@nestjs/microservices';
         ClientConfigModule,
     ],
     controllers: [
-        ServiceCategoryController,
-        ServiceSubCategoryController,
-        ServiceController,
+       
         CountryController,
         StateController,
-        CityController
+
     ],
     providers: [
-        ServiceCategoryService,
-        ServiceSubCategoryService,
-        ServiceService,
+        
         CountryService,
         StateService,
-        CityService,
-        FeesService,
-        FeaturedPlanService,
         ClientConfigService,
         {
             provide: COUNTRY_CLIENT,

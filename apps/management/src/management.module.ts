@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { AppSettingController, CityController, CountryController, FeaturedPlanController, FeesController, ServiceCategoryController, ServiceController, ServiceSubCategoryController, StateController } from './management.controller';
-import { AppSettingService, CityService, CountryService, FeaturedPlanService, FeesService, ServiceCategoryService, ServiceService, ServiceSubCategoryService, StateService } from './management.service';
+import { AppSettingController,  CountryController, StateController } from './management.controller';
+import { AppSettingService, CountryService,  StateService } from './management.service';
 import { DatabaseService } from '../database/database.service';
 import { ClientConfigService } from '../client-config/client-config.service';
 import { ClientConfigModule } from '../client-config/client-config.module';
@@ -14,30 +14,18 @@ dotenv.config({ path: './apps/management/.env' });
     imports: [
         ConfigModule.forRoot({
             isGlobal: true,
-            envFilePath: '.env',
+            envFilePath: './apps/management/.env',
         }),
         ClientConfigModule,
 
     ],
     controllers: [
         AppSettingController,
-        ServiceCategoryController,
-        ServiceSubCategoryController,
-        ServiceController,
-        FeesController,
-        FeaturedPlanController,
         CountryController,
         StateController,
-        CityController,
     ],
     providers: [
         AppSettingService,
-        ServiceCategoryService,
-        ServiceSubCategoryService,
-        ServiceService,
-        FeesService,
-        FeaturedPlanService,
-        CityService,
         CountryService,
         StateService,
         DatabaseService,

@@ -158,14 +158,6 @@ export class CreateEventCenterDto {
     location: string;
 
     @ApiProperty({
-        description: 'Country where the event center is located',
-        example: 'Nigeria'
-    })
-    @IsNotEmpty()
-    @IsString()
-    country: string;
-
-    @ApiProperty({
         description: 'Postal code of the venue location',
         example: '100001'
     })
@@ -189,6 +181,7 @@ export class CreateEventCenterDto {
         maximum: 5.0,
         type: Number
     })
+    @IsOptional()
     @IsDecimal()
     @Min(1)
     @Max(5.0)

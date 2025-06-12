@@ -1,5 +1,5 @@
 # 1. Use lightweight Node.js image
-FROM node:20-alpine AS builder
+FROM node:20-bullseye AS builder
 
 # 2. Set working directory
 WORKDIR /app
@@ -14,9 +14,9 @@ RUN yarn install --frozen-lockfile
 COPY . .
 
 # 6. Remove unnecessary microservices and their dependencies
-RUN rm -rf apps/api-gateway apps/service-request apps/users  apps/notifications apps/payments 
-RUN rm -rf libs/contracts/src/service-request libs/contracts/src/payments libs/contracts/src/users
-RUN rm -rf libs/contracts/src/payments.ts libs/contracts/src/users.ts libs/contracts/src/service-request.ts
+RUN rm -rf apps/apigateway apps/booking apps/catering apps/notifications apps/payments apps/eventcenters apps/users  
+RUN rm -rf libs/contracts/src/eventcenterbooking libs/contracts/src/booking libs/contracts/src/catering libs/contracts/src/payments libs/contracts/src/eventcenters  
+RUN rm -rf libs/contracts/src/booking.ts  libs/contracts/src/payments.ts libs/contracts/src/eventcenters.ts
 RUN echo "Current directory contents in contracts:" && ls -la libs/contracts/src
 
 # 7. Generate Prisma Client for this microservice
@@ -26,7 +26,7 @@ RUN yarn prisma generate --schema=/app/apps/management/prisma/schema.prisma
 RUN yarn build management
 
 # 9. Create a smaller runtime image
-FROM node:20-alpine AS runner
+FROM node:20-bullseye AS runner
 
 # 10. reSet working directory 
 WORKDIR /app
@@ -42,4 +42,4 @@ EXPOSE 8001
 
 # 13. Start the microservice
 CMD ["sh", "-c", "yarn prisma migrate deploy --schema=/app/apps/management/prisma/schema.prisma && yarn start:prodManagement"]
-# CMD ["yarn", "start:prod"]
+

@@ -363,8 +363,6 @@ export class UsersService {
     async update(id: string, updateUserDto: UpdateUserDto): Promise<UserDto> {
         const {...userData } = updateUserDto;
 
-       
-
         const account = await this.databaseService.$transaction(async (prisma) => {
             const user = await prisma.user.findUnique({
                 where: { id },
@@ -401,7 +399,7 @@ export class UsersService {
             //                 : user.serviceProvider.workingHours
             //     }
             //     : null
-        };;
+        };
         // // Update Admin model if data exists
         // if (admin && user.admin) {
         //     updateOperations.push(

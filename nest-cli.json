@@ -90,6 +90,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/payments/tsconfig.app.json"
       }
+    },
+    "management": {
+      "type": "application",
+      "root": "apps/management",
+      "entryFile": "main",
+      "sourceRoot": "apps/management/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/management/tsconfig.app.json"
+      }
     }
   }
 }

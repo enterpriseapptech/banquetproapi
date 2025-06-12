@@ -8,7 +8,7 @@ export class AdminRoleGuard extends AuthGuard('jwt') {
     }
 
     handleRequest<TUser = any>(err: any, user: any, info: any, context: ExecutionContext, status?: any): TUser {
-        if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+        if (user.admin !== null) {
             return user; // Allow access
         }
         throw err || new UnauthorizedException('Restricted area! you must be an admin', {

@@ -14,9 +14,9 @@ RUN yarn install --frozen-lockfile
 COPY . .
 
 # 6. Remove unnecessary microservices and their dependencies
-RUN rm -rf apps/apigateway apps/booking apps/catering  apps/users apps/payments apps/eventcenters  
-RUN rm -rf libs/contracts/src/eventcenterbooking libs/contracts/src/catering libs/contracts/src/payments libs/contracts/src/eventcenters  libs/contracts/src/payments
-RUN rm -rf libs/contracts/src/payments.ts libs/contracts/src/eventcenters.ts 
+RUN rm -rf apps/apigateway apps/booking apps/catering  apps/users apps/payments apps/eventcenters apps/management  
+RUN rm -rf libs/contracts/src/eventcenterbooking  libs/contracts/src/management libs/contracts/src/payments libs/contracts/src/eventcenters  libs/contracts/src/payments
+RUN rm -rf libs/contracts/src/payments.ts libs/contracts/src/eventcenters.ts libs/contracts/src/management.ts 
 RUN echo "Current directory contents in contracts:" && ls -la libs/contracts/src
 
 # 7. Generate Prisma Client for this microservice

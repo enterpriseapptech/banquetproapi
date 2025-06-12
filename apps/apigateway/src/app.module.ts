@@ -10,6 +10,7 @@ import { PaymentModule } from './payment/payment.module';
 import { ConfigModule } from '@nestjs/config';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { ManagementModule } from './management/management.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { NotificationsModule } from './notifications/notifications.module';
       isGlobal: true,
     }),
     UsersModule,
+    ManagementModule,
     ClientConfigModule,
     EventcentersModule,
     BookingModule,
