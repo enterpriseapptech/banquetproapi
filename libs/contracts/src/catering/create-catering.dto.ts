@@ -56,23 +56,23 @@ export class CreateCateringDto {
     @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
     startPrice: number;
 
-    @ApiPropertyOptional({ type: 'number', required: false })
+    @ApiProperty({ type: 'number', required: false })
     @IsOptional()
     @IsInt()
     minCapacity?: number;
 
-    @ApiPropertyOptional({ type: 'number', required: false })
+    @ApiProperty({ type: 'number', required: false })
     @IsOptional()
     @IsInt()
     maxCapacity?: number;
 
-    @ApiPropertyOptional({ type: 'array', required: false, example: ["Italian", "Mexican", "Indian"] })
+    @ApiProperty({ type: 'array', required: false, example: ["Italian", "Mexican", "Indian"] })
     @IsOptional()
     @IsArray()
     @IsString({ each: true })
     cuisine?: string[];
 
-    @ApiPropertyOptional({ type: 'string', required: false })
+    @ApiProperty({ type: 'string', required: false })
     @IsString()
     @IsOptional()
     description?: string;
@@ -135,12 +135,13 @@ export class CreateCateringDto {
         maximum: 5.0,
         type: Number
     })
+    @IsOptional()
     @IsDecimal()
     @Min(1)
     @Max(5.0)
     rating?: number;
 
-    @ApiPropertyOptional({
+    @ApiProperty({
         description: 'Indicates if payment is required upfront',
         example: 'true',
         type: Boolean
@@ -149,7 +150,7 @@ export class CreateCateringDto {
     @IsString()
     paymentRequired?: boolean;
 
-    @ApiPropertyOptional({
+    @ApiProperty({
         description: 'Contact information (e.g. phone number or email)',
         example: '+2348012345678'
     })
