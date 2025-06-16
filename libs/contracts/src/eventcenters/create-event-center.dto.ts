@@ -174,7 +174,7 @@ export class CreateEventCenterDto {
     @IsEnum(ServiceStatus, { message: 'service status must either be active or inactive' })
     status: ServiceStatus;
 
-    @ApiPropertyOptional({
+    @ApiProperty({
         description: 'Average rating of the event center (1.0 to 5.0)',
         example: 4.5,
         minimum: 1,
@@ -187,7 +187,7 @@ export class CreateEventCenterDto {
     @Max(5.0)
     rating?: number;
 
-    @ApiPropertyOptional({
+    @ApiProperty({
         description: 'Indicates if payment is required upfront',
         example: 'true',
         type: Boolean
@@ -196,7 +196,7 @@ export class CreateEventCenterDto {
     @IsString()
     paymentRequired?: boolean;
 
-    @ApiPropertyOptional({
+    @ApiProperty({
         description: 'Contact information (e.g. phone number or email)',
         example: '+2348012345678'
     })
