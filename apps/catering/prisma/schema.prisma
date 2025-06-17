@@ -45,7 +45,7 @@ model Catering {
   updatedBy          String?     
   deletedAt          DateTime?
   deletedBy          String?
-  rating             Int?
+  rating             Decimal?
   paymentRequired   Boolean? @default(false)
   contact            String?
   // relations

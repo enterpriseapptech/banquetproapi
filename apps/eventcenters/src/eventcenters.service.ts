@@ -1,5 +1,5 @@
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { $Enums, Prisma } from '@prisma/eventcenters';
+import { $Enums, Prisma } from '../prisma/@prisma/eventcenters';
 import { CreateEventCenterDto, EventCenterDto, ManyEventCentersDto, ServiceStatus, UpdateEventCenterDto } from '@shared/contracts/eventcenters';
 import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
 import { UserDto, USERPATTERN } from '@shared/contracts/users';
@@ -68,6 +68,7 @@ export class EventcentersService {
             });
             const eventCenterDto: EventCenterDto = {
                 ...neweventCenter,
+                rating: neweventCenter.rating as unknown as number,
                 status: neweventCenter.status as unknown as ServiceStatus,
             };
             return eventCenterDto;
@@ -150,6 +151,7 @@ export class EventcentersService {
         }
         const eventCenterDto: EventCenterDto = {
             ...eventCenter,
+            rating: eventCenter.rating as unknown as number,
             status: eventCenter.status as unknown as ServiceStatus,
         };
         return eventCenterDto;
@@ -168,6 +170,7 @@ export class EventcentersService {
             });
             const eventCenterDto: EventCenterDto = {
                 ...eventCenter,
+                rating: eventCenter.rating as unknown as number,
                 status: eventCenter.status as unknown as ServiceStatus,
             };
             return eventCenterDto;
@@ -186,6 +189,7 @@ export class EventcentersService {
         });
         const eventCenterDto: EventCenterDto = {
             ...eventCenter,
+            rating: eventCenter.rating as unknown as number,
             status: eventCenter.status as unknown as ServiceStatus,
         };
         return eventCenterDto;
@@ -199,6 +203,7 @@ export class EventcentersService {
     private mapToEventCenterDto(eventCenter: any): EventCenterDto {
         return {
             ...eventCenter,
+            rating: eventCenter.rating as unknown as number,
             status: eventCenter.status as unknown as ServiceStatus,
         };
     }
