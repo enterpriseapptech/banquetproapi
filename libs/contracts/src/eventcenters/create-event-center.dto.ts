@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsInt, Min, IsArray, IsNumber, IsDecimal, Max } from 'class-validator';
+import { IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsInt, Min, IsArray, IsNumber, IsDecimal, Max, IsBoolean } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum ServiceStatus {
@@ -193,7 +193,7 @@ export class CreateEventCenterDto {
         type: Boolean
     })
     @IsOptional()
-    @IsString()
+    @IsBoolean()
     paymentRequired?: boolean;
 
     @ApiProperty({

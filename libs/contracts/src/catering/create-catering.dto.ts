@@ -9,6 +9,7 @@ import {
     IsDecimal,
     Min,
     Max,
+    IsBoolean,
 } from 'class-validator';
 
 
@@ -147,7 +148,7 @@ export class CreateCateringDto {
         type: Boolean
     })
     @IsOptional()
-    @IsString()
+    @IsBoolean()
     paymentRequired?: boolean;
 
     @ApiProperty({
