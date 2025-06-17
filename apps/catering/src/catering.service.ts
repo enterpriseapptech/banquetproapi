@@ -72,6 +72,7 @@ export class CateringService {
             });
             const cateringDto: CateringDto = {
                 ...newcatering,
+                rating: newcatering.rating as unknown as number,
                 status: newcatering.status as unknown as ServiceStatus,
             };
             return cateringDto;
@@ -152,6 +153,7 @@ export class CateringService {
         }
         const cateringDto: CateringDto = {
             ...catering,
+            rating: catering.rating as unknown as number,
             status: catering.status as unknown as ServiceStatus,
         };
         return cateringDto;
@@ -169,6 +171,7 @@ export class CateringService {
             });
             const cateringDto: CateringDto = {
                 ...catering,
+                rating: catering.rating as unknown as number,
                 status: catering.status as unknown as ServiceStatus,
             };
             return cateringDto;
@@ -188,6 +191,7 @@ export class CateringService {
 
         const cateringDto: CateringDto = {
                     ...catering,
+                    rating: catering.rating as unknown as number,
                     status: catering.status as unknown as ServiceStatus,
                 };
         return cateringDto;
@@ -201,6 +205,7 @@ export class CateringService {
     private mapToCateringDto(catering: any): CateringDto {
         return {
             ...catering,
+            rating: catering.rating as unknown as number,
             status: catering.status as unknown as ServiceStatus,
         };
     }

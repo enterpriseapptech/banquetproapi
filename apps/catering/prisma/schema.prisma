@@ -18,7 +18,7 @@ datasource banquestproeventsdb {
 
 model Catering {
   id                 String        @id @default(uuid()) // Primary key
-  name               String
+  name               String?
   eventTypes         String[]
   serviceProviderId  String // owner of this service points to a userid 
   tagLine            String
