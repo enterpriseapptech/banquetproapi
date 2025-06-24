@@ -29,3 +29,8 @@ import {
     };
   }
   
+
+  export class ImageUploadDto {
+  @IsImageFile({ message: 'Each file must be a valid image (jpeg, png, jpg, webp)' })
+  file: Express.Multer.File;
+}

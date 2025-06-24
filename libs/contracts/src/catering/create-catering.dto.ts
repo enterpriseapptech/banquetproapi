@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty  } from '@nestjs/swagger';
 import {
     IsOptional,
     IsNotEmpty,
@@ -83,7 +83,7 @@ export class CreateCateringDto {
     @IsString({ each: true })
     dishTypes?: string[];
 
-    @ApiPropertyOptional({ type: 'array', format: 'string', required: false })
+    @ApiProperty({ type: 'array', format: 'string', required: false })
     @IsOptional()
     @IsArray()
     @IsString({ each: true })
@@ -129,7 +129,7 @@ export class CreateCateringDto {
     @IsNotEmpty()
     postal: string;
 
-    @ApiPropertyOptional({
+    @ApiProperty({
         description: 'Average rating of the event center (1.0 to 5.0)',
         example: 4.5,
         minimum: 1,
@@ -137,9 +137,7 @@ export class CreateCateringDto {
         type: Number
     })
     @IsOptional()
-    @IsDecimal()
-    @Min(1)
-    @Max(5.0)
+    @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
     rating?: number;
 
     @ApiProperty({

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, UseInterceptors, BadRequestException, UploadedFiles } from '@nestjs/common';
 import { EventcentersService } from './eventcenters.service';
 import { CreateEventCenterDto, UpdateEventCenterDto, } from '@shared/contracts/eventcenters';
 import { UserDto } from '@shared/contracts/users';
@@ -8,6 +8,11 @@ import { VerificationGuard } from '../jwt/verification.guard';
 import { firstValueFrom } from 'rxjs';
 import { Request } from 'express';
 import { AccountStatusGuard } from '../jwt/account.status..guard';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { ImageUploadDto } from '@shared/contracts';
 
 // Extend the Request type to include 'user'
 interface AuthenticatedRequest extends Request {
@@ -15,13 +20,71 @@ interface AuthenticatedRequest extends Request {
 }
 @Controller('event-centers')
 export class EventcentersController {
-    constructor(private readonly eventcentersService: EventcentersService) { }
+    constructor(
+        private readonly eventcentersService: EventcentersService,
+        private readonly cloudinaryService: CloudinaryService
+    ) { }
 
 
     @UseGuards(JwtAuthGuard, VerificationGuard, AccountStatusGuard)
     @Post('create')
-    create(@Body() createEventcenterDto: CreateEventCenterDto) {
-        return this.eventcentersService.create(createEventcenterDto);
+    async create(@Body() createEventcenterDto: any) {
+        console.log({createEventcenterDto})
+        if (!createEventcenterDto.imagefiles || createEventcenterDto.imagefiles.length === 0) {
+            throw new BadRequestException('No images or videos uploaded for event centers uploaded');
+        }
+        // Validate each file using your DTO
+        const uploadDtos = createEventcenterDto.imagefiles.map((file) =>
+            plainToInstance(ImageUploadDto, { file }),
+        );
+
+        for (const dto of uploadDtos) {
+            const errors = await validate(dto);
+            if (errors.length > 0) {
+                throw new BadRequestException(errors);
+            }
+        }
+        const folder = 'entapp-api/banquetpro-api/event-centers'
+        // Upload each valid image to Cloudinary
+        const results = await Promise.all(
+            uploadDtos.map((dto) =>
+                this.cloudinaryService.uploadStream(dto.file.buffer, folder),
+            )
+        );
+
+        // return this.eventcentersService.create(createEventcenterDto);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard, AccountStatusGuard)
+    @UseInterceptors(FilesInterceptor('imagefiles'))
+    @Post(':id')
+    async upload( @Param('id') id: string, @UploadedFiles() imagefiles: Express.Multer.File[]) {
+
+        if (!imagefiles || imagefiles.length === 0) {
+            throw new BadRequestException('No images or videos uploaded for event centers uploaded');
+        }
+        // Validate each file using your DTO
+        const uploadDtos = imagefiles.map((file) =>
+            plainToInstance(ImageUploadDto, { file }),
+        );
+
+        for (const dto of uploadDtos) {
+            const errors = await validate(dto);
+            if (errors.length > 0) {
+                throw new BadRequestException(errors);
+            }
+        }
+        const folder = 'entapp-api/banquetpro-api/event-centers'
+        // Upload each valid image to Cloudinary
+        const results = await Promise.all(
+            uploadDtos.map((dto) =>
+                this.cloudinaryService.uploadStream(dto.file.buffer, folder),
+            )
+        );
+        const imageUrls:string[] = []
+        for (const imageUrl of results){ imageUrls.push(imageUrl.secure_url)}
+        const updateEventcenterDto: UpdateEventCenterDto = {images:imageUrls}
+        return this.eventcentersService.update(id, updateEventcenterDto);
     }
 
     @Get(':id')

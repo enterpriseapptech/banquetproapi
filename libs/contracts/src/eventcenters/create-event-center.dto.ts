@@ -1,5 +1,7 @@
-import { IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsInt, Min, IsArray, IsNumber, IsDecimal, Max, IsBoolean } from 'class-validator';
+import { IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsInt, Min, IsArray, IsNumber, IsDecimal, Max, IsBoolean, ValidateNested } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ImageUploadDto, IsImageFile } from '../media/images';
+import { Type } from 'class-transformer';
 
 export enum ServiceStatus {
     ACTIVE = "ACTIVE",
@@ -106,8 +108,20 @@ export class CreateEventCenterDto {
         type: [String]
     })
     @IsArray()
-    @IsNotEmpty()
+    @IsOptional()
     images: string[];
+
+
+    @ApiProperty({
+        description: 'List of image files',
+        example: ['base64:jdxnvbfcdn',],
+        type: [String]
+    })
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => ImageUploadDto)
+    imagefiles: ImageUploadDto[];
 
     @ApiProperty({
         description: 'Terms of use for the event center',
@@ -182,9 +196,7 @@ export class CreateEventCenterDto {
         type: Number
     })
     @IsOptional()
-    @IsDecimal()
-    @Min(1)
-    @Max(5.0)
+    @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
     rating?: number;
 
     @ApiProperty({
