@@ -29,30 +29,7 @@ export class EventcentersController {
     @UseGuards(JwtAuthGuard, VerificationGuard, AccountStatusGuard)
     @Post('create')
     async create(@Body() createEventcenterDto: any) {
-        console.log({createEventcenterDto})
-        if (!createEventcenterDto.imagefiles || createEventcenterDto.imagefiles.length === 0) {
-            throw new BadRequestException('No images or videos uploaded for event centers uploaded');
-        }
-        // Validate each file using your DTO
-        const uploadDtos = createEventcenterDto.imagefiles.map((file) =>
-            plainToInstance(ImageUploadDto, { file }),
-        );
-
-        for (const dto of uploadDtos) {
-            const errors = await validate(dto);
-            if (errors.length > 0) {
-                throw new BadRequestException(errors);
-            }
-        }
-        const folder = 'entapp-api/banquetpro-api/event-centers'
-        // Upload each valid image to Cloudinary
-        const results = await Promise.all(
-            uploadDtos.map((dto) =>
-                this.cloudinaryService.uploadStream(dto.file.buffer, folder),
-            )
-        );
-
-        // return this.eventcentersService.create(createEventcenterDto);
+        return this.eventcentersService.create(createEventcenterDto);
     }
 
     @UseGuards(JwtAuthGuard, VerificationGuard, AccountStatusGuard)
