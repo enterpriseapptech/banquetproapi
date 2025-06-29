@@ -35,7 +35,7 @@ model Catering {
   streetAddress      String
   streetAddress2     String
   city               String
-  location           String // list of locations this catering service should be listed at
+  location           String[] // list of locations this catering service should be listed at
   postal             String
   status             ServiceStatus
   isFeatured         Boolean @default(false)
