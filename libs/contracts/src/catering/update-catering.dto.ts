@@ -9,11 +9,11 @@ export class UpdateCateringDto extends PartialType(CreateCateringDto) {
 
     @IsOptional()
     @IsEnum(ServiceStatus)
-    status: ServiceStatus;
+    status?: ServiceStatus;
     
     @IsOptional()
     @IsBoolean()
-    isFeatured: boolean;
+    isFeatured?: boolean;
 
     @IsOptional()
     @Type(() => Date)

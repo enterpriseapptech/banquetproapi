@@ -1,4 +1,5 @@
 import { ApiProperty  } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
     IsOptional,
     IsNotEmpty,
@@ -10,7 +11,9 @@ import {
     Min,
     Max,
     IsBoolean,
+    ValidateNested,
 } from 'class-validator';
+import { ImageUploadDto } from '../media/images';
 
 
 export class CreateCateringDto {
@@ -83,12 +86,27 @@ export class CreateCateringDto {
     @IsString({ each: true })
     dishTypes?: string[];
 
-    @ApiProperty({ type: 'array', format: 'string', required: false })
+    @ApiProperty({
+        description: 'List of image URLs',
+        example: ['https://example.com/image1.jpg', 'https://example.com/image2.jpg'],
+        type: [String]
+    })
+    @IsArray()
+    @IsOptional()
+    @IsString({ each: true })
+    images?: string[];
+
+
+    @ApiProperty({
+        description: 'List of image files',
+        example: ['base64:jdxnvbfcdn',],
+        type: [String]
+    })
     @IsOptional()
     @IsArray()
-    @IsString({ each: true })
-    images?: any[];
-   
+    @ValidateNested({ each: true })
+    @Type(() => ImageUploadDto)
+    imagefiles: ImageUploadDto[];
 
     @ApiProperty({ type: 'string', required: true })
     @IsString()
