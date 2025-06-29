@@ -37,7 +37,7 @@ export class CateringService {
             streetAddress2: createCateringDto.streetAddress2,
             city: createCateringDto.city,
             postal: createCateringDto.postal,
-            location: createCateringDto.postal,
+            location: createCateringDto.location,
             contact: createCateringDto.contact,
             status: $Enums.ServiceStatus.ACTIVE
         }

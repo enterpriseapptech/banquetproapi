@@ -140,7 +140,7 @@ export class CreateCateringDto {
     })
     @IsArray()
     @IsString({ each: true })
-    location: string;
+    location: string[];
 
     @ApiProperty({ type: 'string', required: true })
     @IsString()

@@ -21,7 +21,7 @@ export class CateringDto {
     streetAddress: string;
     streetAddress2: string;
     city: string;
-    location: string;
+    location: string[];
     postal: string;
     status: ServiceStatus;
     isFeatured: boolean;
