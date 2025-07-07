@@ -1,5 +1,5 @@
 # 1. Use lightweight Node.js image
-FROM node:18-alpine AS builder
+FROM node:20-bullseye AS builder
 
 # 2. Set working directory
 WORKDIR /app
@@ -26,7 +26,7 @@ RUN yarn prisma generate --schema=/app/apps/booking/prisma/schema.prisma
 RUN yarn build booking
 
 # 9. Create a smaller runtime image
-FROM node:18-alpine AS runner
+FROM node:20-bullseye AS runner
 
 # 10. reSet working directory 
 WORKDIR /app

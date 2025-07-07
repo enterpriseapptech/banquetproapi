@@ -6,19 +6,6 @@ dotenv.config({ path: './apps/booking/.env' });
 @Injectable()
 export class ClientConfigService {
 
-    get NotificationsClientOptions(): ClientOptions {
-        return {
-            transport: Transport.RMQ,
-            options: {
-                urls: [process.env.BOOKINGURL],  // RabbitMQ URL for the Notification Microservice
-                queue: `${process.env.BOOKINGQUEUE}_${process.env.NODE_ENV}`, // The queue name
-                queueOptions: {
-                    durable: false,
-                }
-            }
-        }
-    }
-
     get UsersClientOptions(): ClientOptions {
         return {
             transport: Transport.RMQ,
@@ -30,32 +17,72 @@ export class ClientConfigService {
                 }
             }
         }
-    } 
-    
+    }
+
     get EventCenterClientOptions(): ClientOptions {
         return {
             transport: Transport.RMQ,
             options: {
                 urls: [process.env.EVENTSURL],
                 queue: `${process.env.EVENTSQUEUE}_${process.env.NODE_ENV}`,
+                queueOptions: { durable: false }
+                
+            }
+        }
+    }
+    get CateringClientOptions(): ClientOptions {
+        return {
+            transport: Transport.RMQ,
+            options: {
+                urls: [process.env.CATERINGURL],
+                queue: `${process.env.CATERINGQUEUE}_${process.env.NODE_ENV}`,
                 queueOptions: { durable: true, autoDelete: false },
                 noAck: true, // Ensure messages are properly acknowledged
                 prefetchCount: 1, // Prevent overloading
 
             }
         }
-    }
-    
-    get CateringClientOptions(): ClientOptions {
+    } 
+
+
+    get NotificationsClientOptions(): ClientOptions {
         return {
             transport: Transport.RMQ,
             options: {
-                                urls: [process.env.CATERINGURL],
-                queue: `${process.env.CATERINGQUEUE}_${process.env.NODE_ENV}`,
+                urls: [process.env.NOTIFICATIONURL],
+                queue: `${process.env.NOTIFICATIONQUEUE}_${process.env.NODE_ENV}`,
                 queueOptions: { durable: true, autoDelete: false },
                 noAck: true, // Ensure messages are properly acknowledged
                 prefetchCount: 1, // Prevent overloading
 
+            }
+        }
+    } 
+
+
+    get PaymentClientOptions(): ClientOptions {
+        return {
+            transport: Transport.RMQ,
+            options: {
+                urls: [process.env.PAYMENTURL],
+                queue: process.env.PAYMENTQUEUE,
+                queueOptions: { durable: true, autoDelete: false },
+                noAck: true, // Ensure messages are properly acknowledged
+                prefetchCount: 1, // Prevent overloading
+
+            }
+        }
+    } 
+
+    get ManagementClientOptions(): ClientOptions {
+        return {
+            transport: Transport.RMQ,
+            options: {
+                urls: [process.env.MANAGEMENTURL],
+                queue: `${process.env.MANAGEMENTQUEUE}_${process.env.NODE_ENV}`,
+                queueOptions: {
+                    durable: false,
+                }
             }
         }
     }

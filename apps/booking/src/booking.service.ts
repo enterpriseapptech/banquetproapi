@@ -341,7 +341,7 @@ export class BookingService {
 				const booking = await this.databaseService.booking.update({
 					where: { id },
 					data: {
-						cancelledAt: new Date(),
+						canceledAt: new Date(),
 						cancelledBy: updateBookingDto.cancelledBy,
 						cancelationReason: updateBookingDto.cancellationReason
 					}
@@ -603,7 +603,7 @@ export class TimeSlotService {
 
 			const timeslots = await prisma.timeSlot.findMany({
 				where: whereClause,
-				take: manyRequestTimeSlotDto.limit || 100,
+				take: manyRequestTimeSlotDto.limit || 10,
 				skip: manyRequestTimeSlotDto.offset || 0,
 			});
 

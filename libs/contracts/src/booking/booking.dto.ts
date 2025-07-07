@@ -1,3 +1,6 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsInt, IsOptional, IsString, IsDateString, Min } from 'class-validator';
 
 export enum LocationStatus {
     ACTIVE = "ACTIVE",
@@ -107,14 +110,44 @@ export class ManyTimeslotDto{
     count: number;
     data: TimeslotDto[];
 }
-
 export class ManyRequestTimeSlotDto {
-    limit?: number;
-    offset?: number;
-    serviceId: string;
-    date?: Date;
-}
+  
+  @ApiProperty({
+    description: 'The maximum number of records to return',
+    example: 10,
+    minimum: 1,
+  })
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  limit: number;
 
+  @ApiProperty({
+    description: 'The number of records to skip',
+    example: 0,
+    minimum: 0,
+  })
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  offset: number;
+
+  @ApiPropertyOptional({
+    description: 'The ID of the service to filter by',
+    example: 'svc_abc123',
+  })
+  @IsOptional()
+  @IsString()
+  serviceId?: string;
+
+  @ApiPropertyOptional({
+    description: 'The specific date to filter time slots (in ISO format)',
+    example: '2025-07-08',
+  })
+  @IsOptional()
+  @IsDateString()
+  date?: Date;
+}
 
 export class ManyRequestBookingDto {
     limit: number;

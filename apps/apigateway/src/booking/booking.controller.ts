@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req } from '@nestjs/common';
 import { BookingService, TimeSlotService } from './booking.service';
-import { CreateBookingDto, CreateManyTimeSlotDto, UpdateBookingDto, UpdateTimeslotDto,  } from '@shared/contracts/booking';
+import { CreateBookingDto, CreateManyTimeSlotDto, ManyRequestTimeSlotDto, UpdateBookingDto, UpdateTimeslotDto,  } from '@shared/contracts/booking';
 import { UserDto } from '@shared/contracts/users';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
@@ -89,13 +89,9 @@ export class TimeSlotController {
     @ApiOperation({ summary: 'Get All timeslot' })
     @ApiResponse({ status: 200, description: 'Success' })
     @Get()
-    findAllTimeSlot(
-        @Query('serviceId') serviceId: string,
-        @Query('date') date: Date,
-        @Query('limit') limit: number,
-        @Query('offset') offset: number,
-        
-    ) {
+    findAllTimeSlot(@Query() query: ManyRequestTimeSlotDto)
+        {
+        const { limit, offset, serviceId, date } = query;
         return this.timeslotService.findAll(limit, offset, serviceId, date);
     }
 

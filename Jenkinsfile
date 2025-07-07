@@ -285,6 +285,45 @@ pipeline {
             }
         }
 
+        stage('Deployment Decision Booking') {
+            steps {
+                script {
+                    try {
+                        timeout(time: 30, unit: 'MINUTES') {
+                            def userInput = input(
+                                id: 'deployBookingToDev',
+                                message: 'Deploy BOOKING to development?',
+                                parameters: [booleanParam(name: 'DEPLOY_BOOKING_TO_DEV', defaultValue: false)]
+                            )
+                            env.DEPLOY_BOOKING_TO_DEV = userInput ? 'true' : 'false'
+                        }
+                    } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
+                        echo 'Deployment input timeout. Skipping Booking deployment.'
+                        env.DEPLOY_BOOKING_TO_DEV = 'false'
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Booking') {
+            when {
+                expression { env.DEPLOY_BOOKING_TO_DEV == 'true' }
+            }
+            steps {
+                script {
+                    deployService(
+                        repo: 'banquetpro/booking',
+                        path: 'apps/booking',
+                        taskDefinition: 'booking-task-definition',
+                        service: 'booking-service',
+                        envFile: "BOOKING_ENV_FILE",
+                        localImage: "booking-image"
+
+                    )
+                }
+            }
+        }
+
 
         stage('Cleanup Workspace for next build') {
             steps {
