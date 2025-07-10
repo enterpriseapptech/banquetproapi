@@ -1,0 +1,171 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider      = "prisma-client-js"
+  output        = "@prisma/booking"
+  binaryTargets = ["native", "linux-musl"]
+}
+
+datasource banquestprobookingdb {
+  provider = "postgresql"
+  url      = "postgresql://users_admin:9bqq9oTJv8rAQEsrCLfVV2ieql1Jti90@13.61.144.12/banquetprobookingdb"
+}
+
+model Booking {
+  id                           String        @id @default(uuid())
+  customerId                   String // customer booking the venue, points to an ID on users table
+  confirmedBy                  String? // staff who confirmed the book, points to an ID on users table
+  confirmedAt                  DateTime?
+  servicebookingId             String? // eventcenterbooking, catering booking , etc
+  serviceType                  ServiceType
+  totalBeforeDiscount          Float
+  discount                     Float?
+  totalAfterDiscount           Float
+  paymentStatus                PaymentStatus
+  status                       BookingStatus
+  bookingDates                 String[] // carries the different dates for a single booking, not a from to, the individual dates
+  isTermsAccepted              Boolean
+  isCancellationPolicyAccepted Boolean
+  isLiabilityWaiverSigned      Boolean
+  bookingReference             String //refernece to find booking fast 
+  source                       BookingSource
+  serviceNotes                 String?
+  customerNotes                String?
+  rescheduledBy                String?
+  rescheduledAt                DateTime?
+  previousDates                String[]
+  cancelledBy                  String? //  whoever cancelled the book, points to an ID on users table
+  canceledAt                   DateTime?
+  cancelationReason            String?
+  createdAt                    DateTime      @default(now())
+  updatedAt                    DateTime      @updatedAt
+  deletedAt                    DateTime?
+  deletedBy                    String?
+
+  eventCenterBooking EventCenterBooking?
+  cateringBooking    CateringBooking?
+  timeslot           TimeSlot[] // a single booking can contains a list of timeslots, spanning even into days
+
+  @@index([customerId, status, paymentStatus, serviceType])
+}
+// a review must have a booking, booking can have many payments at most 2
+
+model AvailableLocations {
+  id      String         @id @default(uuid())
+  country String
+  state   String
+  city    String?
+  status  LocationStatus
+}
+
+model TimeSlot {
+  id               String      @id @default(uuid())
+  serviceId        String
+  serviceType      ServiceType
+  bookingId        String?
+  startTime        DateTime
+  endTime          DateTime
+  isAvailable      Boolean     @default(true)
+  previousBookings String[] // tracking all bookings previously attached to this slot
+  createdBy        String
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  updatedBy        String?
+  deletedAt        DateTime?
+  deletedBy        String?
+
+  // relations
+  booking Booking? @relation(fields: [bookingId], references: [id])
+
+  @@index([serviceId, bookingId, startTime, endTime, isAvailable])
+}
+
+model EventCenterBooking {
+  id                  String               @id @default(uuid())
+  eventcenterId       String
+  bookingId           String               @unique @map("booking_id")
+  eventName           String?
+  eventTheme          String?
+  eventType           String?
+  description         String?
+  noOfGuest           Int?
+  specialRequirements SpecialRequirement[]
+  images              String[] // after events customers can upload images from event
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  deletedAt           DateTime?
+  deletedBy           String?
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+
+  @@index([bookingId, eventcenterId, eventName, eventTheme, eventType])
+}
+
+model CateringBooking {
+  id                  String               @id @default(uuid())
+  cateringId          String
+  bookingId           String               @unique @map("booking_id")
+  eventName           String?
+  eventType           String?
+  dishTypes           String[]
+  cuisine             String[]
+  description         String?
+  noOfGuest           Int?
+  specialRequirements SpecialRequirement[]
+  images              String[] // after events customers can upload images from event
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  deletedAt           DateTime?
+  deletedBy           String?
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+
+  @@index([bookingId, cateringId, eventName, cuisine, dishTypes, eventType])
+}
+
+// to do quotes model
+enum LocationStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum BookingSource {
+  WEB
+  MOBILE
+}
+
+enum ServiceType {
+  CATERING
+  EVENTCENTER
+}
+
+enum BookingStatus {
+  PENDING
+  BOOKED
+  RESERVED
+  POSTPONED
+  CANCELED
+}
+
+enum PaymentStatus {
+  UNPAID
+  FULLY_PAID
+  PARTIALLY_PAID
+}
+
+enum SpecialRequirement {
+  WHEELCHAIRACCESS
+  TEMPERATUREADJUSTMENT
+}
+
+// enum PaymentStatus {
+//   UNPAID
+//   FULLY_PAID
+//   PARTIALLY_PAID
+//   PENDING_CONFIRMATION
+//   PAYMENT_CONFIRMED
+// }
