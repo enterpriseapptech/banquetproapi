@@ -1,6 +1,6 @@
 import { Injectable, INestApplication, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '../prisma/@prisma/booking';
-// updated import
+
 
 @Injectable()
 export class DatabaseService extends PrismaClient implements OnModuleInit {
