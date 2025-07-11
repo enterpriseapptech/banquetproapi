@@ -618,39 +618,39 @@ export class TimeSlotService {
 	// }
 
 
-	async update(id: string, updateTimeslotDto: UpdateTimeslotDto): Promise<TimeslotDto> {
-		try {
+	// async update(id: string, updateTimeslotDto: UpdateTimeslotDto): Promise<TimeslotDto> {
+	// 	try {
 
-			const result = await this.databaseService.$transaction(async (prisma) => {
+	// 		const result = await this.databaseService.$transaction(async (prisma) => {
 
-				const existingTimeSlot = await prisma.timeSlot.findUnique({
-					where: { id },
-					select: { previousBookings: true }
-				});
+	// 			const existingTimeSlot = await prisma.timeSlot.findUnique({
+	// 				where: { id },
+	// 				select: { previousBookings: true }
+	// 			});
 
-				const updatedPreviousBookings = [
-					...(existingTimeSlot?.previousBookings || []), // Keep existing IDs
-					updateTimeslotDto.previousBookings // Add the new ID
-				];
+	// 			const updatedPreviousBookings = [
+	// 				...(existingTimeSlot?.previousBookings || []), // Keep existing IDs
+	// 				updateTimeslotDto.previousBookings // Add the new ID
+	// 			];
 
-				const updateTimeSlotInput: Prisma.TimeSlotUpdateInput = {
-					...TimeslotDto,
-					previousBookings: updateTimeslotDto.previousBookings ? updatedPreviousBookings : existingTimeSlot?.previousBookings
-				};
+	// 			const updateTimeSlotInput: Prisma.TimeSlotUpdateInput = {
+	// 				...TimeslotDto,
+	// 				previousBookings: updateTimeslotDto.previousBookings ? updatedPreviousBookings : existingTimeSlot?.previousBookings
+	// 			};
 
-				const timeSlot = await this.databaseService.timeSlot.update({
-					where: { id },
-					data: updateTimeSlotInput
-				});
+	// 			const timeSlot = await this.databaseService.timeSlot.update({
+	// 				where: { id },
+	// 				data: updateTimeSlotInput
+	// 			});
 
-				return timeSlot;
-			});
+	// 			return timeSlot;
+	// 		});
 			
-			return result;
-		} catch (error) {
-			throw new ConflictException(error);
-		}
-	}
+	// 		return result;
+	// 	} catch (error) {
+	// 		throw new ConflictException(error);
+	// 	}
+	// }
 
 	async remove(id: string, updaterId: string): Promise<TimeslotDto> {
 		const timeSlot = await this.databaseService.timeSlot.update({
