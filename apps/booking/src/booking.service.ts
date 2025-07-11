@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
-// import { $Enums as $EventBookingEnums, Prisma as EventBookingPrisma } from '@prisma/eventcenters';
 import { $Enums, Prisma } from '../prisma/@prisma/booking';
 import { CreateBookingDto, BookingDto, ManyBookingDto, TimeslotDto, CreateManyTimeSlotDto, ManyTimeslotDto, ManyRequestTimeSlotDto, UpdateTimeslotDto, UpdateBookingDto, PaymentStatus, ServiceType, BookingStatus, BookingSource } from '@shared/contracts/booking';
 import { EventCenterDto, EVENTCENTERPATTERN, ManyRequestEventCenterDto } from '@shared/contracts/eventcenters';
@@ -583,88 +582,75 @@ export class TimeSlotService {
 	}
 
 
-	async findAll(manyRequestTimeSlotDto: ManyRequestTimeSlotDto): Promise<ManyTimeslotDto> {
+	// async findAll(manyRequestTimeSlotDto: ManyRequestTimeSlotDto): Promise<ManyTimeslotDto> {
 
-		const whereClause: any = { deletedAt: null, serviceId: manyRequestTimeSlotDto.serviceId };
-		if (manyRequestTimeSlotDto.date) {
-			const startOfDay = new Date(manyRequestTimeSlotDto.date);
-			startOfDay.setUTCHours(0, 0, 0, 0); // Set time to 00:00:00.000 UTC
+	// 	const whereClause: any = { deletedAt: null, serviceId: manyRequestTimeSlotDto.serviceId };
+	// 	if (manyRequestTimeSlotDto.date) {
+	// 		const startOfDay = new Date(manyRequestTimeSlotDto.date);
+	// 		startOfDay.setUTCHours(0, 0, 0, 0); // Set time to 00:00:00.000 UTC
 
-			const endOfDay = new Date(manyRequestTimeSlotDto.date);
-			endOfDay.setUTCHours(23, 59, 59, 999); // Set time to 23:59:59.999 UTC
+	// 		const endOfDay = new Date(manyRequestTimeSlotDto.date);
+	// 		endOfDay.setUTCHours(23, 59, 59, 999); // Set time to 23:59:59.999 UTC
 
-			whereClause.startTime = {
-				gte: startOfDay,
-				lte: endOfDay
-			};
-		}
+	// 		whereClause.startTime = {
+	// 			gte: startOfDay,
+	// 			lte: endOfDay
+	// 		};
+	// 	}
 
-		const result = await this.databaseService.$transaction(async (prisma) => {
+	// 	const result = await this.databaseService.$transaction(async (prisma) => {
 
-			const timeslots = await prisma.timeSlot.findMany({
-				where: whereClause,
-				take: manyRequestTimeSlotDto.limit || 10,
-				skip: manyRequestTimeSlotDto.offset || 0,
-			});
+	// 		const timeslots = await prisma.timeSlot.findMany({
+	// 			where: whereClause,
+	// 			take: manyRequestTimeSlotDto.limit || 10,
+	// 			skip: manyRequestTimeSlotDto.offset || 0,
+	// 		});
+
+	// 		console.log("triggering a change")
+	// 		const count = await prisma.timeSlot.count({
+	// 			where: whereClause,
+	// 		});
+
+	// 		return { count, data: timeslots };
+	// 	});
+
+	// 	return { count: result.count, data: result.data };
+	// }
 
 
-			const count = await prisma.timeSlot.count({
-				where: whereClause,
-			});
+	// async update(id: string, updateTimeslotDto: UpdateTimeslotDto): Promise<TimeslotDto> {
+	// 	try {
 
-			return { count, data: timeslots };
-		});
+	// 		const result = await this.databaseService.$transaction(async (prisma) => {
 
-		return { count: result.count, data: result.data };
-	}
+	// 			const existingTimeSlot = await prisma.timeSlot.findUnique({
+	// 				where: { id },
+	// 				select: { previousBookings: true }
+	// 			});
 
-	async findOne(id: string): Promise<TimeslotDto> {
+	// 			const updatedPreviousBookings = [
+	// 				...(existingTimeSlot?.previousBookings || []), // Keep existing IDs
+	// 				updateTimeslotDto.previousBookings // Add the new ID
+	// 			];
 
-		const timeslot = await this.databaseService.timeSlot.findUnique({
-			where: {
-				id: id,
-				deletedAt: null
-			}
-		});
-		if (!timeslot) {
-			throw new NotFoundException("Time slot not found or has been deleted")
-		}
-		return timeslot;
-	}
+	// 			const updateTimeSlotInput: Prisma.TimeSlotUpdateInput = {
+	// 				...TimeslotDto,
+	// 				previousBookings: updateTimeslotDto.previousBookings ? updatedPreviousBookings : existingTimeSlot?.previousBookings
+	// 			};
 
-	async update(id: string, updateTimeslotDto: UpdateTimeslotDto): Promise<TimeslotDto> {
-		try {
+	// 			const timeSlot = await this.databaseService.timeSlot.update({
+	// 				where: { id },
+	// 				data: updateTimeSlotInput
+	// 			});
 
-			const result = await this.databaseService.$transaction(async (prisma) => {
-
-				const existingTimeSlot = await prisma.timeSlot.findUnique({
-					where: { id },
-					select: { previousBookings: true }
-				});
-
-				const updatedPreviousBookings = [
-					...(existingTimeSlot?.previousBookings || []), // Keep existing IDs
-					updateTimeslotDto.previousBookings // Add the new ID
-				];
-
-				const updateTimeSlotInput: Prisma.TimeSlotUpdateInput = {
-					...TimeslotDto,
-					previousBookings: updateTimeslotDto.previousBookings ? updatedPreviousBookings : existingTimeSlot?.previousBookings
-				};
-
-				const timeSlot = await this.databaseService.timeSlot.update({
-					where: { id },
-					data: updateTimeSlotInput
-				});
-
-				return timeSlot;
-			});
+	// 			return timeSlot;
+	// 		});
 			
-			return result;
-		} catch (error) {
-			throw new ConflictException(error);
-		}
-	}
+	// 		return result;
+	// 	} catch (error) {
+	// 		throw new ConflictException(error);
+	// 	}
+	// }
 
 	async remove(id: string, updaterId: string): Promise<TimeslotDto> {
 		const timeSlot = await this.databaseService.timeSlot.update({
