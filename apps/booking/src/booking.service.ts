@@ -9,8 +9,8 @@ import { UserDto, USERPATTERN, } from '@shared/contracts/users';
 import { DatabaseService } from '../database/database.service';
 import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
 import { EVENT_CENTER_CLIENT, NOTIFICATION_CLIENT, USER_CLIENT, CATERING_CLIENT } from '@shared/contracts';
-import { ClientProxy, RpcException } from '@nestjs/microservices';
-import { catchError, throwError, firstValueFrom } from 'rxjs';
+import { ClientProxy } from '@nestjs/microservices';
+import { firstValueFrom } from 'rxjs';
 import { CateringDto, CATERINGPATTERN } from '@shared/contracts/catering';
 
 @Injectable()
