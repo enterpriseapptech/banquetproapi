@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
-// import { $Enums as $EventBookingEnums, Prisma as EventBookingPrisma } from '@prisma/eventcenters';
 import { $Enums, Prisma } from '../prisma/@prisma/booking';
 import { CreateBookingDto, BookingDto, ManyBookingDto, TimeslotDto, CreateManyTimeSlotDto, ManyTimeslotDto, ManyRequestTimeSlotDto, UpdateTimeslotDto, UpdateBookingDto, PaymentStatus, ServiceType, BookingStatus, BookingSource } from '@shared/contracts/booking';
 import { EventCenterDto, EVENTCENTERPATTERN, ManyRequestEventCenterDto } from '@shared/contracts/eventcenters';
@@ -607,7 +606,7 @@ export class TimeSlotService {
 				skip: manyRequestTimeSlotDto.offset || 0,
 			});
 
-
+			console.log("triggering a change")
 			const count = await prisma.timeSlot.count({
 				where: whereClause,
 			});
