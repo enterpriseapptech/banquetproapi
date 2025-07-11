@@ -582,54 +582,41 @@ export class TimeSlotService {
 	}
 
 
-	async findAll(manyRequestTimeSlotDto: ManyRequestTimeSlotDto): Promise<ManyTimeslotDto> {
+	// async findAll(manyRequestTimeSlotDto: ManyRequestTimeSlotDto): Promise<ManyTimeslotDto> {
 
-		const whereClause: any = { deletedAt: null, serviceId: manyRequestTimeSlotDto.serviceId };
-		if (manyRequestTimeSlotDto.date) {
-			const startOfDay = new Date(manyRequestTimeSlotDto.date);
-			startOfDay.setUTCHours(0, 0, 0, 0); // Set time to 00:00:00.000 UTC
+	// 	const whereClause: any = { deletedAt: null, serviceId: manyRequestTimeSlotDto.serviceId };
+	// 	if (manyRequestTimeSlotDto.date) {
+	// 		const startOfDay = new Date(manyRequestTimeSlotDto.date);
+	// 		startOfDay.setUTCHours(0, 0, 0, 0); // Set time to 00:00:00.000 UTC
 
-			const endOfDay = new Date(manyRequestTimeSlotDto.date);
-			endOfDay.setUTCHours(23, 59, 59, 999); // Set time to 23:59:59.999 UTC
+	// 		const endOfDay = new Date(manyRequestTimeSlotDto.date);
+	// 		endOfDay.setUTCHours(23, 59, 59, 999); // Set time to 23:59:59.999 UTC
 
-			whereClause.startTime = {
-				gte: startOfDay,
-				lte: endOfDay
-			};
-		}
+	// 		whereClause.startTime = {
+	// 			gte: startOfDay,
+	// 			lte: endOfDay
+	// 		};
+	// 	}
 
-		const result = await this.databaseService.$transaction(async (prisma) => {
+	// 	const result = await this.databaseService.$transaction(async (prisma) => {
 
-			const timeslots = await prisma.timeSlot.findMany({
-				where: whereClause,
-				take: manyRequestTimeSlotDto.limit || 10,
-				skip: manyRequestTimeSlotDto.offset || 0,
-			});
+	// 		const timeslots = await prisma.timeSlot.findMany({
+	// 			where: whereClause,
+	// 			take: manyRequestTimeSlotDto.limit || 10,
+	// 			skip: manyRequestTimeSlotDto.offset || 0,
+	// 		});
 
-			console.log("triggering a change")
-			const count = await prisma.timeSlot.count({
-				where: whereClause,
-			});
+	// 		console.log("triggering a change")
+	// 		const count = await prisma.timeSlot.count({
+	// 			where: whereClause,
+	// 		});
 
-			return { count, data: timeslots };
-		});
+	// 		return { count, data: timeslots };
+	// 	});
 
-		return { count: result.count, data: result.data };
-	}
+	// 	return { count: result.count, data: result.data };
+	// }
 
-	async findOne(id: string): Promise<TimeslotDto> {
-
-		const timeslot = await this.databaseService.timeSlot.findUnique({
-			where: {
-				id: id,
-				deletedAt: null
-			}
-		});
-		if (!timeslot) {
-			throw new NotFoundException("Time slot not found or has been deleted")
-		}
-		return timeslot;
-	}
 
 	async update(id: string, updateTimeslotDto: UpdateTimeslotDto): Promise<TimeslotDto> {
 		try {
