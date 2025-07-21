@@ -25,7 +25,7 @@ export class BookingController {
     }
 
     @MessagePattern(BOOKINGPATTERN.FINDALL)
-    findAll(@Payload() data: { limit: number, offset: number, serviceProvider?: string, bookingReference?: string}) {
+    findAll(@Payload() data: { limit: number, offset: number, serviceId?: string, serviceProvider?: string, bookingReference?: string}) {
         const { limit, offset, serviceProvider, bookingReference} = data
         return from(this.bookingService.findAll(limit, offset, serviceProvider, bookingReference)).pipe(
                 catchError((err) => {
@@ -130,21 +130,21 @@ export class TimeSlotController {
 
     }
 
-    @MessagePattern(TIMESLOTPATTERN.FINDONEBYID)
-    findOne(@Payload() id: string) {
-        return from(this.timeSlotService.findOne(id)).pipe(
-            catchError((err) => {
-                console.error("Error in UsersService:", err);
-                return throwError(() => new RpcException({
-                    statusCode: err.response.statusCode || 500,
-                    message: err.message || "Internal Server Error",
-                    error: err.response.error || "Sever error",
-                }));
+    // @MessagePattern(TIMESLOTPATTERN.FINDONEBYID)
+    // findOne(@Payload() id: string) {
+    //     return from(this.timeSlotService.findOne(id)).pipe(
+    //         catchError((err) => {
+    //             console.error("Error in UsersService:", err);
+    //             return throwError(() => new RpcException({
+    //                 statusCode: err.response.statusCode || 500,
+    //                 message: err.message || "Internal Server Error",
+    //                 error: err.response.error || "Sever error",
+    //             }));
 
-            })
-        );
+    //         })
+    //     );
 
-    }
+    // }
 
     @MessagePattern(TIMESLOTPATTERN.UPDATE)
     update(@Payload() data: { id: string, updateTimeslotDto: UpdateTimeslotDto }) {

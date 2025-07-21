@@ -16,7 +16,7 @@ export class BookingService {
         return this.bookingClient.send<BookingDto, CreateBookingDto>(BOOKINGPATTERN.CREATE, createBookingDto)
     }
     
-    findAll(limit: number, offset: number, serviceProvider?: string, startDate?: Date, endDate?: Date) {
+    findAll(limit: number, offset: number, serviceId?: string, serviceProvider?: string, startDate?: Date, endDate?: Date) {
         return this.bookingClient.send<ManyBookingDto, ManyRequestBookingDto>(BOOKINGPATTERN.FINDALL,
             {
                 limit,

@@ -1,9 +1,6 @@
 pipeline {
     agent any
-    environment {
-        EC2_HOST = 'ec2-user@your-ec2-ip'      // change user and IP accordingly
-        SSH_KEY = credentials('EC2_DEPLOY_KEY')
-    }
+
     environment {
         AWS_REGION = 'eu-north-1'
         ACCOUNT_ID = credentials('aws_account_id')
@@ -367,47 +364,122 @@ pipeline {
 def deployService(Map svc) {
     def repo = svc.repo
     def path = svc.path
+    def taskDefName = svc.taskDefinition
     def serviceName = svc.service
     def envFileCredentialId = svc.envFile
-    def containerName = serviceName // you can customize this
+    def image = "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${repo}:${BUILD_NUMBER}"
     def localImage = "${svc.localImage}:${BUILD_NUMBER}"
 
+    // Part 1: Generate env.json with single triple quotes
+    
+    // Part 1: Generate env.json with single triple quotes
     withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
-        // Save env file to workspace
-        sh 'cp $ENV_FILE .env'
+        sh '''#!/bin/bash
+        set -e
+
+        echo "Preparing to copy env file: $ENV_FILE"
+        ls -la
+        rm -f .env || true
+        touch .env
+        chmod +w .env
+        echo "Copying env file: $ENV_FILE"
+        cp "$ENV_FILE" .env
+
+        echo "[" > apienv.json
+
+        lines=()
+
+        while IFS='=' read -r key value || [ -n "$key" ]; do
+            # Skip empty or commented lines
+            [[ "$key" =~ ^#.*$ || -z "$key" || -z "$value" ]] && continue
+
+            key=$(echo "$key" | tr -d '\r\n')
+            value=$(echo "$value" | tr -d '\r\n')
+
+            # Strip all surrounding single/double quotes
+            value=$(echo "$value" | sed -E 's/^[\'\\"']+//; s/[\'\\"']+$//')
+
+            # Escape any inner double quotes for JSON
+            value=$(echo "$value" | sed 's/"/\\\\\\"/g')
+
+            # Append properly quoted JSON line
+            lines+=("  { \\"name\\": \\"${key}\\", \\"value\\": \\"${value}\\" }")
+        done < .env
+
+        for i in "${!lines[@]}"; do
+            if [[ $i -lt $((${#lines[@]} - 1)) ]]; then
+                echo "${lines[$i]}," >> apienv.json
+            else
+                echo "${lines[$i]}" >> apienv.json
+            fi
+        done
+
+        echo "]" >> apienv.json
+
+        '''
     }
 
-    sh """
-        echo "Building Docker image locally..."
+    // // Part 2: Docker build, tag, push and ECS update with double triple quotes
+    withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
+        sh """#!/bin/bash
+        set -e
+
+        echo "Logging into ECR"
+        aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+
+        echo "Building Docker image"
+        echo "Using local image tag: ${localImage}"
         docker build -f ${path}/Dockerfile -t ${localImage} .
 
-        echo "Compressing artifacts..."
-        tar -czf ${containerName}.tar.gz -C ${path} . Dockerfile .env
-    """
+        echo "Tagging image for ECR"
+        docker tag ${localImage} ${image}
 
-    sshagent(credentials: ['EC2_DEPLOY_KEY']) {
-        sh """
-            echo "Copying project files to EC2"
-            scp ${containerName}.tar.gz ${EC2_HOST}:/home/ec2-user/
+        echo "Pushing image to ECR"
+        docker push ${image}
 
-            echo "Deploying on EC2..."
-            ssh ${EC2_HOST} << 'EOF'
-                set -e
-                cd /home/ec2-user
-                tar -xzf ${containerName}.tar.gz -C ${containerName} || mkdir ${containerName} && tar -xzf ${containerName}.tar.gz -C ${containerName}
-                cd ${containerName}
-                
-                echo "Stopping and removing old container"
-                docker rm -f ${containerName} || true
+        echo "Fetching existing task definition hoping to update"
+        TASK_DEF=\$(aws ecs describe-task-definition --task-definition ${taskDefName})
 
-                echo "Building image"
-                docker build -t ${localImage} .
+        echo "Injecting env and updating image"
 
-                echo "Running container"
-                docker run -d --name ${containerName} --env-file .env -p YOUR_PORT:YOUR_PORT ${localImage}
-            EOF
+        ENV_JSON=\$(cat apienv.json)
+
+        NEW_TASK_DEF=\$(echo "\$TASK_DEF" | jq --arg IMAGE "${image}" --argjson env "\$ENV_JSON" '
+        .taskDefinition |
+        {
+            family: .family,
+            networkMode: .networkMode,
+            executionRoleArn: .executionRoleArn,
+            containerDefinitions: (
+            .containerDefinitions | map(
+                .image = \$IMAGE | .environment = \$env
+            )
+            ),
+            requiresCompatibilities: .requiresCompatibilities,
+            cpu: .cpu,
+            memory: .memory
+        }
+        + (if .taskRoleArn != null then {taskRoleArn: .taskRoleArn} else {} end)
+        ')
+        mkdir -p banquetpro
+        echo "\$NEW_TASK_DEF" > ${repo}-taskdef-final.json
+
+        echo "Registering updated task definition for new deployment"
+        aws ecs register-task-definition --cli-input-json file://${repo}-taskdef-final.json
+
+        echo "Updating ECS service"
+        aws ecs update-service \
+            --cluster ${ECS_CLUSTER} \
+            --service ${serviceName} \
+            --task-definition ${taskDefName} \
+            --force-new-deployment
+
+        echo "Cleaning up temporary files"
+        rm -f apienv.json .env env.json
         """
     }
+
+    
 }
 
 

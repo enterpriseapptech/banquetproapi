@@ -21,6 +21,7 @@ model Booking {
   confirmedBy                  String? // staff who confirmed the book, points to an ID on users table
   confirmedAt                  DateTime?
   servicebookingId             String? // eventcenterbooking, catering booking , etc
+  serviceId                    String
   serviceType                  ServiceType
   totalBeforeDiscount          Float
   discount                     Float?

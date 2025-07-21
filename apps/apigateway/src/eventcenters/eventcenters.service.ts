@@ -12,9 +12,7 @@ export class EventcentersService {
     ) { }
 
     create(createEventcenterDto: CreateEventCenterDto) {
-       
-         console.log('Gateway sending createEventcenterDto  message...');
-        return this.eventClient.send<EventCenterDto, CreateEventCenterDto>(EVENTCENTERPATTERN.CREATEEVENTCENTER, createEventcenterDto)
+       return this.eventClient.send<EventCenterDto, CreateEventCenterDto>(EVENTCENTERPATTERN.CREATEEVENTCENTER, createEventcenterDto)
     }
 
     findAll(limit: number, offset: number, serviceProvider?: string, city? : string, state?: string, country?: string) {

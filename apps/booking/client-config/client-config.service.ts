@@ -49,15 +49,14 @@ export class ClientConfigService {
         return {
             transport: Transport.RMQ,
             options: {
-                urls: [process.env.NOTIFICATIONURL],
-                queue: `${process.env.NOTIFICATIONQUEUE}_${process.env.NODE_ENV}`,
-                queueOptions: { durable: true, autoDelete: false },
-                noAck: true, // Ensure messages are properly acknowledged
-                prefetchCount: 1, // Prevent overloading
-
+                urls: [process.env.NOTIFICATIONURL],  // RabbitMQ URL for the Notification Microservice
+                queue: `${process.env.NOTIFICATIONQUEUE}_${process.env.NODE_ENV}`, // The queue name
+                queueOptions: {
+                    durable: false,
+                }
             }
         }
-    } 
+    }
 
 
     get PaymentClientOptions(): ClientOptions {

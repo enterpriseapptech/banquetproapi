@@ -1374,6 +1374,7 @@ export namespace Prisma {
     confirmedBy: string | null
     confirmedAt: Date | null
     servicebookingId: string | null
+    serviceId: string | null
     serviceType: $Enums.ServiceType | null
     totalBeforeDiscount: number | null
     discount: number | null
@@ -1404,6 +1405,7 @@ export namespace Prisma {
     confirmedBy: string | null
     confirmedAt: Date | null
     servicebookingId: string | null
+    serviceId: string | null
     serviceType: $Enums.ServiceType | null
     totalBeforeDiscount: number | null
     discount: number | null
@@ -1434,6 +1436,7 @@ export namespace Prisma {
     confirmedBy: number
     confirmedAt: number
     servicebookingId: number
+    serviceId: number
     serviceType: number
     totalBeforeDiscount: number
     discount: number
@@ -1480,6 +1483,7 @@ export namespace Prisma {
     confirmedBy?: true
     confirmedAt?: true
     servicebookingId?: true
+    serviceId?: true
     serviceType?: true
     totalBeforeDiscount?: true
     discount?: true
@@ -1510,6 +1514,7 @@ export namespace Prisma {
     confirmedBy?: true
     confirmedAt?: true
     servicebookingId?: true
+    serviceId?: true
     serviceType?: true
     totalBeforeDiscount?: true
     discount?: true
@@ -1540,6 +1545,7 @@ export namespace Prisma {
     confirmedBy?: true
     confirmedAt?: true
     servicebookingId?: true
+    serviceId?: true
     serviceType?: true
     totalBeforeDiscount?: true
     discount?: true
@@ -1659,6 +1665,7 @@ export namespace Prisma {
     confirmedBy: string | null
     confirmedAt: Date | null
     servicebookingId: string | null
+    serviceId: string
     serviceType: $Enums.ServiceType
     totalBeforeDiscount: number
     discount: number | null
@@ -1710,6 +1717,7 @@ export namespace Prisma {
     confirmedBy?: boolean
     confirmedAt?: boolean
     servicebookingId?: boolean
+    serviceId?: boolean
     serviceType?: boolean
     totalBeforeDiscount?: boolean
     discount?: boolean
@@ -1746,6 +1754,7 @@ export namespace Prisma {
     confirmedBy?: boolean
     confirmedAt?: boolean
     servicebookingId?: boolean
+    serviceId?: boolean
     serviceType?: boolean
     totalBeforeDiscount?: boolean
     discount?: boolean
@@ -1778,6 +1787,7 @@ export namespace Prisma {
     confirmedBy?: boolean
     confirmedAt?: boolean
     servicebookingId?: boolean
+    serviceId?: boolean
     serviceType?: boolean
     totalBeforeDiscount?: boolean
     discount?: boolean
@@ -1810,6 +1820,7 @@ export namespace Prisma {
     confirmedBy?: boolean
     confirmedAt?: boolean
     servicebookingId?: boolean
+    serviceId?: boolean
     serviceType?: boolean
     totalBeforeDiscount?: boolean
     discount?: boolean
@@ -1836,7 +1847,7 @@ export namespace Prisma {
     deletedBy?: boolean
   }
 
-  export type BookingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "customerId" | "confirmedBy" | "confirmedAt" | "servicebookingId" | "serviceType" | "totalBeforeDiscount" | "discount" | "totalAfterDiscount" | "paymentStatus" | "status" | "bookingDates" | "isTermsAccepted" | "isCancellationPolicyAccepted" | "isLiabilityWaiverSigned" | "bookingReference" | "source" | "serviceNotes" | "customerNotes" | "rescheduledBy" | "rescheduledAt" | "previousDates" | "cancelledBy" | "canceledAt" | "cancelationReason" | "createdAt" | "updatedAt" | "deletedAt" | "deletedBy", ExtArgs["result"]["booking"]>
+  export type BookingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "customerId" | "confirmedBy" | "confirmedAt" | "servicebookingId" | "serviceId" | "serviceType" | "totalBeforeDiscount" | "discount" | "totalAfterDiscount" | "paymentStatus" | "status" | "bookingDates" | "isTermsAccepted" | "isCancellationPolicyAccepted" | "isLiabilityWaiverSigned" | "bookingReference" | "source" | "serviceNotes" | "customerNotes" | "rescheduledBy" | "rescheduledAt" | "previousDates" | "cancelledBy" | "canceledAt" | "cancelationReason" | "createdAt" | "updatedAt" | "deletedAt" | "deletedBy", ExtArgs["result"]["booking"]>
   export type BookingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     eventCenterBooking?: boolean | Booking$eventCenterBookingArgs<ExtArgs>
     cateringBooking?: boolean | Booking$cateringBookingArgs<ExtArgs>
@@ -1859,6 +1870,7 @@ export namespace Prisma {
       confirmedBy: string | null
       confirmedAt: Date | null
       servicebookingId: string | null
+      serviceId: string
       serviceType: $Enums.ServiceType
       totalBeforeDiscount: number
       discount: number | null
@@ -2314,6 +2326,7 @@ export namespace Prisma {
     readonly confirmedBy: FieldRef<"Booking", 'String'>
     readonly confirmedAt: FieldRef<"Booking", 'DateTime'>
     readonly servicebookingId: FieldRef<"Booking", 'String'>
+    readonly serviceId: FieldRef<"Booking", 'String'>
     readonly serviceType: FieldRef<"Booking", 'ServiceType'>
     readonly totalBeforeDiscount: FieldRef<"Booking", 'Float'>
     readonly discount: FieldRef<"Booking", 'Float'>
@@ -7418,6 +7431,7 @@ export namespace Prisma {
     confirmedBy: 'confirmedBy',
     confirmedAt: 'confirmedAt',
     servicebookingId: 'servicebookingId',
+    serviceId: 'serviceId',
     serviceType: 'serviceType',
     totalBeforeDiscount: 'totalBeforeDiscount',
     discount: 'discount',
@@ -7707,6 +7721,7 @@ export namespace Prisma {
     confirmedBy?: StringNullableFilter<"Booking"> | string | null
     confirmedAt?: DateTimeNullableFilter<"Booking"> | Date | string | null
     servicebookingId?: StringNullableFilter<"Booking"> | string | null
+    serviceId?: StringFilter<"Booking"> | string
     serviceType?: EnumServiceTypeFilter<"Booking"> | $Enums.ServiceType
     totalBeforeDiscount?: FloatFilter<"Booking"> | number
     discount?: FloatNullableFilter<"Booking"> | number | null
@@ -7742,6 +7757,7 @@ export namespace Prisma {
     confirmedBy?: SortOrderInput | SortOrder
     confirmedAt?: SortOrderInput | SortOrder
     servicebookingId?: SortOrderInput | SortOrder
+    serviceId?: SortOrder
     serviceType?: SortOrder
     totalBeforeDiscount?: SortOrder
     discount?: SortOrderInput | SortOrder
@@ -7780,6 +7796,7 @@ export namespace Prisma {
     confirmedBy?: StringNullableFilter<"Booking"> | string | null
     confirmedAt?: DateTimeNullableFilter<"Booking"> | Date | string | null
     servicebookingId?: StringNullableFilter<"Booking"> | string | null
+    serviceId?: StringFilter<"Booking"> | string
     serviceType?: EnumServiceTypeFilter<"Booking"> | $Enums.ServiceType
     totalBeforeDiscount?: FloatFilter<"Booking"> | number
     discount?: FloatNullableFilter<"Booking"> | number | null
@@ -7815,6 +7832,7 @@ export namespace Prisma {
     confirmedBy?: SortOrderInput | SortOrder
     confirmedAt?: SortOrderInput | SortOrder
     servicebookingId?: SortOrderInput | SortOrder
+    serviceId?: SortOrder
     serviceType?: SortOrder
     totalBeforeDiscount?: SortOrder
     discount?: SortOrderInput | SortOrder
@@ -7855,6 +7873,7 @@ export namespace Prisma {
     confirmedBy?: StringNullableWithAggregatesFilter<"Booking"> | string | null
     confirmedAt?: DateTimeNullableWithAggregatesFilter<"Booking"> | Date | string | null
     servicebookingId?: StringNullableWithAggregatesFilter<"Booking"> | string | null
+    serviceId?: StringWithAggregatesFilter<"Booking"> | string
     serviceType?: EnumServiceTypeWithAggregatesFilter<"Booking"> | $Enums.ServiceType
     totalBeforeDiscount?: FloatWithAggregatesFilter<"Booking"> | number
     discount?: FloatNullableWithAggregatesFilter<"Booking"> | number | null
@@ -8248,6 +8267,7 @@ export namespace Prisma {
     confirmedBy?: string | null
     confirmedAt?: Date | string | null
     servicebookingId?: string | null
+    serviceId: string
     serviceType: $Enums.ServiceType
     totalBeforeDiscount: number
     discount?: number | null
@@ -8283,6 +8303,7 @@ export namespace Prisma {
     confirmedBy?: string | null
     confirmedAt?: Date | string | null
     servicebookingId?: string | null
+    serviceId: string
     serviceType: $Enums.ServiceType
     totalBeforeDiscount: number
     discount?: number | null
@@ -8318,6 +8339,7 @@ export namespace Prisma {
     confirmedBy?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
     totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
     discount?: NullableFloatFieldUpdateOperationsInput | number | null
@@ -8353,6 +8375,7 @@ export namespace Prisma {
     confirmedBy?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
     totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
     discount?: NullableFloatFieldUpdateOperationsInput | number | null
@@ -8388,6 +8411,7 @@ export namespace Prisma {
     confirmedBy?: string | null
     confirmedAt?: Date | string | null
     servicebookingId?: string | null
+    serviceId: string
     serviceType: $Enums.ServiceType
     totalBeforeDiscount: number
     discount?: number | null
@@ -8420,6 +8444,7 @@ export namespace Prisma {
     confirmedBy?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
     totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
     discount?: NullableFloatFieldUpdateOperationsInput | number | null
@@ -8452,6 +8477,7 @@ export namespace Prisma {
     confirmedBy?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
     totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
     discount?: NullableFloatFieldUpdateOperationsInput | number | null
@@ -9041,6 +9067,7 @@ export namespace Prisma {
     confirmedBy?: SortOrder
     confirmedAt?: SortOrder
     servicebookingId?: SortOrder
+    serviceId?: SortOrder
     serviceType?: SortOrder
     totalBeforeDiscount?: SortOrder
     discount?: SortOrder
@@ -9079,6 +9106,7 @@ export namespace Prisma {
     confirmedBy?: SortOrder
     confirmedAt?: SortOrder
     servicebookingId?: SortOrder
+    serviceId?: SortOrder
     serviceType?: SortOrder
     totalBeforeDiscount?: SortOrder
     discount?: SortOrder
@@ -9109,6 +9137,7 @@ export namespace Prisma {
     confirmedBy?: SortOrder
     confirmedAt?: SortOrder
     servicebookingId?: SortOrder
+    serviceId?: SortOrder
     serviceType?: SortOrder
     totalBeforeDiscount?: SortOrder
     discount?: SortOrder
@@ -10372,6 +10401,7 @@ export namespace Prisma {
     confirmedBy?: string | null
     confirmedAt?: Date | string | null
     servicebookingId?: string | null
+    serviceId: string
     serviceType: $Enums.ServiceType
     totalBeforeDiscount: number
     discount?: number | null
@@ -10406,6 +10436,7 @@ export namespace Prisma {
     confirmedBy?: string | null
     confirmedAt?: Date | string | null
     servicebookingId?: string | null
+    serviceId: string
     serviceType: $Enums.ServiceType
     totalBeforeDiscount: number
     discount?: number | null
@@ -10456,6 +10487,7 @@ export namespace Prisma {
     confirmedBy?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
     totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
     discount?: NullableFloatFieldUpdateOperationsInput | number | null
@@ -10490,6 +10522,7 @@ export namespace Prisma {
     confirmedBy?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
     totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
     discount?: NullableFloatFieldUpdateOperationsInput | number | null
@@ -10524,6 +10557,7 @@ export namespace Prisma {
     confirmedBy?: string | null
     confirmedAt?: Date | string | null
     servicebookingId?: string | null
+    serviceId: string
     serviceType: $Enums.ServiceType
     totalBeforeDiscount: number
     discount?: number | null
@@ -10558,6 +10592,7 @@ export namespace Prisma {
     confirmedBy?: string | null
     confirmedAt?: Date | string | null
     servicebookingId?: string | null
+    serviceId: string
     serviceType: $Enums.ServiceType
     totalBeforeDiscount: number
     discount?: number | null
@@ -10608,6 +10643,7 @@ export namespace Prisma {
     confirmedBy?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
     totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
     discount?: NullableFloatFieldUpdateOperationsInput | number | null
@@ -10642,6 +10678,7 @@ export namespace Prisma {
     confirmedBy?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
     totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
     discount?: NullableFloatFieldUpdateOperationsInput | number | null
@@ -10676,6 +10713,7 @@ export namespace Prisma {
     confirmedBy?: string | null
     confirmedAt?: Date | string | null
     servicebookingId?: string | null
+    serviceId: string
     serviceType: $Enums.ServiceType
     totalBeforeDiscount: number
     discount?: number | null
@@ -10710,6 +10748,7 @@ export namespace Prisma {
     confirmedBy?: string | null
     confirmedAt?: Date | string | null
     servicebookingId?: string | null
+    serviceId: string
     serviceType: $Enums.ServiceType
     totalBeforeDiscount: number
     discount?: number | null
@@ -10760,6 +10799,7 @@ export namespace Prisma {
     confirmedBy?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
     totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
     discount?: NullableFloatFieldUpdateOperationsInput | number | null
@@ -10794,6 +10834,7 @@ export namespace Prisma {
     confirmedBy?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
     totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
     discount?: NullableFloatFieldUpdateOperationsInput | number | null
