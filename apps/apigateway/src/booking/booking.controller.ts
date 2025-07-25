@@ -19,6 +19,7 @@ export class BookingController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post('create')
     create(@Body() createBookingDto: CreateBookingDto) {
+        console.log({booking: "booking pr"})
         return this.bookingService.create(createBookingDto);
     }
 
