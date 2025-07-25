@@ -20,7 +20,7 @@ pipeline {
         stage('Checkout code') {
             steps {
                 script {
-                    def branchName = env.CHANGE_BRANCH ?: 'main'
+                    def branchName = env.CHANGE_BRANCH ? env.CHANGE_BRANCH : 'main'
                     env.BRANCH_NAME = branchName
                     echo "Checking out branch: ${branchName}"
 
