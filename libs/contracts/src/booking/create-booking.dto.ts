@@ -42,7 +42,7 @@ export class CreateBookingDto {
     @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
     totalBeforeDiscount: number;
 
-    @ApiProperty({ type: 'number', required: true })
+    @ApiProperty({ type: 'number', required: false })
     @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
     discount?: number;
 
@@ -76,12 +76,12 @@ export class CreateBookingDto {
     @IsNotEmpty()
     source: string;
 
-    @ApiProperty({ type: 'string', required: true })
+    @ApiProperty({ type: 'string', required: false })
     @IsString()
     @IsOptional()
     serviceNotes?: string;
 
-    @ApiProperty({ type: 'string', required: true })
+    @ApiProperty({ type: 'string', required: false })
     @IsString()
     @IsOptional()
     customerNotes?: string;
