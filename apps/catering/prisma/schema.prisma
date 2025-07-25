@@ -14,7 +14,6 @@ datasource banquestproeventsdb {
   url      = env("DATABASE_URL")
 }
 
-// event centers
 
 model Catering {
   id                 String        @id @default(uuid()) // Primary key

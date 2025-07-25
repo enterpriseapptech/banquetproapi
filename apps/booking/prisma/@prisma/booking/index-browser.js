@@ -126,6 +126,7 @@ exports.Prisma.BookingScalarFieldEnum = {
   confirmedBy: 'confirmedBy',
   confirmedAt: 'confirmedAt',
   servicebookingId: 'servicebookingId',
+  serviceId: 'serviceId',
   serviceType: 'serviceType',
   totalBeforeDiscount: 'totalBeforeDiscount',
   discount: 'discount',

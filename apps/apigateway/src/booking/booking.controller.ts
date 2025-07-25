@@ -31,11 +31,12 @@ export class BookingController {
     findAll(
         @Query('limit') limit: number,
         @Query('offset') offset: number,
+        @Query('serviceId') serviceId: string,
         @Query('serviceProvider') serviceProvider: string,
         @Query('startDate') startDate: Date,
         @Query('endDate') endDate: Date
     ) {
-        return this.bookingService.findAll(limit, offset, serviceProvider, startDate, endDate);
+        return this.bookingService.findAll(limit, offset, serviceId, serviceProvider, startDate, endDate);
     }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)

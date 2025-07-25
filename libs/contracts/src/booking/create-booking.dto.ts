@@ -28,6 +28,12 @@ export class CreateBookingDto {
     timeslotId: string[];
 
     @ApiProperty({ type: 'string', required: true })
+    @IsUUID()
+    @IsNotEmpty()
+    serviceId: string;
+
+
+    @ApiProperty({ type: 'string', required: true })
     @IsEnum(ServiceType)
     @IsNotEmpty()
     serviceType:ServiceType;
@@ -36,7 +42,7 @@ export class CreateBookingDto {
     @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
     totalBeforeDiscount: number;
 
-    @ApiProperty({ type: 'number', required: true })
+    @ApiProperty({ type: 'number', required: false })
     @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
     discount?: number;
 
@@ -70,21 +76,18 @@ export class CreateBookingDto {
     @IsNotEmpty()
     source: string;
 
-    @ApiProperty({ type: 'string', required: true })
+    @ApiProperty({ type: 'string', required: false })
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     serviceNotes?: string;
 
-    @ApiProperty({ type: 'string', required: true })
+    @ApiProperty({ type: 'string', required: false })
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     customerNotes?: string;
 
 
-    @ApiProperty({ type: 'string', required: true })
-    @IsUUID()
-    @IsNotEmpty()
-    serviceId: string;
+
 
     @ApiProperty({ type: 'string', required: false })
     @IsString()

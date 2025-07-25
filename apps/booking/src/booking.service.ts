@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
-// import { $Enums as $EventBookingEnums, Prisma as EventBookingPrisma } from '@prisma/eventcenters';
 import { $Enums, Prisma } from '../prisma/@prisma/booking';
 import { CreateBookingDto, BookingDto, ManyBookingDto, TimeslotDto, CreateManyTimeSlotDto, ManyTimeslotDto, ManyRequestTimeSlotDto, UpdateTimeslotDto, UpdateBookingDto, PaymentStatus, ServiceType, BookingStatus, BookingSource } from '@shared/contracts/booking';
 import { EventCenterDto, EVENTCENTERPATTERN, ManyRequestEventCenterDto } from '@shared/contracts/eventcenters';
@@ -25,8 +24,10 @@ export class BookingService {
 
 	async create(createBookingDto: CreateBookingDto): Promise<BookingDto> {
 		let notificationSubject: string;
+		
 		const newBookingInput: Prisma.BookingCreateInput = {
 			customerId: createBookingDto.customerId,
+			serviceId: createBookingDto.serviceId,
 			serviceType: createBookingDto.serviceType as $Enums.ServiceType,
 			totalBeforeDiscount: createBookingDto.totalBeforeDiscount,
 			discount: createBookingDto.discount,
@@ -35,10 +36,12 @@ export class BookingService {
 			isTermsAccepted: createBookingDto.isTermsAccepted,
 			isCancellationPolicyAccepted: createBookingDto.isCancellationPolicyAccepted,
 			isLiabilityWaiverSigned: createBookingDto.isLiabilityWaiverSigned,
-			bookingReference: 'drhjfg',
+			bookingReference: Math.random().toString(16).substring(2, 8),
 			source: createBookingDto.source as $Enums.BookingSource,
 			paymentStatus: 'UNPAID' as $Enums.PaymentStatus,
-			status: 'PENDING' as $Enums.BookingStatus
+			status: 'PENDING' as $Enums.BookingStatus,
+			serviceNotes: createBookingDto.serviceNotes,
+			customerNotes: createBookingDto.customerNotes
 		}
 
 		// validate customer account
@@ -142,13 +145,16 @@ export class BookingService {
 			console.log(error)
 			throw new InternalServerErrorException(error, {
 				cause: new Error(),
-				description: 'new event Center creation failed, please try again'
+				description: 'Booking failed, please try again'
 			});
 		}
 	}
+
+
 	async findAll(
 		limit: number,
 		offset: number,
+		serviceId?: string,
 		serviceProvider?: string,
 		bookingReference?: string,
 		startDate?: Date,
@@ -159,7 +165,8 @@ export class BookingService {
 		if (startDate) whereClause.createdAt = { gte: startDate };
 		if (endDate) whereClause.createdAt = { lte: endDate };
 		if (bookingReference) whereClause.bookingReference = bookingReference;
-
+		if (serviceId) whereClause.serviceId = serviceId;
+		
 		if (serviceProvider) {
 
 			/**
@@ -607,7 +614,7 @@ export class TimeSlotService {
 				skip: manyRequestTimeSlotDto.offset || 0,
 			});
 
-
+			console.log("triggering a change")
 			const count = await prisma.timeSlot.count({
 				where: whereClause,
 			});
@@ -618,19 +625,6 @@ export class TimeSlotService {
 		return { count: result.count, data: result.data };
 	}
 
-	async findOne(id: string): Promise<TimeslotDto> {
-
-		const timeslot = await this.databaseService.timeSlot.findUnique({
-			where: {
-				id: id,
-				deletedAt: null
-			}
-		});
-		if (!timeslot) {
-			throw new NotFoundException("Time slot not found or has been deleted")
-		}
-		return timeslot;
-	}
 
 	async update(id: string, updateTimeslotDto: UpdateTimeslotDto): Promise<TimeslotDto> {
 		try {
