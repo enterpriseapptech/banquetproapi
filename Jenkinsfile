@@ -20,6 +20,7 @@ pipeline {
         stage('Branch been built'){
             steps{
                 script {
+                    echo "CHANGE_ID and branch details"
                     echo "CHANGE_ID: ${env.CHANGE_ID}"
                     echo "CHANGE_BRANCH: ${env.CHANGE_BRANCH}"
                     echo "CHANGE_TARGET: ${env.CHANGE_TARGET}"
