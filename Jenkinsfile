@@ -1,9 +1,9 @@
 pipeline {
     agent any
-    environment {
-        EC2_HOST = 'ec2-user@your-ec2-ip'      // change user and IP accordingly
-        SSH_KEY = credentials('EC2_DEPLOY_KEY')
-    }
+    // environment {
+    //     EC2_HOST = 'ec2-user@your-ec2-ip'      // change user and IP accordingly
+    //     SSH_KEY = credentials('EC2_DEPLOY_KEY')
+    // }
     environment {
         AWS_REGION = 'eu-north-1'
         ACCOUNT_ID = credentials('aws_account_id')
