@@ -429,37 +429,39 @@ def deployService(Map svc) {
         '''
     }
 
-
-    sh """
-        echo "Building Docker image locally..."
-        docker build -f ${path}/Dockerfile -t ${localImage} .
-
-        echo "Compressing artifacts..."
-        tar -czf ${containerName}.tar.gz -C ${path} . Dockerfile .env
-    """
-
-    sshagent(credentials: ['EC2_DEPLOY_KEY']) {
+    // // Part 2: Docker build, tag, push and ECS update with double triple quotes
+    withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
         sh """
-            echo "Copying project files to EC2"
-            scp ${containerName}.tar.gz ${EC2_HOST}:/home/ec2-user/
+            echo "Building Docker image locally..."
+            docker build -f ${path}/Dockerfile -t ${localImage} .
 
-            echo "Deploying on EC2..."
-            ssh ${EC2_HOST} << 'EOF'
-                set -e
-                cd /home/ec2-user
-                tar -xzf ${containerName}.tar.gz -C ${containerName} || mkdir ${containerName} && tar -xzf ${containerName}.tar.gz -C ${containerName}
-                cd ${containerName}
-                
-                echo "Stopping and removing old container"
-                docker rm -f ${containerName} || true
-
-                echo "Building image"
-                docker build -t ${localImage} .
-
-                echo "Running container"
-                docker run -d --name ${containerName} --env-file .env -p YOUR_PORT:YOUR_PORT ${localImage}
-            EOF
+            echo "Compressing artifacts..."
+            tar -czf ${containerName}.tar.gz -C ${path} . Dockerfile .env
         """
+
+        sshagent(credentials: ['EC2_DEPLOY_KEY']) {
+            sh """
+                echo "Copying project files to EC2"
+                scp ${containerName}.tar.gz ${EC2_HOST}:/home/ec2-user/
+
+                echo "Deploying on EC2..."
+                ssh ${EC2_HOST} << 'EOF'
+                    set -e
+                    cd /home/ec2-user
+                    tar -xzf ${containerName}.tar.gz -C ${containerName} || mkdir ${containerName} && tar -xzf ${containerName}.tar.gz -C ${containerName}
+                    cd ${containerName}
+                    
+                    echo "Stopping and removing old container"
+                    docker rm -f ${containerName} || true
+
+                    echo "Building image"
+                    docker build -t ${localImage} .
+
+                    echo "Running container"
+                    docker run -d --name ${containerName} --env-file .env -p YOUR_PORT:YOUR_PORT ${localImage}
+                EOF
+            """
+        }
     }
 }
 
