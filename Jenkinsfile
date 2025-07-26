@@ -1,14 +1,13 @@
 pipeline {
     agent any
-    // environment {
-    //     EC2_HOST = 'ec2-user@your-ec2-ip'      // change user and IP accordingly
-    //     SSH_KEY = credentials('EC2_DEPLOY_KEY')
-    // }
+
     environment {
         AWS_REGION = 'eu-north-1'
         ACCOUNT_ID = credentials('aws_account_id')
         GITHUB_TOKEN = credentials('GITHUB-ACCESS-TOKEN')
         ECS_CLUSTER = 'banquetpro-cluster'
+        EC2_HOST = 'ubuntu@ec2-13-61-137-254.eu-north-1.compute.amazonaws.com'      // change user and IP accordingly
+        SSH_KEY = credentials('EC2_DEPLOY_KEY')
     }
 
     options {
@@ -383,10 +382,53 @@ def deployService(Map svc) {
     def containerName = serviceName // you can customize this
     def localImage = "${svc.localImage}:${BUILD_NUMBER}"
 
+    // Part 1: Generate env.json with single triple quotes
     withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
-        // Save env file to workspace
-        sh 'cp $ENV_FILE .env'
+        sh '''#!/bin/bash
+        set -e
+
+        echo "Preparing to copy env file: $ENV_FILE"
+        ls -la
+        rm -f .env || true
+        touch .env
+        chmod +w .env
+        echo "Copying env file: $ENV_FILE"
+        cp "$ENV_FILE" .env
+
+        echo "[" > apienv.json
+
+        lines=()
+
+        while IFS='=' read -r key value || [ -n "$key" ]; do
+            # Skip empty or commented lines
+            [[ "$key" =~ ^#.*$ || -z "$key" || -z "$value" ]] && continue
+
+            key=$(echo "$key" | tr -d '\r\n')
+            value=$(echo "$value" | tr -d '\r\n')
+
+            # Strip all surrounding single/double quotes
+            value=$(echo "$value" | sed -E 's/^[\'\\"']+//; s/[\'\\"']+$//')
+
+            # Escape any inner double quotes for JSON
+            value=$(echo "$value" | sed 's/"/\\\\\\"/g')
+
+            # Append properly quoted JSON line
+            lines+=("  { \\"name\\": \\"${key}\\", \\"value\\": \\"${value}\\" }")
+        done < .env
+
+        for i in "${!lines[@]}"; do
+            if [[ $i -lt $((${#lines[@]} - 1)) ]]; then
+                echo "${lines[$i]}," >> apienv.json
+            else
+                echo "${lines[$i]}" >> apienv.json
+            fi
+        done
+
+        echo "]" >> apienv.json
+
+        '''
     }
+
 
     sh """
         echo "Building Docker image locally..."
