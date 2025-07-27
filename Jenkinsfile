@@ -97,6 +97,7 @@ pipeline {
                         localImage: "apigateway-image",
                         port: 8000,
                         rm: 'apps/users apps/booking apps/catering  apps/notifications apps/payments apps/eventcenters apps/management '
+                        prisma: "yarn prisma generate --schema=/app/apps/booking/prisma/schema.prisma"
 
                     )
                 }
@@ -385,6 +386,7 @@ def deployService(Map svc) {
     def localImage = "${svc.localImage}:${BUILD_NUMBER}"
     def port = svc.port
     def rm = svc.rm
+    def prisma = svc.prisma
     // Part 1: Generate env.json with single triple quotes
     withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
         sh '''#!/bin/bash
@@ -426,6 +428,7 @@ def deployService(Map svc) {
             rm -rf ${rm}
 
             echo "Yarn Build"
+            ${prisma} 
             yarn build
  
 
