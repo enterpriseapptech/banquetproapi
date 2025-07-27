@@ -413,16 +413,11 @@ def deployService(Map svc) {
             pwd
             ls -la
 
+            ls -la ${path}
             rm -rf temporary || true
             mkdir temporary
 
-            echo "Copying to temporary directory"
-            rsync -av --exclude=temporary/ ./ temporary/
-            cp -r .env package.json yarn.lock temporary/
-            ls -la temporary/
-
-            echo "Creating tar.gz with microservice and config files and Compressing artifacts..."
-            tar --exclude=${containerName}.tar.gz  --exclude=booking-service.tar.gz --exclude=apps.zip  -czf ${containerName}.tar.gz temporary .
+            
         """
 
         sshagent(credentials: ['EC2_DEPLOY_KEY']) {
