@@ -94,7 +94,8 @@ pipeline {
                         taskDefinition: 'apigateway-task-definition',
                         service: 'apigateway-service',
                         envFile: "APIGATEWAY_ENV_FILE",
-                        localImage: "apigateway-image"
+                        localImage: "apigateway-image",
+                        port: 8000
 
                     )
                 }
@@ -381,7 +382,7 @@ def deployService(Map svc) {
     def envFileCredentialId = svc.envFile
     def containerName = serviceName // you can customize this
     def localImage = "${svc.localImage}:${BUILD_NUMBER}"
-
+    def port = svc.port
     // Part 1: Generate env.json with single triple quotes
     withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
         sh '''#!/bin/bash
@@ -450,7 +451,7 @@ def deployService(Map svc) {
                     sudo docker build -t ${localImage} .
 
                     echo "Running container"
-                    sudo docker run -d --name ${containerName} --env-file .env -p YOUR_PORT:YOUR_PORT ${localImage}
+                    sudo docker run -d --name ${containerName} --env-file .env -p ${port}:${port} ${localImage}
                 EOF
             """
         }
