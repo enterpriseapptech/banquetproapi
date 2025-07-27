@@ -417,7 +417,7 @@ def deployService(Map svc) {
 
             echo "Copying to temporary directory"
             rsync -av --exclude=temporary/ ./ temporary/
-            cp -r .env Dockerfile package.json yarn.lock temporary/
+            cp -r .env package.json yarn.lock temporary/
             ls al /temporary
 
             echo "Creating tar.gz with microservice and config files and Compressing artifacts..."
