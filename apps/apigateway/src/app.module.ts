@@ -16,6 +16,7 @@ import { ManagementModule } from './management/management.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: '../.env',
     }),
     UsersModule,
     ManagementModule,
