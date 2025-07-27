@@ -409,9 +409,9 @@ def deployService(Map svc) {
             cp "$ENV_FILE" ${path}/.env
 
             echo "Removing old tar.gz if it exists..."
-            rm -f ${containerName}.tar.gz || true
-            rm -f banquetpro.tar.gz || true
-            rm -f dist || true
+            rm -rf ${containerName}.tar.gz || true
+            rm -rf banquetpro.tar.gz || true
+            rm -rf dist || true
             rm -rf temporary || true
 
 
