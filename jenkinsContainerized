@@ -416,6 +416,17 @@ def deployService(Map svc) {
             ls -la ${path}
             echo "Contents of env file:"
             cat ${path}/.env
+            
+            rm -rf temporary || true
+            mkdir temporary
+
+            echo "Copying to temporary directory"
+            rsync -av --exclude=temporary/ --exclude=node_modules/ ./ temporary/
+            cp -r .env package.json yarn.lock temporary/
+            ls -la temporary/
+
+            echo "Creating tar.gz with microservice and config files and Compressing artifacts..."
+            tar --exclude=${containerName}.tar.gz  --exclude=booking-service.tar.gz --exclude=apps.zip  -czf ${containerName}.tar.gz temporary .
         """
 
         sshagent(credentials: ['EC2_DEPLOY_KEY']) {
@@ -424,19 +435,26 @@ def deployService(Map svc) {
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "ls -la /home/ubuntu"
 
                 echo "Copying project files to EC2"
-                scp -o StrictHostKeyChecking=no banquetpro.tar.gz ${EC2_HOST}:/home/ubuntu/
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "ls -l /home/ubuntu/banquetpro.tar.gz"
+                scp -o StrictHostKeyChecking=no ${containerName}.tar.gz ${EC2_HOST}:/home/ubuntu/
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "ls -l /home/ubuntu/${containerName}.tar.gz"
 
                 echo "Creating service directory if needed and extracting..."
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "mkdir -p /home/ubuntu/banquetpro && tar -xzf /home/ubuntu/banquetpro.tar.gz -C /home/ubuntu/banquetpro"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "mkdir -p /home/ubuntu/${containerName} && tar -xzf /home/ubuntu/${containerName}.tar.gz -C /home/ubuntu/${containerName}"
 
                 echo "Changing into service directory"
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/banquetpro && ls -la"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && ls -la"
 
                 echo "Showing env details in service"
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/banquetpro && cat ${path}/.env"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && cat ${path}/.env"
 
-                
+                echo "Stopping and removing old container"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "sudo docker rm -f ${containerName} || true"
+
+                echo "Building Docker image"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && sudo docker build -f ${path}/Dockerfile -t ${localImage} ."
+
+                echo "Running Docker container"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && sudo docker run -d --name ${containerName} --env-file ${path}/.env -p ${port}:${port} ${localImage}"
             """
         }
 
