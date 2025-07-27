@@ -425,6 +425,7 @@ def deployService(Map svc) {
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} << EOF
                     set -e
                     cd /home/ubuntu
+                    ls -la
                     tar -xzf ${containerName}.tar.gz -C ${containerName} || mkdir ${containerName} && tar -xzf ${containerName}.tar.gz -C ${containerName}
                     cd ${containerName}
                     
