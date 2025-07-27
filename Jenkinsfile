@@ -415,16 +415,16 @@ def deployService(Map svc) {
 
             sh """
                 echo "Listing contents of EC2 home directory..."
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "ls -la /"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "ls -la /home/ubuntu"
 
                 echo "Copying project files to EC2"
-                scp -o StrictHostKeyChecking=no ${containerName}.tar.gz ${EC2_HOST}:/home/ec2-user/
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "ls -l /home/ec2-user/apigateway-service.tar.gz"
+                scp -o StrictHostKeyChecking=no ${containerName}.tar.gz ${EC2_HOST}:/home/ubuntu/
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "ls -l /home/ubuntu/apigateway-service.tar.gz"
 
                 echo "Deploying on EC2..."
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} << EOF
                     set -e
-                    cd /home/ec2-user
+                    cd /home/ubuntu
                     tar -xzf ${containerName}.tar.gz -C ${containerName} || mkdir ${containerName} && tar -xzf ${containerName}.tar.gz -C ${containerName}
                     cd ${containerName}
                     
