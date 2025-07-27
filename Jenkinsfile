@@ -416,7 +416,7 @@ def deployService(Map svc) {
             mkdir temporary
 
             echo "Copying to temporary directory"
-            cp -r * temporary/
+            rsync -av --exclude=temporary/ ./ temporary/
             cp -r .env Dockerfile package.json yarn.lock temporary/
             ls al /temporary
 
