@@ -419,8 +419,17 @@ def deployService(Map svc) {
             echo "Contents of env file:"
             cat ${path}/.env
 
+
+            rm -rf temporary || true
+            mkdir temporary
+
+            echo "Copying to temporary directory"
+            rsync -av --exclude=temporary/ --exclude=node_modules/ ./ temporary/
+            cp -r .env package.json yarn.lock temporary/
+            ls -la temporary/
+
             echo "Creating tar.gz with microservice and config files and Compressing artifacts..."
-            tar -czf banquetpro.tar.gz .
+            tar --exclude=banquetpro.tar.gz  --exclude=booking-service.tar.gz --exclude=apps.zip  -czf banquetpro.tar.gz temporary .
         """
 
         sshagent(credentials: ['EC2_DEPLOY_KEY']) {
