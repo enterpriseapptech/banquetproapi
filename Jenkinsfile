@@ -414,10 +414,10 @@ def deployService(Map svc) {
         sshagent(credentials: ['EC2_DEPLOY_KEY']) {
             sh """
                 echo "Copying project files to EC2"
-                scp ${containerName}.tar.gz ${EC2_HOST}:/home/ec2-user/
+                scp -o StrictHostKeyChecking=no ${containerName}.tar.gz ${EC2_HOST}:/home/ec2-user/
 
                 echo "Deploying on EC2..."
-                ssh ${EC2_HOST} << 'EOF'
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} << 'EOF'
                     set -e
                     cd /home/ec2-user
                     tar -xzf ${containerName}.tar.gz -C ${containerName} || mkdir ${containerName} && tar -xzf ${containerName}.tar.gz -C ${containerName}
