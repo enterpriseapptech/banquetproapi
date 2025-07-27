@@ -400,18 +400,19 @@ def deployService(Map svc) {
     // // Part 2: Docker build, tag, push and ECS update with double triple quotes
     withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
         sh """
+            ls -la
             rm -f ${path}/.env || true
             echo "Copying env file into ${path}/.env"
             cp "$ENV_FILE" ${path}/.env
 
+            echo "Removing old tar.gz if it exists..."
+            rm -f ${containerName}.tar.gz || true
+
             echo "Lets know where we are..."
             pwd
             ls -la
-            echo "Compressing artifacts..."
-            tar -czf ${containerName}.tar.gz -C .package.json yarn.lock ${path} . Dockerfile .env
-
-
-            ls -la
+            echo "Creating tar.gz with microservice and config files and Compressing artifacts..."
+            tar -czf ${containerName}.tar.gz ${path} Dockerfile .env package.json yarn.lock
         """
 
         sshagent(credentials: ['EC2_DEPLOY_KEY']) {
