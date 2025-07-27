@@ -391,7 +391,7 @@ def deployService(Map svc) {
     def port = svc.port
     def rm = svc.rm
     def prisma = svc.prisma
-    def start: svc.start
+    def start= svc.start
 
     withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
         sh '''#!/bin/bash
