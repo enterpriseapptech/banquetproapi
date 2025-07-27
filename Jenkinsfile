@@ -441,6 +441,8 @@ def deployService(Map svc) {
 
             echo "Creating ${containerName}tar.gz with microservice and config files and Compressing artifacts..."
             tar -czf ${containerName}.tar.gz dist package.json yarn.lock ${path}/.env
+            ls -la
+
         """
 
         sshagent(credentials: ['EC2_DEPLOY_KEY']) {
