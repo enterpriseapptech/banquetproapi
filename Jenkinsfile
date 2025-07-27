@@ -431,10 +431,10 @@ def deployService(Map svc) {
             cd temporary/
 
             echo "Installing dependencies"
-            yarn "install"
+            yarn install
 
             echo "Removing unncecessary folders"
-            rm -rf ${rm}"
+            rm -rf ${rm}
 
             echo "Yarn Build"
             yarn build
