@@ -412,7 +412,7 @@ def deployService(Map svc) {
             pwd
             ls -la
             echo "Creating tar.gz with microservice and config files and Compressing artifacts..."
-            tar -czf ${containerName}.tar.gz .
+            tar --exclude=${containerName}.tar.gz  --exclude=booking-service.tar.gz --exclude=apps.zip  -czf ${containerName}.tar.gz .
         """
 
         sshagent(credentials: ['EC2_DEPLOY_KEY']) {
