@@ -454,7 +454,7 @@ def deployService(Map svc) {
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && sudo docker build -t ${localImage} ."
 
                 echo "Running Docker container"
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && sudo docker run -d --name ${containerName} --env-file cat ${path}/.env -p ${port}:${port} ${localImage}"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && sudo docker run -d --name ${containerName} --env-file ${path}/.env -p ${port}:${port} ${localImage}"
             """
         }
 
