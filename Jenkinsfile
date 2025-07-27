@@ -405,12 +405,13 @@ def deployService(Map svc) {
             cp "$ENV_FILE" ${path}/.env
 
             echo "Lets know where we are..."
-            ssh "ls -la /"
+            sh "pwd"
+            sh "ls -la"
             echo "Compressing artifacts..."
             tar -czf ${containerName}.tar.gz -C .package.json yarn.lock ${path} . Dockerfile .env
 
 
-            ssh "ls -la /"
+            ssh "ls -la"
         """
 
         sshagent(credentials: ['EC2_DEPLOY_KEY']) {
