@@ -421,7 +421,7 @@ def deployService(Map svc) {
             mkdir temporary
 
             echo "Copying to temporary directory"
-            rsync -av --exclude=temporary/ ./ temporary/
+            rsync -av --exclude=temporary/ --exclude=node_modules/ ./ temporary/
             cp -r .env package.json yarn.lock temporary/
             ls -la temporary/
 
@@ -444,6 +444,9 @@ def deployService(Map svc) {
                 echo "Changing into service directory"
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && ls -la"
 
+                echo "Showing env details in service"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "ls -la && cd /home/ubuntu/${containerName} && cat ${path}/.env"
+
                 echo "Stopping and removing old container"
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "sudo docker rm -f ${containerName} || true"
 
@@ -451,7 +454,7 @@ def deployService(Map svc) {
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && sudo docker build -t ${localImage} ."
 
                 echo "Running Docker container"
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && sudo docker run -d --name ${containerName} --env-file .env -p ${port}:${port} ${localImage}"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && sudo docker run -d --name ${containerName} --env-file cat ${path}/.env -p ${port}:${port} ${localImage}"
             """
         }
 
