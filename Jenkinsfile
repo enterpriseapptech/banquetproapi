@@ -441,6 +441,7 @@ def deployService(Map svc) {
 
             echo "Creating ${containerName}tar.gz with microservice and config files and Compressing artifacts..."
             tar -czf ${containerName}.tar.gz dist package.json yarn.lock ${path}/.env
+            pwd
             ls -la
             
         """
@@ -448,8 +449,7 @@ def deployService(Map svc) {
         sshagent(credentials: ['EC2_DEPLOY_KEY']) {
             sh """
                 ls -la
-                cd banquetpro/temporary/
-                ls -la
+                pwd
                 echo "Listing contents of EC2 home directory..."
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "ls -la /home/ubuntu"
 
