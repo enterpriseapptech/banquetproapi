@@ -137,8 +137,8 @@ pipeline {
                         taskDefinition: 'management-task-defiition',
                         service: 'management-service',
                         envFile: "MANAGEMENT_ENV_FILE",
-                        localImage: "management-image"
-                        port: 8000, 
+                        localImage: "management-image",
+                        port: 8007, 
                         rm: 'apps/apigateway apps/booking apps/catering apps/notifications apps/payments apps/eventcenters apps/users  
                             libs/contracts/src/eventcenterbooking libs/contracts/src/booking libs/contracts/src/catering libs/contracts/src/payments libs/contracts/src/eventcenters  
                             libs/contracts/src/booking.ts  libs/contracts/src/payments.ts libs/contracts/src/eventcenters.ts',
