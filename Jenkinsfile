@@ -426,17 +426,18 @@ def deployService(Map svc) {
                     set -e
                     cd /home/ubuntu
                     ls -la
+                    ls -la /home/ubuntu/apigateway-service
                     tar -xzf ${containerName}.tar.gz -C ${containerName} || mkdir ${containerName} && tar -xzf ${containerName}.tar.gz -C ${containerName}
                     cd ${containerName}
                     
                     echo "Stopping and removing old container"
-                    docker rm -f ${containerName} || true
+                    sudo docker rm -f ${containerName} || true
 
                     echo "Building image"
-                    docker build -t ${localImage} .
+                    sudo docker build -t ${localImage} .
 
                     echo "Running container"
-                    docker run -d --name ${containerName} --env-file .env -p YOUR_PORT:YOUR_PORT ${localImage}
+                    sudo docker run -d --name ${containerName} --env-file .env -p YOUR_PORT:YOUR_PORT ${localImage}
                 EOF
             """
         }
