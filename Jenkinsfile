@@ -410,42 +410,28 @@ def deployService(Map svc) {
 
             echo "Removing old tar.gz if it exists..."
             rm -f ${containerName}.tar.gz || true
+            rm -f banquetpro.tar.gz || true
+            rm -f dist || true
+            rm -rf temporary || true
+
 
             echo "Lets know where we are..."
             pwd
             ls -la
 
-            ls -la ${path}
-            echo "Contents of env file:"
-            cat ${path}/.env
-
-            rm -rf temporary || true
-            mkdir temporary
-
-            echo "Copying to temporary directory"
-            rsync -av --exclude=temporary/ --exclude=node_modules/ ./ temporary/
-            cp -r .env package.json yarn.lock temporary/
-            ls -la temporary/
-
-            echo "Entering temporary directory"
-            cd temporary/
-
             echo "Installing dependencies"
             yarn install
 
             echo "Removing unncecessary folders"
-            rm -rf ${rm}
+            sudo rm -rf ${rm}
 
             echo "Yarn Build"
             yarn build
-
-            cd 
+ 
 
             echo "Creating ${containerName}tar.gz with microservice and config files and Compressing artifacts..."
-            echo "Returning to root and creating tar.gz outside temporary"
-            cd ..
-            tar -czf ${containerName}.tar.gz temporary/dist temporary/package.json temporary/yarn.lock temporary/${path}/.env
-
+          
+            tar -czf ${containerName}.tar.gz dist package.json yarn.lock ${path}/.env
             pwd
             ls -la
             
@@ -456,7 +442,7 @@ def deployService(Map svc) {
                 echo "Listing contents of working directory..."
                 pwd
                 ls -la
-                
+
                 echo "Listing contents of EC2 home directory..."
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "ls -la /home/ubuntu"
 
