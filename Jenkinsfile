@@ -97,7 +97,8 @@ pipeline {
                         localImage: "apigateway-image",
                         port: 8000,
                         rm: 'apps/users apps/booking apps/catering  apps/notifications apps/payments apps/eventcenters apps/management '
-                        prisma: "yarn prisma generate --schema=/app/apps/booking/prisma/schema.prisma"
+                        prisma: ""
+                        start: "nohup yarn start:prod > ${service}.log 2>&1 &"
 
                     )
                 }
@@ -137,7 +138,12 @@ pipeline {
                         service: 'management-service',
                         envFile: "MANAGEMENT_ENV_FILE",
                         localImage: "management-image"
-
+                        port: 8000, 
+                        rm: 'apps/apigateway apps/booking apps/catering apps/notifications apps/payments apps/eventcenters apps/users  
+                            libs/contracts/src/eventcenterbooking libs/contracts/src/booking libs/contracts/src/catering libs/contracts/src/payments libs/contracts/src/eventcenters  
+                            libs/contracts/src/booking.ts  libs/contracts/src/payments.ts libs/contracts/src/eventcenters.ts'
+                        prisma: "yarn prisma generate --schema=/app/apps/management/prisma/schema.prisma"
+                        start: "yarn prisma migrate deploy --schema=/app/apps/management/prisma/schema.prisma && nohup yarn start:prodManagement > ${service}.log 2>&1 &"
                     )
                 }
             }
@@ -387,7 +393,8 @@ def deployService(Map svc) {
     def port = svc.port
     def rm = svc.rm
     def prisma = svc.prisma
-    // Part 1: Generate env.json with single triple quotes
+    def start: svc.start
+
     withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
         sh '''#!/bin/bash
         set -e
@@ -434,7 +441,7 @@ def deployService(Map svc) {
 
             echo "Creating ${containerName}tar.gz with microservice and config files and Compressing artifacts..."
           
-            tar -czf ${containerName}.tar.gz dist package.json yarn.lock ${path}/.env
+            tar -czf ${containerName}.tar.gz dist apps package.json yarn.lock ${path}/.env
             pwd
             ls -la
             
@@ -483,10 +490,10 @@ def deployService(Map svc) {
                     cd /home/ubuntu/${containerName} &&
                     cp ${path}/.env .env &&
                     cat .env
-                    nohup yarn start:prod > ${containerName}.log 2>&1 &
+                    ${start}
                     disown
                 "
-                echo "Service started and detached successfully"
+                echo "${containerName} Service started and detached successfully"
             """
         }
 
