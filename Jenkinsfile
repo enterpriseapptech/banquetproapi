@@ -464,6 +464,17 @@ def deployService(Map svc) {
                 echo "Installing dependencies"
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && yarn install --production"
 
+                echo "Checking if port ${port} is in use and killing the process if needed"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "
+                    PID=\$(lsof -ti tcp:${port})
+                    if [ ! -z \"\$PID\" ]; then
+                        echo \"Killing process using port ${port}: \$PID\"
+                        kill -9 \$PID
+                    else
+                        echo \"No process found using port ${port}\"
+                    fi
+                "
+
                 echo "Starting service in production"
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "
                     cd /home/ubuntu/${containerName} &&
