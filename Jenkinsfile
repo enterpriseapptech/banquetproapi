@@ -414,6 +414,8 @@ def deployService(Map svc) {
             ls -la
 
             ls -la ${path}
+            echo "Contents of env file:"
+            cat ${path}/.env
             rm -rf temporary || true
             mkdir temporary
 
