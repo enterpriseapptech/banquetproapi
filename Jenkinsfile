@@ -445,7 +445,7 @@ def deployService(Map svc) {
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && ls -la"
 
                 echo "Showing env details in service"
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "ls -la && cd /home/ubuntu/${containerName} && cat ${path}/.env"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && cat ${path}/.env"
 
                 echo "Stopping and removing old container"
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "sudo docker rm -f ${containerName} || true"
