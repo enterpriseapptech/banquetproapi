@@ -62,30 +62,30 @@ pipeline {
             }
         }
 
-        stage('Deployment Decision Apigateway') {
-            steps {
-                script {
-                    try {
-                        timeout(time: 30, unit: 'MINUTES') {
-                            def userInput = input(
-                                id: 'deployApigatewayToDev',
-                                message: 'Deploy apigateway to development?',
-                                parameters: [booleanParam(name: 'DEPLOY_APIGATEWAY_TO_DEV', defaultValue: false)]
-                            )
-                            env.DEPLOY_APIGATEWAY_TO_DEV = userInput ? 'true' : 'false'
-                        }
-                    } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
-                        echo 'Deployment input timeout. Skipping apigateway deployment.'
-                        env.DEPLOY_APIGATEWAY_TO_DEV = 'false'
-                    }
-                }
-            }
-        }
+        // stage('Deployment Decision Apigateway') {
+        //     steps {
+        //         script {
+        //             try {
+        //                 timeout(time: 30, unit: 'MINUTES') {
+        //                     def userInput = input(
+        //                         id: 'deployApigatewayToDev',
+        //                         message: 'Deploy apigateway to development?',
+        //                         parameters: [booleanParam(name: 'DEPLOY_APIGATEWAY_TO_DEV', defaultValue: false)]
+        //                     )
+        //                     env.DEPLOY_APIGATEWAY_TO_DEV = userInput ? 'true' : 'false'
+        //                 }
+        //             } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
+        //                 echo 'Deployment input timeout. Skipping apigateway deployment.'
+        //                 env.DEPLOY_APIGATEWAY_TO_DEV = 'false'
+        //             }
+        //         }
+        //     }
+        // }
 
         stage('Deploy Apigateway') {
-            when {
-                expression { env.DEPLOY_APIGATEWAY_TO_DEV == 'true' }
-            }
+            // when {
+            //     expression { env.DEPLOY_APIGATEWAY_TO_DEV == 'true' }
+            // }
             steps {
                 script {
                     deployService(
@@ -404,8 +404,13 @@ def deployService(Map svc) {
             echo "Copying env file into ${path}/.env"
             cp "$ENV_FILE" ${path}/.env
 
+            echo "Lets know where we are..."
+            ssh "ls -la /"
             echo "Compressing artifacts..."
-            tar -czf ${containerName}.tar.gz -C package.json yarn.lock ${path} . Dockerfile .env
+            tar -czf ${containerName}.tar.gz -C .package.json yarn.lock ${path} . Dockerfile .env
+
+
+            ssh "ls -la /"
         """
 
         sshagent(credentials: ['EC2_DEPLOY_KEY']) {
