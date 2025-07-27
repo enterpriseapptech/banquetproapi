@@ -467,6 +467,7 @@ def deployService(Map svc) {
                 echo "Starting service in production"
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "
                     cd /home/ubuntu/${containerName} &&
+                    cp ${path}/.env .env &&
                     yarn start:prod
                 "
             
