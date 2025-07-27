@@ -432,9 +432,10 @@ def deployService(Map svc) {
     // // Part 2: Docker build, tag, push and ECS update with double triple quotes
     withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
         sh """
+            rm -f ${path}/.env || true
             echo "Copying env file into ${path}/.env"
             cp "$ENV_FILE" ${path}/.env
-            
+
             echo "Building Docker image locally..."
             docker build -f ${path}/Dockerfile -t ${localImage} .
 
