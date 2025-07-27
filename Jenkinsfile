@@ -423,7 +423,7 @@ def deployService(Map svc) {
             yarn install
 
             echo "Removing unncecessary folders"
-            sudo rm -rf ${rm}
+            rm -rf ${rm}
 
             echo "Yarn Build"
             yarn build
