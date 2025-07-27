@@ -439,8 +439,13 @@ def deployService(Map svc) {
             echo "Yarn Build"
             yarn build
 
+            cd 
+
             echo "Creating ${containerName}tar.gz with microservice and config files and Compressing artifacts..."
-            tar -czf ${containerName}.tar.gz dist package.json yarn.lock ${path}/.env
+            echo "Returning to root and creating tar.gz outside temporary"
+            cd ..
+            tar -czf ${containerName}.tar.gz temporary/dist temporary/package.json temporary/yarn.lock temporary/${path}/.env
+
             pwd
             ls -la
             
@@ -448,8 +453,10 @@ def deployService(Map svc) {
 
         sshagent(credentials: ['EC2_DEPLOY_KEY']) {
             sh """
-                ls -la
+                echo "Listing contents of working directory..."
                 pwd
+                ls -la
+                
                 echo "Listing contents of EC2 home directory..."
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "ls -la /home/ubuntu"
 
