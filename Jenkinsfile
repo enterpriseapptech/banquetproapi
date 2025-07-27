@@ -426,35 +426,31 @@ def deployService(Map svc) {
         """
 
         sshagent(credentials: ['EC2_DEPLOY_KEY']) {
-
             sh """
                 echo "Listing contents of EC2 home directory..."
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "ls -la /home/ubuntu"
 
                 echo "Copying project files to EC2"
                 scp -o StrictHostKeyChecking=no ${containerName}.tar.gz ${EC2_HOST}:/home/ubuntu/
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "ls -l /home/ubuntu/apigateway-service.tar.gz"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "ls -l /home/ubuntu/${containerName}.tar.gz"
 
-                echo "Deploying on EC2..."
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} << EOF
-                set -e
-                cd /home/ubuntu
-                ls -la
-                ls -la /home/ubuntu/apigateway-service
-                tar -xzf ${containerName}.tar.gz -C ${containerName} || mkdir ${containerName} && tar -xzf ${containerName}.tar.gz -C ${containerName}
-                cd ${containerName}
-                
+                echo "Creating service directory if needed and extracting..."
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "mkdir -p /home/ubuntu/${containerName} && tar -xzf /home/ubuntu/${containerName}.tar.gz -C /home/ubuntu/${containerName}"
+
+                echo "Changing into service directory"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && ls -la"
+
                 echo "Stopping and removing old container"
-                sudo docker rm -f ${containerName} || true
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "sudo docker rm -f ${containerName} || true"
 
-                echo "Building image"
-                sudo docker build -t ${localImage} .
+                echo "Building Docker image"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && sudo docker build -t ${localImage} ."
 
-                echo "Running container"
-                sudo docker run -d --name ${containerName} --env-file .env -p ${port}:${port} ${localImage}
-                EOF
+                echo "Running Docker container"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && sudo docker run -d --name ${containerName} --env-file .env -p ${port}:${port} ${localImage}"
             """
         }
+
     }
 }
 
