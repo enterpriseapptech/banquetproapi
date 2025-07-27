@@ -95,7 +95,8 @@ pipeline {
                         service: 'apigateway-service',
                         envFile: "APIGATEWAY_ENV_FILE",
                         localImage: "apigateway-image",
-                        port: 8000
+                        port: 8000,
+                        rm: 'rm -rf apps/users apps/booking apps/catering  apps/notifications apps/payments apps/eventcenters apps/management '
 
                     )
                 }
@@ -383,6 +384,7 @@ def deployService(Map svc) {
     def containerName = serviceName // you can customize this
     def localImage = "${svc.localImage}:${BUILD_NUMBER}"
     def port = svc.port
+    def rm = svc.rm
     // Part 1: Generate env.json with single triple quotes
     withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
         sh '''#!/bin/bash
@@ -416,6 +418,9 @@ def deployService(Map svc) {
             ls -la ${path}
             echo "Contents of env file:"
             cat ${path}/.env
+
+            echo "Creating tar.gz with microservice and config files and Compressing artifacts..."
+            tar -czf banquetpro.tar.gz .
         """
 
         sshagent(credentials: ['EC2_DEPLOY_KEY']) {
@@ -433,10 +438,37 @@ def deployService(Map svc) {
                 echo "Changing into service directory"
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/banquetpro && ls -la"
 
-                echo "Showing env details in service"
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/banquetpro && cat ${path}/.env"
+                echo "Installing dependencies"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "yarn install --production"
 
-                
+                echo "Removing unncecessary folders"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "rm -rf ${rm}"
+
+                echo "Building the service"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "yarn build"
+
+
+                echo "Creating tar.gz with built dist"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "rm -f ${containerName}.tar.gz || true"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "tar -czf ${containerName}.tar.gz ${path} dist package.json yarn.lock node_modules"
+
+                echo "Cleaning old service directory and preparing fresh deploy dir"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "
+                    rm -rf /home/ubuntu/${containerName} || true && \
+                    mkdir -p /home/ubuntu/${containerName}
+                "
+
+                echo "Extracting ${containerName}.tar.gz into ${containerName}"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "
+                    tar -xzf /home/ubuntu/${containerName}.tar.gz -C /home/ubuntu/${containerName}
+                "
+
+                echo "Starting service in production"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "
+                    cd /home/ubuntu/${containerName} &&
+                    nohup yarn start:prod > ${containerName}.log 2>&1 &
+                "
+            
             """
         }
 
