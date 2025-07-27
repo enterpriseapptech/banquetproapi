@@ -419,7 +419,6 @@ def deployService(Map svc) {
             echo "Contents of env file:"
             cat ${path}/.env
 
-
             rm -rf temporary || true
             mkdir temporary
 
@@ -428,8 +427,20 @@ def deployService(Map svc) {
             cp -r .env package.json yarn.lock temporary/
             ls -la temporary/
 
-            echo "Creating tar.gz with microservice and config files and Compressing artifacts..."
-            tar --exclude=banquetpro.tar.gz  --exclude=booking-service.tar.gz --exclude=apps.zip  -czf banquetpro.tar.gz temporary .
+            echo "Entering temporary directory"
+            cd temporary/
+
+            echo "Installing dependencies"
+            yarn install"
+
+            echo "Removing unncecessary folders"
+            rm -rf ${rm}"
+
+            echo "Yarn Build"
+            yarn build
+
+            echo "Creating ${containerName}tar.gz with microservice and config files and Compressing artifacts..."
+            tar -czf ${containerName}.tar.gz dist package.json yarn.lock ${path}/.env
         """
 
         sshagent(credentials: ['EC2_DEPLOY_KEY']) {
@@ -438,39 +449,22 @@ def deployService(Map svc) {
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "ls -la /home/ubuntu"
 
                 echo "Copying project files to EC2"
-                scp -o StrictHostKeyChecking=no banquetpro.tar.gz ${EC2_HOST}:/home/ubuntu/
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "ls -l /home/ubuntu/banquetpro.tar.gz"
-
-                echo "Creating service directory if needed and extracting..."
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "mkdir -p /home/ubuntu/banquetpro && tar -xzf /home/ubuntu/banquetpro.tar.gz -C /home/ubuntu/banquetpro"
-
-                echo "Changing into service directory"
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/banquetpro && ls -la"
-
-                echo "Installing dependencies"
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/banquetpro && yarn install --production"
-
-                echo "Removing unncecessary folders"
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/banquetpro && rm -rf ${rm}"
-
-                echo "Building the service"
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/banquetpro && yarn build"
-
-
-                echo "Creating tar.gz with built dist"
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "rm -f ${containerName}.tar.gz || true"
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "tar -czf ${containerName}.tar.gz ${path} dist package.json yarn.lock node_modules"
+                scp -o StrictHostKeyChecking=no ${containerName}.tar.gz ${EC2_HOST}:/home/ubuntu/
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "ls -l /home/ubuntu/${containerName}.tar.gz"
 
                 echo "Cleaning old service directory and preparing fresh deploy dir"
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "
                     rm -rf /home/ubuntu/${containerName} || true && \
                     mkdir -p /home/ubuntu/${containerName}
                 "
+                echo "Creating service directory if needed and extracting..."
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "tar -xzf /home/ubuntu/${containerName}.tar.gz -C /home/ubuntu/${containerName}"
 
-                echo "Extracting ${containerName}.tar.gz into ${containerName}"
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "
-                    tar -xzf /home/ubuntu/${containerName}.tar.gz -C /home/ubuntu/${containerName}
-                "
+                echo "Changing into service directory"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && ls -la"
+
+                echo "Installing dependencies"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && yarn install --production"
 
                 echo "Starting service in production"
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "
