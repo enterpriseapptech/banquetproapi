@@ -404,11 +404,8 @@ def deployService(Map svc) {
             echo "Copying env file into ${path}/.env"
             cp "$ENV_FILE" ${path}/.env
 
-            echo "Building Docker image locally..."
-            docker build -f ${path}/Dockerfile -t ${localImage} .
-
             echo "Compressing artifacts..."
-            tar -czf ${containerName}.tar.gz -C ${path} . Dockerfile .env
+            tar -czf ${containerName}.tar.gz -C package.json yarn.lock ${path} . Dockerfile .env
         """
 
         sshagent(credentials: ['EC2_DEPLOY_KEY']) {
