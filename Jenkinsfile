@@ -411,8 +411,15 @@ def deployService(Map svc) {
             echo "Lets know where we are..."
             pwd
             ls -la
+
+            mkdir temporary
+
+            echo "Copying to temporary directory"
+            cp . temporary
+            ls al /temporary
+
             echo "Creating tar.gz with microservice and config files and Compressing artifacts..."
-            tar --exclude=${containerName}.tar.gz  --exclude=booking-service.tar.gz --exclude=apps.zip  -czf ${containerName}.tar.gz .
+            tar --exclude=${containerName}.tar.gz  --exclude=booking-service.tar.gz --exclude=apps.zip  -czf ${containerName}.tar.gz temporary
         """
 
         sshagent(credentials: ['EC2_DEPLOY_KEY']) {
