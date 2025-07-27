@@ -437,21 +437,21 @@ def deployService(Map svc) {
 
                 echo "Deploying on EC2..."
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} << EOF
-                    set -e
-                    cd /home/ubuntu
-                    ls -la
-                    ls -la /home/ubuntu/apigateway-service
-                    tar -xzf ${containerName}.tar.gz -C ${containerName} || mkdir ${containerName} && tar -xzf ${containerName}.tar.gz -C ${containerName}
-                    cd ${containerName}
-                    
-                    echo "Stopping and removing old container"
-                    sudo docker rm -f ${containerName} || true
+                set -e
+                cd /home/ubuntu
+                ls -la
+                ls -la /home/ubuntu/apigateway-service
+                tar -xzf ${containerName}.tar.gz -C ${containerName} || mkdir ${containerName} && tar -xzf ${containerName}.tar.gz -C ${containerName}
+                cd ${containerName}
+                
+                echo "Stopping and removing old container"
+                sudo docker rm -f ${containerName} || true
 
-                    echo "Building image"
-                    sudo docker build -t ${localImage} .
+                echo "Building image"
+                sudo docker build -t ${localImage} .
 
-                    echo "Running container"
-                    sudo docker run -d --name ${containerName} --env-file .env -p ${port}:${port} ${localImage}
+                echo "Running container"
+                sudo docker run -d --name ${containerName} --env-file .env -p ${port}:${port} ${localImage}
                 EOF
             """
         }
