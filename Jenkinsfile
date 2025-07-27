@@ -139,9 +139,7 @@ pipeline {
                         envFile: "MANAGEMENT_ENV_FILE",
                         localImage: "management-image",
                         port: 8007, 
-                        rm: 'apps/apigateway apps/booking apps/catering apps/notifications apps/payments apps/eventcenters apps/users && 
-                            rm -rf libs/contracts/src/eventcenterbooking libs/contracts/src/booking libs/contracts/src/catering libs/contracts/src/payments libs/contracts/src/eventcenters  &&
-                            rm -rf libs/contracts/src/booking.ts  libs/contracts/src/payments.ts libs/contracts/src/eventcenters.ts',
+                        rm: 'apps/apigateway apps/booking apps/catering apps/notifications apps/payments apps/eventcenters apps/users libs/contracts/src/eventcenterbooking libs/contracts/src/booking libs/contracts/src/catering libs/contracts/src/payments libs/contracts/src/eventcenters libs/contracts/src/booking.ts  libs/contracts/src/payments.ts libs/contracts/src/eventcenters.ts',
                         prisma: 'yarn prisma generate --schema=/app/apps/management/prisma/schema.prisma',
                         start: 'yarn prisma migrate deploy --schema=/app/apps/management/prisma/schema.prisma && nohup yarn start:prodManagement > ${service}.log 2>&1 &'
                     )
