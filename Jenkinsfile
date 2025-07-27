@@ -469,9 +469,10 @@ def deployService(Map svc) {
                     cd /home/ubuntu/${containerName} &&
                     cp ${path}/.env .env &&
                     cat .env
-                    yarn start:prod
+                    nohup yarn start:prod > ${containerName}.log 2>&1 &
+                    disown
                 "
-            
+                echo "Service started and detached successfully"
             """
         }
 
