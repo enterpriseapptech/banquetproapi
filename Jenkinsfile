@@ -412,6 +412,7 @@ def deployService(Map svc) {
             pwd
             ls -la
 
+            rm -rf temporary || true
             mkdir temporary
 
             echo "Copying to temporary directory"
