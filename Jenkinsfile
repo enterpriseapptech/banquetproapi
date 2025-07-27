@@ -96,7 +96,7 @@ pipeline {
                         envFile: "APIGATEWAY_ENV_FILE",
                         localImage: "apigateway-image",
                         port: 8000,
-                        rm: 'rm -rf apps/users apps/booking apps/catering  apps/notifications apps/payments apps/eventcenters apps/management '
+                        rm: 'apps/users apps/booking apps/catering  apps/notifications apps/payments apps/eventcenters apps/management '
 
                     )
                 }
@@ -448,13 +448,13 @@ def deployService(Map svc) {
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/banquetpro && ls -la"
 
                 echo "Installing dependencies"
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "yarn install --production"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/banquetpro && yarn install --production"
 
                 echo "Removing unncecessary folders"
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "rm -rf ${rm}"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/banquetpro && rm -rf ${rm}"
 
                 echo "Building the service"
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "yarn build"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/banquetpro && yarn build"
 
 
                 echo "Creating tar.gz with built dist"
