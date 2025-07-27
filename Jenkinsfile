@@ -415,7 +415,7 @@ def deployService(Map svc) {
 
             sh """
                 echo "Listing contents of EC2 home directory..."
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "ls -la /home/ec2-user"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "ls -la /"
 
                 echo "Copying project files to EC2"
                 scp -o StrictHostKeyChecking=no ${containerName}.tar.gz ${EC2_HOST}:/home/ec2-user/
