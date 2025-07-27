@@ -413,6 +413,8 @@ def deployService(Map svc) {
             ls -la
             rm -f ${path}/.env || true
             echo "Copying env file into ${path}/.env"
+            ls -al apps/
+            ls -al apps/management
             cp "$ENV_FILE" ${path}/.env
 
             echo "Removing old tar.gz if it exists..."
