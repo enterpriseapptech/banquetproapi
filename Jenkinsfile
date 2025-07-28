@@ -62,35 +62,36 @@ pipeline {
             }
         }
 
-        // stage('Deployment Decision Apigateway') {
-        //     steps {
-        //         script {
-        //             try {
-        //                 timeout(time: 30, unit: 'MINUTES') {
-        //                     def userInput = input(
-        //                         id: 'deployApigatewayToDev',
-        //                         message: 'Deploy apigateway to development?',
-        //                         parameters: [booleanParam(name: 'DEPLOY_APIGATEWAY_TO_DEV', defaultValue: false)]
-        //                     )
-        //                     env.DEPLOY_APIGATEWAY_TO_DEV = userInput ? 'true' : 'false'
-        //                 }
-        //             } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
-        //                 echo 'Deployment input timeout. Skipping apigateway deployment.'
-        //                 env.DEPLOY_APIGATEWAY_TO_DEV = 'false'
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Deployment Decision Apigateway') {
+            steps {
+                script {
+                    try {
+                        timeout(time: 30, unit: 'MINUTES') {
+                            def userInput = input(
+                                id: 'deployApigatewayToDev',
+                                message: 'Deploy apigateway to development?',
+                                parameters: [booleanParam(name: 'DEPLOY_APIGATEWAY_TO_DEV', defaultValue: false)]
+                            )
+                            env.DEPLOY_APIGATEWAY_TO_DEV = userInput ? 'true' : 'false'
+                        }
+                    } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
+                        echo 'Deployment input timeout. Skipping apigateway deployment.'
+                        env.DEPLOY_APIGATEWAY_TO_DEV = 'false'
+                    }
+                }
+            }
+        }
 
         stage('Deploy Apigateway') {
-            // when {
-            //     expression { env.DEPLOY_APIGATEWAY_TO_DEV == 'true' }
-            // }
+            when {
+                expression { env.DEPLOY_APIGATEWAY_TO_DEV == 'true' }
+            }
             steps {
                 script {
                     deployService(
                         repo: 'banquetpro/apigateway',
                         path: 'apps/apigateway',
+                        build: 'apigateway',
                         taskDefinition: 'apigateway-task-definition',
                         service: 'apigateway-service',
                         envFile: "APIGATEWAY_ENV_FILE",
@@ -134,6 +135,7 @@ pipeline {
                     deployService(
                         repo: 'banquetpro/management',
                         path: 'apps/management',
+                        build: 'management',
                         taskDefinition: 'management-task-defiition',
                         service: 'management-service',
                         envFile: "MANAGEMENT_ENV_FILE",
@@ -180,8 +182,13 @@ pipeline {
                         taskDefinition: 'users-task-defiition',
                         service: 'users-service',
                         envFile: "USERS_ENV_FILE",
-                        localImage: "users-image"
-
+                        localImage: "users-image",
+                        build: 'users',
+                        port: 8001, 
+                        rm: 'apps/apigateway apps/booking apps/catering apps/management apps/notifications apps/payments apps/eventcenters libs/contracts/src/eventcenterbooking libs/contracts/src/booking libs/contracts/src/management libs/contracts/src/catering libs/contracts/src/payments libs/contracts/src/eventcenters libs/contracts/src/booking.ts  libs/contracts/src/payments.ts libs/contracts/src/eventcenters.ts libs/contracts/src/management.ts',
+                        prisma: 'yarn prisma generate --schema=apps/users/prisma/schema.prisma',
+                        start: 'yarn prisma migrate deploy --schema=apps/users/prisma/schema.prisma && nohup yarn start:prodUsers > ${service}.log 2>&1 &'
+                    
                     )
                 }
             }
@@ -219,8 +226,13 @@ pipeline {
                         taskDefinition: 'notifications-task-definition',
                         service: 'notifications-service',
                         envFile: "NOTFICATIONS_ENV_FILE",
-                        localImage: "notifications-image"
-
+                        localImage: "notifications-image",
+                        build: 'notifications',
+                        port: 8002, 
+                        rm: 'apps/apigateway apps/booking apps/catering  apps/users apps/payments apps/eventcenters apps/management libs/contracts/src/eventcenterbooking  libs/contracts/src/management libs/contracts/src/payments libs/contracts/src/eventcenters libs/contracts/src/payments libs/contracts/src/payments.ts libs/contracts/src/eventcenters.ts libs/contracts/src/management.ts',
+                        prisma: 'yarn prisma generate --schema=apps/notifications/prisma/schema.prisma',
+                        start: 'yarn prisma migrate deploy --schema=apps/notifications/prisma/schema.prisma && nohup yarn start:prodNotifications > ${service}.log 2>&1 &'
+                    
                     )
                 }
             }
@@ -258,8 +270,13 @@ pipeline {
                         taskDefinition: 'eventcenters-task-definition',
                         service: 'eventcenters-service',
                         envFile: "EVENTCENTERS_ENV_FILE",
-                        localImage: "eventcenters-image"
-
+                        localImage: "eventcenters-image",
+                        build: 'eventcenters',
+                        port: 8003, 
+                        rm: 'apps/apigateway apps/booking apps/catering apps/payments apps/management libs/contracts/src/eventcenterbooking libs/contracts/src/booking libs/contracts/src/catering libs/contracts/src/payments libs/contracts/src/booking.ts  libs/contracts/src/payments.ts',
+                        prisma: 'yarn prisma generate --schema=apps/eventcenters/prisma/schema.prisma',
+                        start: 'yarn prisma migrate deploy --schema=apps/eventcenters/prisma/schema.prisma && nohup yarn start:prodEventcenters > ${service}.log 2>&1 &'
+                    
                     )
                 }
             }
@@ -298,8 +315,13 @@ pipeline {
                         taskDefinition: 'catering-task-definition',
                         service: 'catering-service',
                         envFile: "CATERING_ENV_FILE",
-                        localImage: "catering-image"
-
+                        localImage: "catering-image",
+                        build: 'catering',
+                        port: 8005, 
+                        rm: 'apps/apigateway apps/booking apps/users apps/payments apps/management apps/eventcenters libs/contracts/src/eventcenterbooking libs/contracts/src/booking  libs/contracts/src/payments libs/contracts/src/eventcenters libs/contracts/src/booking.ts  libs/contracts/src/payments.ts  libs/contracts/src/eventcenters.ts',
+                        prisma: 'yarn prisma generate --schema=apps/catering/prisma/schema.prisma',
+                        start: 'yarn prisma migrate deploy --schema=apps/catering/prisma/schema.prisma && nohup yarn start:prodCatering > ${service}.log 2>&1 &'
+                    
                     )
                 }
             }
@@ -337,8 +359,13 @@ pipeline {
                         taskDefinition: 'booking-task-definition',
                         service: 'booking-service',
                         envFile: "BOOKING_ENV_FILE",
-                        localImage: "booking-image"
-
+                        localImage: "booking-image",
+                        build: 'booking',
+                        port: 8004, 
+                        rm: 'apps/apigateway apps/users apps/catering  apps/notifications apps/payments apps/eventcenters apps/management',
+                        prisma: 'yarn prisma generate --schema=apps/booking/prisma/schema.prisma',
+                        start: 'yarn prisma migrate deploy --schema=apps/booking/prisma/schema.prisma && nohup yarn start:prodBooking > ${service}.log 2>&1 &'
+                    
                     )
                 }
             }
@@ -384,6 +411,7 @@ pipeline {
 def deployService(Map svc) {
     def repo = svc.repo
     def path = svc.path
+    def build = svc.build 
     def serviceName = svc.service
     def envFileCredentialId = svc.envFile
     def containerName = serviceName // you can customize this
@@ -407,14 +435,12 @@ def deployService(Map svc) {
         '''
     }
 
-    // // Part 2: Docker build, tag, push and ECS update with double triple quotes
+    // Docker build, tag, push and ECS update with double triple quotes
     withCredentials([file(credentialsId: envFileCredentialId, variable: 'ENV_FILE')]) {
         sh """
             ls -la
             rm -f ${path}/.env || true
             echo "Copying env file into ${path}/.env"
-            ls -al apps/
-            ls -al apps/management
             cp "$ENV_FILE" ${path}/.env
 
             echo "Removing old tar.gz if it exists..."
@@ -442,14 +468,14 @@ def deployService(Map svc) {
             echo "Removing unncecessary folders"
             rm -rf ${rm}
 
-            echo "Yarn Build"
+            echo "Yarn running Build"
             ${prisma} 
-            yarn build
+            yarn build ${build}
  
 
             echo "Creating ${containerName}tar.gz with microservice and config files and Compressing artifacts..."
-          
             cd ..
+            
             tar -czf ${containerName}.tar.gz temporary/dist temporary/apps temporary/package.json temporary/yarn.lock temporary/${path}/.env
             pwd
             ls -la
@@ -478,7 +504,7 @@ def deployService(Map svc) {
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "tar -xzf /home/ubuntu/${containerName}.tar.gz -C /home/ubuntu/${containerName}"
 
                 echo "Changing into service directory"
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && ls -la"
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && ls -la && cp -r temporary/* ."
 
                 echo "Installing dependencies"
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && yarn install --production"
