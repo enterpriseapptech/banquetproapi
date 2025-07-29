@@ -152,6 +152,7 @@ export class ManyRequestTimeSlotDto {
 export class ManyRequestBookingDto {
     limit: number;
     offset: number;
+    serviceId?: string;
     serviceProvider?: string;
     startDate?: Date;
     endDate?: Date;

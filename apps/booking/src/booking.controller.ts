@@ -27,6 +27,7 @@ export class BookingController {
     @MessagePattern(BOOKINGPATTERN.FINDALL)
     findAll(@Payload() data: { limit: number, offset: number, serviceId?: string, serviceProvider?: string, bookingReference?: string}) {
         const { limit, offset, serviceId, serviceProvider, bookingReference} = data
+        console.log({data})
         return from(this.bookingService.findAll(limit, offset, serviceId, serviceProvider, bookingReference)).pipe(
                 catchError((err) => {
                     console.error("Error in UsersService:", err);

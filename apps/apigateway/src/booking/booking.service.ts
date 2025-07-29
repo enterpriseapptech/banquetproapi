@@ -17,10 +17,12 @@ export class BookingService {
     }
     
     findAll(limit: number, offset: number, serviceId?: string, serviceProvider?: string, startDate?: Date, endDate?: Date) {
+        console.log({serviceId})
         return this.bookingClient.send<ManyBookingDto, ManyRequestBookingDto>(BOOKINGPATTERN.FINDALL,
             {
                 limit,
                 offset,
+                serviceId,
                 serviceProvider,
                 startDate,
                 endDate,

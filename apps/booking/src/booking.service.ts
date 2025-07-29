@@ -226,6 +226,7 @@ export class BookingService {
 			return { count: result.count, data: result.data.map(booking => this.mapToBookingDto(booking)) };
 		}
 
+		
 		const bookings = await this.databaseService.booking.findMany({
 			where: whereClause,
 			take: limit,

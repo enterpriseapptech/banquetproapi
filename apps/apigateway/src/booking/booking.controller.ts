@@ -36,6 +36,7 @@ export class BookingController {
         @Query('startDate') startDate: Date,
         @Query('endDate') endDate: Date
     ) {
+         console.log({serviceId})
         return this.bookingService.findAll(limit, offset, serviceId, serviceProvider, startDate, endDate);
     }
 
