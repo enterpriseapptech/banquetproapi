@@ -24,7 +24,6 @@ export class BookingService {
 
 	async create(createBookingDto: CreateBookingDto): Promise<BookingDto> {
 		let notificationSubject: string;
-		console.log("getiting to implement this pr ",{serviceId:createBookingDto.serviceId})
 		const newBookingInput: Prisma.BookingCreateInput = {
 			customerId: createBookingDto.customerId,
 			serviceId: createBookingDto.serviceId,
@@ -191,7 +190,7 @@ export class BookingService {
 				{
 					limit: limit,
 					offset: offset,
-					serviceProvider,
+					serviceProvider, // this wont work. you need to get all event centers
 				}))
 			
 			if (!eventCenters || eventCenters.data.length === 0) {
