@@ -264,6 +264,23 @@ export class BookingService {
 
 
 	async update(id: string, updateBookingDto: UpdateBookingDto): Promise<BookingDto> {
+			confirmedBy
+		confirmedAt
+		discount
+		totalAfterDiscount
+		paymentStatus
+		status
+		bookingDates
+		serviceNotes
+		customerNotes
+		rescheduledBy
+		rescheduledAt
+		cancelledBy
+		canceledAt
+		cancelationReason
+		updatedAt
+		deletedBy
+		
 		try {
 			const updateEventCenterInput: Prisma.BookingUpdateInput = {
 				...updateBookingDto,
@@ -271,6 +288,7 @@ export class BookingService {
 				status: updateBookingDto.status ? updateBookingDto.status as $Enums.BookingStatus : undefined,
 				source: updateBookingDto.source ? updateBookingDto.source as $Enums.BookingSource : undefined,
 			};
+
 			const booking = await this.databaseService.booking.update({
 				where: { id },
 				data: updateEventCenterInput

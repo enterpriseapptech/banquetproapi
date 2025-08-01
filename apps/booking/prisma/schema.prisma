@@ -28,7 +28,7 @@ model Booking {
   totalAfterDiscount    Float
   paymentStatus         PaymentStatus
   status                BookingStatus
-  bookingDates          String[]  // carries the different dates for a single booking, not a from to, the individual dates
+  bookingDates          String[]  // carries the timeslots booked
   isTermsAccepted               Boolean
   isCancellationPolicyAccepted  Boolean
   isLiabilityWaiverSigned       Boolean
@@ -148,7 +148,7 @@ enum ServiceType {
 
 enum BookingStatus {
   PENDING
-  BOOKED
+  CONFIRMED
   RESERVED
   POSTPONED
   CANCELED

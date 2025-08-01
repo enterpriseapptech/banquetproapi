@@ -5,61 +5,123 @@ import { IsArray, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID
 import { ApiProperty } from '@nestjs/swagger';
 import { BookingStatus, PaymentStatus } from './booking.dto';
 
+
 export class UpdateBookingDto extends PartialType(CreateBookingDto) {
-    @IsUUID()
-    @IsOptional()
-    confirmedBy?: string;
+  @ApiProperty({
+    description: 'Discount applied to the booking, if any',
+    example: 10,
+    type: Number,
+  })
+  discount?: number;
 
-    @IsDateString()
-    @IsOptional()
-    confirmedAt?: Date;
 
-    @IsUUID()
-    @IsOptional()
-    servicebookingId?: string;
+  @ApiProperty({
+    description: 'List of selected booking dates',
+    example: ['2025-08-01T10:00:00Z', '2025-08-02T12:00:00Z'],
+    type: [String],
+  })
+  bookingDates?: string[];
 
-    @IsEnum(PaymentStatus)
-    @IsNotEmpty()
-    paymentStatus: PaymentStatus;
+  @ApiProperty({
+    description: 'Internal service notes regarding the booking',
+    example: 'Customer prefers morning appointments.',
+    type: String,
+  })
+  serviceNotes?: string;
 
-    @IsEnum(BookingStatus)
-    @IsNotEmpty()
-    status: BookingStatus;
+  @ApiProperty({
+    description: 'Notes from the customer about the booking',
+    example: 'Please bring cleaning supplies.',
+    type: String,
+  })
+  customerNotes?: string;
 
-    @IsUUID()
-    @IsOptional()
-    rescheduledBy: string;
+  @ApiProperty({
+    description: 'User ID of the person who confirmed the booking',
+    example: 'c1a2b3c4-d5e6-789f-1234-56789abcdef0',
+    type: String,
+  })
+  @IsUUID()
+  @IsOptional()
+  confirmedBy?: string;
 
-    @IsDateString()
-    @IsOptional()
-    rescheduledAt?: Date;
+  @ApiProperty({
+    description: 'Payment status of the booking',
+    enum: PaymentStatus,
+    example: PaymentStatus.FULLY_PAID,
+  })
+  @IsEnum(PaymentStatus)
+  @IsNotEmpty()
+  paymentStatus: PaymentStatus;
 
-    @IsOptional()
-    @IsArray()
-    @IsString({ each: true })
-    previousDates?: string[];
+  @ApiProperty({
+    description: 'Current booking status',
+    enum: BookingStatus,
+    example: BookingStatus.CONFIRMED,
+  })
+  @IsEnum(BookingStatus)
+  @IsNotEmpty()
+  status: BookingStatus;
 
-    @IsUUID()
-    @IsOptional()
-    cancelledBy?: string;
+  @ApiProperty({
+    description: 'User ID of the person who rescheduled the booking',
+    example: 'f9e8d7c6-b5a4-3210-6543-210fedcba987',
+    type: String,
+  })
+  @IsUUID()
+  @IsOptional()
+  rescheduledBy?: string;
 
-    @IsDateString()
-    @IsOptional()
-    cancelledAt?: Date;
+  @ApiProperty({
+    description: 'List of previously scheduled booking dates',
+    example: ['2025-07-29T14:00:00Z'],
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  previousDates?: string[];
 
-    @IsString()
-    @IsOptional()
-    cancellationReason?: string;
+  @ApiProperty({
+    description: 'User ID of the person who cancelled the booking',
+    example: 'abc12345-def6-7890-ghij-klmnopqrstuv',
+    type: String,
+  })
+  @IsUUID()
+  @IsOptional()
+  cancelledBy?: string;
 
-    @IsDateString()
-    @IsOptional()
-    deletedAt?: Date;
+  @ApiProperty({
+    description: 'Reason for cancellation',
+    example: 'Client had to travel unexpectedly.',
+    type: String,
+  })
+  @IsString()
+  @IsOptional()
+  cancellationReason?: string;
 
-    @IsUUID()
-    @IsOptional()
-    deletedBy?: string;
+  @ApiProperty({
+    description: 'User ID of the person who deleted the booking',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    type: String,
+  })
+  @IsUUID()
+  @IsOptional()
+  deletedBy?: string;
+
+
+//   extra fields for eventcenters and catering booking
+eventName
+eventTheme
+eventType
+description
+noOfGuest
+specialRequirements
+images
+dishTypes
+cuisine
+
 }
-
 
 
 export class UpdateEventBookingDto extends PartialType(CreateBookingDto) {

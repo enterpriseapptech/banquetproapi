@@ -19,7 +19,7 @@ export enum ServiceType {
 
 export enum BookingStatus {
     PENDING = "PENDING",
-    BOOKED = "BOOKED",
+    CONFIRMED = "CONFIRMED",
     RESERVED = "RESERVED",
     POSTPONED = "POSTPONED",
     CANCELED = "CANCELED"
