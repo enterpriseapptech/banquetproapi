@@ -26,6 +26,8 @@ model Booking {
   totalBeforeDiscount   Float
   discount              Float?
   totalAfterDiscount    Float
+  isQuoteRequest        Boolean
+  invoiceStatus         InvoiceStatus
   paymentStatus         PaymentStatus
   status                BookingStatus
   bookingDates          String[]  // carries the timeslots booked
@@ -52,7 +54,26 @@ model Booking {
   cateringBooking            CateringBooking?
   timeslot                      TimeSlot[]  // a single booking can contains a list of timeslots, spanning even into days
   @@index([customerId, status, paymentStatus, serviceType])
+  @@index([customerId, status, paymentStatus, serviceType])
+  @@index([customerId, status, paymentStatus, serviceType])
+  @@index([customerId, status, paymentStatus, serviceType])
 } // a review must have a booking, booking can have many payments at most 2
+
+model QuoteRequest {
+  id            String   @id @default(uuid())
+  eventType
+  eventDate
+  budget
+  numberOfGuests
+  notes
+  quoteId
+
+  createdAt                     DateTime  @default(now())
+  updatedAt                     DateTime  @updatedAt
+  deletedAt                     DateTime?
+  deletedBy                     String?  
+  @@index([customerId, status, paymentStatus, serviceType])
+}
 
 model AvailableLocations {
   id            String   @id @default(uuid())
@@ -158,6 +179,13 @@ enum PaymentStatus {
   UNPAID
   FULLY_PAID
   PARTIALLY_PAID
+}
+
+enum InvoiceStatus {
+  PAID
+  PENDING
+  SENT
+  OVERDUE
 }
 
 enum SpecialRequirement {

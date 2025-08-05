@@ -131,6 +131,8 @@ exports.Prisma.BookingScalarFieldEnum = {
   totalBeforeDiscount: 'totalBeforeDiscount',
   discount: 'discount',
   totalAfterDiscount: 'totalAfterDiscount',
+  isQuoteRequest: 'isQuoteRequest',
+  invoiceStatus: 'invoiceStatus',
   paymentStatus: 'paymentStatus',
   status: 'status',
   bookingDates: 'bookingDates',
@@ -232,6 +234,13 @@ exports.ServiceType = exports.$Enums.ServiceType = {
   EVENTCENTER: 'EVENTCENTER'
 };
 
+exports.InvoiceStatus = exports.$Enums.InvoiceStatus = {
+  PAID: 'PAID',
+  PENDING: 'PENDING',
+  SENT: 'SENT',
+  OVERDUE: 'OVERDUE'
+};
+
 exports.PaymentStatus = exports.$Enums.PaymentStatus = {
   UNPAID: 'UNPAID',
   FULLY_PAID: 'FULLY_PAID',
@@ -240,7 +249,7 @@ exports.PaymentStatus = exports.$Enums.PaymentStatus = {
 
 exports.BookingStatus = exports.$Enums.BookingStatus = {
   PENDING: 'PENDING',
-  BOOKED: 'BOOKED',
+  CONFIRMED: 'CONFIRMED',
   RESERVED: 'RESERVED',
   POSTPONED: 'POSTPONED',
   CANCELED: 'CANCELED'
