@@ -25,7 +25,7 @@ export class CateringController {
       }
   
       @MessagePattern(CATERINGPATTERN.FINDALL)
-      findAll(@Payload() data: { limit: number, offset: number, serviceProvider?: string, city?: string, state?: string, country?: string, }) {
+      findAll(@Payload() data: { limit?: number, offset?: number, serviceProvider?: string, city?: string, state?: string, country?: string, }) {
           const { limit, offset, serviceProvider, city, state, country } = data
           return from(this.cateringService.findAll(limit, offset, serviceProvider, city, state, country)).pipe(
               catchError((err) => {

@@ -10,7 +10,7 @@ import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
 import { EVENT_CENTER_CLIENT, NOTIFICATION_CLIENT, USER_CLIENT, CATERING_CLIENT } from '@shared/contracts';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { CateringDto, CATERINGPATTERN } from '@shared/contracts/catering';
+import { CateringDto, CATERINGPATTERN, ManyCateringDto, ManyRequestCateringDto } from '@shared/contracts/catering';
 
 @Injectable()
 export class BookingService {
@@ -24,6 +24,7 @@ export class BookingService {
 
 	async create(createBookingDto: CreateBookingDto): Promise<BookingDto> {
 		let notificationSubject: string;
+		console.log("getiting to implement this pr ",{serviceId:createBookingDto.serviceId})
 		const newBookingInput: Prisma.BookingCreateInput = {
 			customerId: createBookingDto.customerId,
 			serviceId: createBookingDto.serviceId,
@@ -187,13 +188,16 @@ export class BookingService {
 			 */
 
 			const eventCenters = await firstValueFrom(this.eventClient.send<ManyEventCentersDto, ManyRequestEventCenterDto>(EVENTCENTERPATTERN.FINDALLEVENTCENTER,
-				{
-					limit: limit,
-					offset: offset,
-					serviceProvider, // this wont work. you need to get all event centers
-				}))
+				{serviceProvider}))
 			
 			if (!eventCenters || eventCenters.data.length === 0) {
+				return { count: 0, data: [] };
+			}
+
+			const catering = await firstValueFrom(this.cateringClient.send<ManyCateringDto, ManyRequestCateringDto>(CATERINGPATTERN.FINDALL,
+				{serviceProvider}))
+			
+			if (!catering || catering.data.length === 0) {
 				return { count: 0, data: [] };
 			}
 
@@ -226,7 +230,6 @@ export class BookingService {
 			return { count: result.count, data: result.data.map(booking => this.mapToBookingDto(booking)) };
 		}
 
-		
 		const bookings = await this.databaseService.booking.findMany({
 			where: whereClause,
 			take: limit,
@@ -264,23 +267,6 @@ export class BookingService {
 
 
 	async update(id: string, updateBookingDto: UpdateBookingDto): Promise<BookingDto> {
-			confirmedBy
-		confirmedAt
-		discount
-		totalAfterDiscount
-		paymentStatus
-		status
-		bookingDates
-		serviceNotes
-		customerNotes
-		rescheduledBy
-		rescheduledAt
-		cancelledBy
-		canceledAt
-		cancelationReason
-		updatedAt
-		deletedBy
-		
 		try {
 			const updateEventCenterInput: Prisma.BookingUpdateInput = {
 				...updateBookingDto,
@@ -288,7 +274,6 @@ export class BookingService {
 				status: updateBookingDto.status ? updateBookingDto.status as $Enums.BookingStatus : undefined,
 				source: updateBookingDto.source ? updateBookingDto.source as $Enums.BookingSource : undefined,
 			};
-
 			const booking = await this.databaseService.booking.update({
 				where: { id },
 				data: updateEventCenterInput

@@ -90,13 +90,19 @@ export class CateringService {
 
     }
 
-    async findAll(limit: number, offset: number, serviceProvider: string, city: string, state: string, country: string): Promise<ManyCateringDto> {
+    async findAll(
+        limit?: number,
+        offset?: number, 
+        serviceProvider?: string, 
+        city?: string, 
+        state?: string, 
+        country?: string)
+        : Promise<ManyCateringDto> {
 
         if (serviceProvider) {
             const caterings = await this.databaseService.catering.findMany({
                 where: { serviceProviderId: serviceProvider, deletedAt: null }, // Filter by serviceProviderId
-                take: limit,
-                skip: offset,
+                ...(limit ? { take: limit, skip: offset ? offset : 0 } : {})
             });
             const count = await this.databaseService.catering.count({
                 where: { serviceProviderId: serviceProvider, deletedAt: null }

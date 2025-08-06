@@ -83,16 +83,15 @@ export class EventcentersService {
     }
 
     async findAll(
-        limit: number,
-        offset: number,
-        serviceProvider: string,
-        city: string,
+        limit?: number,
+        offset?: number,
+        serviceProvider?: string,
+        city?: string,
     ): Promise<ManyEventCentersDto> {
         if (serviceProvider) {
             const eventCenters = await this.databaseService.eventCenter.findMany({
                 where: { serviceProviderId: serviceProvider, deletedAt: null },
-                take: limit,
-                skip: offset,
+                ...(limit ? { take: limit, skip: offset ? offset : 0 } : {})
             });
 
             const count = await this.databaseService.eventCenter.count({
