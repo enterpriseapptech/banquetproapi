@@ -54,6 +54,43 @@ model Booking {
   @@index([customerId, status, paymentStatus, serviceType])
 } // a review must have a booking, booking can have many payments at most 2
 
+
+model RequestQuote {
+  id                    String    @id @default(uuid())
+  customerId            String // customer booking the venue, points to an ID on users table
+  servicebookingId      String? // eventcenterbooking, catering booking , etc
+  serviceId             String
+  serviceType           ServiceType
+  totalAfterDiscount    Float
+  paymentStatus         PaymentStatus
+  status                BookingStatus
+  bookingDates          String[]  // carries the different dates for a single booking, not a from to, the individual dates
+  isTermsAccepted               Boolean
+  isCancellationPolicyAccepted  Boolean
+  isLiabilityWaiverSigned       Boolean
+  bookingReference              String //refernece to find booking fast 
+  source                        BookingSource
+  serviceNotes                  String?
+  customerNotes                 String?
+  rescheduledBy                 String?
+  rescheduledAt                 DateTime?
+  previousDates                 String[]
+  cancelledBy                   String?  //  whoever cancelled the book, points to an ID on users table
+  canceledAt                    DateTime?
+  cancelationReason             String?
+  createdAt                     DateTime  @default(now())
+  updatedAt                     DateTime  @updatedAt
+  deletedAt                     DateTime?
+  deletedBy                     String?  
+
+  billingDetails                Json
+
+  eventCenterBooking            EventCenterBooking?
+  cateringBooking            CateringBooking?
+  timeslot                      TimeSlot[]  // a single booking can contains a list of timeslots, spanning even into days
+  @@index([customerId, status, paymentStatus, serviceType])
+} 
+
 model AvailableLocations {
   id            String   @id @default(uuid())
   country       String
