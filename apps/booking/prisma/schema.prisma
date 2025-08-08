@@ -16,19 +16,19 @@ datasource banquestprobookingdb {
 }
 
 model Booking {
-  id                    String    @id @default(uuid())
-  customerId            String // customer booking the venue, points to an ID on users table
-  confirmedBy           String?  // staff who confirmed the book, points to an ID on users table
-  confirmedAt           DateTime?
-  servicebookingId      String? // eventcenterbooking, catering booking , etc
-  serviceId             String
-  serviceType           ServiceType
-  totalBeforeDiscount   Float
-  discount              Float?
-  totalAfterDiscount    Float
-  paymentStatus         PaymentStatus
-  status                BookingStatus
-  bookingDates          String[]  // carries the different dates for a single booking, not a from to, the individual dates
+  id                            String    @id @default(uuid())
+  customerId                    String // customer booking the venue, points to an ID on users table
+  confirmedBy                   String?  // staff who confirmed the book, points to an ID on users table
+  confirmedAt                   DateTime?
+  servicebookingId              String? // eventcenterbooking, catering booking , etc
+  serviceId                     String
+  serviceType                   ServiceType
+  totalBeforeDiscount           Float
+  discount                      Float?
+  totalAfterDiscount            Float
+  invoice                       String[] //a booking can have more than 1 invoice for services that needs deposit
+  paymentStatus                 PaymentStatus
+  status                        BookingStatus
   isTermsAccepted               Boolean
   isCancellationPolicyAccepted  Boolean
   isLiabilityWaiverSigned       Boolean
@@ -47,48 +47,45 @@ model Booking {
   deletedAt                     DateTime?
   deletedBy                     String?  
 
-
   eventCenterBooking            EventCenterBooking?
-  cateringBooking            CateringBooking?
+  cateringBooking               CateringBooking?
+  requestQuote                  RequestQuote
   timeslot                      TimeSlot[]  // a single booking can contains a list of timeslots, spanning even into days
-  @@index([customerId, status, paymentStatus, serviceType])
+  @@index(serviceType)
+  @@index(bookingReference)
+  @@index(status)
+  @@index(serviceId)
+  @@index(serviceType)
+  @@index(paymentStatus)
 } // a review must have a booking, booking can have many payments at most 2
 
 
 model RequestQuote {
   id                    String    @id @default(uuid())
   customerId            String // customer booking the venue, points to an ID on users table
-  servicebookingId      String? // eventcenterbooking, catering booking , etc
+  bookingId             String? // eventcenterbooking, catering booking , etc
   serviceId             String
   serviceType           ServiceType
-  totalAfterDiscount    Float
-  paymentStatus         PaymentStatus
-  status                BookingStatus
-  bookingDates          String[]  // carries the different dates for a single booking, not a from to, the individual dates
+  budget                Float
+  status                      BookingStatus
+  bookingStatus                BookingStatus
   isTermsAccepted               Boolean
   isCancellationPolicyAccepted  Boolean
   isLiabilityWaiverSigned       Boolean
-  bookingReference              String //refernece to find booking fast 
   source                        BookingSource
-  serviceNotes                  String?
   customerNotes                 String?
-  rescheduledBy                 String?
-  rescheduledAt                 DateTime?
   previousDates                 String[]
-  cancelledBy                   String?  //  whoever cancelled the book, points to an ID on users table
-  canceledAt                    DateTime?
-  cancelationReason             String?
   createdAt                     DateTime  @default(now())
   updatedAt                     DateTime  @updatedAt
   deletedAt                     DateTime?
   deletedBy                     String?  
-
   billingDetails                Json
 
-  eventCenterBooking            EventCenterBooking?
-  cateringBooking            CateringBooking?
+  booking                       Booking?  // a single booking can contains a list of timeslots, spanning even into days
   timeslot                      TimeSlot[]  // a single booking can contains a list of timeslots, spanning even into days
   @@index([customerId, status, paymentStatus, serviceType])
+  @@index([serviceId])
+  @@index(serviceType)
 } 
 
 model AvailableLocations {
@@ -107,6 +104,8 @@ model TimeSlot {
   startTime               DateTime
   endTime                 DateTime
   isAvailable             Boolean @default(true)
+  quotesRequested         String[] // keeps track of how many people requested quotes for this timeslot
+  bookingsRequested       String[] // keeps tack of how many unpayed booking requested this date before
   previousBookings        String[] // tracking all bookings previously attached to this slot
   createdBy               String
   createdAt               DateTime  @default(now())
@@ -117,7 +116,10 @@ model TimeSlot {
 
   // relations
   booking                 Booking? @relation(fields: [bookingId], references: [id])
-  @@index([serviceId, bookingId, startTime, endTime, isAvailable]) 
+  @@index(serviceId) 
+  @@index(bookingId) 
+  @@index([startTime, endTime]) 
+  @@index(isAvailable) 
 }
 
 model EventCenterBooking {
