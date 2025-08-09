@@ -19,6 +19,11 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
  */
 export type Booking = $Result.DefaultSelection<Prisma.$BookingPayload>
 /**
+ * Model RequestQuote
+ * 
+ */
+export type RequestQuote = $Result.DefaultSelection<Prisma.$RequestQuotePayload>
+/**
  * Model AvailableLocations
  * 
  */
@@ -67,9 +72,19 @@ export const ServiceType: {
 export type ServiceType = (typeof ServiceType)[keyof typeof ServiceType]
 
 
+export const InvoiceStatus: {
+  PENDING: 'PENDING',
+  PAID: 'PAID',
+  OVERDUE: 'OVERDUE',
+  SENT: 'SENT'
+};
+
+export type InvoiceStatus = (typeof InvoiceStatus)[keyof typeof InvoiceStatus]
+
+
 export const BookingStatus: {
   PENDING: 'PENDING',
-  CONFIRMED: 'CONFIRMED',
+  BOOKED: 'BOOKED',
   RESERVED: 'RESERVED',
   POSTPONED: 'POSTPONED',
   CANCELED: 'CANCELED'
@@ -85,16 +100,6 @@ export const PaymentStatus: {
 };
 
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
-
-
-export const InvoiceStatus: {
-  PAID: 'PAID',
-  PENDING: 'PENDING',
-  SENT: 'SENT',
-  OVERDUE: 'OVERDUE'
-};
-
-export type InvoiceStatus = (typeof InvoiceStatus)[keyof typeof InvoiceStatus]
 
 
 export const SpecialRequirement: {
@@ -118,6 +123,10 @@ export type ServiceType = $Enums.ServiceType
 
 export const ServiceType: typeof $Enums.ServiceType
 
+export type InvoiceStatus = $Enums.InvoiceStatus
+
+export const InvoiceStatus: typeof $Enums.InvoiceStatus
+
 export type BookingStatus = $Enums.BookingStatus
 
 export const BookingStatus: typeof $Enums.BookingStatus
@@ -125,10 +134,6 @@ export const BookingStatus: typeof $Enums.BookingStatus
 export type PaymentStatus = $Enums.PaymentStatus
 
 export const PaymentStatus: typeof $Enums.PaymentStatus
-
-export type InvoiceStatus = $Enums.InvoiceStatus
-
-export const InvoiceStatus: typeof $Enums.InvoiceStatus
 
 export type SpecialRequirement = $Enums.SpecialRequirement
 
@@ -268,6 +273,16 @@ export class PrismaClient<
     * ```
     */
   get booking(): Prisma.BookingDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.requestQuote`: Exposes CRUD operations for the **RequestQuote** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more RequestQuotes
+    * const requestQuotes = await prisma.requestQuote.findMany()
+    * ```
+    */
+  get requestQuote(): Prisma.RequestQuoteDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.availableLocations`: Exposes CRUD operations for the **AvailableLocations** model.
@@ -749,6 +764,7 @@ export namespace Prisma {
 
   export const ModelName: {
     Booking: 'Booking',
+    RequestQuote: 'RequestQuote',
     AvailableLocations: 'AvailableLocations',
     TimeSlot: 'TimeSlot',
     EventCenterBooking: 'EventCenterBooking',
@@ -771,7 +787,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "booking" | "availableLocations" | "timeSlot" | "eventCenterBooking" | "cateringBooking"
+      modelProps: "booking" | "requestQuote" | "availableLocations" | "timeSlot" | "eventCenterBooking" | "cateringBooking"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -846,6 +862,80 @@ export namespace Prisma {
           count: {
             args: Prisma.BookingCountArgs<ExtArgs>
             result: $Utils.Optional<BookingCountAggregateOutputType> | number
+          }
+        }
+      }
+      RequestQuote: {
+        payload: Prisma.$RequestQuotePayload<ExtArgs>
+        fields: Prisma.RequestQuoteFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.RequestQuoteFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RequestQuotePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.RequestQuoteFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RequestQuotePayload>
+          }
+          findFirst: {
+            args: Prisma.RequestQuoteFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RequestQuotePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.RequestQuoteFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RequestQuotePayload>
+          }
+          findMany: {
+            args: Prisma.RequestQuoteFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RequestQuotePayload>[]
+          }
+          create: {
+            args: Prisma.RequestQuoteCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RequestQuotePayload>
+          }
+          createMany: {
+            args: Prisma.RequestQuoteCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.RequestQuoteCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RequestQuotePayload>[]
+          }
+          delete: {
+            args: Prisma.RequestQuoteDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RequestQuotePayload>
+          }
+          update: {
+            args: Prisma.RequestQuoteUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RequestQuotePayload>
+          }
+          deleteMany: {
+            args: Prisma.RequestQuoteDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.RequestQuoteUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.RequestQuoteUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RequestQuotePayload>[]
+          }
+          upsert: {
+            args: Prisma.RequestQuoteUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RequestQuotePayload>
+          }
+          aggregate: {
+            args: Prisma.RequestQuoteAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateRequestQuote>
+          }
+          groupBy: {
+            args: Prisma.RequestQuoteGroupByArgs<ExtArgs>
+            result: $Utils.Optional<RequestQuoteGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.RequestQuoteCountArgs<ExtArgs>
+            result: $Utils.Optional<RequestQuoteCountAggregateOutputType> | number
           }
         }
       }
@@ -1230,6 +1320,7 @@ export namespace Prisma {
   }
   export type GlobalOmitConfig = {
     booking?: BookingOmit
+    requestQuote?: RequestQuoteOmit
     availableLocations?: AvailableLocationsOmit
     timeSlot?: TimeSlotOmit
     eventCenterBooking?: EventCenterBookingOmit
@@ -1355,6 +1446,68 @@ export namespace Prisma {
 
 
   /**
+   * Count Type RequestQuoteCountOutputType
+   */
+
+  export type RequestQuoteCountOutputType = {
+    timeslot: number
+  }
+
+  export type RequestQuoteCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    timeslot?: boolean | RequestQuoteCountOutputTypeCountTimeslotArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * RequestQuoteCountOutputType without action
+   */
+  export type RequestQuoteCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RequestQuoteCountOutputType
+     */
+    select?: RequestQuoteCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * RequestQuoteCountOutputType without action
+   */
+  export type RequestQuoteCountOutputTypeCountTimeslotArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TimeSlotWhereInput
+  }
+
+
+  /**
+   * Count Type TimeSlotCountOutputType
+   */
+
+  export type TimeSlotCountOutputType = {
+    requestQuote: number
+  }
+
+  export type TimeSlotCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    requestQuote?: boolean | TimeSlotCountOutputTypeCountRequestQuoteArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * TimeSlotCountOutputType without action
+   */
+  export type TimeSlotCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TimeSlotCountOutputType
+     */
+    select?: TimeSlotCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * TimeSlotCountOutputType without action
+   */
+  export type TimeSlotCountOutputTypeCountRequestQuoteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RequestQuoteWhereInput
+  }
+
+
+  /**
    * Models
    */
 
@@ -1393,8 +1546,6 @@ export namespace Prisma {
     totalBeforeDiscount: number | null
     discount: number | null
     totalAfterDiscount: number | null
-    isQuoteRequest: boolean | null
-    invoiceStatus: $Enums.InvoiceStatus | null
     paymentStatus: $Enums.PaymentStatus | null
     status: $Enums.BookingStatus | null
     isTermsAccepted: boolean | null
@@ -1426,8 +1577,6 @@ export namespace Prisma {
     totalBeforeDiscount: number | null
     discount: number | null
     totalAfterDiscount: number | null
-    isQuoteRequest: boolean | null
-    invoiceStatus: $Enums.InvoiceStatus | null
     paymentStatus: $Enums.PaymentStatus | null
     status: $Enums.BookingStatus | null
     isTermsAccepted: boolean | null
@@ -1459,11 +1608,9 @@ export namespace Prisma {
     totalBeforeDiscount: number
     discount: number
     totalAfterDiscount: number
-    isQuoteRequest: number
-    invoiceStatus: number
+    invoice: number
     paymentStatus: number
     status: number
-    bookingDates: number
     isTermsAccepted: number
     isCancellationPolicyAccepted: number
     isLiabilityWaiverSigned: number
@@ -1508,8 +1655,6 @@ export namespace Prisma {
     totalBeforeDiscount?: true
     discount?: true
     totalAfterDiscount?: true
-    isQuoteRequest?: true
-    invoiceStatus?: true
     paymentStatus?: true
     status?: true
     isTermsAccepted?: true
@@ -1541,8 +1686,6 @@ export namespace Prisma {
     totalBeforeDiscount?: true
     discount?: true
     totalAfterDiscount?: true
-    isQuoteRequest?: true
-    invoiceStatus?: true
     paymentStatus?: true
     status?: true
     isTermsAccepted?: true
@@ -1574,11 +1717,9 @@ export namespace Prisma {
     totalBeforeDiscount?: true
     discount?: true
     totalAfterDiscount?: true
-    isQuoteRequest?: true
-    invoiceStatus?: true
+    invoice?: true
     paymentStatus?: true
     status?: true
-    bookingDates?: true
     isTermsAccepted?: true
     isCancellationPolicyAccepted?: true
     isLiabilityWaiverSigned?: true
@@ -1696,11 +1837,9 @@ export namespace Prisma {
     totalBeforeDiscount: number
     discount: number | null
     totalAfterDiscount: number
-    isQuoteRequest: boolean
-    invoiceStatus: $Enums.InvoiceStatus
+    invoice: string[]
     paymentStatus: $Enums.PaymentStatus
     status: $Enums.BookingStatus
-    bookingDates: string[]
     isTermsAccepted: boolean
     isCancellationPolicyAccepted: boolean
     isLiabilityWaiverSigned: boolean
@@ -1750,11 +1889,9 @@ export namespace Prisma {
     totalBeforeDiscount?: boolean
     discount?: boolean
     totalAfterDiscount?: boolean
-    isQuoteRequest?: boolean
-    invoiceStatus?: boolean
+    invoice?: boolean
     paymentStatus?: boolean
     status?: boolean
-    bookingDates?: boolean
     isTermsAccepted?: boolean
     isCancellationPolicyAccepted?: boolean
     isLiabilityWaiverSigned?: boolean
@@ -1774,6 +1911,7 @@ export namespace Prisma {
     deletedBy?: boolean
     eventCenterBooking?: boolean | Booking$eventCenterBookingArgs<ExtArgs>
     cateringBooking?: boolean | Booking$cateringBookingArgs<ExtArgs>
+    requestQuote?: boolean | Booking$requestQuoteArgs<ExtArgs>
     timeslot?: boolean | Booking$timeslotArgs<ExtArgs>
     _count?: boolean | BookingCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["booking"]>
@@ -1789,11 +1927,9 @@ export namespace Prisma {
     totalBeforeDiscount?: boolean
     discount?: boolean
     totalAfterDiscount?: boolean
-    isQuoteRequest?: boolean
-    invoiceStatus?: boolean
+    invoice?: boolean
     paymentStatus?: boolean
     status?: boolean
-    bookingDates?: boolean
     isTermsAccepted?: boolean
     isCancellationPolicyAccepted?: boolean
     isLiabilityWaiverSigned?: boolean
@@ -1824,11 +1960,9 @@ export namespace Prisma {
     totalBeforeDiscount?: boolean
     discount?: boolean
     totalAfterDiscount?: boolean
-    isQuoteRequest?: boolean
-    invoiceStatus?: boolean
+    invoice?: boolean
     paymentStatus?: boolean
     status?: boolean
-    bookingDates?: boolean
     isTermsAccepted?: boolean
     isCancellationPolicyAccepted?: boolean
     isLiabilityWaiverSigned?: boolean
@@ -1859,11 +1993,9 @@ export namespace Prisma {
     totalBeforeDiscount?: boolean
     discount?: boolean
     totalAfterDiscount?: boolean
-    isQuoteRequest?: boolean
-    invoiceStatus?: boolean
+    invoice?: boolean
     paymentStatus?: boolean
     status?: boolean
-    bookingDates?: boolean
     isTermsAccepted?: boolean
     isCancellationPolicyAccepted?: boolean
     isLiabilityWaiverSigned?: boolean
@@ -1883,10 +2015,11 @@ export namespace Prisma {
     deletedBy?: boolean
   }
 
-  export type BookingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "customerId" | "confirmedBy" | "confirmedAt" | "servicebookingId" | "serviceId" | "serviceType" | "totalBeforeDiscount" | "discount" | "totalAfterDiscount" | "isQuoteRequest" | "invoiceStatus" | "paymentStatus" | "status" | "bookingDates" | "isTermsAccepted" | "isCancellationPolicyAccepted" | "isLiabilityWaiverSigned" | "bookingReference" | "source" | "serviceNotes" | "customerNotes" | "rescheduledBy" | "rescheduledAt" | "previousDates" | "cancelledBy" | "canceledAt" | "cancelationReason" | "createdAt" | "updatedAt" | "deletedAt" | "deletedBy", ExtArgs["result"]["booking"]>
+  export type BookingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "customerId" | "confirmedBy" | "confirmedAt" | "servicebookingId" | "serviceId" | "serviceType" | "totalBeforeDiscount" | "discount" | "totalAfterDiscount" | "invoice" | "paymentStatus" | "status" | "isTermsAccepted" | "isCancellationPolicyAccepted" | "isLiabilityWaiverSigned" | "bookingReference" | "source" | "serviceNotes" | "customerNotes" | "rescheduledBy" | "rescheduledAt" | "previousDates" | "cancelledBy" | "canceledAt" | "cancelationReason" | "createdAt" | "updatedAt" | "deletedAt" | "deletedBy", ExtArgs["result"]["booking"]>
   export type BookingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     eventCenterBooking?: boolean | Booking$eventCenterBookingArgs<ExtArgs>
     cateringBooking?: boolean | Booking$cateringBookingArgs<ExtArgs>
+    requestQuote?: boolean | Booking$requestQuoteArgs<ExtArgs>
     timeslot?: boolean | Booking$timeslotArgs<ExtArgs>
     _count?: boolean | BookingCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -1898,6 +2031,7 @@ export namespace Prisma {
     objects: {
       eventCenterBooking: Prisma.$EventCenterBookingPayload<ExtArgs> | null
       cateringBooking: Prisma.$CateringBookingPayload<ExtArgs> | null
+      requestQuote: Prisma.$RequestQuotePayload<ExtArgs> | null
       timeslot: Prisma.$TimeSlotPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -1911,11 +2045,9 @@ export namespace Prisma {
       totalBeforeDiscount: number
       discount: number | null
       totalAfterDiscount: number
-      isQuoteRequest: boolean
-      invoiceStatus: $Enums.InvoiceStatus
+      invoice: string[]
       paymentStatus: $Enums.PaymentStatus
       status: $Enums.BookingStatus
-      bookingDates: string[]
       isTermsAccepted: boolean
       isCancellationPolicyAccepted: boolean
       isLiabilityWaiverSigned: boolean
@@ -2329,6 +2461,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     eventCenterBooking<T extends Booking$eventCenterBookingArgs<ExtArgs> = {}>(args?: Subset<T, Booking$eventCenterBookingArgs<ExtArgs>>): Prisma__EventCenterBookingClient<$Result.GetResult<Prisma.$EventCenterBookingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     cateringBooking<T extends Booking$cateringBookingArgs<ExtArgs> = {}>(args?: Subset<T, Booking$cateringBookingArgs<ExtArgs>>): Prisma__CateringBookingClient<$Result.GetResult<Prisma.$CateringBookingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    requestQuote<T extends Booking$requestQuoteArgs<ExtArgs> = {}>(args?: Subset<T, Booking$requestQuoteArgs<ExtArgs>>): Prisma__RequestQuoteClient<$Result.GetResult<Prisma.$RequestQuotePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     timeslot<T extends Booking$timeslotArgs<ExtArgs> = {}>(args?: Subset<T, Booking$timeslotArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TimeSlotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -2369,11 +2502,9 @@ export namespace Prisma {
     readonly totalBeforeDiscount: FieldRef<"Booking", 'Float'>
     readonly discount: FieldRef<"Booking", 'Float'>
     readonly totalAfterDiscount: FieldRef<"Booking", 'Float'>
-    readonly isQuoteRequest: FieldRef<"Booking", 'Boolean'>
-    readonly invoiceStatus: FieldRef<"Booking", 'InvoiceStatus'>
+    readonly invoice: FieldRef<"Booking", 'String[]'>
     readonly paymentStatus: FieldRef<"Booking", 'PaymentStatus'>
     readonly status: FieldRef<"Booking", 'BookingStatus'>
-    readonly bookingDates: FieldRef<"Booking", 'String[]'>
     readonly isTermsAccepted: FieldRef<"Booking", 'Boolean'>
     readonly isCancellationPolicyAccepted: FieldRef<"Booking", 'Boolean'>
     readonly isLiabilityWaiverSigned: FieldRef<"Booking", 'Boolean'>
@@ -2817,6 +2948,25 @@ export namespace Prisma {
   }
 
   /**
+   * Booking.requestQuote
+   */
+  export type Booking$requestQuoteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RequestQuote
+     */
+    select?: RequestQuoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RequestQuote
+     */
+    omit?: RequestQuoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RequestQuoteInclude<ExtArgs> | null
+    where?: RequestQuoteWhereInput
+  }
+
+  /**
    * Booking.timeslot
    */
   export type Booking$timeslotArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2856,6 +3006,1321 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: BookingInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model RequestQuote
+   */
+
+  export type AggregateRequestQuote = {
+    _count: RequestQuoteCountAggregateOutputType | null
+    _avg: RequestQuoteAvgAggregateOutputType | null
+    _sum: RequestQuoteSumAggregateOutputType | null
+    _min: RequestQuoteMinAggregateOutputType | null
+    _max: RequestQuoteMaxAggregateOutputType | null
+  }
+
+  export type RequestQuoteAvgAggregateOutputType = {
+    budget: number | null
+  }
+
+  export type RequestQuoteSumAggregateOutputType = {
+    budget: number | null
+  }
+
+  export type RequestQuoteMinAggregateOutputType = {
+    id: string | null
+    customerId: string | null
+    bookingId: string | null
+    serviceId: string | null
+    serviceType: $Enums.ServiceType | null
+    budget: number | null
+    status: $Enums.InvoiceStatus | null
+    bookingStatus: $Enums.BookingStatus | null
+    isTermsAccepted: boolean | null
+    isCancellationPolicyAccepted: boolean | null
+    isLiabilityWaiverSigned: boolean | null
+    source: $Enums.BookingSource | null
+    customerNotes: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+    deletedBy: string | null
+  }
+
+  export type RequestQuoteMaxAggregateOutputType = {
+    id: string | null
+    customerId: string | null
+    bookingId: string | null
+    serviceId: string | null
+    serviceType: $Enums.ServiceType | null
+    budget: number | null
+    status: $Enums.InvoiceStatus | null
+    bookingStatus: $Enums.BookingStatus | null
+    isTermsAccepted: boolean | null
+    isCancellationPolicyAccepted: boolean | null
+    isLiabilityWaiverSigned: boolean | null
+    source: $Enums.BookingSource | null
+    customerNotes: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+    deletedBy: string | null
+  }
+
+  export type RequestQuoteCountAggregateOutputType = {
+    id: number
+    customerId: number
+    bookingId: number
+    serviceId: number
+    serviceType: number
+    budget: number
+    status: number
+    bookingStatus: number
+    isTermsAccepted: number
+    isCancellationPolicyAccepted: number
+    isLiabilityWaiverSigned: number
+    source: number
+    customerNotes: number
+    previousDates: number
+    createdAt: number
+    updatedAt: number
+    deletedAt: number
+    deletedBy: number
+    billingDetails: number
+    _all: number
+  }
+
+
+  export type RequestQuoteAvgAggregateInputType = {
+    budget?: true
+  }
+
+  export type RequestQuoteSumAggregateInputType = {
+    budget?: true
+  }
+
+  export type RequestQuoteMinAggregateInputType = {
+    id?: true
+    customerId?: true
+    bookingId?: true
+    serviceId?: true
+    serviceType?: true
+    budget?: true
+    status?: true
+    bookingStatus?: true
+    isTermsAccepted?: true
+    isCancellationPolicyAccepted?: true
+    isLiabilityWaiverSigned?: true
+    source?: true
+    customerNotes?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+    deletedBy?: true
+  }
+
+  export type RequestQuoteMaxAggregateInputType = {
+    id?: true
+    customerId?: true
+    bookingId?: true
+    serviceId?: true
+    serviceType?: true
+    budget?: true
+    status?: true
+    bookingStatus?: true
+    isTermsAccepted?: true
+    isCancellationPolicyAccepted?: true
+    isLiabilityWaiverSigned?: true
+    source?: true
+    customerNotes?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+    deletedBy?: true
+  }
+
+  export type RequestQuoteCountAggregateInputType = {
+    id?: true
+    customerId?: true
+    bookingId?: true
+    serviceId?: true
+    serviceType?: true
+    budget?: true
+    status?: true
+    bookingStatus?: true
+    isTermsAccepted?: true
+    isCancellationPolicyAccepted?: true
+    isLiabilityWaiverSigned?: true
+    source?: true
+    customerNotes?: true
+    previousDates?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+    deletedBy?: true
+    billingDetails?: true
+    _all?: true
+  }
+
+  export type RequestQuoteAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which RequestQuote to aggregate.
+     */
+    where?: RequestQuoteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RequestQuotes to fetch.
+     */
+    orderBy?: RequestQuoteOrderByWithRelationInput | RequestQuoteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: RequestQuoteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RequestQuotes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RequestQuotes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned RequestQuotes
+    **/
+    _count?: true | RequestQuoteCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: RequestQuoteAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: RequestQuoteSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: RequestQuoteMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: RequestQuoteMaxAggregateInputType
+  }
+
+  export type GetRequestQuoteAggregateType<T extends RequestQuoteAggregateArgs> = {
+        [P in keyof T & keyof AggregateRequestQuote]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateRequestQuote[P]>
+      : GetScalarType<T[P], AggregateRequestQuote[P]>
+  }
+
+
+
+
+  export type RequestQuoteGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RequestQuoteWhereInput
+    orderBy?: RequestQuoteOrderByWithAggregationInput | RequestQuoteOrderByWithAggregationInput[]
+    by: RequestQuoteScalarFieldEnum[] | RequestQuoteScalarFieldEnum
+    having?: RequestQuoteScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: RequestQuoteCountAggregateInputType | true
+    _avg?: RequestQuoteAvgAggregateInputType
+    _sum?: RequestQuoteSumAggregateInputType
+    _min?: RequestQuoteMinAggregateInputType
+    _max?: RequestQuoteMaxAggregateInputType
+  }
+
+  export type RequestQuoteGroupByOutputType = {
+    id: string
+    customerId: string
+    bookingId: string | null
+    serviceId: string
+    serviceType: $Enums.ServiceType
+    budget: number
+    status: $Enums.InvoiceStatus
+    bookingStatus: $Enums.BookingStatus
+    isTermsAccepted: boolean
+    isCancellationPolicyAccepted: boolean
+    isLiabilityWaiverSigned: boolean
+    source: $Enums.BookingSource
+    customerNotes: string | null
+    previousDates: string[]
+    createdAt: Date
+    updatedAt: Date
+    deletedAt: Date | null
+    deletedBy: string | null
+    billingDetails: JsonValue
+    _count: RequestQuoteCountAggregateOutputType | null
+    _avg: RequestQuoteAvgAggregateOutputType | null
+    _sum: RequestQuoteSumAggregateOutputType | null
+    _min: RequestQuoteMinAggregateOutputType | null
+    _max: RequestQuoteMaxAggregateOutputType | null
+  }
+
+  type GetRequestQuoteGroupByPayload<T extends RequestQuoteGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<RequestQuoteGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof RequestQuoteGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], RequestQuoteGroupByOutputType[P]>
+            : GetScalarType<T[P], RequestQuoteGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type RequestQuoteSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    customerId?: boolean
+    bookingId?: boolean
+    serviceId?: boolean
+    serviceType?: boolean
+    budget?: boolean
+    status?: boolean
+    bookingStatus?: boolean
+    isTermsAccepted?: boolean
+    isCancellationPolicyAccepted?: boolean
+    isLiabilityWaiverSigned?: boolean
+    source?: boolean
+    customerNotes?: boolean
+    previousDates?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    deletedBy?: boolean
+    billingDetails?: boolean
+    booking?: boolean | RequestQuote$bookingArgs<ExtArgs>
+    timeslot?: boolean | RequestQuote$timeslotArgs<ExtArgs>
+    _count?: boolean | RequestQuoteCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["requestQuote"]>
+
+  export type RequestQuoteSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    customerId?: boolean
+    bookingId?: boolean
+    serviceId?: boolean
+    serviceType?: boolean
+    budget?: boolean
+    status?: boolean
+    bookingStatus?: boolean
+    isTermsAccepted?: boolean
+    isCancellationPolicyAccepted?: boolean
+    isLiabilityWaiverSigned?: boolean
+    source?: boolean
+    customerNotes?: boolean
+    previousDates?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    deletedBy?: boolean
+    billingDetails?: boolean
+    booking?: boolean | RequestQuote$bookingArgs<ExtArgs>
+  }, ExtArgs["result"]["requestQuote"]>
+
+  export type RequestQuoteSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    customerId?: boolean
+    bookingId?: boolean
+    serviceId?: boolean
+    serviceType?: boolean
+    budget?: boolean
+    status?: boolean
+    bookingStatus?: boolean
+    isTermsAccepted?: boolean
+    isCancellationPolicyAccepted?: boolean
+    isLiabilityWaiverSigned?: boolean
+    source?: boolean
+    customerNotes?: boolean
+    previousDates?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    deletedBy?: boolean
+    billingDetails?: boolean
+    booking?: boolean | RequestQuote$bookingArgs<ExtArgs>
+  }, ExtArgs["result"]["requestQuote"]>
+
+  export type RequestQuoteSelectScalar = {
+    id?: boolean
+    customerId?: boolean
+    bookingId?: boolean
+    serviceId?: boolean
+    serviceType?: boolean
+    budget?: boolean
+    status?: boolean
+    bookingStatus?: boolean
+    isTermsAccepted?: boolean
+    isCancellationPolicyAccepted?: boolean
+    isLiabilityWaiverSigned?: boolean
+    source?: boolean
+    customerNotes?: boolean
+    previousDates?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    deletedBy?: boolean
+    billingDetails?: boolean
+  }
+
+  export type RequestQuoteOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "customerId" | "bookingId" | "serviceId" | "serviceType" | "budget" | "status" | "bookingStatus" | "isTermsAccepted" | "isCancellationPolicyAccepted" | "isLiabilityWaiverSigned" | "source" | "customerNotes" | "previousDates" | "createdAt" | "updatedAt" | "deletedAt" | "deletedBy" | "billingDetails", ExtArgs["result"]["requestQuote"]>
+  export type RequestQuoteInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    booking?: boolean | RequestQuote$bookingArgs<ExtArgs>
+    timeslot?: boolean | RequestQuote$timeslotArgs<ExtArgs>
+    _count?: boolean | RequestQuoteCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type RequestQuoteIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    booking?: boolean | RequestQuote$bookingArgs<ExtArgs>
+  }
+  export type RequestQuoteIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    booking?: boolean | RequestQuote$bookingArgs<ExtArgs>
+  }
+
+  export type $RequestQuotePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "RequestQuote"
+    objects: {
+      booking: Prisma.$BookingPayload<ExtArgs> | null
+      timeslot: Prisma.$TimeSlotPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      customerId: string
+      bookingId: string | null
+      serviceId: string
+      serviceType: $Enums.ServiceType
+      budget: number
+      status: $Enums.InvoiceStatus
+      bookingStatus: $Enums.BookingStatus
+      isTermsAccepted: boolean
+      isCancellationPolicyAccepted: boolean
+      isLiabilityWaiverSigned: boolean
+      source: $Enums.BookingSource
+      customerNotes: string | null
+      previousDates: string[]
+      createdAt: Date
+      updatedAt: Date
+      deletedAt: Date | null
+      deletedBy: string | null
+      billingDetails: Prisma.JsonValue
+    }, ExtArgs["result"]["requestQuote"]>
+    composites: {}
+  }
+
+  type RequestQuoteGetPayload<S extends boolean | null | undefined | RequestQuoteDefaultArgs> = $Result.GetResult<Prisma.$RequestQuotePayload, S>
+
+  type RequestQuoteCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<RequestQuoteFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: RequestQuoteCountAggregateInputType | true
+    }
+
+  export interface RequestQuoteDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['RequestQuote'], meta: { name: 'RequestQuote' } }
+    /**
+     * Find zero or one RequestQuote that matches the filter.
+     * @param {RequestQuoteFindUniqueArgs} args - Arguments to find a RequestQuote
+     * @example
+     * // Get one RequestQuote
+     * const requestQuote = await prisma.requestQuote.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends RequestQuoteFindUniqueArgs>(args: SelectSubset<T, RequestQuoteFindUniqueArgs<ExtArgs>>): Prisma__RequestQuoteClient<$Result.GetResult<Prisma.$RequestQuotePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one RequestQuote that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {RequestQuoteFindUniqueOrThrowArgs} args - Arguments to find a RequestQuote
+     * @example
+     * // Get one RequestQuote
+     * const requestQuote = await prisma.requestQuote.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends RequestQuoteFindUniqueOrThrowArgs>(args: SelectSubset<T, RequestQuoteFindUniqueOrThrowArgs<ExtArgs>>): Prisma__RequestQuoteClient<$Result.GetResult<Prisma.$RequestQuotePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first RequestQuote that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RequestQuoteFindFirstArgs} args - Arguments to find a RequestQuote
+     * @example
+     * // Get one RequestQuote
+     * const requestQuote = await prisma.requestQuote.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends RequestQuoteFindFirstArgs>(args?: SelectSubset<T, RequestQuoteFindFirstArgs<ExtArgs>>): Prisma__RequestQuoteClient<$Result.GetResult<Prisma.$RequestQuotePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first RequestQuote that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RequestQuoteFindFirstOrThrowArgs} args - Arguments to find a RequestQuote
+     * @example
+     * // Get one RequestQuote
+     * const requestQuote = await prisma.requestQuote.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends RequestQuoteFindFirstOrThrowArgs>(args?: SelectSubset<T, RequestQuoteFindFirstOrThrowArgs<ExtArgs>>): Prisma__RequestQuoteClient<$Result.GetResult<Prisma.$RequestQuotePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more RequestQuotes that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RequestQuoteFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all RequestQuotes
+     * const requestQuotes = await prisma.requestQuote.findMany()
+     * 
+     * // Get first 10 RequestQuotes
+     * const requestQuotes = await prisma.requestQuote.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const requestQuoteWithIdOnly = await prisma.requestQuote.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends RequestQuoteFindManyArgs>(args?: SelectSubset<T, RequestQuoteFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RequestQuotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a RequestQuote.
+     * @param {RequestQuoteCreateArgs} args - Arguments to create a RequestQuote.
+     * @example
+     * // Create one RequestQuote
+     * const RequestQuote = await prisma.requestQuote.create({
+     *   data: {
+     *     // ... data to create a RequestQuote
+     *   }
+     * })
+     * 
+     */
+    create<T extends RequestQuoteCreateArgs>(args: SelectSubset<T, RequestQuoteCreateArgs<ExtArgs>>): Prisma__RequestQuoteClient<$Result.GetResult<Prisma.$RequestQuotePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many RequestQuotes.
+     * @param {RequestQuoteCreateManyArgs} args - Arguments to create many RequestQuotes.
+     * @example
+     * // Create many RequestQuotes
+     * const requestQuote = await prisma.requestQuote.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends RequestQuoteCreateManyArgs>(args?: SelectSubset<T, RequestQuoteCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many RequestQuotes and returns the data saved in the database.
+     * @param {RequestQuoteCreateManyAndReturnArgs} args - Arguments to create many RequestQuotes.
+     * @example
+     * // Create many RequestQuotes
+     * const requestQuote = await prisma.requestQuote.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many RequestQuotes and only return the `id`
+     * const requestQuoteWithIdOnly = await prisma.requestQuote.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends RequestQuoteCreateManyAndReturnArgs>(args?: SelectSubset<T, RequestQuoteCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RequestQuotePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a RequestQuote.
+     * @param {RequestQuoteDeleteArgs} args - Arguments to delete one RequestQuote.
+     * @example
+     * // Delete one RequestQuote
+     * const RequestQuote = await prisma.requestQuote.delete({
+     *   where: {
+     *     // ... filter to delete one RequestQuote
+     *   }
+     * })
+     * 
+     */
+    delete<T extends RequestQuoteDeleteArgs>(args: SelectSubset<T, RequestQuoteDeleteArgs<ExtArgs>>): Prisma__RequestQuoteClient<$Result.GetResult<Prisma.$RequestQuotePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one RequestQuote.
+     * @param {RequestQuoteUpdateArgs} args - Arguments to update one RequestQuote.
+     * @example
+     * // Update one RequestQuote
+     * const requestQuote = await prisma.requestQuote.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends RequestQuoteUpdateArgs>(args: SelectSubset<T, RequestQuoteUpdateArgs<ExtArgs>>): Prisma__RequestQuoteClient<$Result.GetResult<Prisma.$RequestQuotePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more RequestQuotes.
+     * @param {RequestQuoteDeleteManyArgs} args - Arguments to filter RequestQuotes to delete.
+     * @example
+     * // Delete a few RequestQuotes
+     * const { count } = await prisma.requestQuote.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends RequestQuoteDeleteManyArgs>(args?: SelectSubset<T, RequestQuoteDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more RequestQuotes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RequestQuoteUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many RequestQuotes
+     * const requestQuote = await prisma.requestQuote.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends RequestQuoteUpdateManyArgs>(args: SelectSubset<T, RequestQuoteUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more RequestQuotes and returns the data updated in the database.
+     * @param {RequestQuoteUpdateManyAndReturnArgs} args - Arguments to update many RequestQuotes.
+     * @example
+     * // Update many RequestQuotes
+     * const requestQuote = await prisma.requestQuote.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more RequestQuotes and only return the `id`
+     * const requestQuoteWithIdOnly = await prisma.requestQuote.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends RequestQuoteUpdateManyAndReturnArgs>(args: SelectSubset<T, RequestQuoteUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RequestQuotePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one RequestQuote.
+     * @param {RequestQuoteUpsertArgs} args - Arguments to update or create a RequestQuote.
+     * @example
+     * // Update or create a RequestQuote
+     * const requestQuote = await prisma.requestQuote.upsert({
+     *   create: {
+     *     // ... data to create a RequestQuote
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the RequestQuote we want to update
+     *   }
+     * })
+     */
+    upsert<T extends RequestQuoteUpsertArgs>(args: SelectSubset<T, RequestQuoteUpsertArgs<ExtArgs>>): Prisma__RequestQuoteClient<$Result.GetResult<Prisma.$RequestQuotePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of RequestQuotes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RequestQuoteCountArgs} args - Arguments to filter RequestQuotes to count.
+     * @example
+     * // Count the number of RequestQuotes
+     * const count = await prisma.requestQuote.count({
+     *   where: {
+     *     // ... the filter for the RequestQuotes we want to count
+     *   }
+     * })
+    **/
+    count<T extends RequestQuoteCountArgs>(
+      args?: Subset<T, RequestQuoteCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], RequestQuoteCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a RequestQuote.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RequestQuoteAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends RequestQuoteAggregateArgs>(args: Subset<T, RequestQuoteAggregateArgs>): Prisma.PrismaPromise<GetRequestQuoteAggregateType<T>>
+
+    /**
+     * Group by RequestQuote.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RequestQuoteGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends RequestQuoteGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: RequestQuoteGroupByArgs['orderBy'] }
+        : { orderBy?: RequestQuoteGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, RequestQuoteGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetRequestQuoteGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the RequestQuote model
+   */
+  readonly fields: RequestQuoteFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for RequestQuote.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__RequestQuoteClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    booking<T extends RequestQuote$bookingArgs<ExtArgs> = {}>(args?: Subset<T, RequestQuote$bookingArgs<ExtArgs>>): Prisma__BookingClient<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    timeslot<T extends RequestQuote$timeslotArgs<ExtArgs> = {}>(args?: Subset<T, RequestQuote$timeslotArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TimeSlotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the RequestQuote model
+   */
+  interface RequestQuoteFieldRefs {
+    readonly id: FieldRef<"RequestQuote", 'String'>
+    readonly customerId: FieldRef<"RequestQuote", 'String'>
+    readonly bookingId: FieldRef<"RequestQuote", 'String'>
+    readonly serviceId: FieldRef<"RequestQuote", 'String'>
+    readonly serviceType: FieldRef<"RequestQuote", 'ServiceType'>
+    readonly budget: FieldRef<"RequestQuote", 'Float'>
+    readonly status: FieldRef<"RequestQuote", 'InvoiceStatus'>
+    readonly bookingStatus: FieldRef<"RequestQuote", 'BookingStatus'>
+    readonly isTermsAccepted: FieldRef<"RequestQuote", 'Boolean'>
+    readonly isCancellationPolicyAccepted: FieldRef<"RequestQuote", 'Boolean'>
+    readonly isLiabilityWaiverSigned: FieldRef<"RequestQuote", 'Boolean'>
+    readonly source: FieldRef<"RequestQuote", 'BookingSource'>
+    readonly customerNotes: FieldRef<"RequestQuote", 'String'>
+    readonly previousDates: FieldRef<"RequestQuote", 'String[]'>
+    readonly createdAt: FieldRef<"RequestQuote", 'DateTime'>
+    readonly updatedAt: FieldRef<"RequestQuote", 'DateTime'>
+    readonly deletedAt: FieldRef<"RequestQuote", 'DateTime'>
+    readonly deletedBy: FieldRef<"RequestQuote", 'String'>
+    readonly billingDetails: FieldRef<"RequestQuote", 'Json'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * RequestQuote findUnique
+   */
+  export type RequestQuoteFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RequestQuote
+     */
+    select?: RequestQuoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RequestQuote
+     */
+    omit?: RequestQuoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RequestQuoteInclude<ExtArgs> | null
+    /**
+     * Filter, which RequestQuote to fetch.
+     */
+    where: RequestQuoteWhereUniqueInput
+  }
+
+  /**
+   * RequestQuote findUniqueOrThrow
+   */
+  export type RequestQuoteFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RequestQuote
+     */
+    select?: RequestQuoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RequestQuote
+     */
+    omit?: RequestQuoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RequestQuoteInclude<ExtArgs> | null
+    /**
+     * Filter, which RequestQuote to fetch.
+     */
+    where: RequestQuoteWhereUniqueInput
+  }
+
+  /**
+   * RequestQuote findFirst
+   */
+  export type RequestQuoteFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RequestQuote
+     */
+    select?: RequestQuoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RequestQuote
+     */
+    omit?: RequestQuoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RequestQuoteInclude<ExtArgs> | null
+    /**
+     * Filter, which RequestQuote to fetch.
+     */
+    where?: RequestQuoteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RequestQuotes to fetch.
+     */
+    orderBy?: RequestQuoteOrderByWithRelationInput | RequestQuoteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for RequestQuotes.
+     */
+    cursor?: RequestQuoteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RequestQuotes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RequestQuotes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of RequestQuotes.
+     */
+    distinct?: RequestQuoteScalarFieldEnum | RequestQuoteScalarFieldEnum[]
+  }
+
+  /**
+   * RequestQuote findFirstOrThrow
+   */
+  export type RequestQuoteFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RequestQuote
+     */
+    select?: RequestQuoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RequestQuote
+     */
+    omit?: RequestQuoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RequestQuoteInclude<ExtArgs> | null
+    /**
+     * Filter, which RequestQuote to fetch.
+     */
+    where?: RequestQuoteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RequestQuotes to fetch.
+     */
+    orderBy?: RequestQuoteOrderByWithRelationInput | RequestQuoteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for RequestQuotes.
+     */
+    cursor?: RequestQuoteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RequestQuotes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RequestQuotes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of RequestQuotes.
+     */
+    distinct?: RequestQuoteScalarFieldEnum | RequestQuoteScalarFieldEnum[]
+  }
+
+  /**
+   * RequestQuote findMany
+   */
+  export type RequestQuoteFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RequestQuote
+     */
+    select?: RequestQuoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RequestQuote
+     */
+    omit?: RequestQuoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RequestQuoteInclude<ExtArgs> | null
+    /**
+     * Filter, which RequestQuotes to fetch.
+     */
+    where?: RequestQuoteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RequestQuotes to fetch.
+     */
+    orderBy?: RequestQuoteOrderByWithRelationInput | RequestQuoteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing RequestQuotes.
+     */
+    cursor?: RequestQuoteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RequestQuotes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RequestQuotes.
+     */
+    skip?: number
+    distinct?: RequestQuoteScalarFieldEnum | RequestQuoteScalarFieldEnum[]
+  }
+
+  /**
+   * RequestQuote create
+   */
+  export type RequestQuoteCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RequestQuote
+     */
+    select?: RequestQuoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RequestQuote
+     */
+    omit?: RequestQuoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RequestQuoteInclude<ExtArgs> | null
+    /**
+     * The data needed to create a RequestQuote.
+     */
+    data: XOR<RequestQuoteCreateInput, RequestQuoteUncheckedCreateInput>
+  }
+
+  /**
+   * RequestQuote createMany
+   */
+  export type RequestQuoteCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many RequestQuotes.
+     */
+    data: RequestQuoteCreateManyInput | RequestQuoteCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * RequestQuote createManyAndReturn
+   */
+  export type RequestQuoteCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RequestQuote
+     */
+    select?: RequestQuoteSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the RequestQuote
+     */
+    omit?: RequestQuoteOmit<ExtArgs> | null
+    /**
+     * The data used to create many RequestQuotes.
+     */
+    data: RequestQuoteCreateManyInput | RequestQuoteCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RequestQuoteIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * RequestQuote update
+   */
+  export type RequestQuoteUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RequestQuote
+     */
+    select?: RequestQuoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RequestQuote
+     */
+    omit?: RequestQuoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RequestQuoteInclude<ExtArgs> | null
+    /**
+     * The data needed to update a RequestQuote.
+     */
+    data: XOR<RequestQuoteUpdateInput, RequestQuoteUncheckedUpdateInput>
+    /**
+     * Choose, which RequestQuote to update.
+     */
+    where: RequestQuoteWhereUniqueInput
+  }
+
+  /**
+   * RequestQuote updateMany
+   */
+  export type RequestQuoteUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update RequestQuotes.
+     */
+    data: XOR<RequestQuoteUpdateManyMutationInput, RequestQuoteUncheckedUpdateManyInput>
+    /**
+     * Filter which RequestQuotes to update
+     */
+    where?: RequestQuoteWhereInput
+    /**
+     * Limit how many RequestQuotes to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * RequestQuote updateManyAndReturn
+   */
+  export type RequestQuoteUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RequestQuote
+     */
+    select?: RequestQuoteSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the RequestQuote
+     */
+    omit?: RequestQuoteOmit<ExtArgs> | null
+    /**
+     * The data used to update RequestQuotes.
+     */
+    data: XOR<RequestQuoteUpdateManyMutationInput, RequestQuoteUncheckedUpdateManyInput>
+    /**
+     * Filter which RequestQuotes to update
+     */
+    where?: RequestQuoteWhereInput
+    /**
+     * Limit how many RequestQuotes to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RequestQuoteIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * RequestQuote upsert
+   */
+  export type RequestQuoteUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RequestQuote
+     */
+    select?: RequestQuoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RequestQuote
+     */
+    omit?: RequestQuoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RequestQuoteInclude<ExtArgs> | null
+    /**
+     * The filter to search for the RequestQuote to update in case it exists.
+     */
+    where: RequestQuoteWhereUniqueInput
+    /**
+     * In case the RequestQuote found by the `where` argument doesn't exist, create a new RequestQuote with this data.
+     */
+    create: XOR<RequestQuoteCreateInput, RequestQuoteUncheckedCreateInput>
+    /**
+     * In case the RequestQuote was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<RequestQuoteUpdateInput, RequestQuoteUncheckedUpdateInput>
+  }
+
+  /**
+   * RequestQuote delete
+   */
+  export type RequestQuoteDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RequestQuote
+     */
+    select?: RequestQuoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RequestQuote
+     */
+    omit?: RequestQuoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RequestQuoteInclude<ExtArgs> | null
+    /**
+     * Filter which RequestQuote to delete.
+     */
+    where: RequestQuoteWhereUniqueInput
+  }
+
+  /**
+   * RequestQuote deleteMany
+   */
+  export type RequestQuoteDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which RequestQuotes to delete
+     */
+    where?: RequestQuoteWhereInput
+    /**
+     * Limit how many RequestQuotes to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * RequestQuote.booking
+   */
+  export type RequestQuote$bookingArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Booking
+     */
+    select?: BookingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Booking
+     */
+    omit?: BookingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingInclude<ExtArgs> | null
+    where?: BookingWhereInput
+  }
+
+  /**
+   * RequestQuote.timeslot
+   */
+  export type RequestQuote$timeslotArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TimeSlot
+     */
+    select?: TimeSlotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TimeSlot
+     */
+    omit?: TimeSlotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TimeSlotInclude<ExtArgs> | null
+    where?: TimeSlotWhereInput
+    orderBy?: TimeSlotOrderByWithRelationInput | TimeSlotOrderByWithRelationInput[]
+    cursor?: TimeSlotWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TimeSlotScalarFieldEnum | TimeSlotScalarFieldEnum[]
+  }
+
+  /**
+   * RequestQuote without action
+   */
+  export type RequestQuoteDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RequestQuote
+     */
+    select?: RequestQuoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RequestQuote
+     */
+    omit?: RequestQuoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RequestQuoteInclude<ExtArgs> | null
   }
 
 
@@ -3904,6 +5369,8 @@ export namespace Prisma {
     startTime: number
     endTime: number
     isAvailable: number
+    quotesRequested: number
+    bookingsRequested: number
     previousBookings: number
     createdBy: number
     createdAt: number
@@ -3955,6 +5422,8 @@ export namespace Prisma {
     startTime?: true
     endTime?: true
     isAvailable?: true
+    quotesRequested?: true
+    bookingsRequested?: true
     previousBookings?: true
     createdBy?: true
     createdAt?: true
@@ -4045,6 +5514,8 @@ export namespace Prisma {
     startTime: Date
     endTime: Date
     isAvailable: boolean
+    quotesRequested: string[]
+    bookingsRequested: string[]
     previousBookings: string[]
     createdBy: string
     createdAt: Date
@@ -4079,6 +5550,8 @@ export namespace Prisma {
     startTime?: boolean
     endTime?: boolean
     isAvailable?: boolean
+    quotesRequested?: boolean
+    bookingsRequested?: boolean
     previousBookings?: boolean
     createdBy?: boolean
     createdAt?: boolean
@@ -4087,6 +5560,8 @@ export namespace Prisma {
     deletedAt?: boolean
     deletedBy?: boolean
     booking?: boolean | TimeSlot$bookingArgs<ExtArgs>
+    requestQuote?: boolean | TimeSlot$requestQuoteArgs<ExtArgs>
+    _count?: boolean | TimeSlotCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["timeSlot"]>
 
   export type TimeSlotSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -4097,6 +5572,8 @@ export namespace Prisma {
     startTime?: boolean
     endTime?: boolean
     isAvailable?: boolean
+    quotesRequested?: boolean
+    bookingsRequested?: boolean
     previousBookings?: boolean
     createdBy?: boolean
     createdAt?: boolean
@@ -4115,6 +5592,8 @@ export namespace Prisma {
     startTime?: boolean
     endTime?: boolean
     isAvailable?: boolean
+    quotesRequested?: boolean
+    bookingsRequested?: boolean
     previousBookings?: boolean
     createdBy?: boolean
     createdAt?: boolean
@@ -4133,6 +5612,8 @@ export namespace Prisma {
     startTime?: boolean
     endTime?: boolean
     isAvailable?: boolean
+    quotesRequested?: boolean
+    bookingsRequested?: boolean
     previousBookings?: boolean
     createdBy?: boolean
     createdAt?: boolean
@@ -4142,9 +5623,11 @@ export namespace Prisma {
     deletedBy?: boolean
   }
 
-  export type TimeSlotOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "serviceId" | "serviceType" | "bookingId" | "startTime" | "endTime" | "isAvailable" | "previousBookings" | "createdBy" | "createdAt" | "updatedAt" | "updatedBy" | "deletedAt" | "deletedBy", ExtArgs["result"]["timeSlot"]>
+  export type TimeSlotOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "serviceId" | "serviceType" | "bookingId" | "startTime" | "endTime" | "isAvailable" | "quotesRequested" | "bookingsRequested" | "previousBookings" | "createdBy" | "createdAt" | "updatedAt" | "updatedBy" | "deletedAt" | "deletedBy", ExtArgs["result"]["timeSlot"]>
   export type TimeSlotInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     booking?: boolean | TimeSlot$bookingArgs<ExtArgs>
+    requestQuote?: boolean | TimeSlot$requestQuoteArgs<ExtArgs>
+    _count?: boolean | TimeSlotCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type TimeSlotIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     booking?: boolean | TimeSlot$bookingArgs<ExtArgs>
@@ -4157,6 +5640,7 @@ export namespace Prisma {
     name: "TimeSlot"
     objects: {
       booking: Prisma.$BookingPayload<ExtArgs> | null
+      requestQuote: Prisma.$RequestQuotePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -4166,6 +5650,8 @@ export namespace Prisma {
       startTime: Date
       endTime: Date
       isAvailable: boolean
+      quotesRequested: string[]
+      bookingsRequested: string[]
       previousBookings: string[]
       createdBy: string
       createdAt: Date
@@ -4568,6 +6054,7 @@ export namespace Prisma {
   export interface Prisma__TimeSlotClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     booking<T extends TimeSlot$bookingArgs<ExtArgs> = {}>(args?: Subset<T, TimeSlot$bookingArgs<ExtArgs>>): Prisma__BookingClient<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    requestQuote<T extends TimeSlot$requestQuoteArgs<ExtArgs> = {}>(args?: Subset<T, TimeSlot$requestQuoteArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RequestQuotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4604,6 +6091,8 @@ export namespace Prisma {
     readonly startTime: FieldRef<"TimeSlot", 'DateTime'>
     readonly endTime: FieldRef<"TimeSlot", 'DateTime'>
     readonly isAvailable: FieldRef<"TimeSlot", 'Boolean'>
+    readonly quotesRequested: FieldRef<"TimeSlot", 'String[]'>
+    readonly bookingsRequested: FieldRef<"TimeSlot", 'String[]'>
     readonly previousBookings: FieldRef<"TimeSlot", 'String[]'>
     readonly createdBy: FieldRef<"TimeSlot", 'String'>
     readonly createdAt: FieldRef<"TimeSlot", 'DateTime'>
@@ -5023,6 +6512,30 @@ export namespace Prisma {
      */
     include?: BookingInclude<ExtArgs> | null
     where?: BookingWhereInput
+  }
+
+  /**
+   * TimeSlot.requestQuote
+   */
+  export type TimeSlot$requestQuoteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RequestQuote
+     */
+    select?: RequestQuoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RequestQuote
+     */
+    omit?: RequestQuoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RequestQuoteInclude<ExtArgs> | null
+    where?: RequestQuoteWhereInput
+    orderBy?: RequestQuoteOrderByWithRelationInput | RequestQuoteOrderByWithRelationInput[]
+    cursor?: RequestQuoteWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: RequestQuoteScalarFieldEnum | RequestQuoteScalarFieldEnum[]
   }
 
   /**
@@ -7476,11 +8989,9 @@ export namespace Prisma {
     totalBeforeDiscount: 'totalBeforeDiscount',
     discount: 'discount',
     totalAfterDiscount: 'totalAfterDiscount',
-    isQuoteRequest: 'isQuoteRequest',
-    invoiceStatus: 'invoiceStatus',
+    invoice: 'invoice',
     paymentStatus: 'paymentStatus',
     status: 'status',
-    bookingDates: 'bookingDates',
     isTermsAccepted: 'isTermsAccepted',
     isCancellationPolicyAccepted: 'isCancellationPolicyAccepted',
     isLiabilityWaiverSigned: 'isLiabilityWaiverSigned',
@@ -7503,6 +9014,31 @@ export namespace Prisma {
   export type BookingScalarFieldEnum = (typeof BookingScalarFieldEnum)[keyof typeof BookingScalarFieldEnum]
 
 
+  export const RequestQuoteScalarFieldEnum: {
+    id: 'id',
+    customerId: 'customerId',
+    bookingId: 'bookingId',
+    serviceId: 'serviceId',
+    serviceType: 'serviceType',
+    budget: 'budget',
+    status: 'status',
+    bookingStatus: 'bookingStatus',
+    isTermsAccepted: 'isTermsAccepted',
+    isCancellationPolicyAccepted: 'isCancellationPolicyAccepted',
+    isLiabilityWaiverSigned: 'isLiabilityWaiverSigned',
+    source: 'source',
+    customerNotes: 'customerNotes',
+    previousDates: 'previousDates',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    deletedAt: 'deletedAt',
+    deletedBy: 'deletedBy',
+    billingDetails: 'billingDetails'
+  };
+
+  export type RequestQuoteScalarFieldEnum = (typeof RequestQuoteScalarFieldEnum)[keyof typeof RequestQuoteScalarFieldEnum]
+
+
   export const AvailableLocationsScalarFieldEnum: {
     id: 'id',
     country: 'country',
@@ -7522,6 +9058,8 @@ export namespace Prisma {
     startTime: 'startTime',
     endTime: 'endTime',
     isAvailable: 'isAvailable',
+    quotesRequested: 'quotesRequested',
+    bookingsRequested: 'bookingsRequested',
     previousBookings: 'previousBookings',
     createdBy: 'createdBy',
     createdAt: 'createdAt',
@@ -7583,6 +9121,13 @@ export namespace Prisma {
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+  export const JsonNullValueInput: {
+    JsonNull: typeof JsonNull
+  };
+
+  export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
   export const QueryMode: {
     default: 'default',
     insensitive: 'insensitive'
@@ -7597,6 +9142,15 @@ export namespace Prisma {
   };
 
   export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+  export const JsonNullValueFilter: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull,
+    AnyNull: typeof AnyNull
+  };
+
+  export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
   /**
@@ -7661,27 +9215,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Boolean'
-   */
-  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
-    
-
-
-  /**
-   * Reference to a field of type 'InvoiceStatus'
-   */
-  export type EnumInvoiceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvoiceStatus'>
-    
-
-
-  /**
-   * Reference to a field of type 'InvoiceStatus[]'
-   */
-  export type ListEnumInvoiceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvoiceStatus[]'>
-    
-
-
-  /**
    * Reference to a field of type 'PaymentStatus'
    */
   export type EnumPaymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentStatus'>
@@ -7710,6 +9243,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+  /**
    * Reference to a field of type 'BookingSource'
    */
   export type EnumBookingSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BookingSource'>
@@ -7720,6 +9260,34 @@ export namespace Prisma {
    * Reference to a field of type 'BookingSource[]'
    */
   export type ListEnumBookingSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BookingSource[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'InvoiceStatus'
+   */
+  export type EnumInvoiceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvoiceStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'InvoiceStatus[]'
+   */
+  export type ListEnumInvoiceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvoiceStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
+   * Reference to a field of type 'QueryMode'
+   */
+  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -7782,11 +9350,9 @@ export namespace Prisma {
     totalBeforeDiscount?: FloatFilter<"Booking"> | number
     discount?: FloatNullableFilter<"Booking"> | number | null
     totalAfterDiscount?: FloatFilter<"Booking"> | number
-    isQuoteRequest?: BoolFilter<"Booking"> | boolean
-    invoiceStatus?: EnumInvoiceStatusFilter<"Booking"> | $Enums.InvoiceStatus
+    invoice?: StringNullableListFilter<"Booking">
     paymentStatus?: EnumPaymentStatusFilter<"Booking"> | $Enums.PaymentStatus
     status?: EnumBookingStatusFilter<"Booking"> | $Enums.BookingStatus
-    bookingDates?: StringNullableListFilter<"Booking">
     isTermsAccepted?: BoolFilter<"Booking"> | boolean
     isCancellationPolicyAccepted?: BoolFilter<"Booking"> | boolean
     isLiabilityWaiverSigned?: BoolFilter<"Booking"> | boolean
@@ -7806,6 +9372,7 @@ export namespace Prisma {
     deletedBy?: StringNullableFilter<"Booking"> | string | null
     eventCenterBooking?: XOR<EventCenterBookingNullableScalarRelationFilter, EventCenterBookingWhereInput> | null
     cateringBooking?: XOR<CateringBookingNullableScalarRelationFilter, CateringBookingWhereInput> | null
+    requestQuote?: XOR<RequestQuoteNullableScalarRelationFilter, RequestQuoteWhereInput> | null
     timeslot?: TimeSlotListRelationFilter
   }
 
@@ -7820,11 +9387,9 @@ export namespace Prisma {
     totalBeforeDiscount?: SortOrder
     discount?: SortOrderInput | SortOrder
     totalAfterDiscount?: SortOrder
-    isQuoteRequest?: SortOrder
-    invoiceStatus?: SortOrder
+    invoice?: SortOrder
     paymentStatus?: SortOrder
     status?: SortOrder
-    bookingDates?: SortOrder
     isTermsAccepted?: SortOrder
     isCancellationPolicyAccepted?: SortOrder
     isLiabilityWaiverSigned?: SortOrder
@@ -7844,6 +9409,7 @@ export namespace Prisma {
     deletedBy?: SortOrderInput | SortOrder
     eventCenterBooking?: EventCenterBookingOrderByWithRelationInput
     cateringBooking?: CateringBookingOrderByWithRelationInput
+    requestQuote?: RequestQuoteOrderByWithRelationInput
     timeslot?: TimeSlotOrderByRelationAggregateInput
   }
 
@@ -7861,11 +9427,9 @@ export namespace Prisma {
     totalBeforeDiscount?: FloatFilter<"Booking"> | number
     discount?: FloatNullableFilter<"Booking"> | number | null
     totalAfterDiscount?: FloatFilter<"Booking"> | number
-    isQuoteRequest?: BoolFilter<"Booking"> | boolean
-    invoiceStatus?: EnumInvoiceStatusFilter<"Booking"> | $Enums.InvoiceStatus
+    invoice?: StringNullableListFilter<"Booking">
     paymentStatus?: EnumPaymentStatusFilter<"Booking"> | $Enums.PaymentStatus
     status?: EnumBookingStatusFilter<"Booking"> | $Enums.BookingStatus
-    bookingDates?: StringNullableListFilter<"Booking">
     isTermsAccepted?: BoolFilter<"Booking"> | boolean
     isCancellationPolicyAccepted?: BoolFilter<"Booking"> | boolean
     isLiabilityWaiverSigned?: BoolFilter<"Booking"> | boolean
@@ -7885,6 +9449,7 @@ export namespace Prisma {
     deletedBy?: StringNullableFilter<"Booking"> | string | null
     eventCenterBooking?: XOR<EventCenterBookingNullableScalarRelationFilter, EventCenterBookingWhereInput> | null
     cateringBooking?: XOR<CateringBookingNullableScalarRelationFilter, CateringBookingWhereInput> | null
+    requestQuote?: XOR<RequestQuoteNullableScalarRelationFilter, RequestQuoteWhereInput> | null
     timeslot?: TimeSlotListRelationFilter
   }, "id">
 
@@ -7899,11 +9464,9 @@ export namespace Prisma {
     totalBeforeDiscount?: SortOrder
     discount?: SortOrderInput | SortOrder
     totalAfterDiscount?: SortOrder
-    isQuoteRequest?: SortOrder
-    invoiceStatus?: SortOrder
+    invoice?: SortOrder
     paymentStatus?: SortOrder
     status?: SortOrder
-    bookingDates?: SortOrder
     isTermsAccepted?: SortOrder
     isCancellationPolicyAccepted?: SortOrder
     isLiabilityWaiverSigned?: SortOrder
@@ -7942,11 +9505,9 @@ export namespace Prisma {
     totalBeforeDiscount?: FloatWithAggregatesFilter<"Booking"> | number
     discount?: FloatNullableWithAggregatesFilter<"Booking"> | number | null
     totalAfterDiscount?: FloatWithAggregatesFilter<"Booking"> | number
-    isQuoteRequest?: BoolWithAggregatesFilter<"Booking"> | boolean
-    invoiceStatus?: EnumInvoiceStatusWithAggregatesFilter<"Booking"> | $Enums.InvoiceStatus
+    invoice?: StringNullableListFilter<"Booking">
     paymentStatus?: EnumPaymentStatusWithAggregatesFilter<"Booking"> | $Enums.PaymentStatus
     status?: EnumBookingStatusWithAggregatesFilter<"Booking"> | $Enums.BookingStatus
-    bookingDates?: StringNullableListFilter<"Booking">
     isTermsAccepted?: BoolWithAggregatesFilter<"Booking"> | boolean
     isCancellationPolicyAccepted?: BoolWithAggregatesFilter<"Booking"> | boolean
     isLiabilityWaiverSigned?: BoolWithAggregatesFilter<"Booking"> | boolean
@@ -7964,6 +9525,136 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"Booking"> | Date | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"Booking"> | Date | string | null
     deletedBy?: StringNullableWithAggregatesFilter<"Booking"> | string | null
+  }
+
+  export type RequestQuoteWhereInput = {
+    AND?: RequestQuoteWhereInput | RequestQuoteWhereInput[]
+    OR?: RequestQuoteWhereInput[]
+    NOT?: RequestQuoteWhereInput | RequestQuoteWhereInput[]
+    id?: StringFilter<"RequestQuote"> | string
+    customerId?: StringFilter<"RequestQuote"> | string
+    bookingId?: StringNullableFilter<"RequestQuote"> | string | null
+    serviceId?: StringFilter<"RequestQuote"> | string
+    serviceType?: EnumServiceTypeFilter<"RequestQuote"> | $Enums.ServiceType
+    budget?: FloatFilter<"RequestQuote"> | number
+    status?: EnumInvoiceStatusFilter<"RequestQuote"> | $Enums.InvoiceStatus
+    bookingStatus?: EnumBookingStatusFilter<"RequestQuote"> | $Enums.BookingStatus
+    isTermsAccepted?: BoolFilter<"RequestQuote"> | boolean
+    isCancellationPolicyAccepted?: BoolFilter<"RequestQuote"> | boolean
+    isLiabilityWaiverSigned?: BoolFilter<"RequestQuote"> | boolean
+    source?: EnumBookingSourceFilter<"RequestQuote"> | $Enums.BookingSource
+    customerNotes?: StringNullableFilter<"RequestQuote"> | string | null
+    previousDates?: StringNullableListFilter<"RequestQuote">
+    createdAt?: DateTimeFilter<"RequestQuote"> | Date | string
+    updatedAt?: DateTimeFilter<"RequestQuote"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"RequestQuote"> | Date | string | null
+    deletedBy?: StringNullableFilter<"RequestQuote"> | string | null
+    billingDetails?: JsonFilter<"RequestQuote">
+    booking?: XOR<BookingNullableScalarRelationFilter, BookingWhereInput> | null
+    timeslot?: TimeSlotListRelationFilter
+  }
+
+  export type RequestQuoteOrderByWithRelationInput = {
+    id?: SortOrder
+    customerId?: SortOrder
+    bookingId?: SortOrderInput | SortOrder
+    serviceId?: SortOrder
+    serviceType?: SortOrder
+    budget?: SortOrder
+    status?: SortOrder
+    bookingStatus?: SortOrder
+    isTermsAccepted?: SortOrder
+    isCancellationPolicyAccepted?: SortOrder
+    isLiabilityWaiverSigned?: SortOrder
+    source?: SortOrder
+    customerNotes?: SortOrderInput | SortOrder
+    previousDates?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    deletedBy?: SortOrderInput | SortOrder
+    billingDetails?: SortOrder
+    booking?: BookingOrderByWithRelationInput
+    timeslot?: TimeSlotOrderByRelationAggregateInput
+  }
+
+  export type RequestQuoteWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    bookingId?: string
+    AND?: RequestQuoteWhereInput | RequestQuoteWhereInput[]
+    OR?: RequestQuoteWhereInput[]
+    NOT?: RequestQuoteWhereInput | RequestQuoteWhereInput[]
+    customerId?: StringFilter<"RequestQuote"> | string
+    serviceId?: StringFilter<"RequestQuote"> | string
+    serviceType?: EnumServiceTypeFilter<"RequestQuote"> | $Enums.ServiceType
+    budget?: FloatFilter<"RequestQuote"> | number
+    status?: EnumInvoiceStatusFilter<"RequestQuote"> | $Enums.InvoiceStatus
+    bookingStatus?: EnumBookingStatusFilter<"RequestQuote"> | $Enums.BookingStatus
+    isTermsAccepted?: BoolFilter<"RequestQuote"> | boolean
+    isCancellationPolicyAccepted?: BoolFilter<"RequestQuote"> | boolean
+    isLiabilityWaiverSigned?: BoolFilter<"RequestQuote"> | boolean
+    source?: EnumBookingSourceFilter<"RequestQuote"> | $Enums.BookingSource
+    customerNotes?: StringNullableFilter<"RequestQuote"> | string | null
+    previousDates?: StringNullableListFilter<"RequestQuote">
+    createdAt?: DateTimeFilter<"RequestQuote"> | Date | string
+    updatedAt?: DateTimeFilter<"RequestQuote"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"RequestQuote"> | Date | string | null
+    deletedBy?: StringNullableFilter<"RequestQuote"> | string | null
+    billingDetails?: JsonFilter<"RequestQuote">
+    booking?: XOR<BookingNullableScalarRelationFilter, BookingWhereInput> | null
+    timeslot?: TimeSlotListRelationFilter
+  }, "id" | "bookingId">
+
+  export type RequestQuoteOrderByWithAggregationInput = {
+    id?: SortOrder
+    customerId?: SortOrder
+    bookingId?: SortOrderInput | SortOrder
+    serviceId?: SortOrder
+    serviceType?: SortOrder
+    budget?: SortOrder
+    status?: SortOrder
+    bookingStatus?: SortOrder
+    isTermsAccepted?: SortOrder
+    isCancellationPolicyAccepted?: SortOrder
+    isLiabilityWaiverSigned?: SortOrder
+    source?: SortOrder
+    customerNotes?: SortOrderInput | SortOrder
+    previousDates?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    deletedBy?: SortOrderInput | SortOrder
+    billingDetails?: SortOrder
+    _count?: RequestQuoteCountOrderByAggregateInput
+    _avg?: RequestQuoteAvgOrderByAggregateInput
+    _max?: RequestQuoteMaxOrderByAggregateInput
+    _min?: RequestQuoteMinOrderByAggregateInput
+    _sum?: RequestQuoteSumOrderByAggregateInput
+  }
+
+  export type RequestQuoteScalarWhereWithAggregatesInput = {
+    AND?: RequestQuoteScalarWhereWithAggregatesInput | RequestQuoteScalarWhereWithAggregatesInput[]
+    OR?: RequestQuoteScalarWhereWithAggregatesInput[]
+    NOT?: RequestQuoteScalarWhereWithAggregatesInput | RequestQuoteScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"RequestQuote"> | string
+    customerId?: StringWithAggregatesFilter<"RequestQuote"> | string
+    bookingId?: StringNullableWithAggregatesFilter<"RequestQuote"> | string | null
+    serviceId?: StringWithAggregatesFilter<"RequestQuote"> | string
+    serviceType?: EnumServiceTypeWithAggregatesFilter<"RequestQuote"> | $Enums.ServiceType
+    budget?: FloatWithAggregatesFilter<"RequestQuote"> | number
+    status?: EnumInvoiceStatusWithAggregatesFilter<"RequestQuote"> | $Enums.InvoiceStatus
+    bookingStatus?: EnumBookingStatusWithAggregatesFilter<"RequestQuote"> | $Enums.BookingStatus
+    isTermsAccepted?: BoolWithAggregatesFilter<"RequestQuote"> | boolean
+    isCancellationPolicyAccepted?: BoolWithAggregatesFilter<"RequestQuote"> | boolean
+    isLiabilityWaiverSigned?: BoolWithAggregatesFilter<"RequestQuote"> | boolean
+    source?: EnumBookingSourceWithAggregatesFilter<"RequestQuote"> | $Enums.BookingSource
+    customerNotes?: StringNullableWithAggregatesFilter<"RequestQuote"> | string | null
+    previousDates?: StringNullableListFilter<"RequestQuote">
+    createdAt?: DateTimeWithAggregatesFilter<"RequestQuote"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"RequestQuote"> | Date | string
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"RequestQuote"> | Date | string | null
+    deletedBy?: StringNullableWithAggregatesFilter<"RequestQuote"> | string | null
+    billingDetails?: JsonWithAggregatesFilter<"RequestQuote">
   }
 
   export type AvailableLocationsWhereInput = {
@@ -8029,6 +9720,8 @@ export namespace Prisma {
     startTime?: DateTimeFilter<"TimeSlot"> | Date | string
     endTime?: DateTimeFilter<"TimeSlot"> | Date | string
     isAvailable?: BoolFilter<"TimeSlot"> | boolean
+    quotesRequested?: StringNullableListFilter<"TimeSlot">
+    bookingsRequested?: StringNullableListFilter<"TimeSlot">
     previousBookings?: StringNullableListFilter<"TimeSlot">
     createdBy?: StringFilter<"TimeSlot"> | string
     createdAt?: DateTimeFilter<"TimeSlot"> | Date | string
@@ -8037,6 +9730,7 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"TimeSlot"> | Date | string | null
     deletedBy?: StringNullableFilter<"TimeSlot"> | string | null
     booking?: XOR<BookingNullableScalarRelationFilter, BookingWhereInput> | null
+    requestQuote?: RequestQuoteListRelationFilter
   }
 
   export type TimeSlotOrderByWithRelationInput = {
@@ -8047,6 +9741,8 @@ export namespace Prisma {
     startTime?: SortOrder
     endTime?: SortOrder
     isAvailable?: SortOrder
+    quotesRequested?: SortOrder
+    bookingsRequested?: SortOrder
     previousBookings?: SortOrder
     createdBy?: SortOrder
     createdAt?: SortOrder
@@ -8055,6 +9751,7 @@ export namespace Prisma {
     deletedAt?: SortOrderInput | SortOrder
     deletedBy?: SortOrderInput | SortOrder
     booking?: BookingOrderByWithRelationInput
+    requestQuote?: RequestQuoteOrderByRelationAggregateInput
   }
 
   export type TimeSlotWhereUniqueInput = Prisma.AtLeast<{
@@ -8068,6 +9765,8 @@ export namespace Prisma {
     startTime?: DateTimeFilter<"TimeSlot"> | Date | string
     endTime?: DateTimeFilter<"TimeSlot"> | Date | string
     isAvailable?: BoolFilter<"TimeSlot"> | boolean
+    quotesRequested?: StringNullableListFilter<"TimeSlot">
+    bookingsRequested?: StringNullableListFilter<"TimeSlot">
     previousBookings?: StringNullableListFilter<"TimeSlot">
     createdBy?: StringFilter<"TimeSlot"> | string
     createdAt?: DateTimeFilter<"TimeSlot"> | Date | string
@@ -8076,6 +9775,7 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"TimeSlot"> | Date | string | null
     deletedBy?: StringNullableFilter<"TimeSlot"> | string | null
     booking?: XOR<BookingNullableScalarRelationFilter, BookingWhereInput> | null
+    requestQuote?: RequestQuoteListRelationFilter
   }, "id">
 
   export type TimeSlotOrderByWithAggregationInput = {
@@ -8086,6 +9786,8 @@ export namespace Prisma {
     startTime?: SortOrder
     endTime?: SortOrder
     isAvailable?: SortOrder
+    quotesRequested?: SortOrder
+    bookingsRequested?: SortOrder
     previousBookings?: SortOrder
     createdBy?: SortOrder
     createdAt?: SortOrder
@@ -8109,6 +9811,8 @@ export namespace Prisma {
     startTime?: DateTimeWithAggregatesFilter<"TimeSlot"> | Date | string
     endTime?: DateTimeWithAggregatesFilter<"TimeSlot"> | Date | string
     isAvailable?: BoolWithAggregatesFilter<"TimeSlot"> | boolean
+    quotesRequested?: StringNullableListFilter<"TimeSlot">
+    bookingsRequested?: StringNullableListFilter<"TimeSlot">
     previousBookings?: StringNullableListFilter<"TimeSlot">
     createdBy?: StringWithAggregatesFilter<"TimeSlot"> | string
     createdAt?: DateTimeWithAggregatesFilter<"TimeSlot"> | Date | string
@@ -8338,11 +10042,9 @@ export namespace Prisma {
     totalBeforeDiscount: number
     discount?: number | null
     totalAfterDiscount: number
-    isQuoteRequest: boolean
-    invoiceStatus: $Enums.InvoiceStatus
+    invoice?: BookingCreateinvoiceInput | string[]
     paymentStatus: $Enums.PaymentStatus
     status: $Enums.BookingStatus
-    bookingDates?: BookingCreatebookingDatesInput | string[]
     isTermsAccepted: boolean
     isCancellationPolicyAccepted: boolean
     isLiabilityWaiverSigned: boolean
@@ -8362,6 +10064,7 @@ export namespace Prisma {
     deletedBy?: string | null
     eventCenterBooking?: EventCenterBookingCreateNestedOneWithoutBookingInput
     cateringBooking?: CateringBookingCreateNestedOneWithoutBookingInput
+    requestQuote?: RequestQuoteCreateNestedOneWithoutBookingInput
     timeslot?: TimeSlotCreateNestedManyWithoutBookingInput
   }
 
@@ -8376,11 +10079,9 @@ export namespace Prisma {
     totalBeforeDiscount: number
     discount?: number | null
     totalAfterDiscount: number
-    isQuoteRequest: boolean
-    invoiceStatus: $Enums.InvoiceStatus
+    invoice?: BookingCreateinvoiceInput | string[]
     paymentStatus: $Enums.PaymentStatus
     status: $Enums.BookingStatus
-    bookingDates?: BookingCreatebookingDatesInput | string[]
     isTermsAccepted: boolean
     isCancellationPolicyAccepted: boolean
     isLiabilityWaiverSigned: boolean
@@ -8400,6 +10101,7 @@ export namespace Prisma {
     deletedBy?: string | null
     eventCenterBooking?: EventCenterBookingUncheckedCreateNestedOneWithoutBookingInput
     cateringBooking?: CateringBookingUncheckedCreateNestedOneWithoutBookingInput
+    requestQuote?: RequestQuoteUncheckedCreateNestedOneWithoutBookingInput
     timeslot?: TimeSlotUncheckedCreateNestedManyWithoutBookingInput
   }
 
@@ -8414,11 +10116,9 @@ export namespace Prisma {
     totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
     discount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
-    isQuoteRequest?: BoolFieldUpdateOperationsInput | boolean
-    invoiceStatus?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+    invoice?: BookingUpdateinvoiceInput | string[]
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
-    bookingDates?: BookingUpdatebookingDatesInput | string[]
     isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
     isCancellationPolicyAccepted?: BoolFieldUpdateOperationsInput | boolean
     isLiabilityWaiverSigned?: BoolFieldUpdateOperationsInput | boolean
@@ -8438,6 +10138,7 @@ export namespace Prisma {
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
     eventCenterBooking?: EventCenterBookingUpdateOneWithoutBookingNestedInput
     cateringBooking?: CateringBookingUpdateOneWithoutBookingNestedInput
+    requestQuote?: RequestQuoteUpdateOneWithoutBookingNestedInput
     timeslot?: TimeSlotUpdateManyWithoutBookingNestedInput
   }
 
@@ -8452,11 +10153,9 @@ export namespace Prisma {
     totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
     discount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
-    isQuoteRequest?: BoolFieldUpdateOperationsInput | boolean
-    invoiceStatus?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+    invoice?: BookingUpdateinvoiceInput | string[]
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
-    bookingDates?: BookingUpdatebookingDatesInput | string[]
     isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
     isCancellationPolicyAccepted?: BoolFieldUpdateOperationsInput | boolean
     isLiabilityWaiverSigned?: BoolFieldUpdateOperationsInput | boolean
@@ -8476,6 +10175,7 @@ export namespace Prisma {
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
     eventCenterBooking?: EventCenterBookingUncheckedUpdateOneWithoutBookingNestedInput
     cateringBooking?: CateringBookingUncheckedUpdateOneWithoutBookingNestedInput
+    requestQuote?: RequestQuoteUncheckedUpdateOneWithoutBookingNestedInput
     timeslot?: TimeSlotUncheckedUpdateManyWithoutBookingNestedInput
   }
 
@@ -8490,11 +10190,9 @@ export namespace Prisma {
     totalBeforeDiscount: number
     discount?: number | null
     totalAfterDiscount: number
-    isQuoteRequest: boolean
-    invoiceStatus: $Enums.InvoiceStatus
+    invoice?: BookingCreateinvoiceInput | string[]
     paymentStatus: $Enums.PaymentStatus
     status: $Enums.BookingStatus
-    bookingDates?: BookingCreatebookingDatesInput | string[]
     isTermsAccepted: boolean
     isCancellationPolicyAccepted: boolean
     isLiabilityWaiverSigned: boolean
@@ -8525,11 +10223,9 @@ export namespace Prisma {
     totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
     discount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
-    isQuoteRequest?: BoolFieldUpdateOperationsInput | boolean
-    invoiceStatus?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+    invoice?: BookingUpdateinvoiceInput | string[]
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
-    bookingDates?: BookingUpdatebookingDatesInput | string[]
     isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
     isCancellationPolicyAccepted?: BoolFieldUpdateOperationsInput | boolean
     isLiabilityWaiverSigned?: BoolFieldUpdateOperationsInput | boolean
@@ -8560,11 +10256,9 @@ export namespace Prisma {
     totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
     discount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
-    isQuoteRequest?: BoolFieldUpdateOperationsInput | boolean
-    invoiceStatus?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+    invoice?: BookingUpdateinvoiceInput | string[]
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
-    bookingDates?: BookingUpdatebookingDatesInput | string[]
     isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
     isCancellationPolicyAccepted?: BoolFieldUpdateOperationsInput | boolean
     isLiabilityWaiverSigned?: BoolFieldUpdateOperationsInput | boolean
@@ -8582,6 +10276,163 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type RequestQuoteCreateInput = {
+    id?: string
+    customerId: string
+    serviceId: string
+    serviceType: $Enums.ServiceType
+    budget: number
+    status: $Enums.InvoiceStatus
+    bookingStatus: $Enums.BookingStatus
+    isTermsAccepted: boolean
+    isCancellationPolicyAccepted: boolean
+    isLiabilityWaiverSigned: boolean
+    source: $Enums.BookingSource
+    customerNotes?: string | null
+    previousDates?: RequestQuoteCreatepreviousDatesInput | string[]
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    billingDetails: JsonNullValueInput | InputJsonValue
+    booking?: BookingCreateNestedOneWithoutRequestQuoteInput
+    timeslot?: TimeSlotCreateNestedManyWithoutRequestQuoteInput
+  }
+
+  export type RequestQuoteUncheckedCreateInput = {
+    id?: string
+    customerId: string
+    bookingId?: string | null
+    serviceId: string
+    serviceType: $Enums.ServiceType
+    budget: number
+    status: $Enums.InvoiceStatus
+    bookingStatus: $Enums.BookingStatus
+    isTermsAccepted: boolean
+    isCancellationPolicyAccepted: boolean
+    isLiabilityWaiverSigned: boolean
+    source: $Enums.BookingSource
+    customerNotes?: string | null
+    previousDates?: RequestQuoteCreatepreviousDatesInput | string[]
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    billingDetails: JsonNullValueInput | InputJsonValue
+    timeslot?: TimeSlotUncheckedCreateNestedManyWithoutRequestQuoteInput
+  }
+
+  export type RequestQuoteUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    customerId?: StringFieldUpdateOperationsInput | string
+    serviceId?: StringFieldUpdateOperationsInput | string
+    serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+    budget?: FloatFieldUpdateOperationsInput | number
+    status?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+    bookingStatus?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+    isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
+    isCancellationPolicyAccepted?: BoolFieldUpdateOperationsInput | boolean
+    isLiabilityWaiverSigned?: BoolFieldUpdateOperationsInput | boolean
+    source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    previousDates?: RequestQuoteUpdatepreviousDatesInput | string[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    billingDetails?: JsonNullValueInput | InputJsonValue
+    booking?: BookingUpdateOneWithoutRequestQuoteNestedInput
+    timeslot?: TimeSlotUpdateManyWithoutRequestQuoteNestedInput
+  }
+
+  export type RequestQuoteUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    customerId?: StringFieldUpdateOperationsInput | string
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    serviceId?: StringFieldUpdateOperationsInput | string
+    serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+    budget?: FloatFieldUpdateOperationsInput | number
+    status?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+    bookingStatus?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+    isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
+    isCancellationPolicyAccepted?: BoolFieldUpdateOperationsInput | boolean
+    isLiabilityWaiverSigned?: BoolFieldUpdateOperationsInput | boolean
+    source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    previousDates?: RequestQuoteUpdatepreviousDatesInput | string[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    billingDetails?: JsonNullValueInput | InputJsonValue
+    timeslot?: TimeSlotUncheckedUpdateManyWithoutRequestQuoteNestedInput
+  }
+
+  export type RequestQuoteCreateManyInput = {
+    id?: string
+    customerId: string
+    bookingId?: string | null
+    serviceId: string
+    serviceType: $Enums.ServiceType
+    budget: number
+    status: $Enums.InvoiceStatus
+    bookingStatus: $Enums.BookingStatus
+    isTermsAccepted: boolean
+    isCancellationPolicyAccepted: boolean
+    isLiabilityWaiverSigned: boolean
+    source: $Enums.BookingSource
+    customerNotes?: string | null
+    previousDates?: RequestQuoteCreatepreviousDatesInput | string[]
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    billingDetails: JsonNullValueInput | InputJsonValue
+  }
+
+  export type RequestQuoteUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    customerId?: StringFieldUpdateOperationsInput | string
+    serviceId?: StringFieldUpdateOperationsInput | string
+    serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+    budget?: FloatFieldUpdateOperationsInput | number
+    status?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+    bookingStatus?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+    isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
+    isCancellationPolicyAccepted?: BoolFieldUpdateOperationsInput | boolean
+    isLiabilityWaiverSigned?: BoolFieldUpdateOperationsInput | boolean
+    source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    previousDates?: RequestQuoteUpdatepreviousDatesInput | string[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    billingDetails?: JsonNullValueInput | InputJsonValue
+  }
+
+  export type RequestQuoteUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    customerId?: StringFieldUpdateOperationsInput | string
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    serviceId?: StringFieldUpdateOperationsInput | string
+    serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+    budget?: FloatFieldUpdateOperationsInput | number
+    status?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+    bookingStatus?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+    isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
+    isCancellationPolicyAccepted?: BoolFieldUpdateOperationsInput | boolean
+    isLiabilityWaiverSigned?: BoolFieldUpdateOperationsInput | boolean
+    source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    previousDates?: RequestQuoteUpdatepreviousDatesInput | string[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    billingDetails?: JsonNullValueInput | InputJsonValue
   }
 
   export type AvailableLocationsCreateInput = {
@@ -8647,6 +10498,8 @@ export namespace Prisma {
     startTime: Date | string
     endTime: Date | string
     isAvailable?: boolean
+    quotesRequested?: TimeSlotCreatequotesRequestedInput | string[]
+    bookingsRequested?: TimeSlotCreatebookingsRequestedInput | string[]
     previousBookings?: TimeSlotCreatepreviousBookingsInput | string[]
     createdBy: string
     createdAt?: Date | string
@@ -8655,6 +10508,7 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     deletedBy?: string | null
     booking?: BookingCreateNestedOneWithoutTimeslotInput
+    requestQuote?: RequestQuoteCreateNestedManyWithoutTimeslotInput
   }
 
   export type TimeSlotUncheckedCreateInput = {
@@ -8665,6 +10519,8 @@ export namespace Prisma {
     startTime: Date | string
     endTime: Date | string
     isAvailable?: boolean
+    quotesRequested?: TimeSlotCreatequotesRequestedInput | string[]
+    bookingsRequested?: TimeSlotCreatebookingsRequestedInput | string[]
     previousBookings?: TimeSlotCreatepreviousBookingsInput | string[]
     createdBy: string
     createdAt?: Date | string
@@ -8672,6 +10528,7 @@ export namespace Prisma {
     updatedBy?: string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
+    requestQuote?: RequestQuoteUncheckedCreateNestedManyWithoutTimeslotInput
   }
 
   export type TimeSlotUpdateInput = {
@@ -8681,6 +10538,8 @@ export namespace Prisma {
     startTime?: DateTimeFieldUpdateOperationsInput | Date | string
     endTime?: DateTimeFieldUpdateOperationsInput | Date | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
+    quotesRequested?: TimeSlotUpdatequotesRequestedInput | string[]
+    bookingsRequested?: TimeSlotUpdatebookingsRequestedInput | string[]
     previousBookings?: TimeSlotUpdatepreviousBookingsInput | string[]
     createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8689,6 +10548,7 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
     booking?: BookingUpdateOneWithoutTimeslotNestedInput
+    requestQuote?: RequestQuoteUpdateManyWithoutTimeslotNestedInput
   }
 
   export type TimeSlotUncheckedUpdateInput = {
@@ -8699,6 +10559,8 @@ export namespace Prisma {
     startTime?: DateTimeFieldUpdateOperationsInput | Date | string
     endTime?: DateTimeFieldUpdateOperationsInput | Date | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
+    quotesRequested?: TimeSlotUpdatequotesRequestedInput | string[]
+    bookingsRequested?: TimeSlotUpdatebookingsRequestedInput | string[]
     previousBookings?: TimeSlotUpdatepreviousBookingsInput | string[]
     createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8706,6 +10568,7 @@ export namespace Prisma {
     updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    requestQuote?: RequestQuoteUncheckedUpdateManyWithoutTimeslotNestedInput
   }
 
   export type TimeSlotCreateManyInput = {
@@ -8716,6 +10579,8 @@ export namespace Prisma {
     startTime: Date | string
     endTime: Date | string
     isAvailable?: boolean
+    quotesRequested?: TimeSlotCreatequotesRequestedInput | string[]
+    bookingsRequested?: TimeSlotCreatebookingsRequestedInput | string[]
     previousBookings?: TimeSlotCreatepreviousBookingsInput | string[]
     createdBy: string
     createdAt?: Date | string
@@ -8732,6 +10597,8 @@ export namespace Prisma {
     startTime?: DateTimeFieldUpdateOperationsInput | Date | string
     endTime?: DateTimeFieldUpdateOperationsInput | Date | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
+    quotesRequested?: TimeSlotUpdatequotesRequestedInput | string[]
+    bookingsRequested?: TimeSlotUpdatebookingsRequestedInput | string[]
     previousBookings?: TimeSlotUpdatepreviousBookingsInput | string[]
     createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8749,6 +10616,8 @@ export namespace Prisma {
     startTime?: DateTimeFieldUpdateOperationsInput | Date | string
     endTime?: DateTimeFieldUpdateOperationsInput | Date | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
+    quotesRequested?: TimeSlotUpdatequotesRequestedInput | string[]
+    bookingsRequested?: TimeSlotUpdatebookingsRequestedInput | string[]
     previousBookings?: TimeSlotUpdatepreviousBookingsInput | string[]
     createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9071,16 +10940,12 @@ export namespace Prisma {
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
-  export type BoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
-  export type EnumInvoiceStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.InvoiceStatus | EnumInvoiceStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.InvoiceStatus[] | ListEnumInvoiceStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.InvoiceStatus[] | ListEnumInvoiceStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumInvoiceStatusFilter<$PrismaModel> | $Enums.InvoiceStatus
+  export type StringNullableListFilter<$PrismaModel = never> = {
+    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    has?: string | StringFieldRefInput<$PrismaModel> | null
+    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
+    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
   }
 
   export type EnumPaymentStatusFilter<$PrismaModel = never> = {
@@ -9097,12 +10962,9 @@ export namespace Prisma {
     not?: NestedEnumBookingStatusFilter<$PrismaModel> | $Enums.BookingStatus
   }
 
-  export type StringNullableListFilter<$PrismaModel = never> = {
-    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    has?: string | StringFieldRefInput<$PrismaModel> | null
-    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
-    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
-    isEmpty?: boolean
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
   export type EnumBookingSourceFilter<$PrismaModel = never> = {
@@ -9133,6 +10995,11 @@ export namespace Prisma {
     isNot?: CateringBookingWhereInput | null
   }
 
+  export type RequestQuoteNullableScalarRelationFilter = {
+    is?: RequestQuoteWhereInput | null
+    isNot?: RequestQuoteWhereInput | null
+  }
+
   export type TimeSlotListRelationFilter = {
     every?: TimeSlotWhereInput
     some?: TimeSlotWhereInput
@@ -9159,11 +11026,9 @@ export namespace Prisma {
     totalBeforeDiscount?: SortOrder
     discount?: SortOrder
     totalAfterDiscount?: SortOrder
-    isQuoteRequest?: SortOrder
-    invoiceStatus?: SortOrder
+    invoice?: SortOrder
     paymentStatus?: SortOrder
     status?: SortOrder
-    bookingDates?: SortOrder
     isTermsAccepted?: SortOrder
     isCancellationPolicyAccepted?: SortOrder
     isLiabilityWaiverSigned?: SortOrder
@@ -9200,8 +11065,6 @@ export namespace Prisma {
     totalBeforeDiscount?: SortOrder
     discount?: SortOrder
     totalAfterDiscount?: SortOrder
-    isQuoteRequest?: SortOrder
-    invoiceStatus?: SortOrder
     paymentStatus?: SortOrder
     status?: SortOrder
     isTermsAccepted?: SortOrder
@@ -9233,8 +11096,6 @@ export namespace Prisma {
     totalBeforeDiscount?: SortOrder
     discount?: SortOrder
     totalAfterDiscount?: SortOrder
-    isQuoteRequest?: SortOrder
-    invoiceStatus?: SortOrder
     paymentStatus?: SortOrder
     status?: SortOrder
     isTermsAccepted?: SortOrder
@@ -9353,24 +11214,6 @@ export namespace Prisma {
     _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
-  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
-  }
-
-  export type EnumInvoiceStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.InvoiceStatus | EnumInvoiceStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.InvoiceStatus[] | ListEnumInvoiceStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.InvoiceStatus[] | ListEnumInvoiceStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumInvoiceStatusWithAggregatesFilter<$PrismaModel> | $Enums.InvoiceStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumInvoiceStatusFilter<$PrismaModel>
-    _max?: NestedEnumInvoiceStatusFilter<$PrismaModel>
-  }
-
   export type EnumPaymentStatusWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.PaymentStatus | EnumPaymentStatusFieldRefInput<$PrismaModel>
     in?: $Enums.PaymentStatus[] | ListEnumPaymentStatusFieldRefInput<$PrismaModel>
@@ -9389,6 +11232,14 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumBookingStatusFilter<$PrismaModel>
     _max?: NestedEnumBookingStatusFilter<$PrismaModel>
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type EnumBookingSourceWithAggregatesFilter<$PrismaModel = never> = {
@@ -9413,6 +11264,147 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+
+  export type EnumInvoiceStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.InvoiceStatus | EnumInvoiceStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.InvoiceStatus[] | ListEnumInvoiceStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InvoiceStatus[] | ListEnumInvoiceStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumInvoiceStatusFilter<$PrismaModel> | $Enums.InvoiceStatus
+  }
+  export type JsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type BookingNullableScalarRelationFilter = {
+    is?: BookingWhereInput | null
+    isNot?: BookingWhereInput | null
+  }
+
+  export type RequestQuoteCountOrderByAggregateInput = {
+    id?: SortOrder
+    customerId?: SortOrder
+    bookingId?: SortOrder
+    serviceId?: SortOrder
+    serviceType?: SortOrder
+    budget?: SortOrder
+    status?: SortOrder
+    bookingStatus?: SortOrder
+    isTermsAccepted?: SortOrder
+    isCancellationPolicyAccepted?: SortOrder
+    isLiabilityWaiverSigned?: SortOrder
+    source?: SortOrder
+    customerNotes?: SortOrder
+    previousDates?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+    billingDetails?: SortOrder
+  }
+
+  export type RequestQuoteAvgOrderByAggregateInput = {
+    budget?: SortOrder
+  }
+
+  export type RequestQuoteMaxOrderByAggregateInput = {
+    id?: SortOrder
+    customerId?: SortOrder
+    bookingId?: SortOrder
+    serviceId?: SortOrder
+    serviceType?: SortOrder
+    budget?: SortOrder
+    status?: SortOrder
+    bookingStatus?: SortOrder
+    isTermsAccepted?: SortOrder
+    isCancellationPolicyAccepted?: SortOrder
+    isLiabilityWaiverSigned?: SortOrder
+    source?: SortOrder
+    customerNotes?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+  }
+
+  export type RequestQuoteMinOrderByAggregateInput = {
+    id?: SortOrder
+    customerId?: SortOrder
+    bookingId?: SortOrder
+    serviceId?: SortOrder
+    serviceType?: SortOrder
+    budget?: SortOrder
+    status?: SortOrder
+    bookingStatus?: SortOrder
+    isTermsAccepted?: SortOrder
+    isCancellationPolicyAccepted?: SortOrder
+    isLiabilityWaiverSigned?: SortOrder
+    source?: SortOrder
+    customerNotes?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+  }
+
+  export type RequestQuoteSumOrderByAggregateInput = {
+    budget?: SortOrder
+  }
+
+  export type EnumInvoiceStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.InvoiceStatus | EnumInvoiceStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.InvoiceStatus[] | ListEnumInvoiceStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InvoiceStatus[] | ListEnumInvoiceStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumInvoiceStatusWithAggregatesFilter<$PrismaModel> | $Enums.InvoiceStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumInvoiceStatusFilter<$PrismaModel>
+    _max?: NestedEnumInvoiceStatusFilter<$PrismaModel>
+  }
+  export type JsonWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedJsonFilter<$PrismaModel>
+    _max?: NestedJsonFilter<$PrismaModel>
   }
 
   export type EnumLocationStatusFilter<$PrismaModel = never> = {
@@ -9456,9 +11448,14 @@ export namespace Prisma {
     _max?: NestedEnumLocationStatusFilter<$PrismaModel>
   }
 
-  export type BookingNullableScalarRelationFilter = {
-    is?: BookingWhereInput | null
-    isNot?: BookingWhereInput | null
+  export type RequestQuoteListRelationFilter = {
+    every?: RequestQuoteWhereInput
+    some?: RequestQuoteWhereInput
+    none?: RequestQuoteWhereInput
+  }
+
+  export type RequestQuoteOrderByRelationAggregateInput = {
+    _count?: SortOrder
   }
 
   export type TimeSlotCountOrderByAggregateInput = {
@@ -9469,6 +11466,8 @@ export namespace Prisma {
     startTime?: SortOrder
     endTime?: SortOrder
     isAvailable?: SortOrder
+    quotesRequested?: SortOrder
+    bookingsRequested?: SortOrder
     previousBookings?: SortOrder
     createdBy?: SortOrder
     createdAt?: SortOrder
@@ -9659,7 +11658,7 @@ export namespace Prisma {
     noOfGuest?: SortOrder
   }
 
-  export type BookingCreatebookingDatesInput = {
+  export type BookingCreateinvoiceInput = {
     set: string[]
   }
 
@@ -9679,6 +11678,12 @@ export namespace Prisma {
     connect?: CateringBookingWhereUniqueInput
   }
 
+  export type RequestQuoteCreateNestedOneWithoutBookingInput = {
+    create?: XOR<RequestQuoteCreateWithoutBookingInput, RequestQuoteUncheckedCreateWithoutBookingInput>
+    connectOrCreate?: RequestQuoteCreateOrConnectWithoutBookingInput
+    connect?: RequestQuoteWhereUniqueInput
+  }
+
   export type TimeSlotCreateNestedManyWithoutBookingInput = {
     create?: XOR<TimeSlotCreateWithoutBookingInput, TimeSlotUncheckedCreateWithoutBookingInput> | TimeSlotCreateWithoutBookingInput[] | TimeSlotUncheckedCreateWithoutBookingInput[]
     connectOrCreate?: TimeSlotCreateOrConnectWithoutBookingInput | TimeSlotCreateOrConnectWithoutBookingInput[]
@@ -9696,6 +11701,12 @@ export namespace Prisma {
     create?: XOR<CateringBookingCreateWithoutBookingInput, CateringBookingUncheckedCreateWithoutBookingInput>
     connectOrCreate?: CateringBookingCreateOrConnectWithoutBookingInput
     connect?: CateringBookingWhereUniqueInput
+  }
+
+  export type RequestQuoteUncheckedCreateNestedOneWithoutBookingInput = {
+    create?: XOR<RequestQuoteCreateWithoutBookingInput, RequestQuoteUncheckedCreateWithoutBookingInput>
+    connectOrCreate?: RequestQuoteCreateOrConnectWithoutBookingInput
+    connect?: RequestQuoteWhereUniqueInput
   }
 
   export type TimeSlotUncheckedCreateNestedManyWithoutBookingInput = {
@@ -9737,12 +11748,9 @@ export namespace Prisma {
     divide?: number
   }
 
-  export type BoolFieldUpdateOperationsInput = {
-    set?: boolean
-  }
-
-  export type EnumInvoiceStatusFieldUpdateOperationsInput = {
-    set?: $Enums.InvoiceStatus
+  export type BookingUpdateinvoiceInput = {
+    set?: string[]
+    push?: string | string[]
   }
 
   export type EnumPaymentStatusFieldUpdateOperationsInput = {
@@ -9753,9 +11761,8 @@ export namespace Prisma {
     set?: $Enums.BookingStatus
   }
 
-  export type BookingUpdatebookingDatesInput = {
-    set?: string[]
-    push?: string | string[]
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
   }
 
   export type EnumBookingSourceFieldUpdateOperationsInput = {
@@ -9789,6 +11796,16 @@ export namespace Prisma {
     delete?: CateringBookingWhereInput | boolean
     connect?: CateringBookingWhereUniqueInput
     update?: XOR<XOR<CateringBookingUpdateToOneWithWhereWithoutBookingInput, CateringBookingUpdateWithoutBookingInput>, CateringBookingUncheckedUpdateWithoutBookingInput>
+  }
+
+  export type RequestQuoteUpdateOneWithoutBookingNestedInput = {
+    create?: XOR<RequestQuoteCreateWithoutBookingInput, RequestQuoteUncheckedCreateWithoutBookingInput>
+    connectOrCreate?: RequestQuoteCreateOrConnectWithoutBookingInput
+    upsert?: RequestQuoteUpsertWithoutBookingInput
+    disconnect?: RequestQuoteWhereInput | boolean
+    delete?: RequestQuoteWhereInput | boolean
+    connect?: RequestQuoteWhereUniqueInput
+    update?: XOR<XOR<RequestQuoteUpdateToOneWithWhereWithoutBookingInput, RequestQuoteUpdateWithoutBookingInput>, RequestQuoteUncheckedUpdateWithoutBookingInput>
   }
 
   export type TimeSlotUpdateManyWithoutBookingNestedInput = {
@@ -9825,6 +11842,16 @@ export namespace Prisma {
     update?: XOR<XOR<CateringBookingUpdateToOneWithWhereWithoutBookingInput, CateringBookingUpdateWithoutBookingInput>, CateringBookingUncheckedUpdateWithoutBookingInput>
   }
 
+  export type RequestQuoteUncheckedUpdateOneWithoutBookingNestedInput = {
+    create?: XOR<RequestQuoteCreateWithoutBookingInput, RequestQuoteUncheckedCreateWithoutBookingInput>
+    connectOrCreate?: RequestQuoteCreateOrConnectWithoutBookingInput
+    upsert?: RequestQuoteUpsertWithoutBookingInput
+    disconnect?: RequestQuoteWhereInput | boolean
+    delete?: RequestQuoteWhereInput | boolean
+    connect?: RequestQuoteWhereUniqueInput
+    update?: XOR<XOR<RequestQuoteUpdateToOneWithWhereWithoutBookingInput, RequestQuoteUpdateWithoutBookingInput>, RequestQuoteUncheckedUpdateWithoutBookingInput>
+  }
+
   export type TimeSlotUncheckedUpdateManyWithoutBookingNestedInput = {
     create?: XOR<TimeSlotCreateWithoutBookingInput, TimeSlotUncheckedCreateWithoutBookingInput> | TimeSlotCreateWithoutBookingInput[] | TimeSlotUncheckedCreateWithoutBookingInput[]
     connectOrCreate?: TimeSlotCreateOrConnectWithoutBookingInput | TimeSlotCreateOrConnectWithoutBookingInput[]
@@ -9839,8 +11866,83 @@ export namespace Prisma {
     deleteMany?: TimeSlotScalarWhereInput | TimeSlotScalarWhereInput[]
   }
 
+  export type RequestQuoteCreatepreviousDatesInput = {
+    set: string[]
+  }
+
+  export type BookingCreateNestedOneWithoutRequestQuoteInput = {
+    create?: XOR<BookingCreateWithoutRequestQuoteInput, BookingUncheckedCreateWithoutRequestQuoteInput>
+    connectOrCreate?: BookingCreateOrConnectWithoutRequestQuoteInput
+    connect?: BookingWhereUniqueInput
+  }
+
+  export type TimeSlotCreateNestedManyWithoutRequestQuoteInput = {
+    create?: XOR<TimeSlotCreateWithoutRequestQuoteInput, TimeSlotUncheckedCreateWithoutRequestQuoteInput> | TimeSlotCreateWithoutRequestQuoteInput[] | TimeSlotUncheckedCreateWithoutRequestQuoteInput[]
+    connectOrCreate?: TimeSlotCreateOrConnectWithoutRequestQuoteInput | TimeSlotCreateOrConnectWithoutRequestQuoteInput[]
+    connect?: TimeSlotWhereUniqueInput | TimeSlotWhereUniqueInput[]
+  }
+
+  export type TimeSlotUncheckedCreateNestedManyWithoutRequestQuoteInput = {
+    create?: XOR<TimeSlotCreateWithoutRequestQuoteInput, TimeSlotUncheckedCreateWithoutRequestQuoteInput> | TimeSlotCreateWithoutRequestQuoteInput[] | TimeSlotUncheckedCreateWithoutRequestQuoteInput[]
+    connectOrCreate?: TimeSlotCreateOrConnectWithoutRequestQuoteInput | TimeSlotCreateOrConnectWithoutRequestQuoteInput[]
+    connect?: TimeSlotWhereUniqueInput | TimeSlotWhereUniqueInput[]
+  }
+
+  export type EnumInvoiceStatusFieldUpdateOperationsInput = {
+    set?: $Enums.InvoiceStatus
+  }
+
+  export type RequestQuoteUpdatepreviousDatesInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type BookingUpdateOneWithoutRequestQuoteNestedInput = {
+    create?: XOR<BookingCreateWithoutRequestQuoteInput, BookingUncheckedCreateWithoutRequestQuoteInput>
+    connectOrCreate?: BookingCreateOrConnectWithoutRequestQuoteInput
+    upsert?: BookingUpsertWithoutRequestQuoteInput
+    disconnect?: BookingWhereInput | boolean
+    delete?: BookingWhereInput | boolean
+    connect?: BookingWhereUniqueInput
+    update?: XOR<XOR<BookingUpdateToOneWithWhereWithoutRequestQuoteInput, BookingUpdateWithoutRequestQuoteInput>, BookingUncheckedUpdateWithoutRequestQuoteInput>
+  }
+
+  export type TimeSlotUpdateManyWithoutRequestQuoteNestedInput = {
+    create?: XOR<TimeSlotCreateWithoutRequestQuoteInput, TimeSlotUncheckedCreateWithoutRequestQuoteInput> | TimeSlotCreateWithoutRequestQuoteInput[] | TimeSlotUncheckedCreateWithoutRequestQuoteInput[]
+    connectOrCreate?: TimeSlotCreateOrConnectWithoutRequestQuoteInput | TimeSlotCreateOrConnectWithoutRequestQuoteInput[]
+    upsert?: TimeSlotUpsertWithWhereUniqueWithoutRequestQuoteInput | TimeSlotUpsertWithWhereUniqueWithoutRequestQuoteInput[]
+    set?: TimeSlotWhereUniqueInput | TimeSlotWhereUniqueInput[]
+    disconnect?: TimeSlotWhereUniqueInput | TimeSlotWhereUniqueInput[]
+    delete?: TimeSlotWhereUniqueInput | TimeSlotWhereUniqueInput[]
+    connect?: TimeSlotWhereUniqueInput | TimeSlotWhereUniqueInput[]
+    update?: TimeSlotUpdateWithWhereUniqueWithoutRequestQuoteInput | TimeSlotUpdateWithWhereUniqueWithoutRequestQuoteInput[]
+    updateMany?: TimeSlotUpdateManyWithWhereWithoutRequestQuoteInput | TimeSlotUpdateManyWithWhereWithoutRequestQuoteInput[]
+    deleteMany?: TimeSlotScalarWhereInput | TimeSlotScalarWhereInput[]
+  }
+
+  export type TimeSlotUncheckedUpdateManyWithoutRequestQuoteNestedInput = {
+    create?: XOR<TimeSlotCreateWithoutRequestQuoteInput, TimeSlotUncheckedCreateWithoutRequestQuoteInput> | TimeSlotCreateWithoutRequestQuoteInput[] | TimeSlotUncheckedCreateWithoutRequestQuoteInput[]
+    connectOrCreate?: TimeSlotCreateOrConnectWithoutRequestQuoteInput | TimeSlotCreateOrConnectWithoutRequestQuoteInput[]
+    upsert?: TimeSlotUpsertWithWhereUniqueWithoutRequestQuoteInput | TimeSlotUpsertWithWhereUniqueWithoutRequestQuoteInput[]
+    set?: TimeSlotWhereUniqueInput | TimeSlotWhereUniqueInput[]
+    disconnect?: TimeSlotWhereUniqueInput | TimeSlotWhereUniqueInput[]
+    delete?: TimeSlotWhereUniqueInput | TimeSlotWhereUniqueInput[]
+    connect?: TimeSlotWhereUniqueInput | TimeSlotWhereUniqueInput[]
+    update?: TimeSlotUpdateWithWhereUniqueWithoutRequestQuoteInput | TimeSlotUpdateWithWhereUniqueWithoutRequestQuoteInput[]
+    updateMany?: TimeSlotUpdateManyWithWhereWithoutRequestQuoteInput | TimeSlotUpdateManyWithWhereWithoutRequestQuoteInput[]
+    deleteMany?: TimeSlotScalarWhereInput | TimeSlotScalarWhereInput[]
+  }
+
   export type EnumLocationStatusFieldUpdateOperationsInput = {
     set?: $Enums.LocationStatus
+  }
+
+  export type TimeSlotCreatequotesRequestedInput = {
+    set: string[]
+  }
+
+  export type TimeSlotCreatebookingsRequestedInput = {
+    set: string[]
   }
 
   export type TimeSlotCreatepreviousBookingsInput = {
@@ -9851,6 +11953,28 @@ export namespace Prisma {
     create?: XOR<BookingCreateWithoutTimeslotInput, BookingUncheckedCreateWithoutTimeslotInput>
     connectOrCreate?: BookingCreateOrConnectWithoutTimeslotInput
     connect?: BookingWhereUniqueInput
+  }
+
+  export type RequestQuoteCreateNestedManyWithoutTimeslotInput = {
+    create?: XOR<RequestQuoteCreateWithoutTimeslotInput, RequestQuoteUncheckedCreateWithoutTimeslotInput> | RequestQuoteCreateWithoutTimeslotInput[] | RequestQuoteUncheckedCreateWithoutTimeslotInput[]
+    connectOrCreate?: RequestQuoteCreateOrConnectWithoutTimeslotInput | RequestQuoteCreateOrConnectWithoutTimeslotInput[]
+    connect?: RequestQuoteWhereUniqueInput | RequestQuoteWhereUniqueInput[]
+  }
+
+  export type RequestQuoteUncheckedCreateNestedManyWithoutTimeslotInput = {
+    create?: XOR<RequestQuoteCreateWithoutTimeslotInput, RequestQuoteUncheckedCreateWithoutTimeslotInput> | RequestQuoteCreateWithoutTimeslotInput[] | RequestQuoteUncheckedCreateWithoutTimeslotInput[]
+    connectOrCreate?: RequestQuoteCreateOrConnectWithoutTimeslotInput | RequestQuoteCreateOrConnectWithoutTimeslotInput[]
+    connect?: RequestQuoteWhereUniqueInput | RequestQuoteWhereUniqueInput[]
+  }
+
+  export type TimeSlotUpdatequotesRequestedInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type TimeSlotUpdatebookingsRequestedInput = {
+    set?: string[]
+    push?: string | string[]
   }
 
   export type TimeSlotUpdatepreviousBookingsInput = {
@@ -9866,6 +11990,32 @@ export namespace Prisma {
     delete?: BookingWhereInput | boolean
     connect?: BookingWhereUniqueInput
     update?: XOR<XOR<BookingUpdateToOneWithWhereWithoutTimeslotInput, BookingUpdateWithoutTimeslotInput>, BookingUncheckedUpdateWithoutTimeslotInput>
+  }
+
+  export type RequestQuoteUpdateManyWithoutTimeslotNestedInput = {
+    create?: XOR<RequestQuoteCreateWithoutTimeslotInput, RequestQuoteUncheckedCreateWithoutTimeslotInput> | RequestQuoteCreateWithoutTimeslotInput[] | RequestQuoteUncheckedCreateWithoutTimeslotInput[]
+    connectOrCreate?: RequestQuoteCreateOrConnectWithoutTimeslotInput | RequestQuoteCreateOrConnectWithoutTimeslotInput[]
+    upsert?: RequestQuoteUpsertWithWhereUniqueWithoutTimeslotInput | RequestQuoteUpsertWithWhereUniqueWithoutTimeslotInput[]
+    set?: RequestQuoteWhereUniqueInput | RequestQuoteWhereUniqueInput[]
+    disconnect?: RequestQuoteWhereUniqueInput | RequestQuoteWhereUniqueInput[]
+    delete?: RequestQuoteWhereUniqueInput | RequestQuoteWhereUniqueInput[]
+    connect?: RequestQuoteWhereUniqueInput | RequestQuoteWhereUniqueInput[]
+    update?: RequestQuoteUpdateWithWhereUniqueWithoutTimeslotInput | RequestQuoteUpdateWithWhereUniqueWithoutTimeslotInput[]
+    updateMany?: RequestQuoteUpdateManyWithWhereWithoutTimeslotInput | RequestQuoteUpdateManyWithWhereWithoutTimeslotInput[]
+    deleteMany?: RequestQuoteScalarWhereInput | RequestQuoteScalarWhereInput[]
+  }
+
+  export type RequestQuoteUncheckedUpdateManyWithoutTimeslotNestedInput = {
+    create?: XOR<RequestQuoteCreateWithoutTimeslotInput, RequestQuoteUncheckedCreateWithoutTimeslotInput> | RequestQuoteCreateWithoutTimeslotInput[] | RequestQuoteUncheckedCreateWithoutTimeslotInput[]
+    connectOrCreate?: RequestQuoteCreateOrConnectWithoutTimeslotInput | RequestQuoteCreateOrConnectWithoutTimeslotInput[]
+    upsert?: RequestQuoteUpsertWithWhereUniqueWithoutTimeslotInput | RequestQuoteUpsertWithWhereUniqueWithoutTimeslotInput[]
+    set?: RequestQuoteWhereUniqueInput | RequestQuoteWhereUniqueInput[]
+    disconnect?: RequestQuoteWhereUniqueInput | RequestQuoteWhereUniqueInput[]
+    delete?: RequestQuoteWhereUniqueInput | RequestQuoteWhereUniqueInput[]
+    connect?: RequestQuoteWhereUniqueInput | RequestQuoteWhereUniqueInput[]
+    update?: RequestQuoteUpdateWithWhereUniqueWithoutTimeslotInput | RequestQuoteUpdateWithWhereUniqueWithoutTimeslotInput[]
+    updateMany?: RequestQuoteUpdateManyWithWhereWithoutTimeslotInput | RequestQuoteUpdateManyWithWhereWithoutTimeslotInput[]
+    deleteMany?: RequestQuoteScalarWhereInput | RequestQuoteScalarWhereInput[]
   }
 
   export type EventCenterBookingCreatespecialRequirementsInput = {
@@ -10026,18 +12176,6 @@ export namespace Prisma {
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
-  export type NestedBoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
-  export type NestedEnumInvoiceStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.InvoiceStatus | EnumInvoiceStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.InvoiceStatus[] | ListEnumInvoiceStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.InvoiceStatus[] | ListEnumInvoiceStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumInvoiceStatusFilter<$PrismaModel> | $Enums.InvoiceStatus
-  }
-
   export type NestedEnumPaymentStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.PaymentStatus | EnumPaymentStatusFieldRefInput<$PrismaModel>
     in?: $Enums.PaymentStatus[] | ListEnumPaymentStatusFieldRefInput<$PrismaModel>
@@ -10050,6 +12188,11 @@ export namespace Prisma {
     in?: $Enums.BookingStatus[] | ListEnumBookingStatusFieldRefInput<$PrismaModel>
     notIn?: $Enums.BookingStatus[] | ListEnumBookingStatusFieldRefInput<$PrismaModel>
     not?: NestedEnumBookingStatusFilter<$PrismaModel> | $Enums.BookingStatus
+  }
+
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
   export type NestedEnumBookingSourceFilter<$PrismaModel = never> = {
@@ -10182,24 +12325,6 @@ export namespace Prisma {
     _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
-  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
-  }
-
-  export type NestedEnumInvoiceStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.InvoiceStatus | EnumInvoiceStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.InvoiceStatus[] | ListEnumInvoiceStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.InvoiceStatus[] | ListEnumInvoiceStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumInvoiceStatusWithAggregatesFilter<$PrismaModel> | $Enums.InvoiceStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumInvoiceStatusFilter<$PrismaModel>
-    _max?: NestedEnumInvoiceStatusFilter<$PrismaModel>
-  }
-
   export type NestedEnumPaymentStatusWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.PaymentStatus | EnumPaymentStatusFieldRefInput<$PrismaModel>
     in?: $Enums.PaymentStatus[] | ListEnumPaymentStatusFieldRefInput<$PrismaModel>
@@ -10218,6 +12343,14 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumBookingStatusFilter<$PrismaModel>
     _max?: NestedEnumBookingStatusFilter<$PrismaModel>
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type NestedEnumBookingSourceWithAggregatesFilter<$PrismaModel = never> = {
@@ -10242,6 +12375,46 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumInvoiceStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.InvoiceStatus | EnumInvoiceStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.InvoiceStatus[] | ListEnumInvoiceStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InvoiceStatus[] | ListEnumInvoiceStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumInvoiceStatusFilter<$PrismaModel> | $Enums.InvoiceStatus
+  }
+
+  export type NestedEnumInvoiceStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.InvoiceStatus | EnumInvoiceStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.InvoiceStatus[] | ListEnumInvoiceStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InvoiceStatus[] | ListEnumInvoiceStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumInvoiceStatusWithAggregatesFilter<$PrismaModel> | $Enums.InvoiceStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumInvoiceStatusFilter<$PrismaModel>
+    _max?: NestedEnumInvoiceStatusFilter<$PrismaModel>
+  }
+  export type NestedJsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
   export type NestedEnumLocationStatusFilter<$PrismaModel = never> = {
@@ -10353,6 +12526,55 @@ export namespace Prisma {
     create: XOR<CateringBookingCreateWithoutBookingInput, CateringBookingUncheckedCreateWithoutBookingInput>
   }
 
+  export type RequestQuoteCreateWithoutBookingInput = {
+    id?: string
+    customerId: string
+    serviceId: string
+    serviceType: $Enums.ServiceType
+    budget: number
+    status: $Enums.InvoiceStatus
+    bookingStatus: $Enums.BookingStatus
+    isTermsAccepted: boolean
+    isCancellationPolicyAccepted: boolean
+    isLiabilityWaiverSigned: boolean
+    source: $Enums.BookingSource
+    customerNotes?: string | null
+    previousDates?: RequestQuoteCreatepreviousDatesInput | string[]
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    billingDetails: JsonNullValueInput | InputJsonValue
+    timeslot?: TimeSlotCreateNestedManyWithoutRequestQuoteInput
+  }
+
+  export type RequestQuoteUncheckedCreateWithoutBookingInput = {
+    id?: string
+    customerId: string
+    serviceId: string
+    serviceType: $Enums.ServiceType
+    budget: number
+    status: $Enums.InvoiceStatus
+    bookingStatus: $Enums.BookingStatus
+    isTermsAccepted: boolean
+    isCancellationPolicyAccepted: boolean
+    isLiabilityWaiverSigned: boolean
+    source: $Enums.BookingSource
+    customerNotes?: string | null
+    previousDates?: RequestQuoteCreatepreviousDatesInput | string[]
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    billingDetails: JsonNullValueInput | InputJsonValue
+    timeslot?: TimeSlotUncheckedCreateNestedManyWithoutRequestQuoteInput
+  }
+
+  export type RequestQuoteCreateOrConnectWithoutBookingInput = {
+    where: RequestQuoteWhereUniqueInput
+    create: XOR<RequestQuoteCreateWithoutBookingInput, RequestQuoteUncheckedCreateWithoutBookingInput>
+  }
+
   export type TimeSlotCreateWithoutBookingInput = {
     id?: string
     serviceId: string
@@ -10360,6 +12582,8 @@ export namespace Prisma {
     startTime: Date | string
     endTime: Date | string
     isAvailable?: boolean
+    quotesRequested?: TimeSlotCreatequotesRequestedInput | string[]
+    bookingsRequested?: TimeSlotCreatebookingsRequestedInput | string[]
     previousBookings?: TimeSlotCreatepreviousBookingsInput | string[]
     createdBy: string
     createdAt?: Date | string
@@ -10367,6 +12591,7 @@ export namespace Prisma {
     updatedBy?: string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
+    requestQuote?: RequestQuoteCreateNestedManyWithoutTimeslotInput
   }
 
   export type TimeSlotUncheckedCreateWithoutBookingInput = {
@@ -10376,6 +12601,8 @@ export namespace Prisma {
     startTime: Date | string
     endTime: Date | string
     isAvailable?: boolean
+    quotesRequested?: TimeSlotCreatequotesRequestedInput | string[]
+    bookingsRequested?: TimeSlotCreatebookingsRequestedInput | string[]
     previousBookings?: TimeSlotCreatepreviousBookingsInput | string[]
     createdBy: string
     createdAt?: Date | string
@@ -10383,6 +12610,7 @@ export namespace Prisma {
     updatedBy?: string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
+    requestQuote?: RequestQuoteUncheckedCreateNestedManyWithoutTimeslotInput
   }
 
   export type TimeSlotCreateOrConnectWithoutBookingInput = {
@@ -10483,6 +12711,61 @@ export namespace Prisma {
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
+  export type RequestQuoteUpsertWithoutBookingInput = {
+    update: XOR<RequestQuoteUpdateWithoutBookingInput, RequestQuoteUncheckedUpdateWithoutBookingInput>
+    create: XOR<RequestQuoteCreateWithoutBookingInput, RequestQuoteUncheckedCreateWithoutBookingInput>
+    where?: RequestQuoteWhereInput
+  }
+
+  export type RequestQuoteUpdateToOneWithWhereWithoutBookingInput = {
+    where?: RequestQuoteWhereInput
+    data: XOR<RequestQuoteUpdateWithoutBookingInput, RequestQuoteUncheckedUpdateWithoutBookingInput>
+  }
+
+  export type RequestQuoteUpdateWithoutBookingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    customerId?: StringFieldUpdateOperationsInput | string
+    serviceId?: StringFieldUpdateOperationsInput | string
+    serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+    budget?: FloatFieldUpdateOperationsInput | number
+    status?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+    bookingStatus?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+    isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
+    isCancellationPolicyAccepted?: BoolFieldUpdateOperationsInput | boolean
+    isLiabilityWaiverSigned?: BoolFieldUpdateOperationsInput | boolean
+    source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    previousDates?: RequestQuoteUpdatepreviousDatesInput | string[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    billingDetails?: JsonNullValueInput | InputJsonValue
+    timeslot?: TimeSlotUpdateManyWithoutRequestQuoteNestedInput
+  }
+
+  export type RequestQuoteUncheckedUpdateWithoutBookingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    customerId?: StringFieldUpdateOperationsInput | string
+    serviceId?: StringFieldUpdateOperationsInput | string
+    serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+    budget?: FloatFieldUpdateOperationsInput | number
+    status?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+    bookingStatus?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+    isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
+    isCancellationPolicyAccepted?: BoolFieldUpdateOperationsInput | boolean
+    isLiabilityWaiverSigned?: BoolFieldUpdateOperationsInput | boolean
+    source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    previousDates?: RequestQuoteUpdatepreviousDatesInput | string[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    billingDetails?: JsonNullValueInput | InputJsonValue
+    timeslot?: TimeSlotUncheckedUpdateManyWithoutRequestQuoteNestedInput
+  }
+
   export type TimeSlotUpsertWithWhereUniqueWithoutBookingInput = {
     where: TimeSlotWhereUniqueInput
     update: XOR<TimeSlotUpdateWithoutBookingInput, TimeSlotUncheckedUpdateWithoutBookingInput>
@@ -10510,6 +12793,8 @@ export namespace Prisma {
     startTime?: DateTimeFilter<"TimeSlot"> | Date | string
     endTime?: DateTimeFilter<"TimeSlot"> | Date | string
     isAvailable?: BoolFilter<"TimeSlot"> | boolean
+    quotesRequested?: StringNullableListFilter<"TimeSlot">
+    bookingsRequested?: StringNullableListFilter<"TimeSlot">
     previousBookings?: StringNullableListFilter<"TimeSlot">
     createdBy?: StringFilter<"TimeSlot"> | string
     createdAt?: DateTimeFilter<"TimeSlot"> | Date | string
@@ -10519,7 +12804,7 @@ export namespace Prisma {
     deletedBy?: StringNullableFilter<"TimeSlot"> | string | null
   }
 
-  export type BookingCreateWithoutTimeslotInput = {
+  export type BookingCreateWithoutRequestQuoteInput = {
     id?: string
     customerId: string
     confirmedBy?: string | null
@@ -10530,11 +12815,9 @@ export namespace Prisma {
     totalBeforeDiscount: number
     discount?: number | null
     totalAfterDiscount: number
-    isQuoteRequest: boolean
-    invoiceStatus: $Enums.InvoiceStatus
+    invoice?: BookingCreateinvoiceInput | string[]
     paymentStatus: $Enums.PaymentStatus
     status: $Enums.BookingStatus
-    bookingDates?: BookingCreatebookingDatesInput | string[]
     isTermsAccepted: boolean
     isCancellationPolicyAccepted: boolean
     isLiabilityWaiverSigned: boolean
@@ -10554,9 +12837,10 @@ export namespace Prisma {
     deletedBy?: string | null
     eventCenterBooking?: EventCenterBookingCreateNestedOneWithoutBookingInput
     cateringBooking?: CateringBookingCreateNestedOneWithoutBookingInput
+    timeslot?: TimeSlotCreateNestedManyWithoutBookingInput
   }
 
-  export type BookingUncheckedCreateWithoutTimeslotInput = {
+  export type BookingUncheckedCreateWithoutRequestQuoteInput = {
     id?: string
     customerId: string
     confirmedBy?: string | null
@@ -10567,11 +12851,9 @@ export namespace Prisma {
     totalBeforeDiscount: number
     discount?: number | null
     totalAfterDiscount: number
-    isQuoteRequest: boolean
-    invoiceStatus: $Enums.InvoiceStatus
+    invoice?: BookingCreateinvoiceInput | string[]
     paymentStatus: $Enums.PaymentStatus
     status: $Enums.BookingStatus
-    bookingDates?: BookingCreatebookingDatesInput | string[]
     isTermsAccepted: boolean
     isCancellationPolicyAccepted: boolean
     isLiabilityWaiverSigned: boolean
@@ -10591,11 +12873,280 @@ export namespace Prisma {
     deletedBy?: string | null
     eventCenterBooking?: EventCenterBookingUncheckedCreateNestedOneWithoutBookingInput
     cateringBooking?: CateringBookingUncheckedCreateNestedOneWithoutBookingInput
+    timeslot?: TimeSlotUncheckedCreateNestedManyWithoutBookingInput
+  }
+
+  export type BookingCreateOrConnectWithoutRequestQuoteInput = {
+    where: BookingWhereUniqueInput
+    create: XOR<BookingCreateWithoutRequestQuoteInput, BookingUncheckedCreateWithoutRequestQuoteInput>
+  }
+
+  export type TimeSlotCreateWithoutRequestQuoteInput = {
+    id?: string
+    serviceId: string
+    serviceType: $Enums.ServiceType
+    startTime: Date | string
+    endTime: Date | string
+    isAvailable?: boolean
+    quotesRequested?: TimeSlotCreatequotesRequestedInput | string[]
+    bookingsRequested?: TimeSlotCreatebookingsRequestedInput | string[]
+    previousBookings?: TimeSlotCreatepreviousBookingsInput | string[]
+    createdBy: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    booking?: BookingCreateNestedOneWithoutTimeslotInput
+  }
+
+  export type TimeSlotUncheckedCreateWithoutRequestQuoteInput = {
+    id?: string
+    serviceId: string
+    serviceType: $Enums.ServiceType
+    bookingId?: string | null
+    startTime: Date | string
+    endTime: Date | string
+    isAvailable?: boolean
+    quotesRequested?: TimeSlotCreatequotesRequestedInput | string[]
+    bookingsRequested?: TimeSlotCreatebookingsRequestedInput | string[]
+    previousBookings?: TimeSlotCreatepreviousBookingsInput | string[]
+    createdBy: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    updatedBy?: string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+  }
+
+  export type TimeSlotCreateOrConnectWithoutRequestQuoteInput = {
+    where: TimeSlotWhereUniqueInput
+    create: XOR<TimeSlotCreateWithoutRequestQuoteInput, TimeSlotUncheckedCreateWithoutRequestQuoteInput>
+  }
+
+  export type BookingUpsertWithoutRequestQuoteInput = {
+    update: XOR<BookingUpdateWithoutRequestQuoteInput, BookingUncheckedUpdateWithoutRequestQuoteInput>
+    create: XOR<BookingCreateWithoutRequestQuoteInput, BookingUncheckedCreateWithoutRequestQuoteInput>
+    where?: BookingWhereInput
+  }
+
+  export type BookingUpdateToOneWithWhereWithoutRequestQuoteInput = {
+    where?: BookingWhereInput
+    data: XOR<BookingUpdateWithoutRequestQuoteInput, BookingUncheckedUpdateWithoutRequestQuoteInput>
+  }
+
+  export type BookingUpdateWithoutRequestQuoteInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    customerId?: StringFieldUpdateOperationsInput | string
+    confirmedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    serviceId?: StringFieldUpdateOperationsInput | string
+    serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+    totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
+    discount?: NullableFloatFieldUpdateOperationsInput | number | null
+    totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
+    invoice?: BookingUpdateinvoiceInput | string[]
+    paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+    isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
+    isCancellationPolicyAccepted?: BoolFieldUpdateOperationsInput | boolean
+    isLiabilityWaiverSigned?: BoolFieldUpdateOperationsInput | boolean
+    bookingReference?: StringFieldUpdateOperationsInput | string
+    source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
+    serviceNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    rescheduledBy?: NullableStringFieldUpdateOperationsInput | string | null
+    rescheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    previousDates?: BookingUpdatepreviousDatesInput | string[]
+    cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
+    canceledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelationReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    eventCenterBooking?: EventCenterBookingUpdateOneWithoutBookingNestedInput
+    cateringBooking?: CateringBookingUpdateOneWithoutBookingNestedInput
+    timeslot?: TimeSlotUpdateManyWithoutBookingNestedInput
+  }
+
+  export type BookingUncheckedUpdateWithoutRequestQuoteInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    customerId?: StringFieldUpdateOperationsInput | string
+    confirmedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    serviceId?: StringFieldUpdateOperationsInput | string
+    serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+    totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
+    discount?: NullableFloatFieldUpdateOperationsInput | number | null
+    totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
+    invoice?: BookingUpdateinvoiceInput | string[]
+    paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+    isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
+    isCancellationPolicyAccepted?: BoolFieldUpdateOperationsInput | boolean
+    isLiabilityWaiverSigned?: BoolFieldUpdateOperationsInput | boolean
+    bookingReference?: StringFieldUpdateOperationsInput | string
+    source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
+    serviceNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    rescheduledBy?: NullableStringFieldUpdateOperationsInput | string | null
+    rescheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    previousDates?: BookingUpdatepreviousDatesInput | string[]
+    cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
+    canceledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelationReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    eventCenterBooking?: EventCenterBookingUncheckedUpdateOneWithoutBookingNestedInput
+    cateringBooking?: CateringBookingUncheckedUpdateOneWithoutBookingNestedInput
+    timeslot?: TimeSlotUncheckedUpdateManyWithoutBookingNestedInput
+  }
+
+  export type TimeSlotUpsertWithWhereUniqueWithoutRequestQuoteInput = {
+    where: TimeSlotWhereUniqueInput
+    update: XOR<TimeSlotUpdateWithoutRequestQuoteInput, TimeSlotUncheckedUpdateWithoutRequestQuoteInput>
+    create: XOR<TimeSlotCreateWithoutRequestQuoteInput, TimeSlotUncheckedCreateWithoutRequestQuoteInput>
+  }
+
+  export type TimeSlotUpdateWithWhereUniqueWithoutRequestQuoteInput = {
+    where: TimeSlotWhereUniqueInput
+    data: XOR<TimeSlotUpdateWithoutRequestQuoteInput, TimeSlotUncheckedUpdateWithoutRequestQuoteInput>
+  }
+
+  export type TimeSlotUpdateManyWithWhereWithoutRequestQuoteInput = {
+    where: TimeSlotScalarWhereInput
+    data: XOR<TimeSlotUpdateManyMutationInput, TimeSlotUncheckedUpdateManyWithoutRequestQuoteInput>
+  }
+
+  export type BookingCreateWithoutTimeslotInput = {
+    id?: string
+    customerId: string
+    confirmedBy?: string | null
+    confirmedAt?: Date | string | null
+    servicebookingId?: string | null
+    serviceId: string
+    serviceType: $Enums.ServiceType
+    totalBeforeDiscount: number
+    discount?: number | null
+    totalAfterDiscount: number
+    invoice?: BookingCreateinvoiceInput | string[]
+    paymentStatus: $Enums.PaymentStatus
+    status: $Enums.BookingStatus
+    isTermsAccepted: boolean
+    isCancellationPolicyAccepted: boolean
+    isLiabilityWaiverSigned: boolean
+    bookingReference: string
+    source: $Enums.BookingSource
+    serviceNotes?: string | null
+    customerNotes?: string | null
+    rescheduledBy?: string | null
+    rescheduledAt?: Date | string | null
+    previousDates?: BookingCreatepreviousDatesInput | string[]
+    cancelledBy?: string | null
+    canceledAt?: Date | string | null
+    cancelationReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    eventCenterBooking?: EventCenterBookingCreateNestedOneWithoutBookingInput
+    cateringBooking?: CateringBookingCreateNestedOneWithoutBookingInput
+    requestQuote?: RequestQuoteCreateNestedOneWithoutBookingInput
+  }
+
+  export type BookingUncheckedCreateWithoutTimeslotInput = {
+    id?: string
+    customerId: string
+    confirmedBy?: string | null
+    confirmedAt?: Date | string | null
+    servicebookingId?: string | null
+    serviceId: string
+    serviceType: $Enums.ServiceType
+    totalBeforeDiscount: number
+    discount?: number | null
+    totalAfterDiscount: number
+    invoice?: BookingCreateinvoiceInput | string[]
+    paymentStatus: $Enums.PaymentStatus
+    status: $Enums.BookingStatus
+    isTermsAccepted: boolean
+    isCancellationPolicyAccepted: boolean
+    isLiabilityWaiverSigned: boolean
+    bookingReference: string
+    source: $Enums.BookingSource
+    serviceNotes?: string | null
+    customerNotes?: string | null
+    rescheduledBy?: string | null
+    rescheduledAt?: Date | string | null
+    previousDates?: BookingCreatepreviousDatesInput | string[]
+    cancelledBy?: string | null
+    canceledAt?: Date | string | null
+    cancelationReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    eventCenterBooking?: EventCenterBookingUncheckedCreateNestedOneWithoutBookingInput
+    cateringBooking?: CateringBookingUncheckedCreateNestedOneWithoutBookingInput
+    requestQuote?: RequestQuoteUncheckedCreateNestedOneWithoutBookingInput
   }
 
   export type BookingCreateOrConnectWithoutTimeslotInput = {
     where: BookingWhereUniqueInput
     create: XOR<BookingCreateWithoutTimeslotInput, BookingUncheckedCreateWithoutTimeslotInput>
+  }
+
+  export type RequestQuoteCreateWithoutTimeslotInput = {
+    id?: string
+    customerId: string
+    serviceId: string
+    serviceType: $Enums.ServiceType
+    budget: number
+    status: $Enums.InvoiceStatus
+    bookingStatus: $Enums.BookingStatus
+    isTermsAccepted: boolean
+    isCancellationPolicyAccepted: boolean
+    isLiabilityWaiverSigned: boolean
+    source: $Enums.BookingSource
+    customerNotes?: string | null
+    previousDates?: RequestQuoteCreatepreviousDatesInput | string[]
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    billingDetails: JsonNullValueInput | InputJsonValue
+    booking?: BookingCreateNestedOneWithoutRequestQuoteInput
+  }
+
+  export type RequestQuoteUncheckedCreateWithoutTimeslotInput = {
+    id?: string
+    customerId: string
+    bookingId?: string | null
+    serviceId: string
+    serviceType: $Enums.ServiceType
+    budget: number
+    status: $Enums.InvoiceStatus
+    bookingStatus: $Enums.BookingStatus
+    isTermsAccepted: boolean
+    isCancellationPolicyAccepted: boolean
+    isLiabilityWaiverSigned: boolean
+    source: $Enums.BookingSource
+    customerNotes?: string | null
+    previousDates?: RequestQuoteCreatepreviousDatesInput | string[]
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    billingDetails: JsonNullValueInput | InputJsonValue
+  }
+
+  export type RequestQuoteCreateOrConnectWithoutTimeslotInput = {
+    where: RequestQuoteWhereUniqueInput
+    create: XOR<RequestQuoteCreateWithoutTimeslotInput, RequestQuoteUncheckedCreateWithoutTimeslotInput>
   }
 
   export type BookingUpsertWithoutTimeslotInput = {
@@ -10620,11 +13171,9 @@ export namespace Prisma {
     totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
     discount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
-    isQuoteRequest?: BoolFieldUpdateOperationsInput | boolean
-    invoiceStatus?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+    invoice?: BookingUpdateinvoiceInput | string[]
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
-    bookingDates?: BookingUpdatebookingDatesInput | string[]
     isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
     isCancellationPolicyAccepted?: BoolFieldUpdateOperationsInput | boolean
     isLiabilityWaiverSigned?: BoolFieldUpdateOperationsInput | boolean
@@ -10644,6 +13193,7 @@ export namespace Prisma {
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
     eventCenterBooking?: EventCenterBookingUpdateOneWithoutBookingNestedInput
     cateringBooking?: CateringBookingUpdateOneWithoutBookingNestedInput
+    requestQuote?: RequestQuoteUpdateOneWithoutBookingNestedInput
   }
 
   export type BookingUncheckedUpdateWithoutTimeslotInput = {
@@ -10657,11 +13207,9 @@ export namespace Prisma {
     totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
     discount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
-    isQuoteRequest?: BoolFieldUpdateOperationsInput | boolean
-    invoiceStatus?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+    invoice?: BookingUpdateinvoiceInput | string[]
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
-    bookingDates?: BookingUpdatebookingDatesInput | string[]
     isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
     isCancellationPolicyAccepted?: BoolFieldUpdateOperationsInput | boolean
     isLiabilityWaiverSigned?: BoolFieldUpdateOperationsInput | boolean
@@ -10681,6 +13229,48 @@ export namespace Prisma {
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
     eventCenterBooking?: EventCenterBookingUncheckedUpdateOneWithoutBookingNestedInput
     cateringBooking?: CateringBookingUncheckedUpdateOneWithoutBookingNestedInput
+    requestQuote?: RequestQuoteUncheckedUpdateOneWithoutBookingNestedInput
+  }
+
+  export type RequestQuoteUpsertWithWhereUniqueWithoutTimeslotInput = {
+    where: RequestQuoteWhereUniqueInput
+    update: XOR<RequestQuoteUpdateWithoutTimeslotInput, RequestQuoteUncheckedUpdateWithoutTimeslotInput>
+    create: XOR<RequestQuoteCreateWithoutTimeslotInput, RequestQuoteUncheckedCreateWithoutTimeslotInput>
+  }
+
+  export type RequestQuoteUpdateWithWhereUniqueWithoutTimeslotInput = {
+    where: RequestQuoteWhereUniqueInput
+    data: XOR<RequestQuoteUpdateWithoutTimeslotInput, RequestQuoteUncheckedUpdateWithoutTimeslotInput>
+  }
+
+  export type RequestQuoteUpdateManyWithWhereWithoutTimeslotInput = {
+    where: RequestQuoteScalarWhereInput
+    data: XOR<RequestQuoteUpdateManyMutationInput, RequestQuoteUncheckedUpdateManyWithoutTimeslotInput>
+  }
+
+  export type RequestQuoteScalarWhereInput = {
+    AND?: RequestQuoteScalarWhereInput | RequestQuoteScalarWhereInput[]
+    OR?: RequestQuoteScalarWhereInput[]
+    NOT?: RequestQuoteScalarWhereInput | RequestQuoteScalarWhereInput[]
+    id?: StringFilter<"RequestQuote"> | string
+    customerId?: StringFilter<"RequestQuote"> | string
+    bookingId?: StringNullableFilter<"RequestQuote"> | string | null
+    serviceId?: StringFilter<"RequestQuote"> | string
+    serviceType?: EnumServiceTypeFilter<"RequestQuote"> | $Enums.ServiceType
+    budget?: FloatFilter<"RequestQuote"> | number
+    status?: EnumInvoiceStatusFilter<"RequestQuote"> | $Enums.InvoiceStatus
+    bookingStatus?: EnumBookingStatusFilter<"RequestQuote"> | $Enums.BookingStatus
+    isTermsAccepted?: BoolFilter<"RequestQuote"> | boolean
+    isCancellationPolicyAccepted?: BoolFilter<"RequestQuote"> | boolean
+    isLiabilityWaiverSigned?: BoolFilter<"RequestQuote"> | boolean
+    source?: EnumBookingSourceFilter<"RequestQuote"> | $Enums.BookingSource
+    customerNotes?: StringNullableFilter<"RequestQuote"> | string | null
+    previousDates?: StringNullableListFilter<"RequestQuote">
+    createdAt?: DateTimeFilter<"RequestQuote"> | Date | string
+    updatedAt?: DateTimeFilter<"RequestQuote"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"RequestQuote"> | Date | string | null
+    deletedBy?: StringNullableFilter<"RequestQuote"> | string | null
+    billingDetails?: JsonFilter<"RequestQuote">
   }
 
   export type BookingCreateWithoutEventCenterBookingInput = {
@@ -10694,11 +13284,9 @@ export namespace Prisma {
     totalBeforeDiscount: number
     discount?: number | null
     totalAfterDiscount: number
-    isQuoteRequest: boolean
-    invoiceStatus: $Enums.InvoiceStatus
+    invoice?: BookingCreateinvoiceInput | string[]
     paymentStatus: $Enums.PaymentStatus
     status: $Enums.BookingStatus
-    bookingDates?: BookingCreatebookingDatesInput | string[]
     isTermsAccepted: boolean
     isCancellationPolicyAccepted: boolean
     isLiabilityWaiverSigned: boolean
@@ -10717,6 +13305,7 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     deletedBy?: string | null
     cateringBooking?: CateringBookingCreateNestedOneWithoutBookingInput
+    requestQuote?: RequestQuoteCreateNestedOneWithoutBookingInput
     timeslot?: TimeSlotCreateNestedManyWithoutBookingInput
   }
 
@@ -10731,11 +13320,9 @@ export namespace Prisma {
     totalBeforeDiscount: number
     discount?: number | null
     totalAfterDiscount: number
-    isQuoteRequest: boolean
-    invoiceStatus: $Enums.InvoiceStatus
+    invoice?: BookingCreateinvoiceInput | string[]
     paymentStatus: $Enums.PaymentStatus
     status: $Enums.BookingStatus
-    bookingDates?: BookingCreatebookingDatesInput | string[]
     isTermsAccepted: boolean
     isCancellationPolicyAccepted: boolean
     isLiabilityWaiverSigned: boolean
@@ -10754,6 +13341,7 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     deletedBy?: string | null
     cateringBooking?: CateringBookingUncheckedCreateNestedOneWithoutBookingInput
+    requestQuote?: RequestQuoteUncheckedCreateNestedOneWithoutBookingInput
     timeslot?: TimeSlotUncheckedCreateNestedManyWithoutBookingInput
   }
 
@@ -10784,11 +13372,9 @@ export namespace Prisma {
     totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
     discount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
-    isQuoteRequest?: BoolFieldUpdateOperationsInput | boolean
-    invoiceStatus?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+    invoice?: BookingUpdateinvoiceInput | string[]
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
-    bookingDates?: BookingUpdatebookingDatesInput | string[]
     isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
     isCancellationPolicyAccepted?: BoolFieldUpdateOperationsInput | boolean
     isLiabilityWaiverSigned?: BoolFieldUpdateOperationsInput | boolean
@@ -10807,6 +13393,7 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
     cateringBooking?: CateringBookingUpdateOneWithoutBookingNestedInput
+    requestQuote?: RequestQuoteUpdateOneWithoutBookingNestedInput
     timeslot?: TimeSlotUpdateManyWithoutBookingNestedInput
   }
 
@@ -10821,11 +13408,9 @@ export namespace Prisma {
     totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
     discount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
-    isQuoteRequest?: BoolFieldUpdateOperationsInput | boolean
-    invoiceStatus?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+    invoice?: BookingUpdateinvoiceInput | string[]
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
-    bookingDates?: BookingUpdatebookingDatesInput | string[]
     isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
     isCancellationPolicyAccepted?: BoolFieldUpdateOperationsInput | boolean
     isLiabilityWaiverSigned?: BoolFieldUpdateOperationsInput | boolean
@@ -10844,6 +13429,7 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
     cateringBooking?: CateringBookingUncheckedUpdateOneWithoutBookingNestedInput
+    requestQuote?: RequestQuoteUncheckedUpdateOneWithoutBookingNestedInput
     timeslot?: TimeSlotUncheckedUpdateManyWithoutBookingNestedInput
   }
 
@@ -10858,11 +13444,9 @@ export namespace Prisma {
     totalBeforeDiscount: number
     discount?: number | null
     totalAfterDiscount: number
-    isQuoteRequest: boolean
-    invoiceStatus: $Enums.InvoiceStatus
+    invoice?: BookingCreateinvoiceInput | string[]
     paymentStatus: $Enums.PaymentStatus
     status: $Enums.BookingStatus
-    bookingDates?: BookingCreatebookingDatesInput | string[]
     isTermsAccepted: boolean
     isCancellationPolicyAccepted: boolean
     isLiabilityWaiverSigned: boolean
@@ -10881,6 +13465,7 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     deletedBy?: string | null
     eventCenterBooking?: EventCenterBookingCreateNestedOneWithoutBookingInput
+    requestQuote?: RequestQuoteCreateNestedOneWithoutBookingInput
     timeslot?: TimeSlotCreateNestedManyWithoutBookingInput
   }
 
@@ -10895,11 +13480,9 @@ export namespace Prisma {
     totalBeforeDiscount: number
     discount?: number | null
     totalAfterDiscount: number
-    isQuoteRequest: boolean
-    invoiceStatus: $Enums.InvoiceStatus
+    invoice?: BookingCreateinvoiceInput | string[]
     paymentStatus: $Enums.PaymentStatus
     status: $Enums.BookingStatus
-    bookingDates?: BookingCreatebookingDatesInput | string[]
     isTermsAccepted: boolean
     isCancellationPolicyAccepted: boolean
     isLiabilityWaiverSigned: boolean
@@ -10918,6 +13501,7 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     deletedBy?: string | null
     eventCenterBooking?: EventCenterBookingUncheckedCreateNestedOneWithoutBookingInput
+    requestQuote?: RequestQuoteUncheckedCreateNestedOneWithoutBookingInput
     timeslot?: TimeSlotUncheckedCreateNestedManyWithoutBookingInput
   }
 
@@ -10948,11 +13532,9 @@ export namespace Prisma {
     totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
     discount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
-    isQuoteRequest?: BoolFieldUpdateOperationsInput | boolean
-    invoiceStatus?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+    invoice?: BookingUpdateinvoiceInput | string[]
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
-    bookingDates?: BookingUpdatebookingDatesInput | string[]
     isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
     isCancellationPolicyAccepted?: BoolFieldUpdateOperationsInput | boolean
     isLiabilityWaiverSigned?: BoolFieldUpdateOperationsInput | boolean
@@ -10971,6 +13553,7 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
     eventCenterBooking?: EventCenterBookingUpdateOneWithoutBookingNestedInput
+    requestQuote?: RequestQuoteUpdateOneWithoutBookingNestedInput
     timeslot?: TimeSlotUpdateManyWithoutBookingNestedInput
   }
 
@@ -10985,11 +13568,9 @@ export namespace Prisma {
     totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
     discount?: NullableFloatFieldUpdateOperationsInput | number | null
     totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
-    isQuoteRequest?: BoolFieldUpdateOperationsInput | boolean
-    invoiceStatus?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+    invoice?: BookingUpdateinvoiceInput | string[]
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
-    bookingDates?: BookingUpdatebookingDatesInput | string[]
     isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
     isCancellationPolicyAccepted?: BoolFieldUpdateOperationsInput | boolean
     isLiabilityWaiverSigned?: BoolFieldUpdateOperationsInput | boolean
@@ -11008,6 +13589,7 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
     eventCenterBooking?: EventCenterBookingUncheckedUpdateOneWithoutBookingNestedInput
+    requestQuote?: RequestQuoteUncheckedUpdateOneWithoutBookingNestedInput
     timeslot?: TimeSlotUncheckedUpdateManyWithoutBookingNestedInput
   }
 
@@ -11018,6 +13600,8 @@ export namespace Prisma {
     startTime: Date | string
     endTime: Date | string
     isAvailable?: boolean
+    quotesRequested?: TimeSlotCreatequotesRequestedInput | string[]
+    bookingsRequested?: TimeSlotCreatebookingsRequestedInput | string[]
     previousBookings?: TimeSlotCreatepreviousBookingsInput | string[]
     createdBy: string
     createdAt?: Date | string
@@ -11034,6 +13618,8 @@ export namespace Prisma {
     startTime?: DateTimeFieldUpdateOperationsInput | Date | string
     endTime?: DateTimeFieldUpdateOperationsInput | Date | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
+    quotesRequested?: TimeSlotUpdatequotesRequestedInput | string[]
+    bookingsRequested?: TimeSlotUpdatebookingsRequestedInput | string[]
     previousBookings?: TimeSlotUpdatepreviousBookingsInput | string[]
     createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11041,6 +13627,7 @@ export namespace Prisma {
     updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    requestQuote?: RequestQuoteUpdateManyWithoutTimeslotNestedInput
   }
 
   export type TimeSlotUncheckedUpdateWithoutBookingInput = {
@@ -11050,6 +13637,8 @@ export namespace Prisma {
     startTime?: DateTimeFieldUpdateOperationsInput | Date | string
     endTime?: DateTimeFieldUpdateOperationsInput | Date | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
+    quotesRequested?: TimeSlotUpdatequotesRequestedInput | string[]
+    bookingsRequested?: TimeSlotUpdatebookingsRequestedInput | string[]
     previousBookings?: TimeSlotUpdatepreviousBookingsInput | string[]
     createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11057,6 +13646,7 @@ export namespace Prisma {
     updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    requestQuote?: RequestQuoteUncheckedUpdateManyWithoutTimeslotNestedInput
   }
 
   export type TimeSlotUncheckedUpdateManyWithoutBookingInput = {
@@ -11066,6 +13656,8 @@ export namespace Prisma {
     startTime?: DateTimeFieldUpdateOperationsInput | Date | string
     endTime?: DateTimeFieldUpdateOperationsInput | Date | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
+    quotesRequested?: TimeSlotUpdatequotesRequestedInput | string[]
+    bookingsRequested?: TimeSlotUpdatebookingsRequestedInput | string[]
     previousBookings?: TimeSlotUpdatepreviousBookingsInput | string[]
     createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11073,6 +13665,129 @@ export namespace Prisma {
     updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type TimeSlotUpdateWithoutRequestQuoteInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    serviceId?: StringFieldUpdateOperationsInput | string
+    serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+    startTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    endTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    isAvailable?: BoolFieldUpdateOperationsInput | boolean
+    quotesRequested?: TimeSlotUpdatequotesRequestedInput | string[]
+    bookingsRequested?: TimeSlotUpdatebookingsRequestedInput | string[]
+    previousBookings?: TimeSlotUpdatepreviousBookingsInput | string[]
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    booking?: BookingUpdateOneWithoutTimeslotNestedInput
+  }
+
+  export type TimeSlotUncheckedUpdateWithoutRequestQuoteInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    serviceId?: StringFieldUpdateOperationsInput | string
+    serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    startTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    endTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    isAvailable?: BoolFieldUpdateOperationsInput | boolean
+    quotesRequested?: TimeSlotUpdatequotesRequestedInput | string[]
+    bookingsRequested?: TimeSlotUpdatebookingsRequestedInput | string[]
+    previousBookings?: TimeSlotUpdatepreviousBookingsInput | string[]
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type TimeSlotUncheckedUpdateManyWithoutRequestQuoteInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    serviceId?: StringFieldUpdateOperationsInput | string
+    serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    startTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    endTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    isAvailable?: BoolFieldUpdateOperationsInput | boolean
+    quotesRequested?: TimeSlotUpdatequotesRequestedInput | string[]
+    bookingsRequested?: TimeSlotUpdatebookingsRequestedInput | string[]
+    previousBookings?: TimeSlotUpdatepreviousBookingsInput | string[]
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type RequestQuoteUpdateWithoutTimeslotInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    customerId?: StringFieldUpdateOperationsInput | string
+    serviceId?: StringFieldUpdateOperationsInput | string
+    serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+    budget?: FloatFieldUpdateOperationsInput | number
+    status?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+    bookingStatus?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+    isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
+    isCancellationPolicyAccepted?: BoolFieldUpdateOperationsInput | boolean
+    isLiabilityWaiverSigned?: BoolFieldUpdateOperationsInput | boolean
+    source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    previousDates?: RequestQuoteUpdatepreviousDatesInput | string[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    billingDetails?: JsonNullValueInput | InputJsonValue
+    booking?: BookingUpdateOneWithoutRequestQuoteNestedInput
+  }
+
+  export type RequestQuoteUncheckedUpdateWithoutTimeslotInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    customerId?: StringFieldUpdateOperationsInput | string
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    serviceId?: StringFieldUpdateOperationsInput | string
+    serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+    budget?: FloatFieldUpdateOperationsInput | number
+    status?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+    bookingStatus?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+    isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
+    isCancellationPolicyAccepted?: BoolFieldUpdateOperationsInput | boolean
+    isLiabilityWaiverSigned?: BoolFieldUpdateOperationsInput | boolean
+    source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    previousDates?: RequestQuoteUpdatepreviousDatesInput | string[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    billingDetails?: JsonNullValueInput | InputJsonValue
+  }
+
+  export type RequestQuoteUncheckedUpdateManyWithoutTimeslotInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    customerId?: StringFieldUpdateOperationsInput | string
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    serviceId?: StringFieldUpdateOperationsInput | string
+    serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+    budget?: FloatFieldUpdateOperationsInput | number
+    status?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+    bookingStatus?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+    isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
+    isCancellationPolicyAccepted?: BoolFieldUpdateOperationsInput | boolean
+    isLiabilityWaiverSigned?: BoolFieldUpdateOperationsInput | boolean
+    source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    previousDates?: RequestQuoteUpdatepreviousDatesInput | string[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    billingDetails?: JsonNullValueInput | InputJsonValue
   }
 
 

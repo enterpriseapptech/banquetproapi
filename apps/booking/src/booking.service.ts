@@ -31,7 +31,6 @@ export class BookingService {
 			totalBeforeDiscount: createBookingDto.totalBeforeDiscount,
 			discount: createBookingDto.discount,
 			totalAfterDiscount: createBookingDto.totalAfterDiscount,
-			bookingDates: createBookingDto.bookingDates,
 			isTermsAccepted: createBookingDto.isTermsAccepted,
 			isCancellationPolicyAccepted: createBookingDto.isCancellationPolicyAccepted,
 			isLiabilityWaiverSigned: createBookingDto.isLiabilityWaiverSigned,
@@ -153,6 +152,7 @@ export class BookingService {
 	async findAll(
 		limit: number,
 		offset: number,
+		serviceType?: string,
 		serviceId?: string,
 		serviceProvider?: string,
 		bookingReference?: string,
@@ -165,7 +165,7 @@ export class BookingService {
 		if (endDate) whereClause.createdAt = { lte: endDate };
 		if (bookingReference) whereClause.bookingReference = bookingReference;
 		if (serviceId) whereClause.serviceId = serviceId;
-		
+		if (serviceType) whereClause.serviceType = serviceType;
 		if (serviceProvider) {
 
 			/**

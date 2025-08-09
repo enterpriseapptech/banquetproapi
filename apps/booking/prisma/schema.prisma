@@ -49,25 +49,25 @@ model Booking {
 
   eventCenterBooking            EventCenterBooking?
   cateringBooking               CateringBooking?
-  requestQuote                  RequestQuote
+  requestQuote                  RequestQuote?
   timeslot                      TimeSlot[]  // a single booking can contains a list of timeslots, spanning even into days
-  @@index(serviceType)
-  @@index(bookingReference)
-  @@index(status)
-  @@index(serviceId)
-  @@index(serviceType)
-  @@index(paymentStatus)
+
+  @@index([bookingReference])
+  @@index([status])
+  @@index([serviceId])
+  @@index([serviceType])
+  @@index([paymentStatus])
 } // a review must have a booking, booking can have many payments at most 2
 
 
 model RequestQuote {
   id                    String    @id @default(uuid())
   customerId            String // customer booking the venue, points to an ID on users table
-  bookingId             String? // eventcenterbooking, catering booking , etc
+  bookingId             String? @unique // eventcenterbooking, catering booking , etc
   serviceId             String
   serviceType           ServiceType
   budget                Float
-  status                      BookingStatus
+  status                      InvoiceStatus
   bookingStatus                BookingStatus
   isTermsAccepted               Boolean
   isCancellationPolicyAccepted  Boolean
@@ -81,11 +81,11 @@ model RequestQuote {
   deletedBy                     String?  
   billingDetails                Json
 
-  booking                       Booking?  // a single booking can contains a list of timeslots, spanning even into days
+  booking                       Booking? @relation(fields: [bookingId], references: [id]) // this quote might have a bookign or not
   timeslot                      TimeSlot[]  // a single booking can contains a list of timeslots, spanning even into days
-  @@index([customerId, status, paymentStatus, serviceType])
+  @@index([customerId])
   @@index([serviceId])
-  @@index(serviceType)
+  @@index([serviceType])
 } 
 
 model AvailableLocations {
@@ -116,10 +116,11 @@ model TimeSlot {
 
   // relations
   booking                 Booking? @relation(fields: [bookingId], references: [id])
-  @@index(serviceId) 
-  @@index(bookingId) 
+  requestQuote            RequestQuote[]
+  @@index([serviceId]) 
+  @@index([bookingId]) 
   @@index([startTime, endTime]) 
-  @@index(isAvailable) 
+  @@index([isAvailable]) 
 }
 
 model EventCenterBooking {
@@ -162,7 +163,10 @@ model CateringBooking {
 
   booking             Booking @relation(fields: [bookingId], references: [id])
 
-  @@index([bookingId, cateringId, eventName, cuisine, dishTypes, eventType])
+  @@index([bookingId])
+  @@index([cateringId])
+  @@index([cuisine])
+  @@index([dishTypes])
 }
 
 // to do quotes model
@@ -184,6 +188,14 @@ enum ServiceType {
   EVENTCENTER
   
 }
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  OVERDUE
+  SENT
+}
+
 
 enum BookingStatus {
   PENDING

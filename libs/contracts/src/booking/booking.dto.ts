@@ -48,9 +48,9 @@ export class BookingDto {
     totalBeforeDiscount: number;
     discount?: number;
     totalAfterDiscount: number;
+    invoice: string[]
     paymentStatus: PaymentStatus;
     status: BookingStatus;
-    bookingDates: string[];
     isTermsAccepted: boolean;
     isCancellationPolicyAccepted: boolean;
     isLiabilityWaiverSigned: boolean;

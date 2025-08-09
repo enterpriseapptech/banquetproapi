@@ -57,15 +57,10 @@ export class ManyCateringDto {
 
 
 export class ManyRequestCateringDto {
-    limit: number;
-    offset: number;
+    limit?: number;
+    offset?: number;
     serviceProvider?: string;
     city?: string;
     state?: string;
     country?: string;
 }
-
-// export class ManyBookingDto {
-//     count: number;
-//     data: BookingDto[];
-// }

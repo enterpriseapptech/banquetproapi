@@ -28,8 +28,8 @@ export class EventCenterDto {
 }
 
 export class ManyRequestEventCenterDto {
-    limit: number;
-    offset: number;
+    limit?: number;
+    offset?: number;
     serviceProvider?: string;
     city?: string;
     state?: string;

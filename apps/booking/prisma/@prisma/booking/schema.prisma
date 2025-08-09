@@ -26,11 +26,9 @@ model Booking {
   totalBeforeDiscount          Float
   discount                     Float?
   totalAfterDiscount           Float
-  isQuoteRequest               Boolean
-  invoiceStatus                InvoiceStatus
+  invoice                      String[] //a booking can have more than 1 invoice for services that needs deposit
   paymentStatus                PaymentStatus
   status                       BookingStatus
-  bookingDates                 String[] // carries the timeslots booked
   isTermsAccepted              Boolean
   isCancellationPolicyAccepted Boolean
   isLiabilityWaiverSigned      Boolean
@@ -51,11 +49,45 @@ model Booking {
 
   eventCenterBooking EventCenterBooking?
   cateringBooking    CateringBooking?
+  requestQuote       RequestQuote?
   timeslot           TimeSlot[] // a single booking can contains a list of timeslots, spanning even into days
 
-  @@index([customerId, status, paymentStatus, serviceType])
+  @@index([bookingReference])
+  @@index([status])
+  @@index([serviceId])
+  @@index([serviceType])
+  @@index([paymentStatus])
 }
 // a review must have a booking, booking can have many payments at most 2
+
+model RequestQuote {
+  id                           String        @id @default(uuid())
+  customerId                   String // customer booking the venue, points to an ID on users table
+  bookingId                    String?       @unique // eventcenterbooking, catering booking , etc
+  serviceId                    String
+  serviceType                  ServiceType
+  budget                       Float
+  status                       InvoiceStatus
+  bookingStatus                BookingStatus
+  isTermsAccepted              Boolean
+  isCancellationPolicyAccepted Boolean
+  isLiabilityWaiverSigned      Boolean
+  source                       BookingSource
+  customerNotes                String?
+  previousDates                String[]
+  createdAt                    DateTime      @default(now())
+  updatedAt                    DateTime      @updatedAt
+  deletedAt                    DateTime?
+  deletedBy                    String?
+  billingDetails               Json
+
+  booking  Booking?   @relation(fields: [bookingId], references: [id]) // this quote might have a bookign or not
+  timeslot TimeSlot[] // a single booking can contains a list of timeslots, spanning even into days
+
+  @@index([customerId])
+  @@index([serviceId])
+  @@index([serviceType])
+}
 
 model AvailableLocations {
   id      String         @id @default(uuid())
@@ -66,25 +98,31 @@ model AvailableLocations {
 }
 
 model TimeSlot {
-  id               String      @id @default(uuid())
-  serviceId        String
-  serviceType      ServiceType
-  bookingId        String?
-  startTime        DateTime
-  endTime          DateTime
-  isAvailable      Boolean     @default(true)
-  previousBookings String[] // tracking all bookings previously attached to this slot
-  createdBy        String
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
-  updatedBy        String?
-  deletedAt        DateTime?
-  deletedBy        String?
+  id                String      @id @default(uuid())
+  serviceId         String
+  serviceType       ServiceType
+  bookingId         String?
+  startTime         DateTime
+  endTime           DateTime
+  isAvailable       Boolean     @default(true)
+  quotesRequested   String[] // keeps track of how many people requested quotes for this timeslot
+  bookingsRequested String[] // keeps tack of how many unpayed booking requested this date before
+  previousBookings  String[] // tracking all bookings previously attached to this slot
+  createdBy         String
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  updatedBy         String?
+  deletedAt         DateTime?
+  deletedBy         String?
 
   // relations
-  booking Booking? @relation(fields: [bookingId], references: [id])
+  booking      Booking?       @relation(fields: [bookingId], references: [id])
+  requestQuote RequestQuote[]
 
-  @@index([serviceId, bookingId, startTime, endTime, isAvailable])
+  @@index([serviceId])
+  @@index([bookingId])
+  @@index([startTime, endTime])
+  @@index([isAvailable])
 }
 
 model EventCenterBooking {
@@ -127,7 +165,10 @@ model CateringBooking {
 
   booking Booking @relation(fields: [bookingId], references: [id])
 
-  @@index([bookingId, cateringId, eventName, cuisine, dishTypes, eventType])
+  @@index([bookingId])
+  @@index([cateringId])
+  @@index([cuisine])
+  @@index([dishTypes])
 }
 
 // to do quotes model
@@ -146,9 +187,16 @@ enum ServiceType {
   EVENTCENTER
 }
 
+enum InvoiceStatus {
+  PENDING
+  PAID
+  OVERDUE
+  SENT
+}
+
 enum BookingStatus {
   PENDING
-  CONFIRMED
+  BOOKED
   RESERVED
   POSTPONED
   CANCELED
@@ -158,13 +206,6 @@ enum PaymentStatus {
   UNPAID
   FULLY_PAID
   PARTIALLY_PAID
-}
-
-enum InvoiceStatus {
-  PAID
-  PENDING
-  SENT
-  OVERDUE
 }
 
 enum SpecialRequirement {

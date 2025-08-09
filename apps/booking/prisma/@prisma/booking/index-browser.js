@@ -131,11 +131,9 @@ exports.Prisma.BookingScalarFieldEnum = {
   totalBeforeDiscount: 'totalBeforeDiscount',
   discount: 'discount',
   totalAfterDiscount: 'totalAfterDiscount',
-  isQuoteRequest: 'isQuoteRequest',
-  invoiceStatus: 'invoiceStatus',
+  invoice: 'invoice',
   paymentStatus: 'paymentStatus',
   status: 'status',
-  bookingDates: 'bookingDates',
   isTermsAccepted: 'isTermsAccepted',
   isCancellationPolicyAccepted: 'isCancellationPolicyAccepted',
   isLiabilityWaiverSigned: 'isLiabilityWaiverSigned',
@@ -155,6 +153,28 @@ exports.Prisma.BookingScalarFieldEnum = {
   deletedBy: 'deletedBy'
 };
 
+exports.Prisma.RequestQuoteScalarFieldEnum = {
+  id: 'id',
+  customerId: 'customerId',
+  bookingId: 'bookingId',
+  serviceId: 'serviceId',
+  serviceType: 'serviceType',
+  budget: 'budget',
+  status: 'status',
+  bookingStatus: 'bookingStatus',
+  isTermsAccepted: 'isTermsAccepted',
+  isCancellationPolicyAccepted: 'isCancellationPolicyAccepted',
+  isLiabilityWaiverSigned: 'isLiabilityWaiverSigned',
+  source: 'source',
+  customerNotes: 'customerNotes',
+  previousDates: 'previousDates',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt',
+  deletedBy: 'deletedBy',
+  billingDetails: 'billingDetails'
+};
+
 exports.Prisma.AvailableLocationsScalarFieldEnum = {
   id: 'id',
   country: 'country',
@@ -171,6 +191,8 @@ exports.Prisma.TimeSlotScalarFieldEnum = {
   startTime: 'startTime',
   endTime: 'endTime',
   isAvailable: 'isAvailable',
+  quotesRequested: 'quotesRequested',
+  bookingsRequested: 'bookingsRequested',
   previousBookings: 'previousBookings',
   createdBy: 'createdBy',
   createdAt: 'createdAt',
@@ -220,6 +242,10 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
+};
+
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -229,16 +255,15 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
 exports.ServiceType = exports.$Enums.ServiceType = {
   CATERING: 'CATERING',
   EVENTCENTER: 'EVENTCENTER'
-};
-
-exports.InvoiceStatus = exports.$Enums.InvoiceStatus = {
-  PAID: 'PAID',
-  PENDING: 'PENDING',
-  SENT: 'SENT',
-  OVERDUE: 'OVERDUE'
 };
 
 exports.PaymentStatus = exports.$Enums.PaymentStatus = {
@@ -249,7 +274,7 @@ exports.PaymentStatus = exports.$Enums.PaymentStatus = {
 
 exports.BookingStatus = exports.$Enums.BookingStatus = {
   PENDING: 'PENDING',
-  CONFIRMED: 'CONFIRMED',
+  BOOKED: 'BOOKED',
   RESERVED: 'RESERVED',
   POSTPONED: 'POSTPONED',
   CANCELED: 'CANCELED'
@@ -258,6 +283,13 @@ exports.BookingStatus = exports.$Enums.BookingStatus = {
 exports.BookingSource = exports.$Enums.BookingSource = {
   WEB: 'WEB',
   MOBILE: 'MOBILE'
+};
+
+exports.InvoiceStatus = exports.$Enums.InvoiceStatus = {
+  PENDING: 'PENDING',
+  PAID: 'PAID',
+  OVERDUE: 'OVERDUE',
+  SENT: 'SENT'
 };
 
 exports.LocationStatus = exports.$Enums.LocationStatus = {
@@ -272,6 +304,7 @@ exports.SpecialRequirement = exports.$Enums.SpecialRequirement = {
 
 exports.Prisma.ModelName = {
   Booking: 'Booking',
+  RequestQuote: 'RequestQuote',
   AvailableLocations: 'AvailableLocations',
   TimeSlot: 'TimeSlot',
   EventCenterBooking: 'EventCenterBooking',
