@@ -1524,15 +1524,15 @@ export namespace Prisma {
   }
 
   export type BookingAvgAggregateOutputType = {
-    totalBeforeDiscount: number | null
-    discount: number | null
-    totalAfterDiscount: number | null
+    subTotal: Decimal | null
+    discount: Decimal | null
+    total: Decimal | null
   }
 
   export type BookingSumAggregateOutputType = {
-    totalBeforeDiscount: number | null
-    discount: number | null
-    totalAfterDiscount: number | null
+    subTotal: Decimal | null
+    discount: Decimal | null
+    total: Decimal | null
   }
 
   export type BookingMinAggregateOutputType = {
@@ -1543,9 +1543,9 @@ export namespace Prisma {
     servicebookingId: string | null
     serviceId: string | null
     serviceType: $Enums.ServiceType | null
-    totalBeforeDiscount: number | null
-    discount: number | null
-    totalAfterDiscount: number | null
+    subTotal: Decimal | null
+    discount: Decimal | null
+    total: Decimal | null
     paymentStatus: $Enums.PaymentStatus | null
     status: $Enums.BookingStatus | null
     isTermsAccepted: boolean | null
@@ -1574,9 +1574,9 @@ export namespace Prisma {
     servicebookingId: string | null
     serviceId: string | null
     serviceType: $Enums.ServiceType | null
-    totalBeforeDiscount: number | null
-    discount: number | null
-    totalAfterDiscount: number | null
+    subTotal: Decimal | null
+    discount: Decimal | null
+    total: Decimal | null
     paymentStatus: $Enums.PaymentStatus | null
     status: $Enums.BookingStatus | null
     isTermsAccepted: boolean | null
@@ -1605,9 +1605,9 @@ export namespace Prisma {
     servicebookingId: number
     serviceId: number
     serviceType: number
-    totalBeforeDiscount: number
+    subTotal: number
     discount: number
-    totalAfterDiscount: number
+    total: number
     invoice: number
     paymentStatus: number
     status: number
@@ -1633,15 +1633,15 @@ export namespace Prisma {
 
 
   export type BookingAvgAggregateInputType = {
-    totalBeforeDiscount?: true
+    subTotal?: true
     discount?: true
-    totalAfterDiscount?: true
+    total?: true
   }
 
   export type BookingSumAggregateInputType = {
-    totalBeforeDiscount?: true
+    subTotal?: true
     discount?: true
-    totalAfterDiscount?: true
+    total?: true
   }
 
   export type BookingMinAggregateInputType = {
@@ -1652,9 +1652,9 @@ export namespace Prisma {
     servicebookingId?: true
     serviceId?: true
     serviceType?: true
-    totalBeforeDiscount?: true
+    subTotal?: true
     discount?: true
-    totalAfterDiscount?: true
+    total?: true
     paymentStatus?: true
     status?: true
     isTermsAccepted?: true
@@ -1683,9 +1683,9 @@ export namespace Prisma {
     servicebookingId?: true
     serviceId?: true
     serviceType?: true
-    totalBeforeDiscount?: true
+    subTotal?: true
     discount?: true
-    totalAfterDiscount?: true
+    total?: true
     paymentStatus?: true
     status?: true
     isTermsAccepted?: true
@@ -1714,9 +1714,9 @@ export namespace Prisma {
     servicebookingId?: true
     serviceId?: true
     serviceType?: true
-    totalBeforeDiscount?: true
+    subTotal?: true
     discount?: true
-    totalAfterDiscount?: true
+    total?: true
     invoice?: true
     paymentStatus?: true
     status?: true
@@ -1834,9 +1834,9 @@ export namespace Prisma {
     servicebookingId: string | null
     serviceId: string
     serviceType: $Enums.ServiceType
-    totalBeforeDiscount: number
-    discount: number | null
-    totalAfterDiscount: number
+    subTotal: Decimal
+    discount: Decimal
+    total: Decimal
     invoice: string[]
     paymentStatus: $Enums.PaymentStatus
     status: $Enums.BookingStatus
@@ -1886,9 +1886,9 @@ export namespace Prisma {
     servicebookingId?: boolean
     serviceId?: boolean
     serviceType?: boolean
-    totalBeforeDiscount?: boolean
+    subTotal?: boolean
     discount?: boolean
-    totalAfterDiscount?: boolean
+    total?: boolean
     invoice?: boolean
     paymentStatus?: boolean
     status?: boolean
@@ -1924,9 +1924,9 @@ export namespace Prisma {
     servicebookingId?: boolean
     serviceId?: boolean
     serviceType?: boolean
-    totalBeforeDiscount?: boolean
+    subTotal?: boolean
     discount?: boolean
-    totalAfterDiscount?: boolean
+    total?: boolean
     invoice?: boolean
     paymentStatus?: boolean
     status?: boolean
@@ -1957,9 +1957,9 @@ export namespace Prisma {
     servicebookingId?: boolean
     serviceId?: boolean
     serviceType?: boolean
-    totalBeforeDiscount?: boolean
+    subTotal?: boolean
     discount?: boolean
-    totalAfterDiscount?: boolean
+    total?: boolean
     invoice?: boolean
     paymentStatus?: boolean
     status?: boolean
@@ -1990,9 +1990,9 @@ export namespace Prisma {
     servicebookingId?: boolean
     serviceId?: boolean
     serviceType?: boolean
-    totalBeforeDiscount?: boolean
+    subTotal?: boolean
     discount?: boolean
-    totalAfterDiscount?: boolean
+    total?: boolean
     invoice?: boolean
     paymentStatus?: boolean
     status?: boolean
@@ -2015,7 +2015,7 @@ export namespace Prisma {
     deletedBy?: boolean
   }
 
-  export type BookingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "customerId" | "confirmedBy" | "confirmedAt" | "servicebookingId" | "serviceId" | "serviceType" | "totalBeforeDiscount" | "discount" | "totalAfterDiscount" | "invoice" | "paymentStatus" | "status" | "isTermsAccepted" | "isCancellationPolicyAccepted" | "isLiabilityWaiverSigned" | "bookingReference" | "source" | "serviceNotes" | "customerNotes" | "rescheduledBy" | "rescheduledAt" | "previousDates" | "cancelledBy" | "canceledAt" | "cancelationReason" | "createdAt" | "updatedAt" | "deletedAt" | "deletedBy", ExtArgs["result"]["booking"]>
+  export type BookingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "customerId" | "confirmedBy" | "confirmedAt" | "servicebookingId" | "serviceId" | "serviceType" | "subTotal" | "discount" | "total" | "invoice" | "paymentStatus" | "status" | "isTermsAccepted" | "isCancellationPolicyAccepted" | "isLiabilityWaiverSigned" | "bookingReference" | "source" | "serviceNotes" | "customerNotes" | "rescheduledBy" | "rescheduledAt" | "previousDates" | "cancelledBy" | "canceledAt" | "cancelationReason" | "createdAt" | "updatedAt" | "deletedAt" | "deletedBy", ExtArgs["result"]["booking"]>
   export type BookingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     eventCenterBooking?: boolean | Booking$eventCenterBookingArgs<ExtArgs>
     cateringBooking?: boolean | Booking$cateringBookingArgs<ExtArgs>
@@ -2042,9 +2042,9 @@ export namespace Prisma {
       servicebookingId: string | null
       serviceId: string
       serviceType: $Enums.ServiceType
-      totalBeforeDiscount: number
-      discount: number | null
-      totalAfterDiscount: number
+      subTotal: Prisma.Decimal
+      discount: Prisma.Decimal
+      total: Prisma.Decimal
       invoice: string[]
       paymentStatus: $Enums.PaymentStatus
       status: $Enums.BookingStatus
@@ -2499,9 +2499,9 @@ export namespace Prisma {
     readonly servicebookingId: FieldRef<"Booking", 'String'>
     readonly serviceId: FieldRef<"Booking", 'String'>
     readonly serviceType: FieldRef<"Booking", 'ServiceType'>
-    readonly totalBeforeDiscount: FieldRef<"Booking", 'Float'>
-    readonly discount: FieldRef<"Booking", 'Float'>
-    readonly totalAfterDiscount: FieldRef<"Booking", 'Float'>
+    readonly subTotal: FieldRef<"Booking", 'Decimal'>
+    readonly discount: FieldRef<"Booking", 'Decimal'>
+    readonly total: FieldRef<"Booking", 'Decimal'>
     readonly invoice: FieldRef<"Booking", 'String[]'>
     readonly paymentStatus: FieldRef<"Booking", 'PaymentStatus'>
     readonly status: FieldRef<"Booking", 'BookingStatus'>
@@ -3015,18 +3015,8 @@ export namespace Prisma {
 
   export type AggregateRequestQuote = {
     _count: RequestQuoteCountAggregateOutputType | null
-    _avg: RequestQuoteAvgAggregateOutputType | null
-    _sum: RequestQuoteSumAggregateOutputType | null
     _min: RequestQuoteMinAggregateOutputType | null
     _max: RequestQuoteMaxAggregateOutputType | null
-  }
-
-  export type RequestQuoteAvgAggregateOutputType = {
-    budget: number | null
-  }
-
-  export type RequestQuoteSumAggregateOutputType = {
-    budget: number | null
   }
 
   export type RequestQuoteMinAggregateOutputType = {
@@ -3035,7 +3025,7 @@ export namespace Prisma {
     bookingId: string | null
     serviceId: string | null
     serviceType: $Enums.ServiceType | null
-    budget: number | null
+    budget: string | null
     status: $Enums.InvoiceStatus | null
     bookingStatus: $Enums.BookingStatus | null
     isTermsAccepted: boolean | null
@@ -3055,7 +3045,7 @@ export namespace Prisma {
     bookingId: string | null
     serviceId: string | null
     serviceType: $Enums.ServiceType | null
-    budget: number | null
+    budget: string | null
     status: $Enums.InvoiceStatus | null
     bookingStatus: $Enums.BookingStatus | null
     isTermsAccepted: boolean | null
@@ -3092,14 +3082,6 @@ export namespace Prisma {
     _all: number
   }
 
-
-  export type RequestQuoteAvgAggregateInputType = {
-    budget?: true
-  }
-
-  export type RequestQuoteSumAggregateInputType = {
-    budget?: true
-  }
 
   export type RequestQuoteMinAggregateInputType = {
     id?: true
@@ -3202,18 +3184,6 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Select which fields to average
-    **/
-    _avg?: RequestQuoteAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: RequestQuoteSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
      * Select which fields to find the minimum value
     **/
     _min?: RequestQuoteMinAggregateInputType
@@ -3244,8 +3214,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: RequestQuoteCountAggregateInputType | true
-    _avg?: RequestQuoteAvgAggregateInputType
-    _sum?: RequestQuoteSumAggregateInputType
     _min?: RequestQuoteMinAggregateInputType
     _max?: RequestQuoteMaxAggregateInputType
   }
@@ -3256,7 +3224,7 @@ export namespace Prisma {
     bookingId: string | null
     serviceId: string
     serviceType: $Enums.ServiceType
-    budget: number
+    budget: string
     status: $Enums.InvoiceStatus
     bookingStatus: $Enums.BookingStatus
     isTermsAccepted: boolean
@@ -3271,8 +3239,6 @@ export namespace Prisma {
     deletedBy: string | null
     billingDetails: JsonValue
     _count: RequestQuoteCountAggregateOutputType | null
-    _avg: RequestQuoteAvgAggregateOutputType | null
-    _sum: RequestQuoteSumAggregateOutputType | null
     _min: RequestQuoteMinAggregateOutputType | null
     _max: RequestQuoteMaxAggregateOutputType | null
   }
@@ -3409,7 +3375,7 @@ export namespace Prisma {
       bookingId: string | null
       serviceId: string
       serviceType: $Enums.ServiceType
-      budget: number
+      budget: string
       status: $Enums.InvoiceStatus
       bookingStatus: $Enums.BookingStatus
       isTermsAccepted: boolean
@@ -3853,7 +3819,7 @@ export namespace Prisma {
     readonly bookingId: FieldRef<"RequestQuote", 'String'>
     readonly serviceId: FieldRef<"RequestQuote", 'String'>
     readonly serviceType: FieldRef<"RequestQuote", 'ServiceType'>
-    readonly budget: FieldRef<"RequestQuote", 'Float'>
+    readonly budget: FieldRef<"RequestQuote", 'String'>
     readonly status: FieldRef<"RequestQuote", 'InvoiceStatus'>
     readonly bookingStatus: FieldRef<"RequestQuote", 'BookingStatus'>
     readonly isTermsAccepted: FieldRef<"RequestQuote", 'Boolean'>
@@ -8986,9 +8952,9 @@ export namespace Prisma {
     servicebookingId: 'servicebookingId',
     serviceId: 'serviceId',
     serviceType: 'serviceType',
-    totalBeforeDiscount: 'totalBeforeDiscount',
+    subTotal: 'subTotal',
     discount: 'discount',
-    totalAfterDiscount: 'totalAfterDiscount',
+    total: 'total',
     invoice: 'invoice',
     paymentStatus: 'paymentStatus',
     status: 'status',
@@ -9201,16 +9167,16 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Float'
+   * Reference to a field of type 'Decimal'
    */
-  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+  export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
     
 
 
   /**
-   * Reference to a field of type 'Float[]'
+   * Reference to a field of type 'Decimal[]'
    */
-  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+  export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
     
 
 
@@ -9331,6 +9297,20 @@ export namespace Prisma {
    */
   export type EnumSpecialRequirementFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SpecialRequirement'>
     
+
+
+  /**
+   * Reference to a field of type 'Float'
+   */
+  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+  /**
+   * Reference to a field of type 'Float[]'
+   */
+  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
   /**
    * Deep Input Types
    */
@@ -9347,9 +9327,9 @@ export namespace Prisma {
     servicebookingId?: StringNullableFilter<"Booking"> | string | null
     serviceId?: StringFilter<"Booking"> | string
     serviceType?: EnumServiceTypeFilter<"Booking"> | $Enums.ServiceType
-    totalBeforeDiscount?: FloatFilter<"Booking"> | number
-    discount?: FloatNullableFilter<"Booking"> | number | null
-    totalAfterDiscount?: FloatFilter<"Booking"> | number
+    subTotal?: DecimalFilter<"Booking"> | Decimal | DecimalJsLike | number | string
+    discount?: DecimalFilter<"Booking"> | Decimal | DecimalJsLike | number | string
+    total?: DecimalFilter<"Booking"> | Decimal | DecimalJsLike | number | string
     invoice?: StringNullableListFilter<"Booking">
     paymentStatus?: EnumPaymentStatusFilter<"Booking"> | $Enums.PaymentStatus
     status?: EnumBookingStatusFilter<"Booking"> | $Enums.BookingStatus
@@ -9384,9 +9364,9 @@ export namespace Prisma {
     servicebookingId?: SortOrderInput | SortOrder
     serviceId?: SortOrder
     serviceType?: SortOrder
-    totalBeforeDiscount?: SortOrder
-    discount?: SortOrderInput | SortOrder
-    totalAfterDiscount?: SortOrder
+    subTotal?: SortOrder
+    discount?: SortOrder
+    total?: SortOrder
     invoice?: SortOrder
     paymentStatus?: SortOrder
     status?: SortOrder
@@ -9424,9 +9404,9 @@ export namespace Prisma {
     servicebookingId?: StringNullableFilter<"Booking"> | string | null
     serviceId?: StringFilter<"Booking"> | string
     serviceType?: EnumServiceTypeFilter<"Booking"> | $Enums.ServiceType
-    totalBeforeDiscount?: FloatFilter<"Booking"> | number
-    discount?: FloatNullableFilter<"Booking"> | number | null
-    totalAfterDiscount?: FloatFilter<"Booking"> | number
+    subTotal?: DecimalFilter<"Booking"> | Decimal | DecimalJsLike | number | string
+    discount?: DecimalFilter<"Booking"> | Decimal | DecimalJsLike | number | string
+    total?: DecimalFilter<"Booking"> | Decimal | DecimalJsLike | number | string
     invoice?: StringNullableListFilter<"Booking">
     paymentStatus?: EnumPaymentStatusFilter<"Booking"> | $Enums.PaymentStatus
     status?: EnumBookingStatusFilter<"Booking"> | $Enums.BookingStatus
@@ -9461,9 +9441,9 @@ export namespace Prisma {
     servicebookingId?: SortOrderInput | SortOrder
     serviceId?: SortOrder
     serviceType?: SortOrder
-    totalBeforeDiscount?: SortOrder
-    discount?: SortOrderInput | SortOrder
-    totalAfterDiscount?: SortOrder
+    subTotal?: SortOrder
+    discount?: SortOrder
+    total?: SortOrder
     invoice?: SortOrder
     paymentStatus?: SortOrder
     status?: SortOrder
@@ -9502,9 +9482,9 @@ export namespace Prisma {
     servicebookingId?: StringNullableWithAggregatesFilter<"Booking"> | string | null
     serviceId?: StringWithAggregatesFilter<"Booking"> | string
     serviceType?: EnumServiceTypeWithAggregatesFilter<"Booking"> | $Enums.ServiceType
-    totalBeforeDiscount?: FloatWithAggregatesFilter<"Booking"> | number
-    discount?: FloatNullableWithAggregatesFilter<"Booking"> | number | null
-    totalAfterDiscount?: FloatWithAggregatesFilter<"Booking"> | number
+    subTotal?: DecimalWithAggregatesFilter<"Booking"> | Decimal | DecimalJsLike | number | string
+    discount?: DecimalWithAggregatesFilter<"Booking"> | Decimal | DecimalJsLike | number | string
+    total?: DecimalWithAggregatesFilter<"Booking"> | Decimal | DecimalJsLike | number | string
     invoice?: StringNullableListFilter<"Booking">
     paymentStatus?: EnumPaymentStatusWithAggregatesFilter<"Booking"> | $Enums.PaymentStatus
     status?: EnumBookingStatusWithAggregatesFilter<"Booking"> | $Enums.BookingStatus
@@ -9536,7 +9516,7 @@ export namespace Prisma {
     bookingId?: StringNullableFilter<"RequestQuote"> | string | null
     serviceId?: StringFilter<"RequestQuote"> | string
     serviceType?: EnumServiceTypeFilter<"RequestQuote"> | $Enums.ServiceType
-    budget?: FloatFilter<"RequestQuote"> | number
+    budget?: StringFilter<"RequestQuote"> | string
     status?: EnumInvoiceStatusFilter<"RequestQuote"> | $Enums.InvoiceStatus
     bookingStatus?: EnumBookingStatusFilter<"RequestQuote"> | $Enums.BookingStatus
     isTermsAccepted?: BoolFilter<"RequestQuote"> | boolean
@@ -9587,7 +9567,7 @@ export namespace Prisma {
     customerId?: StringFilter<"RequestQuote"> | string
     serviceId?: StringFilter<"RequestQuote"> | string
     serviceType?: EnumServiceTypeFilter<"RequestQuote"> | $Enums.ServiceType
-    budget?: FloatFilter<"RequestQuote"> | number
+    budget?: StringFilter<"RequestQuote"> | string
     status?: EnumInvoiceStatusFilter<"RequestQuote"> | $Enums.InvoiceStatus
     bookingStatus?: EnumBookingStatusFilter<"RequestQuote"> | $Enums.BookingStatus
     isTermsAccepted?: BoolFilter<"RequestQuote"> | boolean
@@ -9626,10 +9606,8 @@ export namespace Prisma {
     deletedBy?: SortOrderInput | SortOrder
     billingDetails?: SortOrder
     _count?: RequestQuoteCountOrderByAggregateInput
-    _avg?: RequestQuoteAvgOrderByAggregateInput
     _max?: RequestQuoteMaxOrderByAggregateInput
     _min?: RequestQuoteMinOrderByAggregateInput
-    _sum?: RequestQuoteSumOrderByAggregateInput
   }
 
   export type RequestQuoteScalarWhereWithAggregatesInput = {
@@ -9641,7 +9619,7 @@ export namespace Prisma {
     bookingId?: StringNullableWithAggregatesFilter<"RequestQuote"> | string | null
     serviceId?: StringWithAggregatesFilter<"RequestQuote"> | string
     serviceType?: EnumServiceTypeWithAggregatesFilter<"RequestQuote"> | $Enums.ServiceType
-    budget?: FloatWithAggregatesFilter<"RequestQuote"> | number
+    budget?: StringWithAggregatesFilter<"RequestQuote"> | string
     status?: EnumInvoiceStatusWithAggregatesFilter<"RequestQuote"> | $Enums.InvoiceStatus
     bookingStatus?: EnumBookingStatusWithAggregatesFilter<"RequestQuote"> | $Enums.BookingStatus
     isTermsAccepted?: BoolWithAggregatesFilter<"RequestQuote"> | boolean
@@ -10039,9 +10017,9 @@ export namespace Prisma {
     servicebookingId?: string | null
     serviceId: string
     serviceType: $Enums.ServiceType
-    totalBeforeDiscount: number
-    discount?: number | null
-    totalAfterDiscount: number
+    subTotal: Decimal | DecimalJsLike | number | string
+    discount: Decimal | DecimalJsLike | number | string
+    total: Decimal | DecimalJsLike | number | string
     invoice?: BookingCreateinvoiceInput | string[]
     paymentStatus: $Enums.PaymentStatus
     status: $Enums.BookingStatus
@@ -10076,9 +10054,9 @@ export namespace Prisma {
     servicebookingId?: string | null
     serviceId: string
     serviceType: $Enums.ServiceType
-    totalBeforeDiscount: number
-    discount?: number | null
-    totalAfterDiscount: number
+    subTotal: Decimal | DecimalJsLike | number | string
+    discount: Decimal | DecimalJsLike | number | string
+    total: Decimal | DecimalJsLike | number | string
     invoice?: BookingCreateinvoiceInput | string[]
     paymentStatus: $Enums.PaymentStatus
     status: $Enums.BookingStatus
@@ -10113,9 +10091,9 @@ export namespace Prisma {
     servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
     serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
-    totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
-    discount?: NullableFloatFieldUpdateOperationsInput | number | null
-    totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
+    subTotal?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     invoice?: BookingUpdateinvoiceInput | string[]
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -10150,9 +10128,9 @@ export namespace Prisma {
     servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
     serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
-    totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
-    discount?: NullableFloatFieldUpdateOperationsInput | number | null
-    totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
+    subTotal?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     invoice?: BookingUpdateinvoiceInput | string[]
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -10187,9 +10165,9 @@ export namespace Prisma {
     servicebookingId?: string | null
     serviceId: string
     serviceType: $Enums.ServiceType
-    totalBeforeDiscount: number
-    discount?: number | null
-    totalAfterDiscount: number
+    subTotal: Decimal | DecimalJsLike | number | string
+    discount: Decimal | DecimalJsLike | number | string
+    total: Decimal | DecimalJsLike | number | string
     invoice?: BookingCreateinvoiceInput | string[]
     paymentStatus: $Enums.PaymentStatus
     status: $Enums.BookingStatus
@@ -10220,9 +10198,9 @@ export namespace Prisma {
     servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
     serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
-    totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
-    discount?: NullableFloatFieldUpdateOperationsInput | number | null
-    totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
+    subTotal?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     invoice?: BookingUpdateinvoiceInput | string[]
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -10253,9 +10231,9 @@ export namespace Prisma {
     servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
     serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
-    totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
-    discount?: NullableFloatFieldUpdateOperationsInput | number | null
-    totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
+    subTotal?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     invoice?: BookingUpdateinvoiceInput | string[]
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -10283,7 +10261,7 @@ export namespace Prisma {
     customerId: string
     serviceId: string
     serviceType: $Enums.ServiceType
-    budget: number
+    budget: string
     status: $Enums.InvoiceStatus
     bookingStatus: $Enums.BookingStatus
     isTermsAccepted: boolean
@@ -10307,7 +10285,7 @@ export namespace Prisma {
     bookingId?: string | null
     serviceId: string
     serviceType: $Enums.ServiceType
-    budget: number
+    budget: string
     status: $Enums.InvoiceStatus
     bookingStatus: $Enums.BookingStatus
     isTermsAccepted: boolean
@@ -10329,7 +10307,7 @@ export namespace Prisma {
     customerId?: StringFieldUpdateOperationsInput | string
     serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
-    budget?: FloatFieldUpdateOperationsInput | number
+    budget?: StringFieldUpdateOperationsInput | string
     status?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
     bookingStatus?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
@@ -10353,7 +10331,7 @@ export namespace Prisma {
     bookingId?: NullableStringFieldUpdateOperationsInput | string | null
     serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
-    budget?: FloatFieldUpdateOperationsInput | number
+    budget?: StringFieldUpdateOperationsInput | string
     status?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
     bookingStatus?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
@@ -10376,7 +10354,7 @@ export namespace Prisma {
     bookingId?: string | null
     serviceId: string
     serviceType: $Enums.ServiceType
-    budget: number
+    budget: string
     status: $Enums.InvoiceStatus
     bookingStatus: $Enums.BookingStatus
     isTermsAccepted: boolean
@@ -10397,7 +10375,7 @@ export namespace Prisma {
     customerId?: StringFieldUpdateOperationsInput | string
     serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
-    budget?: FloatFieldUpdateOperationsInput | number
+    budget?: StringFieldUpdateOperationsInput | string
     status?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
     bookingStatus?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
@@ -10419,7 +10397,7 @@ export namespace Prisma {
     bookingId?: NullableStringFieldUpdateOperationsInput | string | null
     serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
-    budget?: FloatFieldUpdateOperationsInput | number
+    budget?: StringFieldUpdateOperationsInput | string
     status?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
     bookingStatus?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
@@ -10918,26 +10896,15 @@ export namespace Prisma {
     not?: NestedEnumServiceTypeFilter<$PrismaModel> | $Enums.ServiceType
   }
 
-  export type FloatFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatFilter<$PrismaModel> | number
-  }
-
-  export type FloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  export type DecimalFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
   }
 
   export type StringNullableListFilter<$PrismaModel = never> = {
@@ -11023,9 +10990,9 @@ export namespace Prisma {
     servicebookingId?: SortOrder
     serviceId?: SortOrder
     serviceType?: SortOrder
-    totalBeforeDiscount?: SortOrder
+    subTotal?: SortOrder
     discount?: SortOrder
-    totalAfterDiscount?: SortOrder
+    total?: SortOrder
     invoice?: SortOrder
     paymentStatus?: SortOrder
     status?: SortOrder
@@ -11049,9 +11016,9 @@ export namespace Prisma {
   }
 
   export type BookingAvgOrderByAggregateInput = {
-    totalBeforeDiscount?: SortOrder
+    subTotal?: SortOrder
     discount?: SortOrder
-    totalAfterDiscount?: SortOrder
+    total?: SortOrder
   }
 
   export type BookingMaxOrderByAggregateInput = {
@@ -11062,9 +11029,9 @@ export namespace Prisma {
     servicebookingId?: SortOrder
     serviceId?: SortOrder
     serviceType?: SortOrder
-    totalBeforeDiscount?: SortOrder
+    subTotal?: SortOrder
     discount?: SortOrder
-    totalAfterDiscount?: SortOrder
+    total?: SortOrder
     paymentStatus?: SortOrder
     status?: SortOrder
     isTermsAccepted?: SortOrder
@@ -11093,9 +11060,9 @@ export namespace Prisma {
     servicebookingId?: SortOrder
     serviceId?: SortOrder
     serviceType?: SortOrder
-    totalBeforeDiscount?: SortOrder
+    subTotal?: SortOrder
     discount?: SortOrder
-    totalAfterDiscount?: SortOrder
+    total?: SortOrder
     paymentStatus?: SortOrder
     status?: SortOrder
     isTermsAccepted?: SortOrder
@@ -11117,9 +11084,9 @@ export namespace Prisma {
   }
 
   export type BookingSumOrderByAggregateInput = {
-    totalBeforeDiscount?: SortOrder
+    subTotal?: SortOrder
     discount?: SortOrder
-    totalAfterDiscount?: SortOrder
+    total?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -11182,36 +11149,20 @@ export namespace Prisma {
     _max?: NestedEnumServiceTypeFilter<$PrismaModel>
   }
 
-  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+  export type DecimalWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
     _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedFloatFilter<$PrismaModel>
-    _min?: NestedFloatFilter<$PrismaModel>
-    _max?: NestedFloatFilter<$PrismaModel>
-  }
-
-  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedFloatNullableFilter<$PrismaModel>
-    _min?: NestedFloatNullableFilter<$PrismaModel>
-    _max?: NestedFloatNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalFilter<$PrismaModel>
+    _sum?: NestedDecimalFilter<$PrismaModel>
+    _min?: NestedDecimalFilter<$PrismaModel>
+    _max?: NestedDecimalFilter<$PrismaModel>
   }
 
   export type EnumPaymentStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -11323,10 +11274,6 @@ export namespace Prisma {
     billingDetails?: SortOrder
   }
 
-  export type RequestQuoteAvgOrderByAggregateInput = {
-    budget?: SortOrder
-  }
-
   export type RequestQuoteMaxOrderByAggregateInput = {
     id?: SortOrder
     customerId?: SortOrder
@@ -11365,10 +11312,6 @@ export namespace Prisma {
     updatedAt?: SortOrder
     deletedAt?: SortOrder
     deletedBy?: SortOrder
-  }
-
-  export type RequestQuoteSumOrderByAggregateInput = {
-    budget?: SortOrder
   }
 
   export type EnumInvoiceStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -11732,20 +11675,12 @@ export namespace Prisma {
     set?: $Enums.ServiceType
   }
 
-  export type FloatFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
-  export type NullableFloatFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
+  export type DecimalFieldUpdateOperationsInput = {
+    set?: Decimal | DecimalJsLike | number | string
+    increment?: Decimal | DecimalJsLike | number | string
+    decrement?: Decimal | DecimalJsLike | number | string
+    multiply?: Decimal | DecimalJsLike | number | string
+    divide?: Decimal | DecimalJsLike | number | string
   }
 
   export type BookingUpdateinvoiceInput = {
@@ -12154,26 +12089,15 @@ export namespace Prisma {
     not?: NestedEnumServiceTypeFilter<$PrismaModel> | $Enums.ServiceType
   }
 
-  export type NestedFloatFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatFilter<$PrismaModel> | number
-  }
-
-  export type NestedFloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  export type NestedDecimalFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
   }
 
   export type NestedEnumPaymentStatusFilter<$PrismaModel = never> = {
@@ -12293,36 +12217,20 @@ export namespace Prisma {
     _max?: NestedEnumServiceTypeFilter<$PrismaModel>
   }
 
-  export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+  export type NestedDecimalWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
     _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedFloatFilter<$PrismaModel>
-    _min?: NestedFloatFilter<$PrismaModel>
-    _max?: NestedFloatFilter<$PrismaModel>
-  }
-
-  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedFloatNullableFilter<$PrismaModel>
-    _min?: NestedFloatNullableFilter<$PrismaModel>
-    _max?: NestedFloatNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalFilter<$PrismaModel>
+    _sum?: NestedDecimalFilter<$PrismaModel>
+    _min?: NestedDecimalFilter<$PrismaModel>
+    _max?: NestedDecimalFilter<$PrismaModel>
   }
 
   export type NestedEnumPaymentStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -12450,6 +12358,17 @@ export namespace Prisma {
     _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
   export type EventCenterBookingCreateWithoutBookingInput = {
     id?: string
     eventcenterId: string
@@ -12531,7 +12450,7 @@ export namespace Prisma {
     customerId: string
     serviceId: string
     serviceType: $Enums.ServiceType
-    budget: number
+    budget: string
     status: $Enums.InvoiceStatus
     bookingStatus: $Enums.BookingStatus
     isTermsAccepted: boolean
@@ -12553,7 +12472,7 @@ export namespace Prisma {
     customerId: string
     serviceId: string
     serviceType: $Enums.ServiceType
-    budget: number
+    budget: string
     status: $Enums.InvoiceStatus
     bookingStatus: $Enums.BookingStatus
     isTermsAccepted: boolean
@@ -12727,7 +12646,7 @@ export namespace Prisma {
     customerId?: StringFieldUpdateOperationsInput | string
     serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
-    budget?: FloatFieldUpdateOperationsInput | number
+    budget?: StringFieldUpdateOperationsInput | string
     status?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
     bookingStatus?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
@@ -12749,7 +12668,7 @@ export namespace Prisma {
     customerId?: StringFieldUpdateOperationsInput | string
     serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
-    budget?: FloatFieldUpdateOperationsInput | number
+    budget?: StringFieldUpdateOperationsInput | string
     status?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
     bookingStatus?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
@@ -12812,9 +12731,9 @@ export namespace Prisma {
     servicebookingId?: string | null
     serviceId: string
     serviceType: $Enums.ServiceType
-    totalBeforeDiscount: number
-    discount?: number | null
-    totalAfterDiscount: number
+    subTotal: Decimal | DecimalJsLike | number | string
+    discount: Decimal | DecimalJsLike | number | string
+    total: Decimal | DecimalJsLike | number | string
     invoice?: BookingCreateinvoiceInput | string[]
     paymentStatus: $Enums.PaymentStatus
     status: $Enums.BookingStatus
@@ -12848,9 +12767,9 @@ export namespace Prisma {
     servicebookingId?: string | null
     serviceId: string
     serviceType: $Enums.ServiceType
-    totalBeforeDiscount: number
-    discount?: number | null
-    totalAfterDiscount: number
+    subTotal: Decimal | DecimalJsLike | number | string
+    discount: Decimal | DecimalJsLike | number | string
+    total: Decimal | DecimalJsLike | number | string
     invoice?: BookingCreateinvoiceInput | string[]
     paymentStatus: $Enums.PaymentStatus
     status: $Enums.BookingStatus
@@ -12943,9 +12862,9 @@ export namespace Prisma {
     servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
     serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
-    totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
-    discount?: NullableFloatFieldUpdateOperationsInput | number | null
-    totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
+    subTotal?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     invoice?: BookingUpdateinvoiceInput | string[]
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -12979,9 +12898,9 @@ export namespace Prisma {
     servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
     serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
-    totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
-    discount?: NullableFloatFieldUpdateOperationsInput | number | null
-    totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
+    subTotal?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     invoice?: BookingUpdateinvoiceInput | string[]
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -13031,9 +12950,9 @@ export namespace Prisma {
     servicebookingId?: string | null
     serviceId: string
     serviceType: $Enums.ServiceType
-    totalBeforeDiscount: number
-    discount?: number | null
-    totalAfterDiscount: number
+    subTotal: Decimal | DecimalJsLike | number | string
+    discount: Decimal | DecimalJsLike | number | string
+    total: Decimal | DecimalJsLike | number | string
     invoice?: BookingCreateinvoiceInput | string[]
     paymentStatus: $Enums.PaymentStatus
     status: $Enums.BookingStatus
@@ -13067,9 +12986,9 @@ export namespace Prisma {
     servicebookingId?: string | null
     serviceId: string
     serviceType: $Enums.ServiceType
-    totalBeforeDiscount: number
-    discount?: number | null
-    totalAfterDiscount: number
+    subTotal: Decimal | DecimalJsLike | number | string
+    discount: Decimal | DecimalJsLike | number | string
+    total: Decimal | DecimalJsLike | number | string
     invoice?: BookingCreateinvoiceInput | string[]
     paymentStatus: $Enums.PaymentStatus
     status: $Enums.BookingStatus
@@ -13105,7 +13024,7 @@ export namespace Prisma {
     customerId: string
     serviceId: string
     serviceType: $Enums.ServiceType
-    budget: number
+    budget: string
     status: $Enums.InvoiceStatus
     bookingStatus: $Enums.BookingStatus
     isTermsAccepted: boolean
@@ -13128,7 +13047,7 @@ export namespace Prisma {
     bookingId?: string | null
     serviceId: string
     serviceType: $Enums.ServiceType
-    budget: number
+    budget: string
     status: $Enums.InvoiceStatus
     bookingStatus: $Enums.BookingStatus
     isTermsAccepted: boolean
@@ -13168,9 +13087,9 @@ export namespace Prisma {
     servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
     serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
-    totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
-    discount?: NullableFloatFieldUpdateOperationsInput | number | null
-    totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
+    subTotal?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     invoice?: BookingUpdateinvoiceInput | string[]
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -13204,9 +13123,9 @@ export namespace Prisma {
     servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
     serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
-    totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
-    discount?: NullableFloatFieldUpdateOperationsInput | number | null
-    totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
+    subTotal?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     invoice?: BookingUpdateinvoiceInput | string[]
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -13257,7 +13176,7 @@ export namespace Prisma {
     bookingId?: StringNullableFilter<"RequestQuote"> | string | null
     serviceId?: StringFilter<"RequestQuote"> | string
     serviceType?: EnumServiceTypeFilter<"RequestQuote"> | $Enums.ServiceType
-    budget?: FloatFilter<"RequestQuote"> | number
+    budget?: StringFilter<"RequestQuote"> | string
     status?: EnumInvoiceStatusFilter<"RequestQuote"> | $Enums.InvoiceStatus
     bookingStatus?: EnumBookingStatusFilter<"RequestQuote"> | $Enums.BookingStatus
     isTermsAccepted?: BoolFilter<"RequestQuote"> | boolean
@@ -13281,9 +13200,9 @@ export namespace Prisma {
     servicebookingId?: string | null
     serviceId: string
     serviceType: $Enums.ServiceType
-    totalBeforeDiscount: number
-    discount?: number | null
-    totalAfterDiscount: number
+    subTotal: Decimal | DecimalJsLike | number | string
+    discount: Decimal | DecimalJsLike | number | string
+    total: Decimal | DecimalJsLike | number | string
     invoice?: BookingCreateinvoiceInput | string[]
     paymentStatus: $Enums.PaymentStatus
     status: $Enums.BookingStatus
@@ -13317,9 +13236,9 @@ export namespace Prisma {
     servicebookingId?: string | null
     serviceId: string
     serviceType: $Enums.ServiceType
-    totalBeforeDiscount: number
-    discount?: number | null
-    totalAfterDiscount: number
+    subTotal: Decimal | DecimalJsLike | number | string
+    discount: Decimal | DecimalJsLike | number | string
+    total: Decimal | DecimalJsLike | number | string
     invoice?: BookingCreateinvoiceInput | string[]
     paymentStatus: $Enums.PaymentStatus
     status: $Enums.BookingStatus
@@ -13369,9 +13288,9 @@ export namespace Prisma {
     servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
     serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
-    totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
-    discount?: NullableFloatFieldUpdateOperationsInput | number | null
-    totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
+    subTotal?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     invoice?: BookingUpdateinvoiceInput | string[]
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -13405,9 +13324,9 @@ export namespace Prisma {
     servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
     serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
-    totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
-    discount?: NullableFloatFieldUpdateOperationsInput | number | null
-    totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
+    subTotal?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     invoice?: BookingUpdateinvoiceInput | string[]
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -13441,9 +13360,9 @@ export namespace Prisma {
     servicebookingId?: string | null
     serviceId: string
     serviceType: $Enums.ServiceType
-    totalBeforeDiscount: number
-    discount?: number | null
-    totalAfterDiscount: number
+    subTotal: Decimal | DecimalJsLike | number | string
+    discount: Decimal | DecimalJsLike | number | string
+    total: Decimal | DecimalJsLike | number | string
     invoice?: BookingCreateinvoiceInput | string[]
     paymentStatus: $Enums.PaymentStatus
     status: $Enums.BookingStatus
@@ -13477,9 +13396,9 @@ export namespace Prisma {
     servicebookingId?: string | null
     serviceId: string
     serviceType: $Enums.ServiceType
-    totalBeforeDiscount: number
-    discount?: number | null
-    totalAfterDiscount: number
+    subTotal: Decimal | DecimalJsLike | number | string
+    discount: Decimal | DecimalJsLike | number | string
+    total: Decimal | DecimalJsLike | number | string
     invoice?: BookingCreateinvoiceInput | string[]
     paymentStatus: $Enums.PaymentStatus
     status: $Enums.BookingStatus
@@ -13529,9 +13448,9 @@ export namespace Prisma {
     servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
     serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
-    totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
-    discount?: NullableFloatFieldUpdateOperationsInput | number | null
-    totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
+    subTotal?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     invoice?: BookingUpdateinvoiceInput | string[]
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -13565,9 +13484,9 @@ export namespace Prisma {
     servicebookingId?: NullableStringFieldUpdateOperationsInput | string | null
     serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
-    totalBeforeDiscount?: FloatFieldUpdateOperationsInput | number
-    discount?: NullableFloatFieldUpdateOperationsInput | number | null
-    totalAfterDiscount?: FloatFieldUpdateOperationsInput | number
+    subTotal?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     invoice?: BookingUpdateinvoiceInput | string[]
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -13729,7 +13648,7 @@ export namespace Prisma {
     customerId?: StringFieldUpdateOperationsInput | string
     serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
-    budget?: FloatFieldUpdateOperationsInput | number
+    budget?: StringFieldUpdateOperationsInput | string
     status?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
     bookingStatus?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
@@ -13752,7 +13671,7 @@ export namespace Prisma {
     bookingId?: NullableStringFieldUpdateOperationsInput | string | null
     serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
-    budget?: FloatFieldUpdateOperationsInput | number
+    budget?: StringFieldUpdateOperationsInput | string
     status?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
     bookingStatus?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean
@@ -13774,7 +13693,7 @@ export namespace Prisma {
     bookingId?: NullableStringFieldUpdateOperationsInput | string | null
     serviceId?: StringFieldUpdateOperationsInput | string
     serviceType?: EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
-    budget?: FloatFieldUpdateOperationsInput | number
+    budget?: StringFieldUpdateOperationsInput | string
     status?: EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
     bookingStatus?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     isTermsAccepted?: BoolFieldUpdateOperationsInput | boolean

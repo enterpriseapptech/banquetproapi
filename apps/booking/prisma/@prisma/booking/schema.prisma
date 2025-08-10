@@ -23,9 +23,9 @@ model Booking {
   servicebookingId             String? // eventcenterbooking, catering booking , etc
   serviceId                    String
   serviceType                  ServiceType
-  totalBeforeDiscount          Float
-  discount                     Float?
-  totalAfterDiscount           Float
+  subTotal                     Decimal       @banquestprobookingdb.Decimal(10, 2)
+  discount                     Decimal       @banquestprobookingdb.Decimal(10, 2)
+  total                        Decimal       @banquestprobookingdb.Decimal(10, 2)
   invoice                      String[] //a booking can have more than 1 invoice for services that needs deposit
   paymentStatus                PaymentStatus
   status                       BookingStatus
@@ -66,7 +66,7 @@ model RequestQuote {
   bookingId                    String?       @unique // eventcenterbooking, catering booking , etc
   serviceId                    String
   serviceType                  ServiceType
-  budget                       Float
+  budget                       String
   status                       InvoiceStatus
   bookingStatus                BookingStatus
   isTermsAccepted              Boolean

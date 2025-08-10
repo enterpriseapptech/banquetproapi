@@ -10,11 +10,13 @@ import {
     IsString,
     IsNumber,
     IsDateString,
+    IsJSON,
 
 } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 import { BookingSource, ServiceType, SpecialRequirement } from './booking.dto';
+import { BillingAddress, InvoiceItem } from '../payments';
 export class CreateBookingDto {
     @ApiProperty({ type: 'string', required: true })
     @IsUUID()
@@ -40,7 +42,7 @@ export class CreateBookingDto {
 
     @ApiProperty({ type: 'number', required: true })
     @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
-    totalBeforeDiscount: number;
+    subTotal: number;
 
     @ApiProperty({ type: 'number', required: false })
     @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
@@ -48,13 +50,7 @@ export class CreateBookingDto {
 
     @ApiProperty({ type: 'number', required: true })
     @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
-    totalAfterDiscount: number;
-
-    @ApiProperty({ type: 'array', required: true })
-    @IsArray()
-    @IsString({ each: true })
-    @IsNotEmpty()
-    bookingDates: string[];
+    total: number;
 
     @ApiProperty({ type: 'boolean', required: true })
     @IsBoolean()
@@ -85,9 +81,6 @@ export class CreateBookingDto {
     @IsString()
     @IsOptional()
     customerNotes?: string;
-
-
-
 
     @ApiProperty({ type: 'string', required: false })
     @IsString()
@@ -138,6 +131,36 @@ export class CreateBookingDto {
     @IsString({ each: true })
     @IsOptional()
     images?: any[];
+
+    @ApiProperty({
+        description: 'Invoice items in JSON format',
+        example: [{ item: 'Laptop', amount: 1200 }, { item: 'Mouse', amount: 25 }],
+    })
+    @IsJSON()
+    items: InvoiceItem[];
+    @ApiProperty({
+        description: 'Billing address in JSON format',
+        example: { street: '123 Main St', city: 'Lagos', country: 'Nigeria' },
+    })
+    @IsNotEmpty()
+    @IsJSON()
+    billingAddress: BillingAddress;
+
+
+        @ApiProperty({
+        description: 'Due date for payment',
+        example: '2025-09-01T00:00:00.000Z',
+    })
+    @IsNotEmpty()
+    @IsDateString()
+    dueDate: Date;
+
+
+    @ApiProperty({ default: 'USD' })
+    @IsOptional()
+    @IsString()
+    currency?: string;
+
 }
 
 

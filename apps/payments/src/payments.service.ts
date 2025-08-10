@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { $Enums, Prisma } from '@prisma/payments';
-import { UpdateFeeDto, UpdateSubscriptionPlanDto, FeaturedPlanDto, FeesDto, PaymentDto, SubscriptionPlanDto, CreateFeaturedPlanDto, CreateFeeDto, CreatePaymentDto, CreateSubscriptionPlanDto, FeesType, PaymentReason, IPaymentStatus, Status, UpdatePaymentDto, CreatePaymentMethodDto, PaymentMethodDto, UpdatePaymentMethodDto } from '@shared/contracts/payments';
+import { UpdateFeeDto, UpdateSubscriptionPlanDto, FeaturedPlanDto, FeesDto, PaymentDto, SubscriptionPlanDto, CreateFeaturedPlanDto, CreateFeeDto, CreatePaymentDto, CreateSubscriptionPlanDto, FeesType, PaymentReason, IPaymentStatus, Status, UpdatePaymentDto, CreatePaymentMethodDto, PaymentMethodDto, UpdatePaymentMethodDto, CreateInvoiceDto, InvoiceDto, InvoiceStatus, UpdateInvoiceDto, InvoiceItem, BillingAddress } from '@shared/contracts/payments';
 
 
 @Injectable()
@@ -12,7 +12,7 @@ export class PaymentsService {
 
     async create(createPaymentDto: CreatePaymentDto): Promise<PaymentDto> {
         const newPaymentInput: Prisma.PaymentCreateInput = {
-            userId: createPaymentDto.userId as $Enums.FeesType,
+            userId: createPaymentDto.userId,
             paymentMethod: { connect: { id: createPaymentDto.paymentMethodId } },
             amount: createPaymentDto.amount,
             amountCharged: createPaymentDto.amount,
@@ -22,6 +22,7 @@ export class PaymentsService {
             paymentReason: createPaymentDto.paymentReason,
             status: createPaymentDto.status,
             transactionId: createPaymentDto.transactionId,
+            invoice: {connect: {id: createPaymentDto.invoiceId}}
         }
 
         try {
@@ -177,6 +178,205 @@ export class PaymentsService {
     }
 
 }
+
+@Injectable()
+export class InvoiceService {
+    constructor(
+        private readonly databaseService: DatabaseService
+    ) { }
+
+    async create(createInvoiceDto: CreateInvoiceDto): Promise<InvoiceDto> {
+        //  validate total
+        if(!createInvoiceDto.items){
+            throw new InternalServerErrorException('We could not generate invoice', {
+                cause: new Error(),
+                description: 'We could not generate invoice, as the items been paid for are not listed'
+            });
+        }
+
+        let itemsTotal = 0;
+        createInvoiceDto.items.map((item)=>{itemsTotal += item.amount})
+        const discount = itemsTotal * (createInvoiceDto.discount /100)
+        if((itemsTotal - discount) !== (createInvoiceDto.total)){
+           throw new InternalServerErrorException('We could not generate invoice', {
+                cause: new Error(),
+                description: 'We could not generate invoice, total amount is incorrect for the items'
+            }); 
+        }
+        const newInvoiceInput: Prisma.InvoiceCreateInput = {
+            userId: createInvoiceDto.userId,
+            bookingId: createInvoiceDto.bookingId,
+            items: createInvoiceDto.items as Prisma.JsonArray,
+            subTotal: createInvoiceDto.subTotal,
+            discount: discount,
+            total: createInvoiceDto.total,
+            currency: createInvoiceDto.currency,
+            dueDate: createInvoiceDto.dueDate,
+            note: createInvoiceDto.note,
+            billingAddress: createInvoiceDto.billingAddress as Prisma.JsonObject,
+            status: "PENDING" as $Enums.InvoiceStatus,
+        }
+
+        try {
+            // Start a transaction - for an all or fail process of creating a user
+            const invoice = await this.databaseService.invoice.create({ data: newInvoiceInput });
+                
+            return {
+                ...invoice,
+                items: invoice.items as InvoiceItem[],
+                billingAddress: invoice.billingAddress as BillingAddress,
+                subTotal: Number(invoice.subTotal),
+                discount: Number(invoice.discount),
+                total: Number(invoice.total),
+                status: invoice.status as unknown as InvoiceStatus,
+            };
+
+        } catch (error:any) {
+            throw error
+        }
+    }
+
+    async findAll(
+        limit: number, 
+        offset: number, 
+        bookingId?: string, 
+        userId?: string, 
+        status?: string, 
+        dueDate?: Date,
+        deleted?: boolean): Promise<any> {
+        // when deleted is undefined get all
+        const whereClause:any = {}
+        if(deleted === undefined) whereClause.deletedAt = undefined
+        if(bookingId) whereClause.bookingId = bookingId
+        if(userId) whereClause.userId = userId
+        if(status) whereClause.status = status as $Enums.InvoiceStatus
+        if(dueDate) whereClause.dueDate = dueDate
+        whereClause.deletedAt = deleted == true ? {not: null}: null
+
+        const invoices = await this.databaseService.invoice.findMany({
+            take: limit,
+            skip: offset,
+            where: whereClause,
+            orderBy: { createdAt: "asc" },
+        });
+
+        return {count: 1, data: invoices.map(invoice => this.mapToInvoiceDto(invoice))};
+    }
+
+    async findOne(id: string): Promise<InvoiceDto> {
+
+        const invoice = await this.databaseService.invoice.findUnique({
+            where: {
+                id: id,
+                deletedAt: null
+            },
+        });
+
+        return {
+                ...invoice,
+                items: invoice.items as InvoiceItem[],
+                billingAddress: invoice.billingAddress as BillingAddress,
+                subTotal: Number(invoice.subTotal),
+                discount: Number(invoice.discount),
+                total: Number(invoice.total),
+                status: invoice.status as unknown as InvoiceStatus,
+            };
+
+    }
+
+    async update(id: string, updateInvoiceDto: UpdateInvoiceDto): Promise<InvoiceDto> {
+        try {
+            const updateInvoiceInput: Prisma.InvoiceUpdateInput = {
+                ...updateInvoiceDto,
+            };
+
+            const invoice = await this.databaseService.invoice.update({
+                where: { id },
+                data: updateInvoiceInput
+            });
+
+
+            return {
+                ...invoice,
+                items: invoice.items as InvoiceItem[],
+                billingAddress: invoice.billingAddress as BillingAddress,
+                subTotal: Number(invoice.subTotal),
+                discount: Number(invoice.discount),
+                total: Number(invoice.total),
+                status: invoice.status as unknown as InvoiceStatus,
+            };
+
+
+        } catch (error) {
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    async remove(id: string, updaterId: string): Promise<InvoiceDto> {
+
+        const invoice = await this.databaseService.$transaction(async (prisma) => {
+            const deletedInvoice = await prisma.invoice.update({
+                where: { id },
+                data: {
+                    deletedAt: new Date(),
+                    deletedBy: updaterId
+                }
+            });
+
+            return deletedInvoice
+        });
+
+        return {
+            ...invoice,
+            items: invoice.items as InvoiceItem[],
+            billingAddress: invoice.billingAddress as BillingAddress,
+            subTotal: Number(invoice.subTotal),
+            discount: Number(invoice.discount),
+            total: Number(invoice.total),
+            status: invoice.status as unknown as InvoiceStatus,
+        };
+
+    }
+
+    async permanentDelete(id: string): Promise<InvoiceDto> {
+
+        const invoice = await this.databaseService.$transaction(async (prisma) => {
+            const deletedPayment = await prisma.invoice.delete({
+                where: { id },
+            });
+            return deletedPayment
+        });
+
+        return {
+            ...invoice,
+            items: invoice.items as InvoiceItem[],
+            billingAddress: invoice.billingAddress as BillingAddress,
+            subTotal: Number(invoice.subTotal),
+            discount: Number(invoice.discount),
+            total: Number(invoice.total),
+            status: invoice.status as unknown as InvoiceStatus,
+        };
+    }
+
+
+    /**
+     * 
+     * Maps a raw event center from the database to EventCenterDto.
+     */
+    private mapToInvoiceDto(invoice: any): InvoiceDto {
+        return {
+                ...invoice,
+                items: invoice.items as InvoiceItem[],
+                billingAddress: invoice.billingAddress as BillingAddress,
+                subTotal: Number(invoice.subTotal),
+                discount: Number(invoice.discount),
+                total: Number(invoice.total),
+                status: invoice.status as unknown as InvoiceStatus,
+            };
+    }
+
+}
+
 
 @Injectable()
 export class PaymentMethodService {

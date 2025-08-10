@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { $Enums, Prisma } from '../prisma/@prisma/booking';
 import { CreateBookingDto, BookingDto, ManyBookingDto, TimeslotDto, CreateManyTimeSlotDto, ManyTimeslotDto, ManyRequestTimeSlotDto, UpdateTimeslotDto, UpdateBookingDto, PaymentStatus, ServiceType, BookingStatus, BookingSource } from '@shared/contracts/booking';
 import { EventCenterDto, EVENTCENTERPATTERN, ManyRequestEventCenterDto } from '@shared/contracts/eventcenters';
@@ -7,10 +7,11 @@ import { ManyEventCentersDto } from '@shared/contracts/eventcenters';
 import { UserDto, USERPATTERN, } from '@shared/contracts/users';
 import { DatabaseService } from '../database/database.service';
 import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
-import { EVENT_CENTER_CLIENT, NOTIFICATION_CLIENT, USER_CLIENT, CATERING_CLIENT } from '@shared/contracts';
+import { EVENT_CENTER_CLIENT, NOTIFICATION_CLIENT, USER_CLIENT, CATERING_CLIENT, PAYMENT_CLIENT } from '@shared/contracts';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { CateringDto, CATERINGPATTERN, ManyCateringDto, ManyRequestCateringDto } from '@shared/contracts/catering';
+import { BillingAddress, CreateInvoiceDto, InvoiceDto, InvoiceItem, INVOICEPATTERN, InvoiceStatus } from '@shared/contracts/payments';
 
 @Injectable()
 export class BookingService {
@@ -18,19 +19,36 @@ export class BookingService {
 		@Inject(NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
 		@Inject(USER_CLIENT) private readonly userClient: ClientProxy,
 		@Inject(EVENT_CENTER_CLIENT) private readonly eventClient: ClientProxy,
+		@Inject(PAYMENT_CLIENT) private readonly paymentClient: ClientProxy,
 		@Inject(CATERING_CLIENT) private readonly cateringClient: ClientProxy,
 		private readonly databaseService: DatabaseService
 	) { }
 
-	async create(createBookingDto: CreateBookingDto): Promise<BookingDto> {
+	async create(createBookingDto: CreateBookingDto): Promise<InvoiceDto> {
 		let notificationSubject: string;
+		if(!createBookingDto.items){
+            throw new BadRequestException('We could not validate your booking', {
+                cause: new Error(),
+                description: 'We could not validate your booking, as the items been paid for are not listed'
+            });
+        }
+
+        let itemsTotal = 0;
+        createBookingDto.items.map((item)=>{itemsTotal += item.amount})
+        const discount = itemsTotal * (createBookingDto.discount /100)
+        if((itemsTotal - discount) !== (createBookingDto.total)){
+           throw new BadRequestException('We could not generate invoice', {
+                cause: new Error(),
+                description: 'We could not generate invoice, total amount is incorrect for the items'
+            }); 
+        }
 		const newBookingInput: Prisma.BookingCreateInput = {
 			customerId: createBookingDto.customerId,
 			serviceId: createBookingDto.serviceId,
 			serviceType: createBookingDto.serviceType as $Enums.ServiceType,
-			totalBeforeDiscount: createBookingDto.totalBeforeDiscount,
-			discount: createBookingDto.discount,
-			totalAfterDiscount: createBookingDto.totalAfterDiscount,
+			subTotal: createBookingDto.subTotal,
+			discount: discount,
+			total: createBookingDto.total,
 			isTermsAccepted: createBookingDto.isTermsAccepted,
 			isCancellationPolicyAccepted: createBookingDto.isCancellationPolicyAccepted,
 			isLiabilityWaiverSigned: createBookingDto.isLiabilityWaiverSigned,
@@ -50,6 +68,7 @@ export class BookingService {
 		}
 
 		if (customer?.status !== "ACTIVE") {
+
 			throw new UnauthorizedException("You can't book a service when account is restricted or deacitvated!")
 		}
 
@@ -78,11 +97,10 @@ export class BookingService {
 				const booking = await prisma.booking.create({ data: newBookingInput });
 
 				await prisma.timeSlot.updateMany({
-					where: { id: { in: createBookingDto.timeslotId } }, // Replace bookingId with the actual ID
+					where: { id: { in: createBookingDto.timeslotId } }, 
 					data: {
-						bookingId: booking.id,
-						isAvailable: false
-					}, // Replace newTimeslot with the new value
+						bookingsRequested: {push: booking.id},
+					},
 				});
 
 				if ($Enums.ServiceType.EVENTCENTER) {
@@ -129,16 +147,36 @@ export class BookingService {
 					recipientEmail: customer.email,
 				},
 			});
-			const bookingDto: BookingDto = {
-				...newBooking,
-				status: newBooking.status as unknown as BookingStatus,
-				paymentStatus: newBooking.paymentStatus as unknown as PaymentStatus,
-				serviceType: newBooking.serviceType as unknown as ServiceType,
-				source: newBooking.source as unknown as BookingSource
+
+			const createInvoice: CreateInvoiceDto = {
+				userId: createBookingDto.customerId,
+				bookingId: newBooking.id,
+				items: createBookingDto.items,
+				subTotal: createBookingDto.subTotal,
+				discount: createBookingDto.discount,
+				total: createBookingDto.total,
+				currency: createBookingDto.currency,
+				note: undefined,
+				billingAddress: createBookingDto.billingAddress,
+				dueDate: createBookingDto.dueDate,
+			}
+			const invoice = await firstValueFrom(this.paymentClient.send<InvoiceDto, CreateInvoiceDto>(INVOICEPATTERN.CREATE, createInvoice))
+			if (!invoice) {
+				throw new InternalServerErrorException('Invoice error', {
+					cause: new Error(),
+					description: 'Invoice generation Error: we couldnt automatically generate your invoice, kindly contact admin'
+				});
+			}
+			
+			return {
+				...invoice,
+				items: invoice.items as InvoiceItem[],
+				billingAddress: invoice.billingAddress as BillingAddress,
+				subTotal: Number(invoice.subTotal),
+				discount: Number(invoice.discount),
+				total: Number(invoice.total),
+				status: invoice.status as unknown as InvoiceStatus,
 			};
-
-			return bookingDto;
-
 		} catch (error) {
 			console.log(error)
 			throw new InternalServerErrorException(error, {
@@ -254,6 +292,9 @@ export class BookingService {
 		}
 		const bookingDto: BookingDto = {
 			...booking,
+			subTotal: Number(booking.subTotal),
+			discount: Number(booking.discount),
+			total: Number(booking.total),
 			status: booking.status as unknown as BookingStatus,
 			paymentStatus: booking.paymentStatus as unknown as PaymentStatus,
 			serviceType: booking.serviceType as unknown as ServiceType,
@@ -280,6 +321,9 @@ export class BookingService {
 
 			const bookingDto: BookingDto = {
 				...booking,
+				subTotal: Number(booking.subTotal),
+				discount: Number(booking.discount),
+				total: Number(booking.total),
 				status: booking.status as unknown as BookingStatus,
 				paymentStatus: booking.paymentStatus as unknown as PaymentStatus,
 				serviceType: booking.serviceType as unknown as ServiceType,
@@ -332,6 +376,9 @@ export class BookingService {
 		});
 		const bookingDto: BookingDto = {
 			...deletedBooking,
+			subTotal: Number(deletedBooking.subTotal),
+			discount: Number(deletedBooking.discount),
+			total: Number(deletedBooking.total),
 			status: deletedBooking.status as unknown as BookingStatus,
 			paymentStatus: deletedBooking.paymentStatus as unknown as PaymentStatus,
 			serviceType: deletedBooking.serviceType as unknown as ServiceType,
@@ -370,6 +417,9 @@ export class BookingService {
 
 			const bookingDto: BookingDto = {
 				...cancelledBooking,
+				subTotal: Number(cancelledBooking.subTotal),
+				discount: Number(cancelledBooking.discount),
+				total: Number(cancelledBooking.total),
 				status: cancelledBooking.status as unknown as BookingStatus,
 				paymentStatus: cancelledBooking.paymentStatus as unknown as PaymentStatus,
 				serviceType: cancelledBooking.serviceType as unknown as ServiceType,
@@ -425,6 +475,9 @@ export class BookingService {
 			// to do notification
 			const bookingDto: BookingDto = {
 				...rescheduleBooking,
+				subTotal: Number(rescheduleBooking.subTotal),
+				discount: Number(rescheduleBooking.discount),
+				total: Number(rescheduleBooking.total),
 				status: rescheduleBooking.status as unknown as BookingStatus,
 				paymentStatus: rescheduleBooking.paymentStatus as unknown as PaymentStatus,
 				serviceType: rescheduleBooking.serviceType as unknown as ServiceType,
@@ -455,6 +508,9 @@ export class BookingService {
 			// to do notification
 			const bookingDto: BookingDto = {
 				...confirmedBooking,
+				subTotal: Number(confirmedBooking.subTotal),
+				discount: Number(confirmedBooking.discount),
+				total: Number(confirmedBooking.total),
 				status: confirmedBooking.status as unknown as BookingStatus,
 				paymentStatus: confirmedBooking.paymentStatus as unknown as PaymentStatus,
 				serviceType: confirmedBooking.serviceType as unknown as ServiceType,
@@ -475,6 +531,9 @@ export class BookingService {
 	private mapToBookingDto(booking: any): BookingDto {
 		return {
 			...booking,
+			subTotal: Number(booking.subTotal),
+			discount: Number(booking.discount),
+			total: Number(booking.total),
 			status: booking.status as unknown as BookingStatus,
 			paymentStatus: booking.paymentStatus as unknown as PaymentStatus,
 			serviceType: booking.serviceType as unknown as ServiceType,

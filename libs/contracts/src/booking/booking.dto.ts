@@ -45,9 +45,9 @@ export class BookingDto {
     confirmedAt?: Date;
     servicebooking_id?: string;
     serviceType: ServiceType;
-    totalBeforeDiscount: number;
+    subTotal: number;
     discount?: number;
-    totalAfterDiscount: number;
+    total: number;
     invoice: string[]
     paymentStatus: PaymentStatus;
     status: BookingStatus;

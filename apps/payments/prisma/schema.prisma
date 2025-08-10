@@ -34,10 +34,11 @@ model PaymentMethod {
 /* PAYMENTS */
 model Payment {
   id                      String    @id @default(uuid())
+  invoiceId               String @unique
   userId                  String
   paymentMethodId         String
-  amount                  Decimal
-  amountCharged           Decimal
+  amount                  Decimal @db.Decimal(10, 2)
+  amountCharged           Decimal @db.Decimal(10, 2)
   reference               String  // refernece to track this payment on the payment provider Id
   paymentAuthorization    Json?
   // to do - store more details about the payment from the provider
@@ -53,7 +54,7 @@ model Payment {
   // relations
   refund                  Refund? 
   dispute                 Dispute?
-  invoice                 Invoice?
+  invoice                 Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade) 
   paymentMethod           PaymentMethod      @relation(fields: [paymentMethodId], references: [id], onDelete: Cascade)
 
 }
@@ -61,18 +62,25 @@ model Payment {
 
 /* INVOICES */
 model Invoice {
-  id          String    @id @default(uuid())
-  userId      String
-  paymentId   String @unique
-  status      InvoiceStatus
-  dueDate     DateTime
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime      @updatedAt
-  deletedAt   DateTime?
-  deletedBy   String?
+  id                String    @id @default(uuid())
+  userId            String
+  bookingId         String
+  items             Json[]
+  subTotal          Decimal @db.Decimal(10, 2)
+  discount          Decimal? @db.Decimal(10, 2)
+  total             Decimal @db.Decimal(10, 2)
+  currency          String? @default("#")
+  note              String?
+  billingAddress    Json 
+  status            InvoiceStatus
+  dueDate           DateTime
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime      @updatedAt
+  deletedAt         DateTime?
+  deletedBy         String?
 
 
-  payment    Payment      @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  payment           Payment? 
 
 }
 
@@ -184,7 +192,6 @@ enum InvoiceStatus {
   PENDING
   PAID
   OVERDUE
-  SENT
 }
 
 enum RefundStatus {

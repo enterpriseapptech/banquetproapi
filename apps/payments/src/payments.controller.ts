@@ -4,10 +4,10 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 import { RpcException } from '@nestjs/microservices';
 import { catchError } from 'rxjs/operators';
 import { from, throwError } from 'rxjs';
-import { FeaturedPlanService, FeesService, PaymentMethodService, PaymentsService, SubscriptionPlansService } from './payments.service';
-import { FEATUREDPLANSPATTERN, FEESPATTERN, PAYMENTMETHODPATTERN, PAYMENTPATTERN, SUBSCRIPTIONPLANSPATTERN } from '@shared/contracts/payments/payments.pattern';
-import { CreateFeaturedPlanDto, CreateFeeDto, CreatePaymentDto, CreatePaymentMethodDto, CreateSubscriptionPlanDto } from '@shared/contracts/payments/create-payments.dto';
-import { UpdateFeaturedPlanDto, UpdateFeeDto, UpdatePaymentDto, UpdatePaymentMethodDto, UpdateSubscriptionPlanDto } from '@shared/contracts/payments/update-payments.dto';
+import { FeaturedPlanService, FeesService, InvoiceService, PaymentMethodService, PaymentsService, SubscriptionPlansService } from './payments.service';
+import { FEATUREDPLANSPATTERN, FEESPATTERN, INVOICEPATTERN, PAYMENTMETHODPATTERN, PAYMENTPATTERN, SUBSCRIPTIONPLANSPATTERN } from '@shared/contracts/payments/payments.pattern';
+import { CreateFeaturedPlanDto, CreateFeeDto, CreateInvoiceDto, CreatePaymentDto, CreatePaymentMethodDto, CreateSubscriptionPlanDto } from '@shared/contracts/payments/create-payments.dto';
+import { UpdateFeaturedPlanDto, UpdateFeeDto, UpdateInvoiceDto, UpdatePaymentDto, UpdatePaymentMethodDto, UpdateSubscriptionPlanDto } from '@shared/contracts/payments/update-payments.dto';
 
 @Controller()
 export class SubscriptionPlansController {
@@ -474,6 +474,105 @@ export class PaymentsServiceController {
   @MessagePattern(PAYMENTPATTERN.DELETE)
   remove(@Payload() id: string, @Payload() updaterId: string) {
     return from(this.paymentService.remove(id, updaterId)).pipe(
+      catchError((err) => {
+        console.error("Error in paymentService:", err);
+        return throwError(() => new RpcException({
+          statusCode: err.response.statusCode || 500,
+          message: err.message || "Internal Server Error",
+          error: err.response.error || "Sever error",
+        }));
+
+      })
+    );
+  }
+
+
+  // @MessagePattern(PAYMENTPATTERN.PERMANENTDELETE)
+  // permanentDelete(@Payload() id: string) {
+  //   return from(this.featuredPlanService.permanentDelete(id)).pipe(
+  //     catchError((err) => {
+  //       console.error("Error in paymentService:", err);
+  //       return throwError(() => new RpcException({
+  //         statusCode: err.response.statusCode || 500,
+  //         message: err.message || "Internal Server Error",
+  //         error: err.response.error || "Sever error",
+  //       }));
+
+  //     })
+  //   );
+  // }
+
+
+}
+
+export class InvoiceController {
+  constructor(private readonly invoiceService: InvoiceService ) { }
+
+  @MessagePattern(INVOICEPATTERN.CREATE)
+  create(@Payload() createInvoiceDto: CreateInvoiceDto) {
+    return from(this.invoiceService.create(createInvoiceDto)).pipe(
+      catchError((err) => {
+        console.error("Error in InvoiceService:", err);
+        return throwError(() => new RpcException({
+          statusCode: err.response.statusCode || 500,
+          message: err.message || "Internal Server Error",
+          error: err.response.error || "Sever error",
+        }));
+
+      })
+    )
+  }
+
+  @MessagePattern(INVOICEPATTERN.FINDALL)
+  findAll(@Payload() limit: number, @Payload() offset: number) {
+    return from(this.invoiceService.findAll(limit, offset)).pipe(
+      catchError((err) => {
+        console.error("Error in InvoiceService:", err);
+        return throwError(() => new RpcException({
+          statusCode: err.response.statusCode || 500,
+          message: err.message || "Internal Server Error",
+          error: err.response.error || "Sever error",
+        }));
+
+      })
+    );
+  }
+
+  @MessagePattern(INVOICEPATTERN.FINDBYID)
+  findOne(@Payload() id: string) {
+    return from(this.invoiceService.findOne(id)).pipe(
+      catchError((err) => {
+        console.error("Error in InvoiceService:", err);
+        return throwError(() => new RpcException({
+          statusCode: err.response.statusCode || 500,
+          message: err.message || "Internal Server Error",
+          error: err.response.error || "Sever error",
+        }));
+
+      })
+    );
+  }
+
+
+
+  @MessagePattern(INVOICEPATTERN.UPDATE)
+  update(@Payload() id: string, @Payload() updateInvoiceDto: UpdateInvoiceDto) {
+    return from(this.invoiceService.update(id, updateInvoiceDto)).pipe(
+      catchError((err) => {
+        console.error("Error in InvoiceService:", err);
+        return throwError(() => new RpcException({
+          statusCode: err.response.statusCode || 500,
+          message: err.message || "Internal Server Error",
+          error: err.response.error || "Sever error",
+        }));
+
+      })
+    );
+  }
+
+  @MessagePattern(INVOICEPATTERN.DELETE)
+  remove(@Payload() id: string, @Payload() updaterId: string) {
+    return from(this.invoiceService.remove(id, updaterId)).pipe(
       catchError((err) => {
         console.error("Error in paymentService:", err);
         return throwError(() => new RpcException({

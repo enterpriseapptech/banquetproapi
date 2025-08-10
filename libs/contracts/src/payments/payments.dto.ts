@@ -1,6 +1,15 @@
 
 import { FeesType, InvoiceStatus, PaymentReason, RefundStatus, Status, IPaymentStatus } from "./create-payments.dto";
+export type InvoiceItem = { item: string; amount: number };
 
+export type BillingAddress =  {
+  street: string;
+  street2: string;
+  city: string;
+  region: string;
+  country: string;
+  postal: string;
+};
 
 export class PaymentMethodDto {
     id: string;
@@ -39,14 +48,22 @@ export class PaymentDto {
 export class InvoiceDto  {
     id: string;
     userId: string;
-    paymentId: string;
-    status: RefundStatus;
+    bookingId: string;
+    paymentId?: string;
+    items: InvoiceItem[];
+    subTotal: number;
+    discount?: number;
+    total: number;
+    currency?: string;
+    note?: string;
+    billingAddress: BillingAddress;
+    status: InvoiceStatus;
     dueDate: Date;
     createdAt: Date;
     updatedAt: Date;
     deletedat?: Date;
     deletedBy?: string;
-    payment: PaymentDto;
+    payment?: PaymentDto;
 
 }
 
