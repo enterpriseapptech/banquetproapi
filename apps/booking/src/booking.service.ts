@@ -413,8 +413,7 @@ export class BookingService {
 
 				return booking
 			});
-			// to do notification
-
+			
 			const bookingDto: BookingDto = {
 				...cancelledBooking,
 				subTotal: Number(cancelledBooking.subTotal),
