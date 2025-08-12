@@ -210,6 +210,7 @@ export class InvoiceService {
             subTotal: createInvoiceDto.subTotal,
             discount: discount,
             total: createInvoiceDto.total,
+            amountDue: createInvoiceDto.amountDue,
             currency: createInvoiceDto.currency,
             dueDate: createInvoiceDto.dueDate,
             note: createInvoiceDto.note,

@@ -21,9 +21,9 @@ model EventCenter {
   name               String
   eventTypes         String[]
   serviceProviderId  String // owner of this service points to a userid 
-  depositAmount      Float 
+  depositPercentage      Int //percentage of pricing per slot to be paid before booking is confirmed 
   description        String?
-  pricingPerSlot     Float   //Cost per hour, per day, or full package
+  pricingPerSlot     Decimal @banquestproeventsdb.Decimal(10, 2)  //Cost per timeslot
   sittingCapacity    Int
   venueLayout        String? //Banquet, Theater, U-Shape, Classroom, etc
   amenities          Amenities[]

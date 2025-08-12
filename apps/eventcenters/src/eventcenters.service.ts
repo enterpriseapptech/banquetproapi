@@ -22,7 +22,7 @@ export class EventcentersService {
             serviceProviderId: createEventCenterDto.serviceProviderId,
             name: createEventCenterDto.name,
             eventTypes: createEventCenterDto.eventTypes,
-            depositAmount: createEventCenterDto.depositAmount,
+            depositPercentage: createEventCenterDto.depositPercentage,
             description: createEventCenterDto.description,
             pricingPerSlot: createEventCenterDto.pricingPerSlot,
             sittingCapacity: createEventCenterDto.sittingCapacity,

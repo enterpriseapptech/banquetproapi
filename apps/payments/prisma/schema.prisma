@@ -69,6 +69,7 @@ model Invoice {
   subTotal          Decimal @db.Decimal(10, 2)
   discount          Decimal? @db.Decimal(10, 2)
   total             Decimal @db.Decimal(10, 2)
+  amountDue         Decimal @db.Decimal(10, 2) // this is the actual amount to be paid 
   currency          String? @default("#")
   note              String?
   billingAddress    Json 

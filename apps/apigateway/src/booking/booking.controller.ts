@@ -17,8 +17,10 @@ export class BookingController {
     constructor(private readonly bookingService: BookingService) { }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
-    @Post('create')
-    create(@Body() createBookingDto: CreateBookingDto) {
+    @Post()
+    async create(@Body() createBookingDto: CreateBookingDto, @Req() req: AuthenticatedRequest) {
+        const user: UserDto = await firstValueFrom(req.user)
+        createBookingDto.createdBy = user.id
         return this.bookingService.create(createBookingDto);
     }
 

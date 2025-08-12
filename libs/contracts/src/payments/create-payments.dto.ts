@@ -153,6 +153,14 @@ export class CreateInvoiceDto {
     total: number;
 
     @ApiProperty({
+        description: 'Total amount after discount',
+        example: 1200.0,
+        type: Number,
+    })
+    @IsNumber({ maxDecimalPlaces: 2 })
+    amountDue: number;
+
+    @ApiProperty({
         description: 'Currency used for the invoice',
         example: '#',
         required: false,

@@ -4,7 +4,7 @@ export class EventCenterDto {
     serviceProviderId: string;
     name: string;
     eventTypes: string[];
-    depositAmount: number;
+    depositPercentage: number;
     description?: string;
     pricingPerSlot: number;
     sittingCapacity: number;

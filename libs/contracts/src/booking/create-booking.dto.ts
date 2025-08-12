@@ -14,7 +14,7 @@ import {
 
 } from 'class-validator';
 
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { BookingSource, ServiceType, SpecialRequirement } from './booking.dto';
 import { BillingAddress, InvoiceItem } from '../payments';
 export class CreateBookingDto {
@@ -160,6 +160,12 @@ export class CreateBookingDto {
     @IsOptional()
     @IsString()
     currency?: string;
+
+
+    @ApiPropertyOptional({ type: 'string', required: true })
+    @IsUUID()
+    @IsOptional()
+    createdBy: string;
 
 }
 

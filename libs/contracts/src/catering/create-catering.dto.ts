@@ -53,7 +53,7 @@ export class CreateCateringDto {
     @IsInt()
     @IsNotEmpty()
     @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
-    depositAmount: number;
+    depositPercentage: number;
 
     @ApiProperty({ type: 'number', required: true })
     @IsNotEmpty()

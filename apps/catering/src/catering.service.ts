@@ -23,7 +23,7 @@ export class CateringService {
             name: createCateringDto.name,
             eventTypes: createCateringDto.eventTypes,
             tagLine: createCateringDto.tagLine,
-            depositAmount: createCateringDto.depositAmount,
+            depositPercentage: createCateringDto.depositPercentage,
             startPrice: createCateringDto.startPrice,
             minCapacity: createCateringDto.minCapacity,
             maxCapacity: createCateringDto.maxCapacity,

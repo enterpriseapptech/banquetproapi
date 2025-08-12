@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { BookingController, TimeSlotController } from './booking.controller';
 import { BookingService, TimeSlotService } from './booking.service';
 import { DatabaseService } from '../database/database.service';
-import { USER_CLIENT, NOTIFICATION_CLIENT, EVENT_CENTER_CLIENT, CATERING_CLIENT } from '@shared/contracts'
+import { USER_CLIENT, NOTIFICATION_CLIENT, EVENT_CENTER_CLIENT, CATERING_CLIENT, PAYMENT_CLIENT } from '@shared/contracts'
 import { ConfigModule } from '@nestjs/config';
 import { ClientProxyFactory } from '@nestjs/microservices';
 import { ClientConfigModule } from '../client-config/client-config.module';
@@ -53,6 +53,15 @@ import { ClientConfigService } from '../client-config/client-config.service';
             useFactory: (configService: ClientConfigService) => {
                 const CateringClientOptions = configService.CateringClientOptions;
                 return ClientProxyFactory.create(CateringClientOptions);
+            },
+            inject: [ClientConfigService],
+        },
+         {
+            provide: PAYMENT_CLIENT,
+            useFactory: (configService: ClientConfigService) => {
+                const paymentClientOptions = configService.PaymentClientOptions;
+                // console.log('Creating ClientProxy with options:', paymentClientOptions);
+                return ClientProxyFactory.create(paymentClientOptions);
             },
             inject: [ClientConfigService],
         }

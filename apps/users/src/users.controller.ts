@@ -15,7 +15,7 @@ export class UsersController {
 	create(@Payload() createUserDto: CreateUserDto) {
 		return from(this.userService.create(createUserDto)).pipe(
 			catchError((err) => {
-				console.error("Error in UsersService:", err);
+				
 				return throwError(() => new RpcException({
 					statusCode: err.response.statusCode || 500,
 					message: err.message || "Internal Server Error",
@@ -30,7 +30,7 @@ export class UsersController {
 	login(@Payload() loginUserDto: LoginUserDto) {
 		return from(this.userService.login(loginUserDto)).pipe(
 			catchError((err) => {
-				console.error("Error in UsersService:", err);
+				
 				return throwError(() => new RpcException({
 					statusCode: err.response.statusCode || 500,
 					message: err.message || "Internal Server Error",
@@ -45,7 +45,7 @@ export class UsersController {
 	logout(@Payload() payload: {id: string}) {
 		return from(this.userService.logout(payload.id)).pipe(
 			catchError((err) => {
-				console.error("Error in UsersService:", err);
+				
 				return throwError(() => new RpcException({
 					statusCode: err.response.statusCode || 500,
 					message: err.message || "Internal Server Error",
@@ -60,7 +60,7 @@ export class UsersController {
 	refreshLogin(@Payload()  payload: {token: string}) {
 		return from(this.userService.refreshLogin(payload.token)).pipe(
 			catchError((err) => {
-				console.error("Error in UsersService:", err);
+				
 				return throwError(() => new RpcException({
 					statusCode: err.response.statusCode || 500,
 					message: err.message || "Internal Server Error",
@@ -75,7 +75,7 @@ export class UsersController {
 	verify(@Payload() { id, token }) {
 		return from(this.userService.verify(id, token)).pipe(
 			catchError((err) => {
-				console.error("Error in UsersService:", err);
+				
 				return throwError(() => new RpcException({
 					statusCode: err.response.statusCode || 500,
 					message: err.message || "Internal Server Error",
@@ -90,7 +90,7 @@ export class UsersController {
 	resend(@Payload() { id }) {
 		return from(this.userService.resendVerificationToken(id)).pipe(
 			catchError((err) => {
-				console.error("Error in UsersService:", err);
+				
 				return throwError(() => new RpcException({
 					statusCode: err.response.statusCode || 500,
 					message: err.message || "Internal Server Error",
@@ -106,7 +106,7 @@ export class UsersController {
 		console.log({data})
 		return from(this.userService.findAll(data.limit, data.offset, data.search, data.filter)).pipe(
 			catchError((err) => {
-				console.error("Error in UsersService:", err);
+				
 				return throwError(() => new RpcException({
 					statusCode: err.response.statusCode || 500,
 					message: err.message || "Internal Server Error",
@@ -121,7 +121,7 @@ export class UsersController {
 	findOne(@Payload() id: string) {
 		return from(this.userService.findOne(id)).pipe(
 			catchError((err) => {
-				console.error("Error in UsersService:", err);
+				
 				return throwError(() => new RpcException({
 					statusCode: err.response.statusCode || 500,
 					message: err.message || "Internal Server Error",
@@ -142,7 +142,7 @@ export class UsersController {
 	remove(@Payload() id: number) {
 		return from(this.userService.remove(id)).pipe(
 			catchError((err) => {
-				console.error("Error in UsersService:", err);
+				
 				return throwError(() => new RpcException({
 					statusCode: err.response.statusCode || 500,
 					message: err.message || "Internal Server Error",
@@ -158,7 +158,7 @@ export class UsersController {
     forgotPassword(@Payload() email: string) {
         return from(this.userService.forgotPassword(email)).pipe(
             catchError((err) => {
-                console.error("Error in UsersService:", err);
+                
                 return throwError(() => new RpcException({
                     statusCode: err.response.statusCode || 500,
                     message: err.message || "Internal Server Error",
@@ -173,7 +173,7 @@ export class UsersController {
     changePassword(@Payload() updateUserPasswordDto: UpdateUserPasswordDto) {
         return from(this.userService.changePassword(updateUserPasswordDto)).pipe(
             catchError((err) => {
-                console.error("Error in UsersService:", err);
+                
                 return throwError(() => new RpcException({
                     statusCode: err.response.statusCode || 500,
                     message: err.message || "Internal Server Error",

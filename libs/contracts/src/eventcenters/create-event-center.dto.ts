@@ -53,7 +53,7 @@ export class CreateEventCenterDto {
     })
     @Min(10)
     @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
-    depositAmount: number;
+    depositPercentage: number;
 
     @ApiPropertyOptional({
         description: 'Detailed description of the event center',

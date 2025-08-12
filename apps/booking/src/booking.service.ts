@@ -25,72 +25,139 @@ export class BookingService {
 	) { }
 
 	async create(createBookingDto: CreateBookingDto): Promise<InvoiceDto> {
-		let notificationSubject: string;
-		if(!createBookingDto.items){
-            throw new BadRequestException('We could not validate your booking', {
-                cause: new Error(),
-                description: 'We could not validate your booking, as the items been paid for are not listed'
-            });
-        }
-
-        let itemsTotal = 0;
-        createBookingDto.items.map((item)=>{itemsTotal += item.amount})
-        const discount = itemsTotal * (createBookingDto.discount /100)
-        if((itemsTotal - discount) !== (createBookingDto.total)){
-           throw new BadRequestException('We could not generate invoice', {
-                cause: new Error(),
-                description: 'We could not generate invoice, total amount is incorrect for the items'
-            }); 
-        }
-		const newBookingInput: Prisma.BookingCreateInput = {
-			customerId: createBookingDto.customerId,
-			serviceId: createBookingDto.serviceId,
-			serviceType: createBookingDto.serviceType as $Enums.ServiceType,
-			subTotal: createBookingDto.subTotal,
-			discount: discount,
-			total: createBookingDto.total,
-			isTermsAccepted: createBookingDto.isTermsAccepted,
-			isCancellationPolicyAccepted: createBookingDto.isCancellationPolicyAccepted,
-			isLiabilityWaiverSigned: createBookingDto.isLiabilityWaiverSigned,
-			bookingReference: Math.random().toString(16).substring(2, 8),
-			source: createBookingDto.source as $Enums.BookingSource,
-			paymentStatus: 'UNPAID' as $Enums.PaymentStatus,
-			status: 'PENDING' as $Enums.BookingStatus,
-			serviceNotes: createBookingDto.serviceNotes,
-			customerNotes: createBookingDto.customerNotes
-		}
-
-		// validate customer account
-		const customer = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDBYID, newBookingInput.customerId));
-
-		if (!customer) {
-			throw new NotFoundException("could not verify user account")
-		}
-
-		if (customer?.status !== "ACTIVE") {
-
-			throw new UnauthorizedException("You can't book a service when account is restricted or deacitvated!")
-		}
-
 		try {
+			let notificationSubject: string;
+			let Service: EventCenterDto | CateringDto;
+			let amountDue: number;
+			if(!createBookingDto.items){
+				throw new BadRequestException('We could not validate your booking', {
+					cause: new Error(),
+					description: 'We could not validate your booking, as the items been paid for are not listed'
+				});
+			}
 
-			switch (newBookingInput.serviceType) {
+			let itemsTotal = 0;
+			createBookingDto.items.map((item)=>{itemsTotal += item.amount})
+			const discount = itemsTotal * (createBookingDto.discount /100)
+			if((itemsTotal - discount) !== (createBookingDto.total)){
+			throw new BadRequestException('We could not generate invoice', {
+					cause: new Error(),
+					description: 'We could not generate invoice, total amount is incorrect for the items'
+				}); 
+			}
+			
+
+			// validate customer account
+			const customer = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDBYID, createBookingDto.customerId));
+			if (!customer) {
+				throw new NotFoundException('We could not verify user account', {
+					cause: new Error(),
+					description: 'We could not verify user account'
+				});
+				
+			}else if (customer.status !== "ACTIVE") {
+				throw new NotFoundException('User account is restricted or deacitvated!', {
+					cause: new Error(),
+					description: 'User account is restricted or deacitvated!'
+				});
+			}
+
+			
+			switch (createBookingDto.serviceType) {
 				case $Enums.ServiceType.EVENTCENTER:
-					const eventcenter = await this.eventClient.send<EventCenterDto, string>(EVENTCENTERPATTERN.FINDONEBYID, createBookingDto.serviceId)
-					if (!eventcenter) {
+					Service = await firstValueFrom(this.eventClient.send<EventCenterDto, string>(EVENTCENTERPATTERN.FINDONEBYID, createBookingDto.serviceId))
+					
+					if (!Service) {
 						throw new NotFoundException('event center not found for booking');
+
+					}else if(Service.status !== 'ACTIVE'){
+						throw new BadRequestException(`This service is inactive and can not accept booking`, {
+							cause: new Error(),
+							description: `This service is inactive and can not accept booking`
+						});
+						
+					}else if(createBookingDto.noOfGuest > Service.sittingCapacity){
+						throw new BadRequestException(`Sitting capacity error`, {
+							cause: new Error(),
+							description: `Your number of guest exceed the sitting capacity`
+						});
+
+					}else if(createBookingDto.createdBy !== Service.serviceProviderId){
+						amountDue = (Service.depositPercentage /100) * (Service.pricingPerSlot * createBookingDto.timeslotId.length)
+						if(itemsTotal != amountDue) {
+							throw new BadRequestException(`Sitting capacity error`, {
+							cause: new Error(),
+							description: `Your number of guest exceed the sitting capacity`
+						});
+						}
+
+						totalPrice = createBookingDto.noOfGuest 
+						// skip further validations if the service provider is the one making this booking
 					}
-					break;
+					break;pricingPerSlot
 				case $Enums.ServiceType.CATERING:
-					const catering = await this.eventClient.send<CateringDto, string>(CATERINGPATTERN.FINDONEBYID, createBookingDto.serviceId)
-					if (!catering) {
-						throw new NotFoundException('catering service not found for booking');
+					Service = await firstValueFrom(this.eventClient.send<CateringDto, string>(CATERINGPATTERN.FINDONEBYID, createBookingDto.serviceId))
+					if (!Service) {
+						throw new NotFoundException('Catering service not found for booking');
+					}else if(Service.status !== 'ACTIVE'){
+						throw new BadRequestException(`This service is inactive and can not accept booking`, {
+							cause: new Error(),
+							description: `This service is inactive and can not accept booking`
+						});
+					}else if(createBookingDto.createdBy !== Service.serviceProviderId){
+						if(createBookingDto.noOfGuest < Service.minCapacity){
+							throw new BadRequestException(`This service provider only takes quests exceeding ${Service.minCapacity}`, {
+								cause: new Error(),
+								description: `This service provider only takes quests exceeding ${Service.minCapacity}`
+							});
+
+						}else if(createBookingDto.noOfGuest > Service.maxCapacity){
+							throw new BadRequestException(`This service provider only takes a maximu guest of ${Service.maxCapacity}`, {
+								cause: new Error(),
+								description: `This service provider only takes a maximu guest of ${Service.maxCapacity}`
+							});
+						}
+
+						amountDue = 
+						pricingPerSlot
+
+						totalPrice = createBookingDto.noOfGuest 
+						// skip further validations if the service provider is the one making this booking
 					}
 					break;
 				default:
-					break;
+					if (!Service) {
+						throw new NotFoundException('Invalid service been booked');
+					}
+					
 			}
 
+			// validate who is creating this booking, if not service provider - proceed with further data validations
+			if(createBookingDto.createdBy !== Service.serviceProviderId){
+
+				pricingPerSlot
+
+				totalPrice = createBookingDto.noOfGuest 
+				// skip further validations if the service provider is the one making this booking
+			}
+
+			const newBookingInput: Prisma.BookingCreateInput = {
+				customerId: createBookingDto.customerId,
+				serviceId: createBookingDto.serviceId,
+				serviceType: createBookingDto.serviceType as $Enums.ServiceType,
+				subTotal: createBookingDto.subTotal,
+				discount: discount,
+				total: createBookingDto.total,
+				isTermsAccepted: createBookingDto.isTermsAccepted,
+				isCancellationPolicyAccepted: createBookingDto.isCancellationPolicyAccepted,
+				isLiabilityWaiverSigned: createBookingDto.isLiabilityWaiverSigned,
+				bookingReference: Math.random().toString(16).substring(2, 8),
+				source: createBookingDto.source as $Enums.BookingSource,
+				paymentStatus: 'UNPAID' as $Enums.PaymentStatus,
+				status: 'PENDING' as $Enums.BookingStatus,
+				serviceNotes: createBookingDto.serviceNotes,
+				customerNotes: createBookingDto.customerNotes
+			}
 			// Start a transaction - for an all or fail process
 			const newBooking = await this.databaseService.$transaction(async (prisma) => {
 

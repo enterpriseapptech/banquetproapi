@@ -41,7 +41,7 @@ export class UsersService {
 
         // if email is not unique and contains a value, throw error cos user exists already
         if (IsEmailNotUnique) {
-            console.log("We have an existing user with this email, kindly login to your account")
+           
             throw new ConflictException('This email has been used, kindly login to your account', {
                 cause: new Error(),
                 description: 'existing user'
@@ -130,7 +130,7 @@ export class UsersService {
             return userAccount;
 
         } catch (error) {
-            console.log(error)
+           
             throw new ConflictException('sever error could not create user', {
                 cause: new Error(),
                 description: 'User account creation failed, please try again'
@@ -281,6 +281,7 @@ export class UsersService {
     }
 
     async findAll(limit: number, offset: number, search?: string, filter?: UserFilterDto): Promise<{ count: number; docs: UserDto[] }> {
+        console.log({UserType})
         const whereClause:any = {
             deletedAt: null,
             ...(filter?.userType && { userType: filter.userType }),
@@ -484,7 +485,7 @@ export class UsersService {
         });
 
         if (!user) {
-            console.log("user not found")
+        
             throw new NotFoundException('This user does not exist in our system', {
                 cause: new Error(),
                 description: 'could not find a valid user'
@@ -651,7 +652,7 @@ export class UsersService {
 
     async changePassword(updateUserPasswordDto: UpdateUserPasswordDto): Promise<any> {
         try {
-            // console.log({updateUserPasswordDto})
+            
             if (!updateUserPasswordDto.oldPassword && !updateUserPasswordDto.token ) {
                 throw new UnauthorizedException('unauthorized request, no token or previous password provided', {
                     cause: new Error(),
