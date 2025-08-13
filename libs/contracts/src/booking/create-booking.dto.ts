@@ -10,13 +10,15 @@ import {
     IsString,
     IsNumber,
     IsDateString,
-    IsJSON,
+    ValidateNested,
+    IsObject,
 
 } from 'class-validator';
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { BookingSource, ServiceType, SpecialRequirement } from './booking.dto';
 import { BillingAddress, InvoiceItem } from '../payments';
+import { Type } from 'class-transformer';
 export class CreateBookingDto {
     @ApiProperty({ type: 'string', required: true })
     @IsUUID()
@@ -136,18 +138,25 @@ export class CreateBookingDto {
         description: 'Invoice items in JSON format',
         example: [{ item: 'Laptop', amount: 1200 }, { item: 'Mouse', amount: 25 }],
     })
-    @IsJSON()
+    @IsArray()
+    @IsObject({each: true})
+    @ValidateNested({ each: true })
+    @Type(() => InvoiceItem)
     items: InvoiceItem[];
+
     @ApiProperty({
         description: 'Billing address in JSON format',
         example: { street: '123 Main St', city: 'Lagos', country: 'Nigeria' },
+        type: BillingAddress,
     })
     @IsNotEmpty()
-    @IsJSON()
+    @IsString({each: true})
+    @ValidateNested()
+    @Type(() => BillingAddress)
     billingAddress: BillingAddress;
 
 
-        @ApiProperty({
+    @ApiProperty({
         description: 'Due date for payment',
         example: '2025-09-01T00:00:00.000Z',
     })

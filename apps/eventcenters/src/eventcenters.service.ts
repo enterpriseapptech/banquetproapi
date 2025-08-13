@@ -68,6 +68,7 @@ export class EventcentersService {
             });
             const eventCenterDto: EventCenterDto = {
                 ...neweventCenter,
+                pricingPerSlot: Number(neweventCenter.pricingPerSlot),
                 rating: neweventCenter.rating as unknown as number,
                 status: neweventCenter.status as unknown as ServiceStatus,
             };
@@ -150,6 +151,7 @@ export class EventcentersService {
         }
         const eventCenterDto: EventCenterDto = {
             ...eventCenter,
+            pricingPerSlot: Number(eventCenter.pricingPerSlot),
             rating: eventCenter.rating as unknown as number,
             status: eventCenter.status as unknown as ServiceStatus,
         };
@@ -169,6 +171,7 @@ export class EventcentersService {
             });
             const eventCenterDto: EventCenterDto = {
                 ...eventCenter,
+                pricingPerSlot: Number(eventCenter.pricingPerSlot),
                 rating: eventCenter.rating as unknown as number,
                 status: eventCenter.status as unknown as ServiceStatus,
             };
@@ -188,6 +191,7 @@ export class EventcentersService {
         });
         const eventCenterDto: EventCenterDto = {
             ...eventCenter,
+            pricingPerSlot: Number(eventCenter.pricingPerSlot),
             rating: eventCenter.rating as unknown as number,
             status: eventCenter.status as unknown as ServiceStatus,
         };

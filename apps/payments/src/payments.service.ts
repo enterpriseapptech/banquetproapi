@@ -2,6 +2,7 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { $Enums, Prisma } from '@prisma/payments';
 import { UpdateFeeDto, UpdateSubscriptionPlanDto, FeaturedPlanDto, FeesDto, PaymentDto, SubscriptionPlanDto, CreateFeaturedPlanDto, CreateFeeDto, CreatePaymentDto, CreateSubscriptionPlanDto, FeesType, PaymentReason, IPaymentStatus, Status, UpdatePaymentDto, CreatePaymentMethodDto, PaymentMethodDto, UpdatePaymentMethodDto, CreateInvoiceDto, InvoiceDto, InvoiceStatus, UpdateInvoiceDto, InvoiceItem, BillingAddress } from '@shared/contracts/payments';
+import { instanceToPlain } from 'class-transformer';
 
 
 @Injectable()
@@ -206,7 +207,7 @@ export class InvoiceService {
         const newInvoiceInput: Prisma.InvoiceCreateInput = {
             userId: createInvoiceDto.userId,
             bookingId: createInvoiceDto.bookingId,
-            items: createInvoiceDto.items as Prisma.JsonArray,
+            items: instanceToPlain(createInvoiceDto.items ) as Prisma.JsonArray,
             subTotal: createInvoiceDto.subTotal,
             discount: discount,
             total: createInvoiceDto.total,
@@ -214,7 +215,7 @@ export class InvoiceService {
             currency: createInvoiceDto.currency,
             dueDate: createInvoiceDto.dueDate,
             note: createInvoiceDto.note,
-            billingAddress: createInvoiceDto.billingAddress as Prisma.JsonObject,
+            billingAddress:  instanceToPlain(createInvoiceDto.billingAddress) as Prisma.JsonObject,
             status: "PENDING" as $Enums.InvoiceStatus,
         }
 

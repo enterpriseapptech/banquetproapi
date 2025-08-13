@@ -40,11 +40,11 @@ export class BookingService {
 			createBookingDto.items.map((item)=>{itemsTotal += item.amount})
 			const discount = itemsTotal * (createBookingDto.discount /100)
 			if((itemsTotal - discount) !== (createBookingDto.total)){
-			throw new BadRequestException('We could not generate invoice', {
-					cause: new Error(),
-					description: 'We could not generate invoice, total amount is incorrect for the items'
-				}); 
-			}
+				throw new BadRequestException('We could not generate invoice', {
+						cause: new Error(),
+						description: 'We could not generate invoice, total amount is incorrect for the items'
+					}); 
+				}
 			
 
 			// validate customer account
@@ -84,17 +84,14 @@ export class BookingService {
 
 					}else if(createBookingDto.createdBy !== Service.serviceProviderId){
 						amountDue = (Service.depositPercentage /100) * (Service.pricingPerSlot * createBookingDto.timeslotId.length)
-						if(itemsTotal != amountDue) {
-							throw new BadRequestException(`Sitting capacity error`, {
+						if(itemsTotal !== amountDue) {
+							throw new BadRequestException(`Calculation error`, {
 							cause: new Error(),
-							description: `Your number of guest exceed the sitting capacity`
+							description: `Total amount should be ${Service.pricingPerSlot}`
 						});
 						}
-
-						totalPrice = createBookingDto.noOfGuest 
-						// skip further validations if the service provider is the one making this booking
 					}
-					break;pricingPerSlot
+					break;
 				case $Enums.ServiceType.CATERING:
 					Service = await firstValueFrom(this.eventClient.send<CateringDto, string>(CATERINGPATTERN.FINDONEBYID, createBookingDto.serviceId))
 					if (!Service) {
@@ -105,40 +102,16 @@ export class BookingService {
 							description: `This service is inactive and can not accept booking`
 						});
 					}else if(createBookingDto.createdBy !== Service.serviceProviderId){
-						if(createBookingDto.noOfGuest < Service.minCapacity){
-							throw new BadRequestException(`This service provider only takes quests exceeding ${Service.minCapacity}`, {
-								cause: new Error(),
-								description: `This service provider only takes quests exceeding ${Service.minCapacity}`
-							});
+						throw new BadRequestException(`Bookign error`, {
+							cause: new Error(),
+							description: `Only requests for quotes are allowed`
+						});
 
-						}else if(createBookingDto.noOfGuest > Service.maxCapacity){
-							throw new BadRequestException(`This service provider only takes a maximu guest of ${Service.maxCapacity}`, {
-								cause: new Error(),
-								description: `This service provider only takes a maximu guest of ${Service.maxCapacity}`
-							});
-						}
-
-						amountDue = 
-						pricingPerSlot
-
-						totalPrice = createBookingDto.noOfGuest 
-						// skip further validations if the service provider is the one making this booking
 					}
 					break;
 				default:
-					if (!Service) {
-						throw new NotFoundException('Invalid service been booked');
-					}
+					throw new NotFoundException('Invalid service been booked');
 					
-			}
-
-			// validate who is creating this booking, if not service provider - proceed with further data validations
-			if(createBookingDto.createdBy !== Service.serviceProviderId){
-
-				pricingPerSlot
-
-				totalPrice = createBookingDto.noOfGuest 
-				// skip further validations if the service provider is the one making this booking
 			}
 
 			const newBookingInput: Prisma.BookingCreateInput = {
@@ -221,12 +194,14 @@ export class BookingService {
 				items: createBookingDto.items,
 				subTotal: createBookingDto.subTotal,
 				discount: createBookingDto.discount,
+				amountDue: amountDue ? amountDue : (Service.depositPercentage /100) * createBookingDto.total,
 				total: createBookingDto.total,
 				currency: createBookingDto.currency,
 				note: undefined,
 				billingAddress: createBookingDto.billingAddress,
 				dueDate: createBookingDto.dueDate,
 			}
+
 			const invoice = await firstValueFrom(this.paymentClient.send<InvoiceDto, CreateInvoiceDto>(INVOICEPATTERN.CREATE, createInvoice))
 			if (!invoice) {
 				throw new InternalServerErrorException('Invoice error', {
@@ -246,10 +221,7 @@ export class BookingService {
 			};
 		} catch (error) {
 			console.log(error)
-			throw new InternalServerErrorException(error, {
-				cause: new Error(),
-				description: 'Booking failed, please try again'
-			});
+			throw error
 		}
 	}
 

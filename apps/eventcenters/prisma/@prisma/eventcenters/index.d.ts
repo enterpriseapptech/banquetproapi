@@ -952,15 +952,15 @@ export namespace Prisma {
   }
 
   export type EventCenterAvgAggregateOutputType = {
-    depositAmount: number | null
-    pricingPerSlot: number | null
+    depositPercentage: number | null
+    pricingPerSlot: Decimal | null
     sittingCapacity: number | null
     rating: Decimal | null
   }
 
   export type EventCenterSumAggregateOutputType = {
-    depositAmount: number | null
-    pricingPerSlot: number | null
+    depositPercentage: number | null
+    pricingPerSlot: Decimal | null
     sittingCapacity: number | null
     rating: Decimal | null
   }
@@ -969,9 +969,9 @@ export namespace Prisma {
     id: string | null
     name: string | null
     serviceProviderId: string | null
-    depositAmount: number | null
+    depositPercentage: number | null
     description: string | null
-    pricingPerSlot: number | null
+    pricingPerSlot: Decimal | null
     sittingCapacity: number | null
     venueLayout: string | null
     termsOfUse: string | null
@@ -995,9 +995,9 @@ export namespace Prisma {
     id: string | null
     name: string | null
     serviceProviderId: string | null
-    depositAmount: number | null
+    depositPercentage: number | null
     description: string | null
-    pricingPerSlot: number | null
+    pricingPerSlot: Decimal | null
     sittingCapacity: number | null
     venueLayout: string | null
     termsOfUse: string | null
@@ -1022,7 +1022,7 @@ export namespace Prisma {
     name: number
     eventTypes: number
     serviceProviderId: number
-    depositAmount: number
+    depositPercentage: number
     description: number
     pricingPerSlot: number
     sittingCapacity: number
@@ -1049,14 +1049,14 @@ export namespace Prisma {
 
 
   export type EventCenterAvgAggregateInputType = {
-    depositAmount?: true
+    depositPercentage?: true
     pricingPerSlot?: true
     sittingCapacity?: true
     rating?: true
   }
 
   export type EventCenterSumAggregateInputType = {
-    depositAmount?: true
+    depositPercentage?: true
     pricingPerSlot?: true
     sittingCapacity?: true
     rating?: true
@@ -1066,7 +1066,7 @@ export namespace Prisma {
     id?: true
     name?: true
     serviceProviderId?: true
-    depositAmount?: true
+    depositPercentage?: true
     description?: true
     pricingPerSlot?: true
     sittingCapacity?: true
@@ -1092,7 +1092,7 @@ export namespace Prisma {
     id?: true
     name?: true
     serviceProviderId?: true
-    depositAmount?: true
+    depositPercentage?: true
     description?: true
     pricingPerSlot?: true
     sittingCapacity?: true
@@ -1119,7 +1119,7 @@ export namespace Prisma {
     name?: true
     eventTypes?: true
     serviceProviderId?: true
-    depositAmount?: true
+    depositPercentage?: true
     description?: true
     pricingPerSlot?: true
     sittingCapacity?: true
@@ -1235,9 +1235,9 @@ export namespace Prisma {
     name: string
     eventTypes: string[]
     serviceProviderId: string
-    depositAmount: number
+    depositPercentage: number
     description: string | null
-    pricingPerSlot: number
+    pricingPerSlot: Decimal
     sittingCapacity: number
     venueLayout: string | null
     amenities: $Enums.Amenities[]
@@ -1283,7 +1283,7 @@ export namespace Prisma {
     name?: boolean
     eventTypes?: boolean
     serviceProviderId?: boolean
-    depositAmount?: boolean
+    depositPercentage?: boolean
     description?: boolean
     pricingPerSlot?: boolean
     sittingCapacity?: boolean
@@ -1312,7 +1312,7 @@ export namespace Prisma {
     name?: boolean
     eventTypes?: boolean
     serviceProviderId?: boolean
-    depositAmount?: boolean
+    depositPercentage?: boolean
     description?: boolean
     pricingPerSlot?: boolean
     sittingCapacity?: boolean
@@ -1341,7 +1341,7 @@ export namespace Prisma {
     name?: boolean
     eventTypes?: boolean
     serviceProviderId?: boolean
-    depositAmount?: boolean
+    depositPercentage?: boolean
     description?: boolean
     pricingPerSlot?: boolean
     sittingCapacity?: boolean
@@ -1370,7 +1370,7 @@ export namespace Prisma {
     name?: boolean
     eventTypes?: boolean
     serviceProviderId?: boolean
-    depositAmount?: boolean
+    depositPercentage?: boolean
     description?: boolean
     pricingPerSlot?: boolean
     sittingCapacity?: boolean
@@ -1394,7 +1394,7 @@ export namespace Prisma {
     deletedBy?: boolean
   }
 
-  export type EventCenterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "eventTypes" | "serviceProviderId" | "depositAmount" | "description" | "pricingPerSlot" | "sittingCapacity" | "venueLayout" | "amenities" | "images" | "termsOfUse" | "cancellationPolicy" | "streetAddress" | "streetAddress2" | "city" | "location" | "postal" | "status" | "paymentRequired" | "rating" | "contact" | "createdAt" | "updatedAt" | "deletedAt" | "deletedBy", ExtArgs["result"]["eventCenter"]>
+  export type EventCenterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "eventTypes" | "serviceProviderId" | "depositPercentage" | "description" | "pricingPerSlot" | "sittingCapacity" | "venueLayout" | "amenities" | "images" | "termsOfUse" | "cancellationPolicy" | "streetAddress" | "streetAddress2" | "city" | "location" | "postal" | "status" | "paymentRequired" | "rating" | "contact" | "createdAt" | "updatedAt" | "deletedAt" | "deletedBy", ExtArgs["result"]["eventCenter"]>
 
   export type $EventCenterPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "EventCenter"
@@ -1404,9 +1404,9 @@ export namespace Prisma {
       name: string
       eventTypes: string[]
       serviceProviderId: string
-      depositAmount: number
+      depositPercentage: number
       description: string | null
-      pricingPerSlot: number
+      pricingPerSlot: Prisma.Decimal
       sittingCapacity: number
       venueLayout: string | null
       amenities: $Enums.Amenities[]
@@ -1853,9 +1853,9 @@ export namespace Prisma {
     readonly name: FieldRef<"EventCenter", 'String'>
     readonly eventTypes: FieldRef<"EventCenter", 'String[]'>
     readonly serviceProviderId: FieldRef<"EventCenter", 'String'>
-    readonly depositAmount: FieldRef<"EventCenter", 'Float'>
+    readonly depositPercentage: FieldRef<"EventCenter", 'Int'>
     readonly description: FieldRef<"EventCenter", 'String'>
-    readonly pricingPerSlot: FieldRef<"EventCenter", 'Float'>
+    readonly pricingPerSlot: FieldRef<"EventCenter", 'Decimal'>
     readonly sittingCapacity: FieldRef<"EventCenter", 'Int'>
     readonly venueLayout: FieldRef<"EventCenter", 'String'>
     readonly amenities: FieldRef<"EventCenter", 'Amenities[]'>
@@ -2260,7 +2260,7 @@ export namespace Prisma {
     name: 'name',
     eventTypes: 'eventTypes',
     serviceProviderId: 'serviceProviderId',
-    depositAmount: 'depositAmount',
+    depositPercentage: 'depositPercentage',
     description: 'description',
     pricingPerSlot: 'pricingPerSlot',
     sittingCapacity: 'sittingCapacity',
@@ -2331,20 +2331,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Float'
-   */
-  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
-    
-
-
-  /**
-   * Reference to a field of type 'Float[]'
-   */
-  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
-    
-
-
-  /**
    * Reference to a field of type 'Int'
    */
   export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -2355,6 +2341,20 @@ export namespace Prisma {
    * Reference to a field of type 'Int[]'
    */
   export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Decimal'
+   */
+  export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
+    
+
+
+  /**
+   * Reference to a field of type 'Decimal[]'
+   */
+  export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
     
 
 
@@ -2394,20 +2394,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Decimal'
-   */
-  export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
-    
-
-
-  /**
-   * Reference to a field of type 'Decimal[]'
-   */
-  export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
-    
-
-
-  /**
    * Reference to a field of type 'DateTime'
    */
   export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
@@ -2418,6 +2404,20 @@ export namespace Prisma {
    * Reference to a field of type 'DateTime[]'
    */
   export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Float'
+   */
+  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+  /**
+   * Reference to a field of type 'Float[]'
+   */
+  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
   /**
    * Deep Input Types
@@ -2432,9 +2432,9 @@ export namespace Prisma {
     name?: StringFilter<"EventCenter"> | string
     eventTypes?: StringNullableListFilter<"EventCenter">
     serviceProviderId?: StringFilter<"EventCenter"> | string
-    depositAmount?: FloatFilter<"EventCenter"> | number
+    depositPercentage?: IntFilter<"EventCenter"> | number
     description?: StringNullableFilter<"EventCenter"> | string | null
-    pricingPerSlot?: FloatFilter<"EventCenter"> | number
+    pricingPerSlot?: DecimalFilter<"EventCenter"> | Decimal | DecimalJsLike | number | string
     sittingCapacity?: IntFilter<"EventCenter"> | number
     venueLayout?: StringNullableFilter<"EventCenter"> | string | null
     amenities?: EnumAmenitiesNullableListFilter<"EventCenter">
@@ -2461,7 +2461,7 @@ export namespace Prisma {
     name?: SortOrder
     eventTypes?: SortOrder
     serviceProviderId?: SortOrder
-    depositAmount?: SortOrder
+    depositPercentage?: SortOrder
     description?: SortOrderInput | SortOrder
     pricingPerSlot?: SortOrder
     sittingCapacity?: SortOrder
@@ -2493,9 +2493,9 @@ export namespace Prisma {
     name?: StringFilter<"EventCenter"> | string
     eventTypes?: StringNullableListFilter<"EventCenter">
     serviceProviderId?: StringFilter<"EventCenter"> | string
-    depositAmount?: FloatFilter<"EventCenter"> | number
+    depositPercentage?: IntFilter<"EventCenter"> | number
     description?: StringNullableFilter<"EventCenter"> | string | null
-    pricingPerSlot?: FloatFilter<"EventCenter"> | number
+    pricingPerSlot?: DecimalFilter<"EventCenter"> | Decimal | DecimalJsLike | number | string
     sittingCapacity?: IntFilter<"EventCenter"> | number
     venueLayout?: StringNullableFilter<"EventCenter"> | string | null
     amenities?: EnumAmenitiesNullableListFilter<"EventCenter">
@@ -2522,7 +2522,7 @@ export namespace Prisma {
     name?: SortOrder
     eventTypes?: SortOrder
     serviceProviderId?: SortOrder
-    depositAmount?: SortOrder
+    depositPercentage?: SortOrder
     description?: SortOrderInput | SortOrder
     pricingPerSlot?: SortOrder
     sittingCapacity?: SortOrder
@@ -2559,9 +2559,9 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"EventCenter"> | string
     eventTypes?: StringNullableListFilter<"EventCenter">
     serviceProviderId?: StringWithAggregatesFilter<"EventCenter"> | string
-    depositAmount?: FloatWithAggregatesFilter<"EventCenter"> | number
+    depositPercentage?: IntWithAggregatesFilter<"EventCenter"> | number
     description?: StringNullableWithAggregatesFilter<"EventCenter"> | string | null
-    pricingPerSlot?: FloatWithAggregatesFilter<"EventCenter"> | number
+    pricingPerSlot?: DecimalWithAggregatesFilter<"EventCenter"> | Decimal | DecimalJsLike | number | string
     sittingCapacity?: IntWithAggregatesFilter<"EventCenter"> | number
     venueLayout?: StringNullableWithAggregatesFilter<"EventCenter"> | string | null
     amenities?: EnumAmenitiesNullableListFilter<"EventCenter">
@@ -2588,9 +2588,9 @@ export namespace Prisma {
     name: string
     eventTypes?: EventCenterCreateeventTypesInput | string[]
     serviceProviderId: string
-    depositAmount: number
+    depositPercentage: number
     description?: string | null
-    pricingPerSlot: number
+    pricingPerSlot: Decimal | DecimalJsLike | number | string
     sittingCapacity: number
     venueLayout?: string | null
     amenities?: EventCenterCreateamenitiesInput | $Enums.Amenities[]
@@ -2617,9 +2617,9 @@ export namespace Prisma {
     name: string
     eventTypes?: EventCenterCreateeventTypesInput | string[]
     serviceProviderId: string
-    depositAmount: number
+    depositPercentage: number
     description?: string | null
-    pricingPerSlot: number
+    pricingPerSlot: Decimal | DecimalJsLike | number | string
     sittingCapacity: number
     venueLayout?: string | null
     amenities?: EventCenterCreateamenitiesInput | $Enums.Amenities[]
@@ -2646,9 +2646,9 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     eventTypes?: EventCenterUpdateeventTypesInput | string[]
     serviceProviderId?: StringFieldUpdateOperationsInput | string
-    depositAmount?: FloatFieldUpdateOperationsInput | number
+    depositPercentage?: IntFieldUpdateOperationsInput | number
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    pricingPerSlot?: FloatFieldUpdateOperationsInput | number
+    pricingPerSlot?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sittingCapacity?: IntFieldUpdateOperationsInput | number
     venueLayout?: NullableStringFieldUpdateOperationsInput | string | null
     amenities?: EventCenterUpdateamenitiesInput | $Enums.Amenities[]
@@ -2675,9 +2675,9 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     eventTypes?: EventCenterUpdateeventTypesInput | string[]
     serviceProviderId?: StringFieldUpdateOperationsInput | string
-    depositAmount?: FloatFieldUpdateOperationsInput | number
+    depositPercentage?: IntFieldUpdateOperationsInput | number
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    pricingPerSlot?: FloatFieldUpdateOperationsInput | number
+    pricingPerSlot?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sittingCapacity?: IntFieldUpdateOperationsInput | number
     venueLayout?: NullableStringFieldUpdateOperationsInput | string | null
     amenities?: EventCenterUpdateamenitiesInput | $Enums.Amenities[]
@@ -2704,9 +2704,9 @@ export namespace Prisma {
     name: string
     eventTypes?: EventCenterCreateeventTypesInput | string[]
     serviceProviderId: string
-    depositAmount: number
+    depositPercentage: number
     description?: string | null
-    pricingPerSlot: number
+    pricingPerSlot: Decimal | DecimalJsLike | number | string
     sittingCapacity: number
     venueLayout?: string | null
     amenities?: EventCenterCreateamenitiesInput | $Enums.Amenities[]
@@ -2733,9 +2733,9 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     eventTypes?: EventCenterUpdateeventTypesInput | string[]
     serviceProviderId?: StringFieldUpdateOperationsInput | string
-    depositAmount?: FloatFieldUpdateOperationsInput | number
+    depositPercentage?: IntFieldUpdateOperationsInput | number
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    pricingPerSlot?: FloatFieldUpdateOperationsInput | number
+    pricingPerSlot?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sittingCapacity?: IntFieldUpdateOperationsInput | number
     venueLayout?: NullableStringFieldUpdateOperationsInput | string | null
     amenities?: EventCenterUpdateamenitiesInput | $Enums.Amenities[]
@@ -2762,9 +2762,9 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     eventTypes?: EventCenterUpdateeventTypesInput | string[]
     serviceProviderId?: StringFieldUpdateOperationsInput | string
-    depositAmount?: FloatFieldUpdateOperationsInput | number
+    depositPercentage?: IntFieldUpdateOperationsInput | number
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    pricingPerSlot?: FloatFieldUpdateOperationsInput | number
+    pricingPerSlot?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sittingCapacity?: IntFieldUpdateOperationsInput | number
     venueLayout?: NullableStringFieldUpdateOperationsInput | string | null
     amenities?: EventCenterUpdateamenitiesInput | $Enums.Amenities[]
@@ -2809,15 +2809,15 @@ export namespace Prisma {
     isEmpty?: boolean
   }
 
-  export type FloatFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatFilter<$PrismaModel> | number
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
   }
 
   export type StringNullableFilter<$PrismaModel = never> = {
@@ -2835,15 +2835,15 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
-  export type IntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
+  export type DecimalFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
   }
 
   export type EnumAmenitiesNullableListFilter<$PrismaModel = never> = {
@@ -2909,7 +2909,7 @@ export namespace Prisma {
     name?: SortOrder
     eventTypes?: SortOrder
     serviceProviderId?: SortOrder
-    depositAmount?: SortOrder
+    depositPercentage?: SortOrder
     description?: SortOrder
     pricingPerSlot?: SortOrder
     sittingCapacity?: SortOrder
@@ -2934,7 +2934,7 @@ export namespace Prisma {
   }
 
   export type EventCenterAvgOrderByAggregateInput = {
-    depositAmount?: SortOrder
+    depositPercentage?: SortOrder
     pricingPerSlot?: SortOrder
     sittingCapacity?: SortOrder
     rating?: SortOrder
@@ -2944,7 +2944,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     serviceProviderId?: SortOrder
-    depositAmount?: SortOrder
+    depositPercentage?: SortOrder
     description?: SortOrder
     pricingPerSlot?: SortOrder
     sittingCapacity?: SortOrder
@@ -2970,7 +2970,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     serviceProviderId?: SortOrder
-    depositAmount?: SortOrder
+    depositPercentage?: SortOrder
     description?: SortOrder
     pricingPerSlot?: SortOrder
     sittingCapacity?: SortOrder
@@ -2993,7 +2993,7 @@ export namespace Prisma {
   }
 
   export type EventCenterSumOrderByAggregateInput = {
-    depositAmount?: SortOrder
+    depositPercentage?: SortOrder
     pricingPerSlot?: SortOrder
     sittingCapacity?: SortOrder
     rating?: SortOrder
@@ -3017,20 +3017,20 @@ export namespace Prisma {
     _max?: NestedStringFilter<$PrismaModel>
   }
 
-  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
     _count?: NestedIntFilter<$PrismaModel>
     _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedFloatFilter<$PrismaModel>
-    _min?: NestedFloatFilter<$PrismaModel>
-    _max?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -3051,20 +3051,20 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
-  export type IntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+  export type DecimalWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
     _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedDecimalFilter<$PrismaModel>
+    _sum?: NestedDecimalFilter<$PrismaModel>
+    _min?: NestedDecimalFilter<$PrismaModel>
+    _max?: NestedDecimalFilter<$PrismaModel>
   }
 
   export type EnumServiceStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -3150,7 +3150,7 @@ export namespace Prisma {
     push?: string | string[]
   }
 
-  export type FloatFieldUpdateOperationsInput = {
+  export type IntFieldUpdateOperationsInput = {
     set?: number
     increment?: number
     decrement?: number
@@ -3162,12 +3162,12 @@ export namespace Prisma {
     set?: string | null
   }
 
-  export type IntFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
+  export type DecimalFieldUpdateOperationsInput = {
+    set?: Decimal | DecimalJsLike | number | string
+    increment?: Decimal | DecimalJsLike | number | string
+    decrement?: Decimal | DecimalJsLike | number | string
+    multiply?: Decimal | DecimalJsLike | number | string
+    divide?: Decimal | DecimalJsLike | number | string
   }
 
   export type EventCenterUpdateamenitiesInput = {
@@ -3218,15 +3218,15 @@ export namespace Prisma {
     not?: NestedStringFilter<$PrismaModel> | string
   }
 
-  export type NestedFloatFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatFilter<$PrismaModel> | number
+  export type NestedIntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
   }
 
   export type NestedStringNullableFilter<$PrismaModel = never> = {
@@ -3243,15 +3243,15 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
-  export type NestedIntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
+  export type NestedDecimalFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
   }
 
   export type NestedEnumServiceStatusFilter<$PrismaModel = never> = {
@@ -3316,7 +3316,23 @@ export namespace Prisma {
     _max?: NestedStringFilter<$PrismaModel>
   }
 
-  export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel>
     in?: number[] | ListFloatFieldRefInput<$PrismaModel>
     notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
@@ -3324,12 +3340,7 @@ export namespace Prisma {
     lte?: number | FloatFieldRefInput<$PrismaModel>
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedFloatFilter<$PrismaModel>
-    _min?: NestedFloatFilter<$PrismaModel>
-    _max?: NestedFloatFilter<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
   }
 
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -3360,20 +3371,20 @@ export namespace Prisma {
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
-  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+  export type NestedDecimalWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
     _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedDecimalFilter<$PrismaModel>
+    _sum?: NestedDecimalFilter<$PrismaModel>
+    _min?: NestedDecimalFilter<$PrismaModel>
+    _max?: NestedDecimalFilter<$PrismaModel>
   }
 
   export type NestedEnumServiceStatusWithAggregatesFilter<$PrismaModel = never> = {

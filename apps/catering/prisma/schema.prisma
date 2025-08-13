@@ -21,7 +21,7 @@ model Catering {
   eventTypes         String[]
   serviceProviderId  String // owner of this service points to a userid 
   tagLine            String
-  depositPercentage  Int
+  depositPercentage  Int @map("depositAmount")  
   startPrice         Float
   minCapacity        Int?  //minimum count of people the catering service can handle
   maxCapacity        Int?  //maximum count of people the catering service can handle

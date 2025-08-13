@@ -1,16 +1,43 @@
 
+import { IsNumber, IsString } from "class-validator";
 import { FeesType, InvoiceStatus, PaymentReason, RefundStatus, Status, IPaymentStatus } from "./create-payments.dto";
-export type InvoiceItem = { item: string; amount: number };
+import { ApiProperty } from "@nestjs/swagger";
 
-export type BillingAddress =  {
+export class InvoiceItem {
+  @ApiProperty({ description: 'Item name', example: 'Laptop' })
+  @IsString()
+  item: string;
+
+  @ApiProperty({ description: 'Item amount', example: 1200 })
+  @IsNumber()
+  amount: number;
+}
+
+export class BillingAddress {
+  @ApiProperty({ example: '123 Main St' })
+  @IsString()
   street: string;
-  street2: string;
-  city: string;
-  region: string;
-  country: string;
-  postal: string;
-};
 
+  @ApiProperty({ example: '123 Main St' })
+  @IsString()
+  street2?: string;
+
+  @ApiProperty({ example: 'Lagos' })
+  @IsString()
+  city: string;
+
+  @ApiProperty({ example: 'LA' })
+  @IsString()
+  state: string;
+
+  @ApiProperty({ example: 'Nigeria' })
+  @IsString()
+  country: string;
+
+  @ApiProperty({ example: '200911' })
+  @IsString()
+  postal: string;
+}
 export class PaymentMethodDto {
     id: string;
     provider: string;

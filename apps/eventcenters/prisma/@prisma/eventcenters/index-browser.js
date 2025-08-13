@@ -125,7 +125,7 @@ exports.Prisma.EventCenterScalarFieldEnum = {
   name: 'name',
   eventTypes: 'eventTypes',
   serviceProviderId: 'serviceProviderId',
-  depositAmount: 'depositAmount',
+  depositPercentage: 'depositPercentage',
   description: 'description',
   pricingPerSlot: 'pricingPerSlot',
   sittingCapacity: 'sittingCapacity',
