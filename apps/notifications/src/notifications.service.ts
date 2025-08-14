@@ -283,7 +283,7 @@ export class ReviewService {
 				throw new ForbiddenException('The booking you selected for review does not exist');
 			}
 			
-			if(booking.status != 'BOOKED' || booking.customerId != createReviewDto.userId 
+			if(booking.status != 'CONFIRMED' || booking.customerId != createReviewDto.userId 
 				|| booking.serviceType !== createReviewDto.serviceType 
 				||  booking.canceledAt)
 				{

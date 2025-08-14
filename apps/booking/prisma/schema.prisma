@@ -200,7 +200,7 @@ enum InvoiceStatus {
 
 enum BookingStatus {
   PENDING
-  BOOKED
+  CONFIRMED
   RESERVED
   POSTPONED
   CANCELED
