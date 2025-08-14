@@ -64,8 +64,8 @@ export class ClientConfigService {
             transport: Transport.RMQ,
             options: {
                 urls: [process.env.PAYMENTURL],
-                queue: process.env.PAYMENTQUEUE,
-                queueOptions: { durable: true},
+                queue: `${process.env.PAYMENTQUEUE}_${process.env.NODE_ENV}`,
+                queueOptions: { durable: false},
             }
         }
     } 

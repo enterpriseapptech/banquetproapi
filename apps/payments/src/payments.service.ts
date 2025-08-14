@@ -188,6 +188,7 @@ export class InvoiceService {
 
     async create(createInvoiceDto: CreateInvoiceDto): Promise<InvoiceDto> {
         //  validate total
+        console.log({seviceCreate:createInvoiceDto})
         if(!createInvoiceDto.items){
             throw new InternalServerErrorException('We could not generate invoice, as the items been paid for were not listed', {
                 cause: new Error(),
@@ -222,7 +223,7 @@ export class InvoiceService {
         try {
             // Start a transaction - for an all or fail process of creating a user
             const invoice = await this.databaseService.invoice.create({ data: newInvoiceInput });
-                
+            console.log({invoice})   
             return {
                 ...invoice,
                 items: instanceToPlain(invoice.items) as InvoiceItem[],

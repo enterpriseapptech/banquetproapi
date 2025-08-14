@@ -48,6 +48,7 @@ export class BookingService {
 			
 			switch (createBookingDto.serviceType) {
 				case $Enums.ServiceType.EVENTCENTER:
+					console.log("got here")
 					Service = await firstValueFrom(this.eventClient.send<EventCenterDto, string>(EVENTCENTERPATTERN.FINDONEBYID, createBookingDto.serviceId))
 					
 					if (!Service) {
@@ -196,7 +197,7 @@ export class BookingService {
 					description: 'Invoice generation Error: we couldnt automatically generate your invoice, kindly contact admin'
 				});
 			}
-
+			
 			//  notify service provider of booking
 			this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
 				type: 'EMAIL',

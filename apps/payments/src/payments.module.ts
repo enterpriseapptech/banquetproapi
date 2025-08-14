@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { SubscriptionPlansController } from './payments.controller';
-import { FeaturedPlanService, PaymentsService, SubscriptionPlansService } from './payments.service';
+import { InvoiceController, SubscriptionPlansController } from './payments.controller';
+import { FeaturedPlanService, InvoiceService, PaymentsService, SubscriptionPlansService } from './payments.service';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseService } from '../database/database.service';
 
@@ -11,12 +11,13 @@ import { DatabaseService } from '../database/database.service';
                 envFilePath: '../env',
             }),
   ],
-  controllers: [SubscriptionPlansController],
+  controllers: [SubscriptionPlansController, InvoiceController],
   providers: [
     DatabaseService,
     PaymentsService,
     SubscriptionPlansService,
-    FeaturedPlanService
+    FeaturedPlanService,
+    InvoiceService
 
   ],
 })

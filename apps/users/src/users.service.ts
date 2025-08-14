@@ -320,7 +320,7 @@ export class UsersService {
 
 
     async findOne(id: string): Promise<UserDto> {
-        
+        console.log("finding 1")
         const user = await this.databaseService.user.findUnique({
             where: {
                 id: id

@@ -109,6 +109,7 @@ export class SubscriptionPlansController {
 
 }
 
+@Controller()
 export class FeaturedPlanController {
   constructor(private readonly featuredPlanService: FeaturedPlanService) { }
 
@@ -208,6 +209,7 @@ export class FeaturedPlanController {
 
 }
 
+@Controller()
 export class FeesController {
   constructor(private readonly feesService: FeesService) { }
 
@@ -307,6 +309,7 @@ export class FeesController {
 
 }
 
+@Controller()
 export class PaymentMethodController {
   constructor(private readonly paymentMethodService: PaymentMethodService) { }
 
@@ -406,6 +409,7 @@ export class PaymentMethodController {
 
 }
 
+@Controller()
 export class PaymentsServiceController {
   constructor(private readonly paymentService: PaymentsService ) { }
 
@@ -505,6 +509,7 @@ export class PaymentsServiceController {
 
 }
 
+@Controller()
 export class InvoiceController {
   constructor(private readonly invoiceService: InvoiceService ) { }
 

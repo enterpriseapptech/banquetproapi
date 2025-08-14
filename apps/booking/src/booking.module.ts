@@ -60,7 +60,7 @@ import { ClientConfigService } from '../client-config/client-config.service';
             provide: PAYMENT_CLIENT,
             useFactory: (configService: ClientConfigService) => {
                 const paymentClientOptions = configService.PaymentClientOptions;
-                // console.log('Creating ClientProxy with options:', paymentClientOptions);
+                console.log('Creating ClientProxy with options:', paymentClientOptions);
                 return ClientProxyFactory.create(paymentClientOptions);
             },
             inject: [ClientConfigService],
