@@ -148,6 +148,7 @@ exports.Prisma.BookingScalarFieldEnum = {
   canceledAt: 'canceledAt',
   cancelationReason: 'cancelationReason',
   createdAt: 'createdAt',
+  createdBy: 'createdBy',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt',
   deletedBy: 'deletedBy'

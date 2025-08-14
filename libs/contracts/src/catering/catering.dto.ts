@@ -10,6 +10,7 @@ export class CateringDto {
     eventTypes: string[];
     tagLine: string;
     depositPercentage: number;
+    discountPercentage?: number;
     startPrice: number;
     minCapacity?: number;
     maxCapacity?: number;

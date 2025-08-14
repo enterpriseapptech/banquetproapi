@@ -952,6 +952,7 @@ export namespace Prisma {
   }
 
   export type EventCenterAvgAggregateOutputType = {
+    discountPercentage: number | null
     depositPercentage: number | null
     pricingPerSlot: Decimal | null
     sittingCapacity: number | null
@@ -959,6 +960,7 @@ export namespace Prisma {
   }
 
   export type EventCenterSumAggregateOutputType = {
+    discountPercentage: number | null
     depositPercentage: number | null
     pricingPerSlot: Decimal | null
     sittingCapacity: number | null
@@ -969,6 +971,7 @@ export namespace Prisma {
     id: string | null
     name: string | null
     serviceProviderId: string | null
+    discountPercentage: number | null
     depositPercentage: number | null
     description: string | null
     pricingPerSlot: Decimal | null
@@ -995,6 +998,7 @@ export namespace Prisma {
     id: string | null
     name: string | null
     serviceProviderId: string | null
+    discountPercentage: number | null
     depositPercentage: number | null
     description: string | null
     pricingPerSlot: Decimal | null
@@ -1022,6 +1026,7 @@ export namespace Prisma {
     name: number
     eventTypes: number
     serviceProviderId: number
+    discountPercentage: number
     depositPercentage: number
     description: number
     pricingPerSlot: number
@@ -1049,6 +1054,7 @@ export namespace Prisma {
 
 
   export type EventCenterAvgAggregateInputType = {
+    discountPercentage?: true
     depositPercentage?: true
     pricingPerSlot?: true
     sittingCapacity?: true
@@ -1056,6 +1062,7 @@ export namespace Prisma {
   }
 
   export type EventCenterSumAggregateInputType = {
+    discountPercentage?: true
     depositPercentage?: true
     pricingPerSlot?: true
     sittingCapacity?: true
@@ -1066,6 +1073,7 @@ export namespace Prisma {
     id?: true
     name?: true
     serviceProviderId?: true
+    discountPercentage?: true
     depositPercentage?: true
     description?: true
     pricingPerSlot?: true
@@ -1092,6 +1100,7 @@ export namespace Prisma {
     id?: true
     name?: true
     serviceProviderId?: true
+    discountPercentage?: true
     depositPercentage?: true
     description?: true
     pricingPerSlot?: true
@@ -1119,6 +1128,7 @@ export namespace Prisma {
     name?: true
     eventTypes?: true
     serviceProviderId?: true
+    discountPercentage?: true
     depositPercentage?: true
     description?: true
     pricingPerSlot?: true
@@ -1235,6 +1245,7 @@ export namespace Prisma {
     name: string
     eventTypes: string[]
     serviceProviderId: string
+    discountPercentage: number | null
     depositPercentage: number
     description: string | null
     pricingPerSlot: Decimal
@@ -1283,6 +1294,7 @@ export namespace Prisma {
     name?: boolean
     eventTypes?: boolean
     serviceProviderId?: boolean
+    discountPercentage?: boolean
     depositPercentage?: boolean
     description?: boolean
     pricingPerSlot?: boolean
@@ -1312,6 +1324,7 @@ export namespace Prisma {
     name?: boolean
     eventTypes?: boolean
     serviceProviderId?: boolean
+    discountPercentage?: boolean
     depositPercentage?: boolean
     description?: boolean
     pricingPerSlot?: boolean
@@ -1341,6 +1354,7 @@ export namespace Prisma {
     name?: boolean
     eventTypes?: boolean
     serviceProviderId?: boolean
+    discountPercentage?: boolean
     depositPercentage?: boolean
     description?: boolean
     pricingPerSlot?: boolean
@@ -1370,6 +1384,7 @@ export namespace Prisma {
     name?: boolean
     eventTypes?: boolean
     serviceProviderId?: boolean
+    discountPercentage?: boolean
     depositPercentage?: boolean
     description?: boolean
     pricingPerSlot?: boolean
@@ -1394,7 +1409,7 @@ export namespace Prisma {
     deletedBy?: boolean
   }
 
-  export type EventCenterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "eventTypes" | "serviceProviderId" | "depositPercentage" | "description" | "pricingPerSlot" | "sittingCapacity" | "venueLayout" | "amenities" | "images" | "termsOfUse" | "cancellationPolicy" | "streetAddress" | "streetAddress2" | "city" | "location" | "postal" | "status" | "paymentRequired" | "rating" | "contact" | "createdAt" | "updatedAt" | "deletedAt" | "deletedBy", ExtArgs["result"]["eventCenter"]>
+  export type EventCenterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "eventTypes" | "serviceProviderId" | "discountPercentage" | "depositPercentage" | "description" | "pricingPerSlot" | "sittingCapacity" | "venueLayout" | "amenities" | "images" | "termsOfUse" | "cancellationPolicy" | "streetAddress" | "streetAddress2" | "city" | "location" | "postal" | "status" | "paymentRequired" | "rating" | "contact" | "createdAt" | "updatedAt" | "deletedAt" | "deletedBy", ExtArgs["result"]["eventCenter"]>
 
   export type $EventCenterPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "EventCenter"
@@ -1404,6 +1419,7 @@ export namespace Prisma {
       name: string
       eventTypes: string[]
       serviceProviderId: string
+      discountPercentage: number | null
       depositPercentage: number
       description: string | null
       pricingPerSlot: Prisma.Decimal
@@ -1853,6 +1869,7 @@ export namespace Prisma {
     readonly name: FieldRef<"EventCenter", 'String'>
     readonly eventTypes: FieldRef<"EventCenter", 'String[]'>
     readonly serviceProviderId: FieldRef<"EventCenter", 'String'>
+    readonly discountPercentage: FieldRef<"EventCenter", 'Int'>
     readonly depositPercentage: FieldRef<"EventCenter", 'Int'>
     readonly description: FieldRef<"EventCenter", 'String'>
     readonly pricingPerSlot: FieldRef<"EventCenter", 'Decimal'>
@@ -2260,6 +2277,7 @@ export namespace Prisma {
     name: 'name',
     eventTypes: 'eventTypes',
     serviceProviderId: 'serviceProviderId',
+    discountPercentage: 'discountPercentage',
     depositPercentage: 'depositPercentage',
     description: 'description',
     pricingPerSlot: 'pricingPerSlot',
@@ -2432,6 +2450,7 @@ export namespace Prisma {
     name?: StringFilter<"EventCenter"> | string
     eventTypes?: StringNullableListFilter<"EventCenter">
     serviceProviderId?: StringFilter<"EventCenter"> | string
+    discountPercentage?: IntNullableFilter<"EventCenter"> | number | null
     depositPercentage?: IntFilter<"EventCenter"> | number
     description?: StringNullableFilter<"EventCenter"> | string | null
     pricingPerSlot?: DecimalFilter<"EventCenter"> | Decimal | DecimalJsLike | number | string
@@ -2461,6 +2480,7 @@ export namespace Prisma {
     name?: SortOrder
     eventTypes?: SortOrder
     serviceProviderId?: SortOrder
+    discountPercentage?: SortOrderInput | SortOrder
     depositPercentage?: SortOrder
     description?: SortOrderInput | SortOrder
     pricingPerSlot?: SortOrder
@@ -2493,6 +2513,7 @@ export namespace Prisma {
     name?: StringFilter<"EventCenter"> | string
     eventTypes?: StringNullableListFilter<"EventCenter">
     serviceProviderId?: StringFilter<"EventCenter"> | string
+    discountPercentage?: IntNullableFilter<"EventCenter"> | number | null
     depositPercentage?: IntFilter<"EventCenter"> | number
     description?: StringNullableFilter<"EventCenter"> | string | null
     pricingPerSlot?: DecimalFilter<"EventCenter"> | Decimal | DecimalJsLike | number | string
@@ -2522,6 +2543,7 @@ export namespace Prisma {
     name?: SortOrder
     eventTypes?: SortOrder
     serviceProviderId?: SortOrder
+    discountPercentage?: SortOrderInput | SortOrder
     depositPercentage?: SortOrder
     description?: SortOrderInput | SortOrder
     pricingPerSlot?: SortOrder
@@ -2559,6 +2581,7 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"EventCenter"> | string
     eventTypes?: StringNullableListFilter<"EventCenter">
     serviceProviderId?: StringWithAggregatesFilter<"EventCenter"> | string
+    discountPercentage?: IntNullableWithAggregatesFilter<"EventCenter"> | number | null
     depositPercentage?: IntWithAggregatesFilter<"EventCenter"> | number
     description?: StringNullableWithAggregatesFilter<"EventCenter"> | string | null
     pricingPerSlot?: DecimalWithAggregatesFilter<"EventCenter"> | Decimal | DecimalJsLike | number | string
@@ -2588,6 +2611,7 @@ export namespace Prisma {
     name: string
     eventTypes?: EventCenterCreateeventTypesInput | string[]
     serviceProviderId: string
+    discountPercentage?: number | null
     depositPercentage: number
     description?: string | null
     pricingPerSlot: Decimal | DecimalJsLike | number | string
@@ -2617,6 +2641,7 @@ export namespace Prisma {
     name: string
     eventTypes?: EventCenterCreateeventTypesInput | string[]
     serviceProviderId: string
+    discountPercentage?: number | null
     depositPercentage: number
     description?: string | null
     pricingPerSlot: Decimal | DecimalJsLike | number | string
@@ -2646,6 +2671,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     eventTypes?: EventCenterUpdateeventTypesInput | string[]
     serviceProviderId?: StringFieldUpdateOperationsInput | string
+    discountPercentage?: NullableIntFieldUpdateOperationsInput | number | null
     depositPercentage?: IntFieldUpdateOperationsInput | number
     description?: NullableStringFieldUpdateOperationsInput | string | null
     pricingPerSlot?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -2675,6 +2701,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     eventTypes?: EventCenterUpdateeventTypesInput | string[]
     serviceProviderId?: StringFieldUpdateOperationsInput | string
+    discountPercentage?: NullableIntFieldUpdateOperationsInput | number | null
     depositPercentage?: IntFieldUpdateOperationsInput | number
     description?: NullableStringFieldUpdateOperationsInput | string | null
     pricingPerSlot?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -2704,6 +2731,7 @@ export namespace Prisma {
     name: string
     eventTypes?: EventCenterCreateeventTypesInput | string[]
     serviceProviderId: string
+    discountPercentage?: number | null
     depositPercentage: number
     description?: string | null
     pricingPerSlot: Decimal | DecimalJsLike | number | string
@@ -2733,6 +2761,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     eventTypes?: EventCenterUpdateeventTypesInput | string[]
     serviceProviderId?: StringFieldUpdateOperationsInput | string
+    discountPercentage?: NullableIntFieldUpdateOperationsInput | number | null
     depositPercentage?: IntFieldUpdateOperationsInput | number
     description?: NullableStringFieldUpdateOperationsInput | string | null
     pricingPerSlot?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -2762,6 +2791,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     eventTypes?: EventCenterUpdateeventTypesInput | string[]
     serviceProviderId?: StringFieldUpdateOperationsInput | string
+    discountPercentage?: NullableIntFieldUpdateOperationsInput | number | null
     depositPercentage?: IntFieldUpdateOperationsInput | number
     description?: NullableStringFieldUpdateOperationsInput | string | null
     pricingPerSlot?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -2807,6 +2837,17 @@ export namespace Prisma {
     hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
     hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
     isEmpty?: boolean
+  }
+
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -2909,6 +2950,7 @@ export namespace Prisma {
     name?: SortOrder
     eventTypes?: SortOrder
     serviceProviderId?: SortOrder
+    discountPercentage?: SortOrder
     depositPercentage?: SortOrder
     description?: SortOrder
     pricingPerSlot?: SortOrder
@@ -2934,6 +2976,7 @@ export namespace Prisma {
   }
 
   export type EventCenterAvgOrderByAggregateInput = {
+    discountPercentage?: SortOrder
     depositPercentage?: SortOrder
     pricingPerSlot?: SortOrder
     sittingCapacity?: SortOrder
@@ -2944,6 +2987,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     serviceProviderId?: SortOrder
+    discountPercentage?: SortOrder
     depositPercentage?: SortOrder
     description?: SortOrder
     pricingPerSlot?: SortOrder
@@ -2970,6 +3014,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     serviceProviderId?: SortOrder
+    discountPercentage?: SortOrder
     depositPercentage?: SortOrder
     description?: SortOrder
     pricingPerSlot?: SortOrder
@@ -2993,6 +3038,7 @@ export namespace Prisma {
   }
 
   export type EventCenterSumOrderByAggregateInput = {
+    discountPercentage?: SortOrder
     depositPercentage?: SortOrder
     pricingPerSlot?: SortOrder
     sittingCapacity?: SortOrder
@@ -3015,6 +3061,22 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedStringFilter<$PrismaModel>
     _max?: NestedStringFilter<$PrismaModel>
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type IntWithAggregatesFilter<$PrismaModel = never> = {
@@ -3150,6 +3212,14 @@ export namespace Prisma {
     push?: string | string[]
   }
 
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type IntFieldUpdateOperationsInput = {
     set?: number
     increment?: number
@@ -3216,6 +3286,17 @@ export namespace Prisma {
     startsWith?: string | StringFieldRefInput<$PrismaModel>
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     not?: NestedStringFilter<$PrismaModel> | string
+  }
+
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
   export type NestedIntFilter<$PrismaModel = never> = {
@@ -3316,6 +3397,33 @@ export namespace Prisma {
     _max?: NestedStringFilter<$PrismaModel>
   }
 
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -3358,17 +3466,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
-  }
-
-  export type NestedIntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
   export type NestedDecimalWithAggregatesFilter<$PrismaModel = never> = {

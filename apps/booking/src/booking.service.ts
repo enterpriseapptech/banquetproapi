@@ -29,24 +29,7 @@ export class BookingService {
 			let notificationSubject: string;
 			let Service: EventCenterDto | CateringDto;
 			let amountDue: number;
-			if(!createBookingDto.items){
-				throw new BadRequestException('We could not validate your booking', {
-					cause: new Error(),
-					description: 'We could not validate your booking, as the items been paid for are not listed'
-				});
-			}
-
 			let itemsTotal = 0;
-			createBookingDto.items.map((item)=>{itemsTotal += item.amount})
-			const discount = itemsTotal * (createBookingDto.discount /100)
-			if((itemsTotal - discount) !== (createBookingDto.total)){
-				throw new BadRequestException('We could not generate invoice', {
-						cause: new Error(),
-						description: 'We could not generate invoice, total amount is incorrect for the items'
-					}); 
-				}
-			
-
 			// validate customer account
 			const customer = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDBYID, createBookingDto.customerId));
 			if (!customer) {
@@ -84,13 +67,11 @@ export class BookingService {
 
 					}else if(createBookingDto.createdBy !== Service.serviceProviderId){
 						amountDue = (Service.depositPercentage /100) * (Service.pricingPerSlot * createBookingDto.timeslotId.length)
-						if(itemsTotal !== amountDue) {
-							throw new BadRequestException(`Calculation error`, {
-							cause: new Error(),
-							description: `Total amount should be ${Service.pricingPerSlot}`
-						});
-						}
+						createBookingDto.discount = Service.discountPercentage ?? 0	
+					}else if(createBookingDto.createdBy === Service.serviceProviderId && createBookingDto.discount === undefined){
+						createBookingDto.discount = Service.discountPercentage
 					}
+					
 					break;
 				case $Enums.ServiceType.CATERING:
 					Service = await firstValueFrom(this.eventClient.send<CateringDto, string>(CATERINGPATTERN.FINDONEBYID, createBookingDto.serviceId))
@@ -114,6 +95,20 @@ export class BookingService {
 					
 			}
 
+			if(!createBookingDto.items){
+				throw new BadRequestException('We could not validate your booking', {
+					cause: new Error(),
+					description: 'We could not validate your booking, as the items been paid for are not listed'
+				});
+			}
+			createBookingDto.items.map((item)=>{itemsTotal += item.amount})
+			const discount = itemsTotal * (createBookingDto.discount /100)
+			if((itemsTotal - discount) !== (createBookingDto.total)){
+				throw new BadRequestException(`We could not generate invoice, total amount is incorrect for the items. Should be ${itemsTotal - discount}`, {
+					cause: new Error(),
+					description: 'We could not generate invoice, total amount is incorrect for the items'
+				}); 
+			}
 			const newBookingInput: Prisma.BookingCreateInput = {
 				customerId: createBookingDto.customerId,
 				serviceId: createBookingDto.serviceId,
@@ -129,7 +124,8 @@ export class BookingService {
 				paymentStatus: 'UNPAID' as $Enums.PaymentStatus,
 				status: 'PENDING' as $Enums.BookingStatus,
 				serviceNotes: createBookingDto.serviceNotes,
-				customerNotes: createBookingDto.customerNotes
+				customerNotes: createBookingDto.customerNotes,
+				createdBy: createBookingDto.createdBy
 			}
 			// Start a transaction - for an all or fail process
 			const newBooking = await this.databaseService.$transaction(async (prisma) => {
@@ -177,16 +173,7 @@ export class BookingService {
 				return booking;
 			});
 
-			//  notify service provider of booking
-			this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
-				type: 'EMAIL',
-				recipientId: newBooking.customerId,
-				data: {
-					subject: notificationSubject,
-					message: `A customer just booked your service, view details and confirm booking`,
-					recipientEmail: customer.email,
-				},
-			});
+			
 
 			const createInvoice: CreateInvoiceDto = {
 				userId: createBookingDto.customerId,
@@ -209,7 +196,17 @@ export class BookingService {
 					description: 'Invoice generation Error: we couldnt automatically generate your invoice, kindly contact admin'
 				});
 			}
-			
+
+			//  notify service provider of booking
+			this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
+				type: 'EMAIL',
+				recipientId: newBooking.customerId,
+				data: {
+					subject: notificationSubject,
+					message: `A customer just booked your service, view details and confirm booking`,
+					recipientEmail: customer.email,
+				},
+			});
 			return {
 				...invoice,
 				items: invoice.items as InvoiceItem[],

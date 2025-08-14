@@ -150,7 +150,6 @@ export class CreateBookingDto {
         type: BillingAddress,
     })
     @IsNotEmpty()
-    @IsString({each: true})
     @ValidateNested()
     @Type(() => BillingAddress)
     billingAddress: BillingAddress;

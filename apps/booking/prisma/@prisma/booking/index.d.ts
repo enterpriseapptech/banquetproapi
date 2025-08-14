@@ -1561,6 +1561,7 @@ export namespace Prisma {
     canceledAt: Date | null
     cancelationReason: string | null
     createdAt: Date | null
+    createdBy: string | null
     updatedAt: Date | null
     deletedAt: Date | null
     deletedBy: string | null
@@ -1592,6 +1593,7 @@ export namespace Prisma {
     canceledAt: Date | null
     cancelationReason: string | null
     createdAt: Date | null
+    createdBy: string | null
     updatedAt: Date | null
     deletedAt: Date | null
     deletedBy: string | null
@@ -1625,6 +1627,7 @@ export namespace Prisma {
     canceledAt: number
     cancelationReason: number
     createdAt: number
+    createdBy: number
     updatedAt: number
     deletedAt: number
     deletedBy: number
@@ -1670,6 +1673,7 @@ export namespace Prisma {
     canceledAt?: true
     cancelationReason?: true
     createdAt?: true
+    createdBy?: true
     updatedAt?: true
     deletedAt?: true
     deletedBy?: true
@@ -1701,6 +1705,7 @@ export namespace Prisma {
     canceledAt?: true
     cancelationReason?: true
     createdAt?: true
+    createdBy?: true
     updatedAt?: true
     deletedAt?: true
     deletedBy?: true
@@ -1734,6 +1739,7 @@ export namespace Prisma {
     canceledAt?: true
     cancelationReason?: true
     createdAt?: true
+    createdBy?: true
     updatedAt?: true
     deletedAt?: true
     deletedBy?: true
@@ -1854,6 +1860,7 @@ export namespace Prisma {
     canceledAt: Date | null
     cancelationReason: string | null
     createdAt: Date
+    createdBy: string
     updatedAt: Date
     deletedAt: Date | null
     deletedBy: string | null
@@ -1906,6 +1913,7 @@ export namespace Prisma {
     canceledAt?: boolean
     cancelationReason?: boolean
     createdAt?: boolean
+    createdBy?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
     deletedBy?: boolean
@@ -1944,6 +1952,7 @@ export namespace Prisma {
     canceledAt?: boolean
     cancelationReason?: boolean
     createdAt?: boolean
+    createdBy?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
     deletedBy?: boolean
@@ -1977,6 +1986,7 @@ export namespace Prisma {
     canceledAt?: boolean
     cancelationReason?: boolean
     createdAt?: boolean
+    createdBy?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
     deletedBy?: boolean
@@ -2010,12 +2020,13 @@ export namespace Prisma {
     canceledAt?: boolean
     cancelationReason?: boolean
     createdAt?: boolean
+    createdBy?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
     deletedBy?: boolean
   }
 
-  export type BookingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "customerId" | "confirmedBy" | "confirmedAt" | "servicebookingId" | "serviceId" | "serviceType" | "subTotal" | "discount" | "total" | "invoice" | "paymentStatus" | "status" | "isTermsAccepted" | "isCancellationPolicyAccepted" | "isLiabilityWaiverSigned" | "bookingReference" | "source" | "serviceNotes" | "customerNotes" | "rescheduledBy" | "rescheduledAt" | "previousDates" | "cancelledBy" | "canceledAt" | "cancelationReason" | "createdAt" | "updatedAt" | "deletedAt" | "deletedBy", ExtArgs["result"]["booking"]>
+  export type BookingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "customerId" | "confirmedBy" | "confirmedAt" | "servicebookingId" | "serviceId" | "serviceType" | "subTotal" | "discount" | "total" | "invoice" | "paymentStatus" | "status" | "isTermsAccepted" | "isCancellationPolicyAccepted" | "isLiabilityWaiverSigned" | "bookingReference" | "source" | "serviceNotes" | "customerNotes" | "rescheduledBy" | "rescheduledAt" | "previousDates" | "cancelledBy" | "canceledAt" | "cancelationReason" | "createdAt" | "createdBy" | "updatedAt" | "deletedAt" | "deletedBy", ExtArgs["result"]["booking"]>
   export type BookingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     eventCenterBooking?: boolean | Booking$eventCenterBookingArgs<ExtArgs>
     cateringBooking?: boolean | Booking$cateringBookingArgs<ExtArgs>
@@ -2062,6 +2073,7 @@ export namespace Prisma {
       canceledAt: Date | null
       cancelationReason: string | null
       createdAt: Date
+      createdBy: string
       updatedAt: Date
       deletedAt: Date | null
       deletedBy: string | null
@@ -2519,6 +2531,7 @@ export namespace Prisma {
     readonly canceledAt: FieldRef<"Booking", 'DateTime'>
     readonly cancelationReason: FieldRef<"Booking", 'String'>
     readonly createdAt: FieldRef<"Booking", 'DateTime'>
+    readonly createdBy: FieldRef<"Booking", 'String'>
     readonly updatedAt: FieldRef<"Booking", 'DateTime'>
     readonly deletedAt: FieldRef<"Booking", 'DateTime'>
     readonly deletedBy: FieldRef<"Booking", 'String'>
@@ -8972,6 +8985,7 @@ export namespace Prisma {
     canceledAt: 'canceledAt',
     cancelationReason: 'cancelationReason',
     createdAt: 'createdAt',
+    createdBy: 'createdBy',
     updatedAt: 'updatedAt',
     deletedAt: 'deletedAt',
     deletedBy: 'deletedBy'
@@ -9347,6 +9361,7 @@ export namespace Prisma {
     canceledAt?: DateTimeNullableFilter<"Booking"> | Date | string | null
     cancelationReason?: StringNullableFilter<"Booking"> | string | null
     createdAt?: DateTimeFilter<"Booking"> | Date | string
+    createdBy?: StringFilter<"Booking"> | string
     updatedAt?: DateTimeFilter<"Booking"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Booking"> | Date | string | null
     deletedBy?: StringNullableFilter<"Booking"> | string | null
@@ -9384,6 +9399,7 @@ export namespace Prisma {
     canceledAt?: SortOrderInput | SortOrder
     cancelationReason?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    createdBy?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
     deletedBy?: SortOrderInput | SortOrder
@@ -9424,6 +9440,7 @@ export namespace Prisma {
     canceledAt?: DateTimeNullableFilter<"Booking"> | Date | string | null
     cancelationReason?: StringNullableFilter<"Booking"> | string | null
     createdAt?: DateTimeFilter<"Booking"> | Date | string
+    createdBy?: StringFilter<"Booking"> | string
     updatedAt?: DateTimeFilter<"Booking"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Booking"> | Date | string | null
     deletedBy?: StringNullableFilter<"Booking"> | string | null
@@ -9461,6 +9478,7 @@ export namespace Prisma {
     canceledAt?: SortOrderInput | SortOrder
     cancelationReason?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    createdBy?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
     deletedBy?: SortOrderInput | SortOrder
@@ -9502,6 +9520,7 @@ export namespace Prisma {
     canceledAt?: DateTimeNullableWithAggregatesFilter<"Booking"> | Date | string | null
     cancelationReason?: StringNullableWithAggregatesFilter<"Booking"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Booking"> | Date | string
+    createdBy?: StringWithAggregatesFilter<"Booking"> | string
     updatedAt?: DateTimeWithAggregatesFilter<"Booking"> | Date | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"Booking"> | Date | string | null
     deletedBy?: StringNullableWithAggregatesFilter<"Booking"> | string | null
@@ -10037,6 +10056,7 @@ export namespace Prisma {
     canceledAt?: Date | string | null
     cancelationReason?: string | null
     createdAt?: Date | string
+    createdBy: string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     deletedBy?: string | null
@@ -10074,6 +10094,7 @@ export namespace Prisma {
     canceledAt?: Date | string | null
     cancelationReason?: string | null
     createdAt?: Date | string
+    createdBy: string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     deletedBy?: string | null
@@ -10111,6 +10132,7 @@ export namespace Prisma {
     canceledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -10148,6 +10170,7 @@ export namespace Prisma {
     canceledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -10185,6 +10208,7 @@ export namespace Prisma {
     canceledAt?: Date | string | null
     cancelationReason?: string | null
     createdAt?: Date | string
+    createdBy: string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     deletedBy?: string | null
@@ -10218,6 +10242,7 @@ export namespace Prisma {
     canceledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -10251,6 +10276,7 @@ export namespace Prisma {
     canceledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -11010,6 +11036,7 @@ export namespace Prisma {
     canceledAt?: SortOrder
     cancelationReason?: SortOrder
     createdAt?: SortOrder
+    createdBy?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
     deletedBy?: SortOrder
@@ -11047,6 +11074,7 @@ export namespace Prisma {
     canceledAt?: SortOrder
     cancelationReason?: SortOrder
     createdAt?: SortOrder
+    createdBy?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
     deletedBy?: SortOrder
@@ -11078,6 +11106,7 @@ export namespace Prisma {
     canceledAt?: SortOrder
     cancelationReason?: SortOrder
     createdAt?: SortOrder
+    createdBy?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
     deletedBy?: SortOrder
@@ -12751,6 +12780,7 @@ export namespace Prisma {
     canceledAt?: Date | string | null
     cancelationReason?: string | null
     createdAt?: Date | string
+    createdBy: string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     deletedBy?: string | null
@@ -12787,6 +12817,7 @@ export namespace Prisma {
     canceledAt?: Date | string | null
     cancelationReason?: string | null
     createdAt?: Date | string
+    createdBy: string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     deletedBy?: string | null
@@ -12882,6 +12913,7 @@ export namespace Prisma {
     canceledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -12918,6 +12950,7 @@ export namespace Prisma {
     canceledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -12970,6 +13003,7 @@ export namespace Prisma {
     canceledAt?: Date | string | null
     cancelationReason?: string | null
     createdAt?: Date | string
+    createdBy: string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     deletedBy?: string | null
@@ -13006,6 +13040,7 @@ export namespace Prisma {
     canceledAt?: Date | string | null
     cancelationReason?: string | null
     createdAt?: Date | string
+    createdBy: string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     deletedBy?: string | null
@@ -13107,6 +13142,7 @@ export namespace Prisma {
     canceledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13143,6 +13179,7 @@ export namespace Prisma {
     canceledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13220,6 +13257,7 @@ export namespace Prisma {
     canceledAt?: Date | string | null
     cancelationReason?: string | null
     createdAt?: Date | string
+    createdBy: string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     deletedBy?: string | null
@@ -13256,6 +13294,7 @@ export namespace Prisma {
     canceledAt?: Date | string | null
     cancelationReason?: string | null
     createdAt?: Date | string
+    createdBy: string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     deletedBy?: string | null
@@ -13308,6 +13347,7 @@ export namespace Prisma {
     canceledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13344,6 +13384,7 @@ export namespace Prisma {
     canceledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13380,6 +13421,7 @@ export namespace Prisma {
     canceledAt?: Date | string | null
     cancelationReason?: string | null
     createdAt?: Date | string
+    createdBy: string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     deletedBy?: string | null
@@ -13416,6 +13458,7 @@ export namespace Prisma {
     canceledAt?: Date | string | null
     cancelationReason?: string | null
     createdAt?: Date | string
+    createdBy: string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     deletedBy?: string | null
@@ -13468,6 +13511,7 @@ export namespace Prisma {
     canceledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13504,6 +13548,7 @@ export namespace Prisma {
     canceledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: StringFieldUpdateOperationsInput | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null

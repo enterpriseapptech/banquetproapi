@@ -21,6 +21,7 @@ model EventCenter {
   name               String
   eventTypes         String[]
   serviceProviderId  String // owner of this service points to a userid 
+  discountPercentage Int? @default(0)
   depositPercentage  Int @map("depositAmount")    //percentage of pricing per slot to be paid before booking is confirmed 
   description        String?
   pricingPerSlot     Decimal @banquestproeventsdb.Decimal(10, 2)  //Cost per timeslot

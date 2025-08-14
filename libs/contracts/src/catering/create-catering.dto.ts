@@ -7,9 +7,6 @@ import {
     IsArray,
     IsString,
     IsNumber,
-    IsDecimal,
-    Min,
-    Max,
     IsBoolean,
     ValidateNested,
 } from 'class-validator';
@@ -48,6 +45,12 @@ export class CreateCateringDto {
     @IsString()
     @IsNotEmpty()
     tagLine: string;
+
+    @ApiProperty({ type: 'number', required: false })
+    @IsInt()
+    @IsOptional()
+    @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
+    discountPercentage?: number;
 
     @ApiProperty({ type: 'number', required: true })
     @IsInt()

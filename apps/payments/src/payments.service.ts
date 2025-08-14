@@ -189,7 +189,7 @@ export class InvoiceService {
     async create(createInvoiceDto: CreateInvoiceDto): Promise<InvoiceDto> {
         //  validate total
         if(!createInvoiceDto.items){
-            throw new InternalServerErrorException('We could not generate invoice', {
+            throw new InternalServerErrorException('We could not generate invoice, as the items been paid for were not listed', {
                 cause: new Error(),
                 description: 'We could not generate invoice, as the items been paid for are not listed'
             });
@@ -199,7 +199,7 @@ export class InvoiceService {
         createInvoiceDto.items.map((item)=>{itemsTotal += item.amount})
         const discount = itemsTotal * (createInvoiceDto.discount /100)
         if((itemsTotal - discount) !== (createInvoiceDto.total)){
-           throw new InternalServerErrorException('We could not generate invoice', {
+           throw new InternalServerErrorException(`We could not generate invoice, total amount is incorrect for the items. Should be ${itemsTotal - discount}`, {
                 cause: new Error(),
                 description: 'We could not generate invoice, total amount is incorrect for the items'
             }); 
@@ -225,8 +225,8 @@ export class InvoiceService {
                 
             return {
                 ...invoice,
-                items: invoice.items as InvoiceItem[],
-                billingAddress: invoice.billingAddress as BillingAddress,
+                items: instanceToPlain(invoice.items) as InvoiceItem[],
+                billingAddress: instanceToPlain(invoice.billingAddress) as BillingAddress,
                 subTotal: Number(invoice.subTotal),
                 discount: Number(invoice.discount),
                 total: Number(invoice.total),
@@ -276,8 +276,8 @@ export class InvoiceService {
 
         return {
                 ...invoice,
-                items: invoice.items as InvoiceItem[],
-                billingAddress: invoice.billingAddress as BillingAddress,
+                items: instanceToPlain(invoice.items )as InvoiceItem[],
+                billingAddress: instanceToPlain(invoice.billingAddress) as BillingAddress,
                 subTotal: Number(invoice.subTotal),
                 discount: Number(invoice.discount),
                 total: Number(invoice.total),
@@ -290,6 +290,9 @@ export class InvoiceService {
         try {
             const updateInvoiceInput: Prisma.InvoiceUpdateInput = {
                 ...updateInvoiceDto,
+                items: updateInvoiceDto.items ? updateInvoiceDto.items as unknown as Prisma.InputJsonValue[] : undefined,
+                billingAddress: updateInvoiceDto.billingAddress ? updateInvoiceDto.billingAddress as unknown as Prisma.InputJsonValue : undefined
+
             };
 
             const invoice = await this.databaseService.invoice.update({
@@ -300,8 +303,8 @@ export class InvoiceService {
 
             return {
                 ...invoice,
-                items: invoice.items as InvoiceItem[],
-                billingAddress: invoice.billingAddress as BillingAddress,
+                items: instanceToPlain(invoice.items) as InvoiceItem[],
+                billingAddress: instanceToPlain(invoice.billingAddress) as BillingAddress,
                 subTotal: Number(invoice.subTotal),
                 discount: Number(invoice.discount),
                 total: Number(invoice.total),
@@ -330,8 +333,8 @@ export class InvoiceService {
 
         return {
             ...invoice,
-            items: invoice.items as InvoiceItem[],
-            billingAddress: invoice.billingAddress as BillingAddress,
+            items: instanceToPlain(invoice.items) as InvoiceItem[],
+            billingAddress: instanceToPlain(invoice.billingAddress) as BillingAddress,
             subTotal: Number(invoice.subTotal),
             discount: Number(invoice.discount),
             total: Number(invoice.total),
@@ -351,8 +354,8 @@ export class InvoiceService {
 
         return {
             ...invoice,
-            items: invoice.items as InvoiceItem[],
-            billingAddress: invoice.billingAddress as BillingAddress,
+            items: instanceToPlain(invoice.items) as InvoiceItem[],
+            billingAddress: instanceToPlain(invoice.billingAddress) as BillingAddress,
             subTotal: Number(invoice.subTotal),
             discount: Number(invoice.discount),
             total: Number(invoice.total),
@@ -368,8 +371,8 @@ export class InvoiceService {
     private mapToInvoiceDto(invoice: any): InvoiceDto {
         return {
                 ...invoice,
-                items: invoice.items as InvoiceItem[],
-                billingAddress: invoice.billingAddress as BillingAddress,
+                items: instanceToPlain(invoice.items) as InvoiceItem[],
+                billingAddress: instanceToPlain(invoice.billingAddress) as BillingAddress,
                 subTotal: Number(invoice.subTotal),
                 discount: Number(invoice.discount),
                 total: Number(invoice.total),

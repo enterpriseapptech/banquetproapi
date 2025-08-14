@@ -1,5 +1,5 @@
 
-import { IsNumber, IsString } from "class-validator";
+import { IsNumber, IsOptional, IsString } from "class-validator";
 import { FeesType, InvoiceStatus, PaymentReason, RefundStatus, Status, IPaymentStatus } from "./create-payments.dto";
 import { ApiProperty } from "@nestjs/swagger";
 
@@ -19,14 +19,15 @@ export class BillingAddress {
   street: string;
 
   @ApiProperty({ example: '123 Main St' })
+  @IsOptional()
   @IsString()
   street2?: string;
 
-  @ApiProperty({ example: 'Lagos' })
+  @ApiProperty({ example: 'Ikeja' })
   @IsString()
   city: string;
 
-  @ApiProperty({ example: 'LA' })
+  @ApiProperty({ example: 'Lagos' })
   @IsString()
   state: string;
 
@@ -38,6 +39,7 @@ export class BillingAddress {
   @IsString()
   postal: string;
 }
+
 export class PaymentMethodDto {
     id: string;
     provider: string;

@@ -1,6 +1,6 @@
-import { IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsInt, Min, IsArray, IsNumber, IsDecimal, Max, IsBoolean, ValidateNested } from 'class-validator';
+import { IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsInt, Min, IsArray, IsNumber, IsBoolean, ValidateNested } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ImageUploadDto, IsImageFile } from '../media/images';
+import { ImageUploadDto, } from '../media/images';
 import { Type } from 'class-transformer';
 
 export enum ServiceStatus {
@@ -44,6 +44,12 @@ export class CreateEventCenterDto {
     @IsString({ each: true })
     @IsArray()
     eventTypes: string[];
+
+    @ApiProperty({ type: 'number', required: false })
+    @IsInt()
+    @IsOptional()
+    @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
+    discountPercentage?: number;
 
     @ApiProperty({
         description: 'Deposit amount required for booking',
