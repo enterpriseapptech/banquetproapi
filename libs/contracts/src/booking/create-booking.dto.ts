@@ -17,8 +17,45 @@ import {
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { BookingSource, ServiceType, SpecialRequirement } from './booking.dto';
-import { BillingAddress, InvoiceItem } from '../payments';
 import { Type } from 'class-transformer';
+
+
+export class InvoiceItem {
+  @ApiProperty({ description: 'Item name', example: 'Laptop' })
+  @IsString()
+  item: string;
+
+  @ApiProperty({ description: 'Item amount', example: 1200 })
+  @IsNumber()
+  amount: number;
+}
+
+export class BillingAddress {
+  @ApiProperty({ example: '123 Main St' })
+  @IsString()
+  street: string;
+
+  @ApiProperty({ example: '123 Main St' })
+  @IsOptional()
+  @IsString()
+  street2?: string;
+
+  @ApiProperty({ example: 'Ikeja' })
+  @IsString()
+  city: string;
+
+  @ApiProperty({ example: 'Lagos' })
+  @IsString()
+  state: string;
+
+  @ApiProperty({ example: 'Nigeria' })
+  @IsString()
+  country: string;
+
+  @ApiProperty({ example: '200911' })
+  @IsString()
+  postal: string;
+}
 export class CreateBookingDto {
     @ApiProperty({ type: 'string', required: true })
     @IsUUID()
