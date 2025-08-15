@@ -524,6 +524,7 @@ def deployService(Map svc) {
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "
                     cd /home/ubuntu/${containerName} &&
                     cp temporary/${path}/.env .env &&
+                    cat .env
                     ${start}
                     disown
                 "
