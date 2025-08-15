@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "@prisma/management"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AppSettings {
+  id                     String  @id @default("singleton")
+  notifyOnRequest        Boolean @default(true)
+  notifyCertifiedOnly    Boolean @default(true)
+  visibleToCertifiedOnly Boolean @default(true)
+}
+
+model Country {
+  id             String    @id @default(uuid())
+  name           String    @unique
+  code           String    @unique // e.g., "NG" for Nigeria, "US" for United States
+  currency       String? // e.g., "Naira", "Dollar"
+  currencyCode   String? // e.g., "NGN" for Nigerian Naira, "USD" for US Dollar
+  currencySymbol String? // e.g., "₦" for Nigerian Naira, "$" for US Dollar
+  states         State[] // Relation to State
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  updatedBy      String?
+  deletedAt      DateTime?
+  deletedBy      String?
+}
+
+model State {
+  id        String    @id @default(uuid())
+  name      String
+  code      String? // Optional, e.g., "CA" for California
+  countryId String
+  country   Country   @relation(fields: [countryId], references: [id])
+  cities    City[] // Relation to City
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+}
+
+model City {
+  id        String    @id @default(uuid())
+  name      String
+  stateId   String
+  state     State     @relation(fields: [stateId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+}
+
+enum FeesType {
+  KYC
+  CERTIFICATION
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+}

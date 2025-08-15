@@ -48,7 +48,6 @@ export class BookingService {
 			
 			switch (createBookingDto.serviceType) {
 				case $Enums.ServiceType.EVENTCENTER:
-					console.log("got here")
 					Service = await firstValueFrom(this.eventClient.send<EventCenterDto, string>(EVENTCENTERPATTERN.FINDONEBYID, createBookingDto.serviceId))
 					
 					if (!Service) {
@@ -89,7 +88,10 @@ export class BookingService {
 							description: `Only requests for quotes are allowed`
 						});
 
+					}else if(createBookingDto.createdBy === Service.serviceProviderId && createBookingDto.discount === undefined){
+						createBookingDto.discount = Service.discountPercentage
 					}
+					
 					break;
 				default:
 					throw new NotFoundException('Invalid service been booked');

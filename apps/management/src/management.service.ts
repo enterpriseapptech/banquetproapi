@@ -1,8 +1,8 @@
 
 import { ConflictException, Injectable, InternalServerErrorException} from '@nestjs/common';
-import { Prisma, $Enums } from "@prisma/management";
+import { Prisma } from "../prisma/@prisma/management";
 import { DatabaseService } from '../database/database.service';
-import { FeesType, Status, CreateCountryDto, CreateStateDto,  CreateAppSettingDto } from '@shared/contracts/management/create-management.dto';
+import { CreateCountryDto, CreateStateDto,  CreateAppSettingDto } from '@shared/contracts/management/create-management.dto';
 import { AppSettingDto, CountryDto,  StateDto } from '@shared/contracts/management/management.dto';
 import { UpdateAppSettingDto, UpdateCountryDto, UpdateStateDto } from '@shared/contracts/management/update-management.dto';
 

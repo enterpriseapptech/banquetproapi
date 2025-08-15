@@ -1,5 +1,5 @@
 import { Injectable, INestApplication, OnModuleInit } from '@nestjs/common';
-import { PrismaClient } from '@prisma/catering';
+import { PrismaClient } from '../prisma/@prisma/catering';
 
 
 @Injectable()
