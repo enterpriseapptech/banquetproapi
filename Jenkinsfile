@@ -524,7 +524,8 @@ def deployService(Map svc) {
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "
                     cd /home/ubuntu/${containerName} &&
                     cp temporary/${path}/.env .env &&
-                    ${start} ; echo 'Service staarted'
+                    ls
+                    ${start}
                     disown
                 "
                 echo "${containerName} Service started and detached successfully"
