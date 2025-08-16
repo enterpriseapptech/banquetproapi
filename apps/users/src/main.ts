@@ -16,6 +16,11 @@ async function bootstrap() {
                 queueOptions: {
                     durable: false
                 },
+                socketOptions: {
+                    clientProperties: {
+                        connection_name: `UsersClient_${process.env.NODE_ENV}`
+                    }
+                }
             }
         }
     );

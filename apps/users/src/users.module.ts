@@ -9,6 +9,8 @@ import { ClientConfigService } from '../client-config/client-config.service';
 import { NOTIFICATION_CLIENT } from './constants';
 import { JwtModule } from '@nestjs/jwt';
 
+
+
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -37,7 +39,8 @@ import { JwtModule } from '@nestjs/jwt';
                 return ClientProxyFactory.create(NotificationsClientOptions);
             },
             inject: [ClientConfigService],
-        }
+        },
+        
     ],
 })
 export class UsersModule { }

@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CreateNotificationDto, CreateReviewDto, NotificationDto, NotificationFilter, NOTIFICATIONPATTERN, ReviewDto, REVIEWPATTERN, UpdateNotificationDto, UpdateReviewDto } from '@shared/contracts/notifications';
 import { ClientProxy } from '@nestjs/microservices';
-import { NOTIFICATION_CLIENT, REVIEW_CLIENT } from '@shared/contracts';
+import { NOTIFICATION_CLIENT } from '@shared/contracts';
 import { NotificationInterface } from '@shared/interfaces/Notification/notification.interface';
 
 
@@ -55,7 +55,7 @@ export class NotificationService {
 @Injectable()
 export class ReviewService {
     constructor(
-        @Inject(REVIEW_CLIENT) private readonly reviewClient: ClientProxy
+        @Inject(NOTIFICATION_CLIENT) private readonly reviewClient: ClientProxy
     ) { }
 
     create(createReviewDto: CreateReviewDto) {

@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { CateringService } from './catering.service';
-import { MessagePattern, Payload, RpcException, RmqContext, Ctx } from '@nestjs/microservices';
+import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import { CATERINGPATTERN, CreateCateringDto, UpdateCateringDto } from '@shared/contracts/catering';
 import { catchError, from, throwError } from 'rxjs';
 
@@ -10,7 +10,7 @@ export class CateringController {
   constructor(private readonly cateringService: CateringService) {}
 
   @MessagePattern(CATERINGPATTERN.CREATE)
-      create(@Payload() createCateringDto: CreateCateringDto, @Ctx() context: RmqContext,) {
+      create(@Payload() createCateringDto: CreateCateringDto) {
           return from(this.cateringService.create(createCateringDto)).pipe(
                   catchError((err) => {
                       console.error("Error in UsersService:", err);
@@ -43,6 +43,7 @@ export class CateringController {
   
       @MessagePattern(CATERINGPATTERN.FINDONEBYID)
       findOne(@Payload() id: string) {
+            console.log("got here for the call")
           return from(this.cateringService.findOne(id)).pipe(
               catchError((err) => {
                   console.error("Error in UsersService:", err);

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import {  COUNTRY_CLIENT, STATE_CLIENT } from '@shared/contracts';
+import {  MANAGMENT_CLIENT,  } from '@shared/contracts';
 import { CreateCountryDto, CreateStateDto } from '@shared/contracts/management/create-management.dto';
 import { CountryDto, StateDto } from '@shared/contracts/management/management.dto';
 import { COUNTRYPATTERN,STATEPATTERN } from '@shared/contracts/management/management.pattern';
@@ -12,7 +12,7 @@ import { UpdateCountryDto, UpdateStateDto } from '@shared/contracts/management/u
 @Injectable()
 export class CountryService {
 	constructor(
-		@Inject(COUNTRY_CLIENT) private readonly countryClient: ClientProxy
+		@Inject(MANAGMENT_CLIENT) private readonly countryClient: ClientProxy
 	) { }
 
 	create(createCountryDto: CreateCountryDto) {
@@ -58,7 +58,7 @@ export class CountryService {
 @Injectable()
 export class StateService {
 	constructor(
-		@Inject(STATE_CLIENT) private readonly stateClient: ClientProxy
+		@Inject(MANAGMENT_CLIENT) private readonly stateClient: ClientProxy
 	) { }
 
 	create(createstateDto: CreateStateDto) {

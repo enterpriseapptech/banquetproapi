@@ -48,7 +48,7 @@ export class BookingService {
 			
 			switch (createBookingDto.serviceType) {
 				case $Enums.ServiceType.EVENTCENTER:
-					Service = await firstValueFrom(this.eventClient.send<EventCenterDto, string>(EVENTCENTERPATTERN.FINDONEBYID, createBookingDto.serviceId))
+					Service = await firstValueFrom(this.cateringClient.send<EventCenterDto, string>(EVENTCENTERPATTERN.FINDONEBYID, createBookingDto.serviceId))
 					
 					if (!Service) {
 						throw new NotFoundException('event center not found for booking');
@@ -66,15 +66,19 @@ export class BookingService {
 						});
 
 					}else if(createBookingDto.createdBy !== Service.serviceProviderId){
-						amountDue = (Service.depositPercentage /100) * (Service.pricingPerSlot * createBookingDto.timeslotId.length)
 						createBookingDto.discount = Service.discountPercentage ?? 0	
+						const totalAmount = (Service.pricingPerSlot * createBookingDto.timeslotId.length)  - ((createBookingDto.discount /100) * (Service.pricingPerSlot * createBookingDto.timeslotId.length)) 
+						amountDue = (Service.depositPercentage /100) * totalAmount
+						
 					}else if(createBookingDto.createdBy === Service.serviceProviderId && createBookingDto.discount === undefined){
 						createBookingDto.discount = Service.discountPercentage
 					}
 					
 					break;
 				case $Enums.ServiceType.CATERING:
+					console.log('calling catering')
 					Service = await firstValueFrom(this.eventClient.send<CateringDto, string>(CATERINGPATTERN.FINDONEBYID, createBookingDto.serviceId))
+					console.log({Service})
 					if (!Service) {
 						throw new NotFoundException('Catering service not found for booking');
 					}else if(Service.status !== 'ACTIVE'){
