@@ -313,6 +313,7 @@ pipeline {
                         repo: 'banquetpro/catering',
                         path: 'apps/catering',
                         taskDefinition: 'catering-task-definition',
+                        envFile: "CATERING_ENV_FILE",
                         service: 'catering-service',
                         localImage: "catering-image",
                         build: 'catering',
@@ -323,7 +324,7 @@ pipeline {
                     
                     )
                 }
-                        envFile: "CATERING_ENV_FILE",
+                        
             }
         }
 
