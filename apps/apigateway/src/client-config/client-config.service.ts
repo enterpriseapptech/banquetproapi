@@ -17,20 +17,6 @@ export class ClientConfigService {
         return this.configService.get<string>('USERSQUEUE')
     }
 
-    get clientOptions(): ClientOptions {
-        return {
-            transport: Transport.RMQ,
-            options: {
-                urls: [process.env.USERSURL],
-                queue: `${process.env.USERSQUEUE}_${process.env.NODE_ENV}`,
-                queueOptions: {
-                    durable: false,
-                }
-            }
-        }
-    }
-    
-
     get UsersClientOptions(): ClientOptions {
         return {
             transport: Transport.RMQ,

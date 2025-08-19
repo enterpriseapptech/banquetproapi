@@ -20,6 +20,7 @@ import { NOTIFICATION_CLIENT } from '@shared/contracts';
             },
             inject: [ClientConfigService],
         }
+        
     ],
 })
 export class NotificationsModule { }

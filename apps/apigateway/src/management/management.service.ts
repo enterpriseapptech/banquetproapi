@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import {  MANAGMENT_CLIENT,  } from '@shared/contracts';
+import {  MANAGMENT_CLIENT } from '@shared/contracts';
 import { CreateCountryDto, CreateStateDto } from '@shared/contracts/management/create-management.dto';
 import { CountryDto, StateDto } from '@shared/contracts/management/management.dto';
 import { COUNTRYPATTERN,STATEPATTERN } from '@shared/contracts/management/management.pattern';

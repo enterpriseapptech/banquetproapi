@@ -147,7 +147,7 @@ export class CateringService {
     }
 
     async findOne(id: string): Promise<CateringDto> {
-          console.log("got here for the call service")
+
         const catering = await this.databaseService.catering.findUnique({
             where: {
                 id: id,

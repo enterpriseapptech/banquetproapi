@@ -3,7 +3,7 @@ import { CountryService,  StateService } from './management.service';
 import { CountryController, StateController } from './management.controller';
 import { ClientConfigModule } from '../client-config/client-config.module';
 import { ClientConfigService } from '../client-config/client-config.service';
-import { MANAGMENT_CLIENT, } from '@shared/contracts';
+import { MANAGMENT_CLIENT} from '@shared/contracts';
 import { ClientProxyFactory } from '@nestjs/microservices';
 
 @Module({
@@ -30,9 +30,7 @@ import { ClientProxyFactory } from '@nestjs/microservices';
             },
             inject: [ClientConfigService],
         },
-        
-        
-        
+          
     ],
 })
 export class ManagementModule { }

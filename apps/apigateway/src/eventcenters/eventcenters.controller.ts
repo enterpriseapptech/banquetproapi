@@ -13,14 +13,11 @@ import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { ImageUploadDto } from '@shared/contracts';
-import { ApiTags } from '@nestjs/swagger';
 
 // Extend the Request type to include 'user'
 interface AuthenticatedRequest extends Request {
     user?: any; // Change `any` to your actual user type if known
 }
-
-@ApiTags('event-centers')
 @Controller('event-centers')
 export class EventcentersController {
     constructor(

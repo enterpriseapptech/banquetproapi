@@ -12,7 +12,6 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ManagementModule } from './management/management.module';
 
-
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -29,8 +28,6 @@ import { ManagementModule } from './management/management.module';
     NotificationsModule,
   ],
   controllers: [AppController],
-  providers: [AppService,
-    
-  ],
+  providers: [AppService],
 })
 export class AppModule {}

@@ -9,6 +9,7 @@ import { ClientConfigModule } from '../client-config/client-config.module';
 import { ClientConfigService } from '../client-config/client-config.service';
 
 
+
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -30,8 +31,8 @@ import { ClientConfigService } from '../client-config/client-config.service';
                 return ClientProxyFactory.create(NotificationsClientOptions);
             },
             inject: [ClientConfigService],
-        }, 
-        {
+        }
+        , {
             provide: USER_CLIENT,
             useFactory: (configService: ClientConfigService) => {
                 const usersClientOptions = configService.UsersClientOptions;
