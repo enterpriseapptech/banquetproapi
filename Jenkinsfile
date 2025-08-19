@@ -314,6 +314,7 @@ pipeline {
                         path: 'apps/catering',
                         taskDefinition: 'catering-task-definition',
                         service: 'catering-service',
+                        envFile: "CATERING_ENV_FILE",
                         localImage: "catering-image",
                         build: 'catering',
                         port: 8005, 
@@ -323,7 +324,7 @@ pipeline {
                     
                     )
                 }
-                        envFile: "CATERING_ENV_FILE",
+                        
             }
         }
 
