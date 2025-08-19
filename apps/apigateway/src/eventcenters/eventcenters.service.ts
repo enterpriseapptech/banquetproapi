@@ -1,14 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import {  CreateEventCenterDto, UpdateEventCenterDto, EventCenterDto, EVENTCENTERPATTERN, ManyEventCentersDto, ManyRequestEventCenterDto } from '@shared/contracts/eventcenters';
-import { USER_CLIENT } from '@shared/contracts';
-import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { EVENT_CENTER_CLIENT } from '@shared/contracts';
 
 @Injectable()
 export class EventcentersService {
     constructor(
-        @Inject(USER_CLIENT) private readonly eventClient: ClientProxy,
-        private readonly cloudinaryService: CloudinaryService
+        @Inject(EVENT_CENTER_CLIENT) private readonly eventClient: ClientProxy,
+        
     ) { }
 
     create(createEventcenterDto: CreateEventCenterDto) {
