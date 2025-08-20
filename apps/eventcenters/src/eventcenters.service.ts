@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { $Enums, Prisma } from '../prisma/@prisma/eventcenters';
 import { CreateEventCenterDto, EventCenterDto, ManyEventCentersDto, ServiceStatus, UpdateEventCenterDto } from '@shared/contracts/eventcenters';
@@ -22,6 +23,7 @@ export class EventcentersService {
             serviceProviderId: createEventCenterDto.serviceProviderId,
             name: createEventCenterDto.name,
             eventTypes: createEventCenterDto.eventTypes,
+            discountPercentage: createEventCenterDto.discountPercentage || 0,
             depositPercentage: createEventCenterDto.depositPercentage,
             description: createEventCenterDto.description,
             pricingPerSlot: createEventCenterDto.pricingPerSlot,
@@ -51,10 +53,8 @@ export class EventcentersService {
 
         try {
             // Start a transaction - for an all or fail process
-            const neweventCenter = await this.databaseService.$transaction(async (prisma) => {
-                const eventCenter = await prisma.eventCenter.create({ data: newEventCenterInput });
-                return eventCenter
-            });
+            const neweventCenter = await  this.databaseService.eventCenter.create({ data: newEventCenterInput });
+            console.log({neweventCenter})
 
             //  emit a email notification - notification event
             this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
@@ -199,6 +199,11 @@ export class EventcentersService {
     }
 
  
+    async deleteall(id: string, updaterId: string): Promise<any> {
+        const eventCenter = await this.databaseService.eventCenter.deleteMany();
+       
+        return eventCenter;
+    }
     /**
      * 
      * Maps a raw event center from the database to EventCenterDto.

@@ -202,7 +202,6 @@ const config = {
     "banquestproeventsdb"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
   "inlineDatasources": {
     "banquestproeventsdb": {
       "url": {

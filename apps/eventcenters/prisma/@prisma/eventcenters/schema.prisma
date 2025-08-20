@@ -11,7 +11,7 @@ generator eventcenterclient {
 
 datasource banquestproeventsdb {
   provider = "postgresql"
-  url      = "postgresql://users_admin:9bqq9oTJv8rAQEsrCLfVV2ieql1Jti90@13.61.144.12/banquestproeventsdb"
+  url      = env("DATABASE_URL")
 }
 
 // event centers
@@ -21,9 +21,10 @@ model EventCenter {
   name               String
   eventTypes         String[]
   serviceProviderId  String // owner of this service points to a userid 
-  depositAmount      Float
+  discountPercentage Int?          @default(0)
+  depositPercentage  Int           @map("depositAmount") //percentage of pricing per slot to be paid before booking is confirmed 
   description        String?
-  pricingPerSlot     Float //Cost per hour, per day, or full package
+  pricingPerSlot     Decimal       @banquestproeventsdb.Decimal(10, 2) //Cost per timeslot
   sittingCapacity    Int
   venueLayout        String? //Banquet, Theater, U-Shape, Classroom, etc
   amenities          Amenities[]
