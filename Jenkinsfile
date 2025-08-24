@@ -373,6 +373,50 @@ pipeline {
         }
 
 
+        stage('Deployment Decision Payment') {
+            steps {
+                script {
+                    try {
+                        timeout(time: 30, unit: 'MINUTES') {
+                            def userInput = input(
+                                id: 'deployPaymentToDev',
+                                message: 'Deploy Payment to development?',
+                                parameters: [booleanParam(name: 'DEPLOY_PAYMENT_TO_DEV', defaultValue: false)]
+                            )
+                            env.DEPLOY_PAYMENT_TO_DEV = userInput ? 'true' : 'false'
+                        }
+                    } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
+                        echo 'Deployment input timeout. Skipping Payment deployment.'
+                        env.DEPLOY_PAYMENT_TO_DEV = 'false'
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Payment') {
+            when {
+                expression { env.DEPLOY_BOOKING_TO_DEV == 'true' }
+            }
+            steps {
+                script {
+                    deployService(
+                        repo: 'banquetpro/payments',
+                        path: 'apps/payments',
+                        taskDefinition: 'payments-task-definition',
+                        service: 'payments-service',
+                        envFile: "PAYMENT_ENV_FILE",
+                        localImage: "payments-image",
+                        build: 'payments',
+                        port: 8006, 
+                        rm: 'apps/apigateway apps/users apps/catering  apps/notifications apps/booking apps/eventcenters apps/management libs/contracts/src/eventcenterbooking libs/contracts/src/booking  libs/contracts/src/catering libs/contracts/src/eventcenters libs/contracts/src/booking.ts  libs/contracts/src/catering.ts  libs/contracts/src/eventcenters.ts',
+                        prisma: 'yarn prisma generate --schema=apps/payments/prisma/schema.prisma',
+                        start: 'nohup yarn start:prodPayments > ${service}.log 2>&1 &'
+                    
+                    )
+                }
+            }
+        }
+
         stage('Cleanup Workspace for next build') {
             steps {
                 cleanWs()

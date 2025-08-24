@@ -34,7 +34,7 @@ COPY --from=builder /app/prisma ./prisma
 RUN yarn prisma migrate deploy || true
 
 # 11. Expose service port (change per service)
-EXPOSE 8004
+EXPOSE 8006
 
 # 12. Start the microservice
 CMD ["yarn", "start:prod"]
