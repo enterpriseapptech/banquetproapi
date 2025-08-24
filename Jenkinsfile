@@ -395,7 +395,7 @@ pipeline {
 
         stage('Deploy Payment') {
             when {
-                expression { env.DEPLOY_BOOKING_TO_DEV == 'true' }
+                expression { env.DEPLOY_PAYMENT_TO_DEV == 'true' }
             }
             steps {
                 script {
