@@ -571,6 +571,7 @@ def deployService(Map svc) {
                     cp temporary/${path}/.env .env &&
                     ls
                     ${start}
+                    cat .log
                     disown
                 "
                 echo "${containerName} Service started and detached successfully"
