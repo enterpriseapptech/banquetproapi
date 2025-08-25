@@ -17,6 +17,7 @@ datasource banquestprobookingdb {
 
 model Booking {
   id                            String    @id @default(uuid())
+  requestQuoteId                String?    @unique 
   customerId                    String // customer booking the venue, points to an ID on users table
   confirmedBy                   String?  // staff who confirmed the book, points to an ID on users table
   confirmedAt                   DateTime?
@@ -50,8 +51,10 @@ model Booking {
 
   eventCenterBooking            EventCenterBooking?
   cateringBooking               CateringBooking?
-  requestQuote                  RequestQuote?
-  timeslot                      TimeSlot[]  // a single booking can contains a list of timeslots, spanning even into days
+  requestQuote                  RequestQuote? @relation(fields: [requestQuoteId], references: [id]) // this quote might have a booking or not
+  confirmedTimeSlots            TimeSlot[]  @relation("ConfirmedTimeSlots") // a single booking can contains a list of timeslots, spanning even into days
+  requestedTimeSlots            TimeSlot[]  @relation("RequestedTimeSlots")
+
 
   @@index([bookingReference])
   @@index([status])
@@ -62,14 +65,13 @@ model Booking {
 
 
 model RequestQuote {
-  id                    String    @id @default(uuid())
-  customerId            String // customer booking the venue, points to an ID on users table
-  bookingId             String? @unique // eventcenterbooking, catering booking , etc
-  serviceId             String
-  serviceType           ServiceType
-  budget                String
-  status                      InvoiceStatus
-  bookingStatus                BookingStatus
+  id                            String    @id @default(uuid())
+  customerId                    String // customer booking the venue, points to an ID on users table
+  serviceId                     String
+  serviceType                   ServiceType
+  budget                        String
+  status                        InvoiceStatus
+  bookingStatus                 BookingStatus
   isTermsAccepted               Boolean
   isCancellationPolicyAccepted  Boolean
   isLiabilityWaiverSigned       Boolean
@@ -82,8 +84,8 @@ model RequestQuote {
   deletedBy                     String?  
   billingDetails                Json
 
-  booking                       Booking? @relation(fields: [bookingId], references: [id]) // this quote might have a bookign or not
-  timeslot                      TimeSlot[]  // a single booking can contains a list of timeslots, spanning even into days
+  booking                       Booking?
+  requestedTimeSlots            TimeSlot[]  // a single booking can contains a list of timeslots, spanning even into days
   @@index([customerId])
   @@index([serviceId])
   @@index([serviceType])
@@ -105,8 +107,6 @@ model TimeSlot {
   startTime               DateTime
   endTime                 DateTime
   isAvailable             Boolean @default(true)
-  quotesRequested         String[] // keeps track of how many people requested quotes for this timeslot
-  bookingsRequested       String[] // keeps tack of how many unpayed booking requested this date before
   previousBookings        String[] // tracking all bookings previously attached to this slot
   createdBy               String
   createdAt               DateTime  @default(now())
@@ -116,8 +116,9 @@ model TimeSlot {
   deletedBy               String? 
 
   // relations
-  booking                 Booking? @relation(fields: [bookingId], references: [id])
-  requestQuote            RequestQuote[]
+  booking                 Booking?  @relation("ConfirmedTimeSlots", fields: [bookingId], references: [id])
+  bookingRequests         Booking[] @relation("RequestedTimeSlots")
+  quotesRequested         RequestQuote[]
   @@index([serviceId]) 
   @@index([bookingId]) 
   @@index([startTime, endTime]) 

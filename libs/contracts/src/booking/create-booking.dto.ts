@@ -74,7 +74,11 @@ export class CreateBookingDto {
     @IsNotEmpty()
     serviceId: string;
 
-
+    @ApiProperty({ type: 'string', required: true })
+    @IsUUID()
+    @IsOptional()
+    requestQuoteId: string;
+    
     @ApiProperty({ type: 'string', required: true })
     @IsEnum(ServiceType)
     @IsNotEmpty()
