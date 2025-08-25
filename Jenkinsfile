@@ -570,6 +570,7 @@ def deployService(Map svc) {
                     cd /home/ubuntu/${containerName} &&
                     cp temporary/${path}/.env .env &&
                     ls
+                    cat .env
                     ${start}
                     cat .log
                     disown
