@@ -14,10 +14,18 @@ async function bootstrap() {
   
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true, // Remove unknown fields
-    // forbidNonWhitelisted: true, // Throw an error for extra fields
+    forbidNonWhitelisted: true, // throws if unknown properties exist
+    forbidUnknownValues: true, // prevents non-object values in DTOs
     transform: true, // Transform payload into DTO instance
   }));
-
+app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,          // strips unknown properties
+      forbidNonWhitelisted: true, // throws if unknown properties exist
+      transform: true,          // transforms payloads to DTO classes
+      forbidUnknownValues: true // prevents non-object values in DTOs
+    }),
+  );
   // Swagger Configuration
   const config = new DocumentBuilder()
     .setTitle('My Microservice API')

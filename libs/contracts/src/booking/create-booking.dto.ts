@@ -12,6 +12,7 @@ import {
     IsDateString,
     ValidateNested,
     IsObject,
+    Matches,
 
 } from 'class-validator';
 
@@ -262,14 +263,22 @@ export class CreateEventCenterBookingDto {
 export class CreateTimeslotDto {
     @ApiProperty({ type: 'string', required: true, example: '2025-03-02T14:30:00.000Z', description: 'Start time in YYYY-MM-DDTHH:mm:ssZ format (24-hour time)' })
     @IsNotEmpty({ message: 'Start time is required' })
+    @Matches(
+        /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])T([01]\d|2[0-3]):[0-5]\d:[0-5]\d(\.\d{3})?Z$/,
+        { message: 'Start time must be a valid ISO-8601 datetime (YYYY-MM-DDTHH:mm:ss.sssZ)' },
+    )
     @IsDateString()
-    startTime: Date; 
+    startTime: string; 
 
     
     @ApiProperty({ type: 'string', required: true, example: '2025-03-02T14:30:00.000Z', description: 'Start time in YYYY-MM-DDTHH:mm:ssZ format (24-hour time)' })
     @IsNotEmpty({ message: 'Start time is required' })
+    @Matches(
+        /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])T([01]\d|2[0-3]):[0-5]\d:[0-5]\d(\.\d{3})?Z$/,
+        { message: 'Start time must be a valid ISO-8601 datetime (YYYY-MM-DDTHH:mm:ss.sssZ)' },
+    )
     @IsDateString()
-    endTime: Date; 
+    endTime: string; 
 }
 
 export class CreateManyTimeSlotDto{
@@ -283,13 +292,15 @@ export class CreateManyTimeSlotDto{
     serviceType: string;
 
     @ApiProperty({
-        type: 'array', required: true, example: [{
+        type: [CreateTimeslotDto], required: true, example: [{
             startTime: '2025-03-02T14:30:00.000Z',
             endTime: '2025-03-02T14:30:00.000Z'
         }]
     })
     @IsNotEmpty()
     @IsArray()
+    @ValidateNested({ each: true })   // 👈 validates each slot
+    @Type(() => CreateTimeslotDto)    // 👈 transforms plain -> DTO
     slots: CreateTimeslotDto[]
 
     @ApiProperty({ type: 'string', required: true })

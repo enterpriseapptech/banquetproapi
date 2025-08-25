@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { CateringService } from './catering.service';
-import { MessagePattern, Payload, RpcException, RmqContext, Ctx } from '@nestjs/microservices';
+import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import { CATERINGPATTERN, CreateCateringDto, UpdateCateringDto } from '@shared/contracts/catering';
 import { catchError, from, throwError } from 'rxjs';
 
@@ -10,10 +10,10 @@ export class CateringController {
   constructor(private readonly cateringService: CateringService) {}
 
   @MessagePattern(CATERINGPATTERN.CREATE)
-      create(@Payload() createCateringDto: CreateCateringDto, @Ctx() context: RmqContext,) {
+      create(@Payload() createCateringDto: CreateCateringDto) {
           return from(this.cateringService.create(createCateringDto)).pipe(
                   catchError((err) => {
-                      console.error("Error in UsersService:", err);
+                      console.error("Error in Catering Service:", err);
                       return throwError(() => new RpcException({
                           statusCode: err.response.statusCode || 500,
                           message: err.message || "Internal Server Error",
@@ -29,7 +29,7 @@ export class CateringController {
           const { limit, offset, serviceProvider, city, state, country } = data
           return from(this.cateringService.findAll(limit, offset, serviceProvider, city, state, country)).pipe(
               catchError((err) => {
-                  console.error("Error in UsersService:", err);
+                  console.error("Error in Catering Service:", err);
                   return throwError(() => new RpcException({
                       statusCode: err.response.statusCode || 500,
                       message: err.message || "Internal Server Error",
@@ -45,7 +45,7 @@ export class CateringController {
       findOne(@Payload() id: string) {
           return from(this.cateringService.findOne(id)).pipe(
               catchError((err) => {
-                  console.error("Error in UsersService:", err);
+                  console.error("Error in Catering Service:", err);
                   return throwError(() => new RpcException({
                       statusCode: err.response.statusCode || 500,
                       message: err.message || "Internal Server Error",
@@ -62,7 +62,7 @@ export class CateringController {
         const { id, updateCateringDto } = data
         return from(this.cateringService.update(id, updateCateringDto)).pipe(
               catchError((err) => {
-                  console.error("Error in EventService:", err);
+                  console.error("Error in  Catering Service:", err);
                   return throwError(() => new RpcException({
                       statusCode: err.response.statusCode || 500,
                       message: err.message || "Internal Server Error",
@@ -79,7 +79,7 @@ export class CateringController {
           const { id, updaterId } = data
           return from(this.cateringService.remove(id, updaterId)).pipe(
               catchError((err) => {
-                  console.error("Error in UsersService:", err);
+                  console.error("Error in Catering Service:", err);
                   return throwError(() => new RpcException({
                       statusCode: err.response.statusCode || 500,
                       message: err.message || "Internal Server Error",

@@ -74,7 +74,7 @@ export class BookingService {
 					
 					break;
 				case $Enums.ServiceType.CATERING:
-					Service = await firstValueFrom(this.eventClient.send<CateringDto, string>(CATERINGPATTERN.FINDONEBYID, createBookingDto.serviceId))
+					Service = await firstValueFrom(this.cateringClient.send<CateringDto, string>(CATERINGPATTERN.FINDONEBYID, createBookingDto.serviceId))
 					if (!Service) {
 						throw new NotFoundException('Catering service not found for booking');
 					}else if(Service.status !== 'ACTIVE'){
@@ -130,6 +130,7 @@ export class BookingService {
 				customerNotes: createBookingDto.customerNotes,
 				createdBy: createBookingDto.createdBy
 			}
+
 			// Start a transaction - for an all or fail process
 			const newBooking = await this.databaseService.$transaction(async (prisma) => {
 
@@ -187,7 +188,7 @@ export class BookingService {
 				amountDue: amountDue ? amountDue : (Service.depositPercentage /100) * createBookingDto.total,
 				total: createBookingDto.total,
 				currency: createBookingDto.currency,
-				note: undefined,
+				note: createBookingDto.serviceNotes,
 				billingAddress: createBookingDto.billingAddress,
 				dueDate: createBookingDto.dueDate,
 			}

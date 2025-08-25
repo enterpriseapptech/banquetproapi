@@ -515,6 +515,7 @@ export class InvoiceController {
 
   @MessagePattern(INVOICEPATTERN.CREATE)
   create(@Payload() createInvoiceDto: CreateInvoiceDto) {
+    console.log({createInvoiceDto})
     return from(this.invoiceService.create(createInvoiceDto)).pipe(
       catchError((err) => {
         console.error("Error in InvoiceService:", err);
