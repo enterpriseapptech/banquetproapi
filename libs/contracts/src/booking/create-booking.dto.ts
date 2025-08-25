@@ -78,7 +78,7 @@ export class CreateBookingDto {
     @IsUUID()
     @IsOptional()
     requestQuoteId: string;
-    
+
     @ApiProperty({ type: 'string', required: true })
     @IsEnum(ServiceType)
     @IsNotEmpty()
@@ -219,6 +219,69 @@ export class CreateBookingDto {
 
 }
 
+export class CreateRequestQuoteDto {
+    @ApiProperty({ type: 'string', required: true })
+    @IsUUID()
+    @IsNotEmpty()
+    customerId: string;
+
+    @ApiProperty({ type: 'string', required: true })
+    @IsNotEmpty()
+    @IsArray()
+    @IsString({ each: true })
+    timeslotId: string[];
+
+    @ApiProperty({ type: 'string', required: true })
+    @IsUUID()
+    @IsNotEmpty()
+    serviceId: string;
+
+    @ApiProperty({ type: 'string', required: true })
+    @IsEnum(ServiceType)
+    @IsNotEmpty()
+    serviceType:ServiceType;
+
+    @ApiProperty({ type: 'number', required: true })
+    @IsString()
+    budget: string;
+
+
+    @ApiProperty({ type: 'boolean', required: true })
+    @IsBoolean()
+    @IsNotEmpty()
+    isTermsAccepted: boolean;
+
+    @ApiProperty({ type: 'boolean', required: true })
+    @IsBoolean()
+    @IsNotEmpty()
+    isCancellationPolicyAccepted: boolean;
+
+    @ApiProperty({ type: 'boolean', required: true })
+    @IsBoolean()
+    @IsNotEmpty()
+    isLiabilityWaiverSigned: boolean;
+
+    @ApiProperty({ type: 'string', required: true })
+    @IsEnum(BookingSource, { message: 'invalid booking source, must be web or mobile' })
+    @IsNotEmpty()
+    source: string;
+
+    @ApiProperty({ type: 'string', required: false })
+    @IsString()
+    @IsOptional()
+    customerNotes?: string;
+
+    @ApiProperty({
+        description: 'Billing address in JSON format',
+        example: { street: '123 Main St', city: 'Lagos', country: 'Nigeria' },
+        type: BillingAddress,
+    })
+    @IsNotEmpty()
+    @ValidateNested()
+    @Type(() => BillingAddress)
+    billingAddress: BillingAddress;
+
+}
 
 export class CreateEventCenterBookingDto {
 

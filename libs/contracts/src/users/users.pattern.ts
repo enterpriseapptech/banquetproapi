@@ -1,5 +1,6 @@
 export const USERPATTERN = {
     FINDALLUSERS: 'users.findAll',
+    FINDMANYBYUNIQUEIDENTIFIER: 'users.FINDMANYBYUNIQUEIDENTIFIER',
     FINDBYID: 'users.findOneById',
     CREATEUSER: 'users.create',
     LOGINUSER: 'users.login',

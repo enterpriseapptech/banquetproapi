@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Controller, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UpdateUserDto, CreateUserDto, USERPATTERN, LoginUserDto, UserFilterDto, UpdateUserPasswordDto } from '@shared/contracts/users';
+import { UpdateUserDto, CreateUserDto, USERPATTERN, LoginUserDto, UserFilterDto, UpdateUserPasswordDto, UniqueIdentifierDto } from '@shared/contracts/users';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { RpcException } from '@nestjs/microservices';
 import { catchError } from 'rxjs/operators';
@@ -107,6 +107,21 @@ export class UsersController {
 		return from(this.userService.findAll(data.limit, data.offset, data.search, data.filter)).pipe(
 			catchError((err) => {
 				
+				return throwError(() => new RpcException({
+					statusCode: err.response.statusCode || 500,
+					message: err.message || "Internal Server Error",
+					error: err.response.error || "Sever error",
+				}));
+
+			})
+		);
+	}
+
+
+	@MessagePattern(USERPATTERN.FINDMANYBYUNIQUEIDENTIFIER)
+	findManyByUnique(@Payload() data: UniqueIdentifierDto[]) {
+		return from(this.userService.findManyByUnique(data)).pipe(
+			catchError((err) => {
 				return throwError(() => new RpcException({
 					statusCode: err.response.statusCode || 500,
 					message: err.message || "Internal Server Error",

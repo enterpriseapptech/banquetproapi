@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsNotEmpty, Length, IsOptional, IsUUID, IsString } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, Length, IsOptional, IsUUID, IsString, ValidateIf } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserStatus } from './user.dto';
 
@@ -17,6 +17,18 @@ export enum ServiceType {
 }
 
 
+export class UniqueIdentifierDto {
+    @ApiProperty({ description: 'find unique by id of user', enum: UserType })
+    @IsOptional()
+    @ValidateIf((o) => o.email == undefined)
+    id?: string
+
+    @ApiProperty({ description: 'find unique by email of user', enum: UserType })
+    @IsOptional()
+    @ValidateIf((o) => o.id == undefined)
+    email?: string
+
+}
 export class UserFilterDto {
   @ApiProperty({ description: 'Filter by user type', enum: UserType })
   @IsOptional()

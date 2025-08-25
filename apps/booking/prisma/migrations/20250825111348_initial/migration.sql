@@ -28,6 +28,7 @@ CREATE TABLE "Booking" (
     "confirmedAt" TIMESTAMP(3),
     "servicebookingId" TEXT,
     "serviceId" TEXT NOT NULL,
+    "serviceProvider" TEXT NOT NULL,
     "serviceType" "ServiceType" NOT NULL,
     "subTotal" DECIMAL(10,2) NOT NULL,
     "discount" DECIMAL(10,2) NOT NULL,
@@ -62,16 +63,16 @@ CREATE TABLE "RequestQuote" (
     "id" TEXT NOT NULL,
     "customerId" TEXT NOT NULL,
     "serviceId" TEXT NOT NULL,
+    "serviceProvider" TEXT NOT NULL,
     "serviceType" "ServiceType" NOT NULL,
     "budget" TEXT NOT NULL,
     "status" "InvoiceStatus" NOT NULL,
-    "bookingStatus" "BookingStatus" NOT NULL,
+    "quoteReference" TEXT NOT NULL,
     "isTermsAccepted" BOOLEAN NOT NULL,
     "isCancellationPolicyAccepted" BOOLEAN NOT NULL,
     "isLiabilityWaiverSigned" BOOLEAN NOT NULL,
     "source" "BookingSource" NOT NULL,
     "customerNotes" TEXT,
-    "previousDates" TEXT[],
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
@@ -188,6 +189,9 @@ CREATE INDEX "Booking_serviceType_idx" ON "Booking"("serviceType");
 CREATE INDEX "Booking_paymentStatus_idx" ON "Booking"("paymentStatus");
 
 -- CreateIndex
+CREATE INDEX "Booking_serviceProvider_idx" ON "Booking"("serviceProvider");
+
+-- CreateIndex
 CREATE INDEX "RequestQuote_customerId_idx" ON "RequestQuote"("customerId");
 
 -- CreateIndex
@@ -195,6 +199,9 @@ CREATE INDEX "RequestQuote_serviceId_idx" ON "RequestQuote"("serviceId");
 
 -- CreateIndex
 CREATE INDEX "RequestQuote_serviceType_idx" ON "RequestQuote"("serviceType");
+
+-- CreateIndex
+CREATE INDEX "RequestQuote_serviceProvider_idx" ON "RequestQuote"("serviceProvider");
 
 -- CreateIndex
 CREATE INDEX "TimeSlot_serviceId_idx" ON "TimeSlot"("serviceId");

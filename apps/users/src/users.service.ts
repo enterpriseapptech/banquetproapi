@@ -2,7 +2,7 @@
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { $Enums, Prisma } from '../prisma/@prisma/users';
-import { CreateUserDto, UpdateUserDto, UserDto, LoginUserDto, UserType, UserStatus, ServiceType, UserFilterDto, UpdateUserPasswordDto } from '@shared/contracts/users';
+import { CreateUserDto, UpdateUserDto, UserDto, LoginUserDto, UserType, UserStatus, ServiceType, UserFilterDto, UpdateUserPasswordDto, UniqueIdentifierDto } from '@shared/contracts/users';
 import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
 import { DatabaseService } from '../database/database.service';
 import { NOTIFICATION_CLIENT } from './constants';
@@ -318,6 +318,19 @@ export class UsersService {
         };
     }
 
+    async findManyByUnique(uniqueDetails: UniqueIdentifierDto[]): Promise<UserDto[]> {
+
+        const users = await this.databaseService.user.findMany({
+            where: {
+                OR: uniqueDetails.map((u) => ({
+                    id: u.id ?? undefined,
+                    email: u.email ?? undefined,
+                })),
+            }});
+        return {...users.map(user => this.mapToUserDto(user))};
+
+        
+    }
 
     async findOne(id: string): Promise<UserDto> {
         console.log("finding 1")

@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { BadRequestException, ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { $Enums, Prisma } from '../prisma/@prisma/booking';
-import { CreateBookingDto, BookingDto, ManyBookingDto, TimeslotDto, CreateManyTimeSlotDto, ManyTimeslotDto, ManyRequestTimeSlotDto, UpdateTimeslotDto, UpdateBookingDto, PaymentStatus, ServiceType, BookingStatus, BookingSource } from '@shared/contracts/booking';
+import { CreateBookingDto, BookingDto, ManyBookingDto, TimeslotDto, CreateManyTimeSlotDto, ManyTimeslotDto, ManyRequestTimeSlotDto, UpdateTimeslotDto, UpdateBookingDto, PaymentStatus, ServiceType, BookingStatus, BookingSource, CreateRequestQuoteDto } from '@shared/contracts/booking';
 import { EventCenterDto, EVENTCENTERPATTERN, ManyRequestEventCenterDto } from '@shared/contracts/eventcenters';
 import { ManyEventCentersDto } from '@shared/contracts/eventcenters';
-import { UserDto, USERPATTERN, } from '@shared/contracts/users';
+import { UniqueIdentifierDto, UserDto, USERPATTERN, } from '@shared/contracts/users';
 import { DatabaseService } from '../database/database.service';
 import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
 import { EVENT_CENTER_CLIENT, NOTIFICATION_CLIENT, USER_CLIENT, CATERING_CLIENT, PAYMENT_CLIENT } from '@shared/contracts';
@@ -12,6 +12,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { CateringDto, CATERINGPATTERN, ManyCateringDto, ManyRequestCateringDto } from '@shared/contracts/catering';
 import { BillingAddress, CreateInvoiceDto, InvoiceDto, InvoiceItem, INVOICEPATTERN, InvoiceStatus } from '@shared/contracts/payments';
+import { instanceToPlain } from 'class-transformer';
 
 @Injectable()
 export class BookingService {
@@ -30,22 +31,7 @@ export class BookingService {
 			let Service: EventCenterDto | CateringDto;
 			let amountDue: number;
 			let itemsTotal = 0;
-			// validate customer account
-			const customer = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDBYID, createBookingDto.customerId));
-			if (!customer) {
-				throw new NotFoundException('We could not verify user account', {
-					cause: new Error(),
-					description: 'We could not verify user account'
-				});
-				
-			}else if (customer.status !== "ACTIVE") {
-				throw new NotFoundException('User account is restricted or deacitvated!', {
-					cause: new Error(),
-					description: 'User account is restricted or deacitvated!'
-				});
-			}
 
-			
 			switch (createBookingDto.serviceType) {
 				case $Enums.ServiceType.EVENTCENTER:
 					Service = await firstValueFrom(this.eventClient.send<EventCenterDto, string>(EVENTCENTERPATTERN.FINDONEBYID, createBookingDto.serviceId))
@@ -98,6 +84,38 @@ export class BookingService {
 					
 			}
 
+			// validate customer account
+			let accounts = await firstValueFrom(this.userClient.send<UserDto[], UniqueIdentifierDto[]>(USERPATTERN.FINDMANYBYUNIQUEIDENTIFIER, [{id: createBookingDto.customerId}, {id: Service.serviceProviderId}]));
+			accounts = Array.isArray(accounts) ? accounts : Object.values(accounts)
+			const customer = accounts.find((user) => user.id === createBookingDto.customerId)
+			const serviceProvider = accounts.find((user) => user.id !== createBookingDto.customerId)
+
+			if (!customer) {
+				throw new NotFoundException('We could not verify user account', {
+					cause: new Error(),
+					description: 'We could not verify user account'
+				});
+				
+			}else if (customer.status !== "ACTIVE") {
+				throw new NotFoundException('User account is restricted or deacitvated!', {
+					cause: new Error(),
+					description: 'User account is restricted or deacitvated!'
+				});
+			}
+
+			if (!serviceProvider) {
+				throw new NotFoundException('We could not verify this service Provider account', {
+					cause: new Error(),
+					description: 'We could not verify user account'
+				});
+				
+			}else if (serviceProvider.status !== "ACTIVE") {
+				throw new NotFoundException('Service Provider account is restricted or deacitvated!', {
+					cause: new Error(),
+					description: 'User account is restricted or deacitvated!'
+				});
+			}
+
 			if(!createBookingDto.items){
 				throw new BadRequestException('We could not validate your booking', {
 					cause: new Error(),
@@ -114,6 +132,7 @@ export class BookingService {
 			}
 			const newBookingInput: Prisma.BookingCreateInput = {
 				customerId: createBookingDto.customerId,
+				serviceProvider: serviceProvider.id,
 				requestQuote: createBookingDto.requestQuoteId 
 				? { connect: { id: createBookingDto.requestQuoteId } }
 				: undefined,
@@ -235,68 +254,7 @@ export class BookingService {
 		if (bookingReference) whereClause.bookingReference = bookingReference;
 		if (serviceId) whereClause.serviceId = serviceId;
 		if (serviceType) whereClause.serviceType = serviceType;
-		if (serviceProvider) {
-
-			/**
-			 * 
-			 * @remarks 
-			 * 1. A booking is a microservice of its own and is not directly linked to a service provider
-			 * 2. A booking is linked to an eventcenter via event center booking 
-			 * 3. Eventcenter ia a microservices of its own and so is users. They connect via rabbitmq and message patterns
-			 * 4. An event center is directly linked to a service provider via serviceProviderId gotten from Usermicroservice
-			 * 
-			 * 
-			 * @summary
-			 * 1. send message to event center microservice with service provider Id to retrive all event centers linked to service provider
-			 * 2. fetch all event center bookings for the returned event centers
-			 * 3. fetch all bookings linked to the event center bookings
-			 * 4. return bookings
-			 * 
-			 * 
-			 */
-
-			const eventCenters = await firstValueFrom(this.eventClient.send<ManyEventCentersDto, ManyRequestEventCenterDto>(EVENTCENTERPATTERN.FINDALLEVENTCENTER,
-				{serviceProvider}))
-			
-			if (!eventCenters || eventCenters.data.length === 0) {
-				return { count: 0, data: [] };
-			}
-
-			const catering = await firstValueFrom(this.cateringClient.send<ManyCateringDto, ManyRequestCateringDto>(CATERINGPATTERN.FINDALL,
-				{serviceProvider}))
-			
-			if (!catering || catering.data.length === 0) {
-				return { count: 0, data: [] };
-			}
-
-			const eventCenterIds = eventCenters.data.map(ec => ec.id);
-
-			const result = await this.databaseService.$transaction(async (prisma) => {
-
-				const bookings = await prisma.booking.findMany({
-					where: {
-						deletedAt: null,
-						eventCenterBooking: { eventcenterId: { in: eventCenterIds } },
-					},
-					take: limit,
-					skip: offset,
-				});
-
-
-				const count = await prisma.booking.count({
-					where: {
-						deletedAt: null,
-						eventCenterBooking: { eventcenterId: { in: eventCenterIds } },
-					},
-					take: limit,
-					skip: offset,
-				});
-
-				return { count, data: bookings };
-			});
-
-			return { count: result.count, data: result.data.map(booking => this.mapToBookingDto(booking)) };
-		}
+		if (serviceProvider) whereClause.serviceProvider = serviceProvider;
 
 		const bookings = await this.databaseService.booking.findMany({
 			where: whereClause,
@@ -580,32 +538,15 @@ export class RequestQuoteService {
 		@Inject(NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
 		@Inject(USER_CLIENT) private readonly userClient: ClientProxy,
 		@Inject(EVENT_CENTER_CLIENT) private readonly eventClient: ClientProxy,
-		@Inject(PAYMENT_CLIENT) private readonly paymentClient: ClientProxy,
 		@Inject(CATERING_CLIENT) private readonly cateringClient: ClientProxy,
 		private readonly databaseService: DatabaseService
 	) { }
 
-	async create(createBookingDto: CreateBookingDto): Promise<InvoiceDto> {
+	async create(createBookingDto: CreateRequestQuoteDto): Promise<any> {
 		try {
 			let notificationSubject: string;
 			let Service: EventCenterDto | CateringDto;
-			let amountDue: number;
-			let itemsTotal = 0;
-			// validate customer account
-			const customer = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDBYID, createBookingDto.customerId));
-			if (!customer) {
-				throw new NotFoundException('We could not verify user account', {
-					cause: new Error(),
-					description: 'We could not verify user account'
-				});
-				
-			}else if (customer.status !== "ACTIVE") {
-				throw new NotFoundException('User account is restricted or deacitvated!', {
-					cause: new Error(),
-					description: 'User account is restricted or deacitvated!'
-				});
-			}
-
+			
 			
 			switch (createBookingDto.serviceType) {
 				case $Enums.ServiceType.EVENTCENTER:
@@ -620,17 +561,6 @@ export class RequestQuoteService {
 							description: `This service is inactive and can not accept booking`
 						});
 						
-					}else if(createBookingDto.noOfGuest > Service.sittingCapacity){
-						throw new BadRequestException(`Sitting capacity error`, {
-							cause: new Error(),
-							description: `Your number of guest exceed the sitting capacity`
-						});
-
-					}else if(createBookingDto.createdBy !== Service.serviceProviderId){
-						amountDue = (Service.depositPercentage /100) * (Service.pricingPerSlot * createBookingDto.timeslotId.length)
-						createBookingDto.discount = Service.discountPercentage ?? 0	
-					}else if(createBookingDto.createdBy === Service.serviceProviderId && createBookingDto.discount === undefined){
-						createBookingDto.discount = Service.discountPercentage
 					}
 					
 					break;
@@ -643,14 +573,6 @@ export class RequestQuoteService {
 							cause: new Error(),
 							description: `This service is inactive and can not accept booking`
 						});
-					}else if(createBookingDto.createdBy !== Service.serviceProviderId){
-						throw new BadRequestException(`Bookign error`, {
-							cause: new Error(),
-							description: `Only requests for quotes are allowed`
-						});
-
-					}else if(createBookingDto.createdBy === Service.serviceProviderId && createBookingDto.discount === undefined){
-						createBookingDto.discount = Service.discountPercentage
 					}
 					
 					break;
@@ -659,115 +581,78 @@ export class RequestQuoteService {
 					
 			}
 
-			if(!createBookingDto.items){
-				throw new BadRequestException('We could not validate your booking', {
+			let accounts = await firstValueFrom(this.userClient.send<UserDto[], UniqueIdentifierDto[]>(USERPATTERN.FINDMANYBYUNIQUEIDENTIFIER, [{id: createBookingDto.customerId}, {id: Service.serviceProviderId}]));
+			accounts = Array.isArray(accounts) ? accounts : Object.values(accounts)
+			const customer = accounts.find((user) => user.id === createBookingDto.customerId)
+			const serviceProvider = accounts.find((user) => user.id !== createBookingDto.customerId)
+
+			if (!customer) {
+				throw new NotFoundException('We could not verify user account', {
 					cause: new Error(),
-					description: 'We could not validate your booking, as the items been paid for are not listed'
+					description: 'We could not verify user account'
+				});
+				
+			}else if (customer.status !== "ACTIVE") {
+				throw new NotFoundException('User account is restricted or deacitvated!', {
+					cause: new Error(),
+					description: 'User account is restricted or deacitvated!'
 				});
 			}
-			createBookingDto.items.map((item)=>{itemsTotal += item.amount})
-			const discount = itemsTotal * (createBookingDto.discount /100)
-			if((itemsTotal - discount) !== (createBookingDto.total)){
-				throw new BadRequestException(`We could not generate invoice, total amount is incorrect for the items. Should be ${itemsTotal - discount}`, {
+
+			if (!serviceProvider) {
+				throw new NotFoundException('We could not verify this service Provider account', {
 					cause: new Error(),
-					description: 'We could not generate invoice, total amount is incorrect for the items'
-				}); 
+					description: 'We could not verify user account'
+				});
+				
+			}else if (serviceProvider.status !== "ACTIVE") {
+				throw new NotFoundException('Service Provider account is restricted or deacitvated!', {
+					cause: new Error(),
+					description: 'User account is restricted or deacitvated!'
+				});
 			}
-			const newBookingInput: Prisma.BookingCreateInput = {
+
+			const newRequestQuoteInput: Prisma.RequestQuoteCreateInput = {
 				customerId: createBookingDto.customerId,
 				serviceId: createBookingDto.serviceId,
 				serviceType: createBookingDto.serviceType as $Enums.ServiceType,
-				subTotal: createBookingDto.subTotal,
-				discount: discount,
-				total: createBookingDto.total,
+				serviceProvider: serviceProvider.id,
+				budget: createBookingDto.budget,
 				isTermsAccepted: createBookingDto.isTermsAccepted,
 				isCancellationPolicyAccepted: createBookingDto.isCancellationPolicyAccepted,
 				isLiabilityWaiverSigned: createBookingDto.isLiabilityWaiverSigned,
-				bookingReference: Math.random().toString(16).substring(2, 8),
+				quoteReference: Math.random().toString(16).substring(2, 8),
 				source: createBookingDto.source as $Enums.BookingSource,
-				paymentStatus: 'UNPAID' as $Enums.PaymentStatus,
-				status: 'PENDING' as $Enums.BookingStatus,
-				serviceNotes: createBookingDto.serviceNotes,
+				status: 'PENDING' as $Enums.InvoiceStatus,
 				customerNotes: createBookingDto.customerNotes,
-				createdBy: createBookingDto.createdBy,
 				requestedTimeSlots: {
 					connect: createBookingDto.timeslotId.map((singleId) => {return {id: singleId}})
-				}
+				},
+				billingDetails: instanceToPlain(createBookingDto.billingAddress)
 			}
 
 			if ($Enums.ServiceType.EVENTCENTER) {
-				newBookingInput.eventCenterBooking = {
-					create: {
-						eventcenterId: createBookingDto.serviceId,
-						eventName: createBookingDto.eventName,
-						eventTheme: createBookingDto.eventTheme,
-						eventType: createBookingDto.eventType,
-						description: createBookingDto.description,
-						noOfGuest: createBookingDto.noOfGuest,
-						specialRequirements: createBookingDto.specialRequirements as $Enums.SpecialRequirement[],
-					}
-				}
 				notificationSubject = "A customer just booked your Event Center";
 			} else if ($Enums.ServiceType.CATERING) {
-				
-					newBookingInput.cateringBooking = {
-					create: {
-						cateringId: createBookingDto.serviceId,
-						eventName: createBookingDto.eventName,
-						cuisine: createBookingDto.cuisine,
-						dishTypes: createBookingDto.dishTypes, 
-						eventType: createBookingDto.eventType,
-						description: createBookingDto.description,
-						noOfGuest: createBookingDto.noOfGuest,
-						specialRequirements: createBookingDto.specialRequirements as $Enums.SpecialRequirement[],
-					}
-				}
 				notificationSubject = "A customer just booked your catering service";
 			}
 			
-			const newBooking = await await this.databaseService.booking.create({ data: newBookingInput });
-			
+			const newQuote = await await this.databaseService.requestQuote.create({ data: newRequestQuoteInput });
 
-			const createInvoice: CreateInvoiceDto = {
-				userId: createBookingDto.customerId,
-				bookingId: newBooking.id,
-				items: createBookingDto.items,
-				subTotal: createBookingDto.subTotal,
-				discount: createBookingDto.discount,
-				amountDue: amountDue ? amountDue : (Service.depositPercentage /100) * createBookingDto.total,
-				total: createBookingDto.total,
-				currency: createBookingDto.currency,
-				note: createBookingDto.serviceNotes,
-				billingAddress: createBookingDto.billingAddress,
-				dueDate: createBookingDto.dueDate,
-			}
-
-			const invoice = await firstValueFrom(this.paymentClient.send<InvoiceDto, CreateInvoiceDto>(INVOICEPATTERN.CREATE, createInvoice))
-			if (!invoice) {
-				throw new InternalServerErrorException('Invoice error', {
-					cause: new Error(),
-					description: 'Invoice generation Error: we couldnt automatically generate your invoice, kindly contact admin'
-				});
-			}
-			
 			//  notify service provider of booking
 			this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
 				type: 'EMAIL',
-				recipientId: newBooking.customerId,
+				recipientId: serviceProvider.id,
 				data: {
 					subject: notificationSubject,
 					message: `A customer just booked your service, view details and confirm booking`,
-					recipientEmail: customer.email,
+					recipientEmail: serviceProvider.email,
 				},
 			});
 			return {
-				...invoice,
-				items: invoice.items as InvoiceItem[],
-				billingAddress: invoice.billingAddress as BillingAddress,
-				subTotal: Number(invoice.subTotal),
-				discount: Number(invoice.discount),
-				total: Number(invoice.total),
-				status: invoice.status as unknown as InvoiceStatus,
+				...newQuote,
+				billingAddress: instanceToPlain(newQuote.billingDetails) as BillingAddress,
+				status: newQuote.status as unknown as InvoiceStatus,
 			};
 		} catch (error) {
 			console.log(error)
@@ -782,79 +667,18 @@ export class RequestQuoteService {
 		serviceType?: string,
 		serviceId?: string,
 		serviceProvider?: string,
-		bookingReference?: string,
+		quoteReference?: string,
 		startDate?: Date,
 		endDate?: Date
-	): Promise<ManyBookingDto> {
+	): Promise<any> {
 		const whereClause: any = { deletedAt: null };
 
 		if (startDate) whereClause.createdAt = { gte: startDate };
 		if (endDate) whereClause.createdAt = { lte: endDate };
-		if (bookingReference) whereClause.bookingReference = bookingReference;
+		if (quoteReference) whereClause.quoteReference = quoteReference;
 		if (serviceId) whereClause.serviceId = serviceId;
 		if (serviceType) whereClause.serviceType = serviceType;
-		if (serviceProvider) {
-
-			/**
-			 * 
-			 * @remarks 
-			 * 1. A booking is a microservice of its own and is not directly linked to a service provider
-			 * 2. A booking is linked to an eventcenter via event center booking 
-			 * 3. Eventcenter ia a microservices of its own and so is users. They connect via rabbitmq and message patterns
-			 * 4. An event center is directly linked to a service provider via serviceProviderId gotten from Usermicroservice
-			 * 
-			 * 
-			 * @summary
-			 * 1. send message to event center microservice with service provider Id to retrive all event centers linked to service provider
-			 * 2. fetch all event center bookings for the returned event centers
-			 * 3. fetch all bookings linked to the event center bookings
-			 * 4. return bookings
-			 * 
-			 * 
-			 */
-
-			const eventCenters = await firstValueFrom(this.eventClient.send<ManyEventCentersDto, ManyRequestEventCenterDto>(EVENTCENTERPATTERN.FINDALLEVENTCENTER,
-				{serviceProvider}))
-			
-			if (!eventCenters || eventCenters.data.length === 0) {
-				return { count: 0, data: [] };
-			}
-
-			const catering = await firstValueFrom(this.cateringClient.send<ManyCateringDto, ManyRequestCateringDto>(CATERINGPATTERN.FINDALL,
-				{serviceProvider}))
-			
-			if (!catering || catering.data.length === 0) {
-				return { count: 0, data: [] };
-			}
-
-			const eventCenterIds = eventCenters.data.map(ec => ec.id);
-
-			const result = await this.databaseService.$transaction(async (prisma) => {
-
-				const bookings = await prisma.booking.findMany({
-					where: {
-						deletedAt: null,
-						eventCenterBooking: { eventcenterId: { in: eventCenterIds } },
-					},
-					take: limit,
-					skip: offset,
-				});
-
-
-				const count = await prisma.booking.count({
-					where: {
-						deletedAt: null,
-						eventCenterBooking: { eventcenterId: { in: eventCenterIds } },
-					},
-					take: limit,
-					skip: offset,
-				});
-
-				return { count, data: bookings };
-			});
-
-			return { count: result.count, data: result.data.map(booking => this.mapToBookingDto(booking)) };
-		}
+		if (serviceProvider) whereClause.serviceProvider =  serviceProvider
 
 		const bookings = await this.databaseService.booking.findMany({
 			where: whereClause,

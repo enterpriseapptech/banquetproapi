@@ -1,8 +1,8 @@
 import { Controller } from '@nestjs/common';
-import { BookingService, TimeSlotService } from './booking.service';
+import { BookingService, RequestQuoteService, TimeSlotService } from './booking.service';
 import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import { catchError, from, throwError } from 'rxjs';
-import { BOOKINGPATTERN, CreateBookingDto, CreateManyTimeSlotDto, ManyRequestTimeSlotDto, TIMESLOTPATTERN, UpdateBookingDto, UpdateTimeslotDto } from '@shared/contracts/booking';
+import { BOOKINGPATTERN, CreateBookingDto, CreateManyTimeSlotDto, CreateRequestQuoteDto, ManyRequestTimeSlotDto, REQUESTQUOTEPATTERN, TIMESLOTPATTERN, UpdateBookingDto, UpdateTimeslotDto } from '@shared/contracts/booking';
 
 @Controller()
 export class BookingController {
@@ -93,6 +93,94 @@ export class BookingController {
     
 }
 
+@Controller()
+export class  RequestQuoteController {
+    constructor(private readonly requestQuoteService: RequestQuoteService) { }
+
+    @MessagePattern(REQUESTQUOTEPATTERN.CREATE)
+    create(@Payload() createRequestQuoteDto: CreateRequestQuoteDto) {
+        return from(this.requestQuoteService.create(createRequestQuoteDto)).pipe(
+            catchError((err) => {
+                console.error("Error in requestQuoteService:", err);
+                return throwError(() => new RpcException({
+                    statusCode: err.response.statusCode || 500,
+                    message: err.message || "Internal Server Error",
+                    error: err.response.error || "Sever error",
+                }));
+
+            })
+        );
+
+    }
+
+    @MessagePattern(REQUESTQUOTEPATTERN.FINDALL)
+    findAll(@Payload() data: { limit: number, offset: number, serviceId?: string, serviceProvider?: string, bookingReference?: string}) {
+        const { limit, offset, serviceProvider, bookingReference} = data
+        return from(this.requestQuoteService.findAll(limit, offset, serviceProvider, bookingReference)).pipe(
+                catchError((err) => {
+                    console.error("Error in requestQuoteService:", err);
+                    return throwError(() => new RpcException({
+                        statusCode: err.response.statusCode || 500,
+                        message: err.message || "Internal Server Error",
+                        error: err.response.error || "Sever error",
+                    }));
+    
+                })
+            );
+    
+        }
+    
+    @MessagePattern(REQUESTQUOTEPATTERN.FINDONEBYID)
+        findOne(@Payload() id: string) {
+        return from(this.requestQuoteService.findOne(id)).pipe(
+                catchError((err) => {
+                    console.error("Error in requestQuoteService:", err);
+                    return throwError(() => new RpcException({
+                        statusCode: err.response.statusCode || 500,
+                        message: err.message || "Internal Server Error",
+                        error: err.response.error || "Sever error",
+                    }));
+    
+                })
+            );
+    
+        }
+    
+    @MessagePattern(REQUESTQUOTEPATTERN.UPDATE)
+        update(@Payload() data: { id: string, updateBookingDto: UpdateBookingDto}) {
+            const { id, updateBookingDto} = data
+        return from(this.requestQuoteService.update(id, updateBookingDto)).pipe(
+                catchError((err) => {
+                    console.error("Error in requestQuoteService:", err);
+                    return throwError(() => new RpcException({
+                        statusCode: err.response.statusCode || 500,
+                        message: err.message || "Internal Server Error",
+                        error: err.response.error || "Sever error",
+                    }));
+    
+                })
+            );
+    
+        }
+    
+    @MessagePattern(REQUESTQUOTEPATTERN.DELETE)
+        remove(@Payload() data: { id: string, updaterId: string }) {
+            const { id, updaterId } = data
+        return from(this.requestQuoteService.remove(id, updaterId)).pipe(
+                catchError((err) => {
+                    console.error("Error in requestQuoteService:", err);
+                    return throwError(() => new RpcException({
+                        statusCode: err.response.statusCode || 500,
+                        message: err.message || "Internal Server Error",
+                        error: err.response.error || "Sever error",
+                    }));
+    
+                })
+            );
+    
+    }
+    
+}
 
 @Controller()
 export class TimeSlotController {

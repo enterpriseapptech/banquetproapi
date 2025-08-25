@@ -23,6 +23,7 @@ model Booking {
   confirmedAt                   DateTime?
   servicebookingId              String? // eventcenterbooking, catering booking , etc
   serviceId                     String
+  serviceProvider               String
   serviceType                   ServiceType
   subTotal                      Decimal @banquestprobookingdb.Decimal(10, 2)
   discount                      Decimal @banquestprobookingdb.Decimal(10, 2)
@@ -61,6 +62,7 @@ model Booking {
   @@index([serviceId])
   @@index([serviceType])
   @@index([paymentStatus])
+  @@index([serviceProvider])
 } // a review must have a booking, booking can have many payments at most 2
 
 
@@ -68,16 +70,16 @@ model RequestQuote {
   id                            String    @id @default(uuid())
   customerId                    String // customer booking the venue, points to an ID on users table
   serviceId                     String
+  serviceProvider               String
   serviceType                   ServiceType
   budget                        String
   status                        InvoiceStatus
-  bookingStatus                 BookingStatus
+  quoteReference                String
   isTermsAccepted               Boolean
   isCancellationPolicyAccepted  Boolean
   isLiabilityWaiverSigned       Boolean
   source                        BookingSource
   customerNotes                 String?
-  previousDates                 String[]
   createdAt                     DateTime  @default(now())
   updatedAt                     DateTime  @updatedAt
   deletedAt                     DateTime?
@@ -89,6 +91,7 @@ model RequestQuote {
   @@index([customerId])
   @@index([serviceId])
   @@index([serviceType])
+  @@index([serviceProvider])
 } 
 
 model AvailableLocations {

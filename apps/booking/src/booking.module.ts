@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { BookingController, TimeSlotController } from './booking.controller';
-import { BookingService, TimeSlotService } from './booking.service';
+import { BookingController, RequestQuoteController, TimeSlotController } from './booking.controller';
+import { BookingService, RequestQuoteService, TimeSlotService } from './booking.service';
 import { DatabaseService } from '../database/database.service';
 import { USER_CLIENT, NOTIFICATION_CLIENT, EVENT_CENTER_CLIENT, CATERING_CLIENT, PAYMENT_CLIENT } from '@shared/contracts'
 import { ConfigModule } from '@nestjs/config';
@@ -18,9 +18,10 @@ import { ClientConfigService } from '../client-config/client-config.service';
         }),
         ClientConfigModule,
     ],
-    controllers: [BookingController, TimeSlotController],
+    controllers: [BookingController, TimeSlotController,  RequestQuoteController],
     providers: [
         BookingService,
+        RequestQuoteService,
         TimeSlotService,
         DatabaseService,
         ClientConfigService,

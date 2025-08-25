@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req } from '@nestjs/common';
-import { BookingService, TimeSlotService } from './booking.service';
-import { CreateBookingDto, CreateManyTimeSlotDto, ManyRequestTimeSlotDto, UpdateBookingDto, UpdateTimeslotDto,  } from '@shared/contracts/booking';
+import { BookingService, RequestQuoteService, TimeSlotService } from './booking.service';
+import { CreateBookingDto, CreateManyTimeSlotDto, CreateRequestQuoteDto, ManyRequestTimeSlotDto, UpdateBookingDto, UpdateTimeslotDto,  } from '@shared/contracts/booking';
 import { UserDto } from '@shared/contracts/users';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
@@ -12,6 +12,7 @@ interface AuthenticatedRequest extends Request {
     user?: any; // Change `any` to your actual user type if known
 }
 
+@ApiTags('booking')
 @Controller('booking')
 export class BookingController {
     constructor(private readonly bookingService: BookingService) { }
@@ -57,6 +58,49 @@ export class BookingController {
 
 }
 
+@ApiTags('requestQuote')
+@Controller('requestQuote')
+export class RequestQuoteController {
+    constructor(private readonly requestQuoteService: RequestQuoteService) { }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Post()
+    async create(@Body() createBookingDto: CreateRequestQuoteDto) {
+        return this.requestQuoteService.create(createBookingDto);
+    }
+
+    @Get(':id')
+    findOne(@Param('id') id: string) {
+        return this.requestQuoteService.findOne(id);
+    }
+
+    @Get()
+    findAll(
+        @Query('limit') limit: number,
+        @Query('offset') offset: number,
+        @Query('serviceId') serviceId: string,
+        @Query('serviceProvider') serviceProvider: string,
+        @Query('startDate') startDate: Date,
+        @Query('endDate') endDate: Date
+    ) {
+         console.log({serviceId})
+        return this.requestQuoteService.findAll(limit, offset, serviceId, serviceProvider, startDate, endDate);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Patch(':id')
+    update(@Param('id') id: string, @Body() updateBookingDto: UpdateBookingDto) {
+        return this.requestQuoteService.update(id, updateBookingDto);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Delete(':id')
+    async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+        const user: UserDto = await firstValueFrom(req.user)
+        return this.requestQuoteService.remove(id, user.id);
+    }
+
+}
 @ApiTags('timeslot')
 @Controller('timeslot')
 export class TimeSlotController {

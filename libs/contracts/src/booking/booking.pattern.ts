@@ -6,6 +6,13 @@ export const BOOKINGPATTERN = {
     DELETE: 'booking.delete',
 }
 
+export const REQUESTQUOTEPATTERN = {
+    FINDALL: 'REQUESTqUOTE.findAll',
+    FINDONEBYID: 'REQUESTqUOTE.findOneById',
+    CREATE: 'REQUESTqUOTE.create',
+    UPDATE: 'REQUESTqUOTE.update',
+    DELETE: 'REQUESTqUOTE.delete',
+}
 
 export const TIMESLOTPATTERN = {
     FINDALL: 'timeslot.findAll',

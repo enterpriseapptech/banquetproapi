@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 // import { CreateBookingDto, UpdateBookingDto, BookingDto, , , , BOOKING_CLIENT, , CreateManyTimeSlotDto, TIMESLOTPATTERN, ,  } from '@shared/contracts';
 import { ClientProxy } from '@nestjs/microservices';
-import { CreateBookingDto, CreateManyTimeSlotDto, UpdateBookingDto, ManyRequestBookingDto, UpdateTimeslotDto, BOOKINGPATTERN, ManyBookingDto, TimeslotDto, TIMESLOTPATTERN, ManyRequestTimeSlotDto, BookingDto,  } from '@shared/contracts/booking';
+import { CreateBookingDto, CreateManyTimeSlotDto, UpdateBookingDto, ManyRequestBookingDto, UpdateTimeslotDto, BOOKINGPATTERN, ManyBookingDto, TimeslotDto, TIMESLOTPATTERN, ManyRequestTimeSlotDto, BookingDto, CreateRequestQuoteDto, REQUESTQUOTEPATTERN,  } from '@shared/contracts/booking';
 import { BOOKING_CLIENT } from '@shared/contracts';
 
 
@@ -46,6 +46,47 @@ export class BookingService {
 
 }
 
+
+@Injectable()
+export class RequestQuoteService {
+
+    constructor(
+        @Inject(BOOKING_CLIENT) private readonly bookingClient: ClientProxy
+    ) { }
+
+    create(createRequestQuoteDto: CreateRequestQuoteDto) {
+        return this.bookingClient.send<any, CreateRequestQuoteDto>(REQUESTQUOTEPATTERN.CREATE, createRequestQuoteDto)
+    }
+    
+    findAll(limit: number, offset: number, serviceId?: string, serviceProvider?: string, startDate?: Date, endDate?: Date) {
+        console.log({serviceId})
+        return this.bookingClient.send<ManyBookingDto, ManyRequestBookingDto>(REQUESTQUOTEPATTERN.FINDALL,
+            {
+                limit,
+                offset,
+                serviceId,
+                serviceProvider,
+                startDate,
+                endDate,
+            })
+    }
+
+    findOne(id: string) {
+        return this.bookingClient.send<BookingDto, string>(REQUESTQUOTEPATTERN.FINDONEBYID, id)
+    }
+
+    update(id: string, updateBookingDto: UpdateBookingDto) {
+        return this.bookingClient.send<BookingDto, { id: string, updateBookingDto: UpdateBookingDto }>(REQUESTQUOTEPATTERN.UPDATE, {
+            id,
+            updateBookingDto
+        })
+    }
+
+    remove(id: string, updaterId: any) {
+        return this.bookingClient.send<BookingDto, { id: string, updaterId: string }>(REQUESTQUOTEPATTERN.DELETE, { id, updaterId })
+    }
+
+}
 
 @Injectable()
 export class TimeSlotService {
