@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
-// import { CreateBookingDto, UpdateBookingDto, BookingDto, , , , BOOKING_CLIENT, , CreateManyTimeSlotDto, TIMESLOTPATTERN, ,  } from '@shared/contracts';
+// import { CreateRequestQuoteDto, UpdateBookingDto, BookingDto, , , , BOOKING_CLIENT, , CreateManyTimeSlotDto, TIMESLOTPATTERN, ,  } from '@shared/contracts';
 import { ClientProxy } from '@nestjs/microservices';
-import { CreateBookingDto, CreateManyTimeSlotDto, UpdateBookingDto, ManyRequestBookingDto, UpdateTimeslotDto, BOOKINGPATTERN, ManyBookingDto, TimeslotDto, TIMESLOTPATTERN, ManyRequestTimeSlotDto, BookingDto, CreateRequestQuoteDto, REQUESTQUOTEPATTERN,  } from '@shared/contracts/booking';
+import { CreateBookingDto, CreateManyTimeSlotDto, UpdateBookingDto, ManyRequestBookingDto, UpdateTimeslotDto, BOOKINGPATTERN, ManyBookingDto, TimeslotDto, TIMESLOTPATTERN, ManyRequestTimeSlotDto, BookingDto, CreateRequestQuoteDto, REQUESTQUOTEPATTERN, ManyRequestQuoteDto, RequestQuoteDto, UpdateRequestQuoteDto,  } from '@shared/contracts/booking';
 import { BOOKING_CLIENT } from '@shared/contracts';
 
 
@@ -59,8 +59,8 @@ export class RequestQuoteService {
     }
     
     findAll(limit: number, offset: number, serviceId?: string, serviceProvider?: string, startDate?: Date, endDate?: Date) {
-        console.log({serviceId})
-        return this.bookingClient.send<ManyBookingDto, ManyRequestBookingDto>(REQUESTQUOTEPATTERN.FINDALL,
+
+        return this.bookingClient.send<ManyRequestQuoteDto, ManyRequestBookingDto>(REQUESTQUOTEPATTERN.FINDALL,
             {
                 limit,
                 offset,
@@ -72,18 +72,18 @@ export class RequestQuoteService {
     }
 
     findOne(id: string) {
-        return this.bookingClient.send<BookingDto, string>(REQUESTQUOTEPATTERN.FINDONEBYID, id)
+        return this.bookingClient.send<RequestQuoteDto, string>(REQUESTQUOTEPATTERN.FINDONEBYID, id)
     }
 
-    update(id: string, updateBookingDto: UpdateBookingDto) {
-        return this.bookingClient.send<BookingDto, { id: string, updateBookingDto: UpdateBookingDto }>(REQUESTQUOTEPATTERN.UPDATE, {
+    update(id: string, updateRequestQuoteDto: UpdateRequestQuoteDto) {
+        return this.bookingClient.send<RequestQuoteDto, { id: string, updateRequestQuoteDto: UpdateRequestQuoteDto }>(REQUESTQUOTEPATTERN.UPDATE, {
             id,
-            updateBookingDto
+            updateRequestQuoteDto
         })
     }
 
     remove(id: string, updaterId: any) {
-        return this.bookingClient.send<BookingDto, { id: string, updaterId: string }>(REQUESTQUOTEPATTERN.DELETE, { id, updaterId })
+        return this.bookingClient.send<RequestQuoteDto, { id: string, updaterId: string }>(REQUESTQUOTEPATTERN.DELETE, { id, updaterId })
     }
 
 }

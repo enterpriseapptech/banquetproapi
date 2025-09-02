@@ -1,9 +1,10 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { CreateBookingDto, CreateTimeslotDto } from './create-booking.dto';
+import { BillingAddress, CreateBookingDto, CreateTimeslotDto } from './create-booking.dto';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { IsArray, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ArrayUnique, } from 'class-validator';
+import { IsArray, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ArrayUnique, ValidateNested, } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { BookingStatus, PaymentStatus } from './booking.dto';
+import { BookingStatus, InvoiceStatus, PaymentStatus } from './booking.dto';
+import { Type } from 'class-transformer';
 
 
 export class UpdateBookingDto extends PartialType(CreateBookingDto) {
@@ -110,62 +111,114 @@ export class UpdateBookingDto extends PartialType(CreateBookingDto) {
   deletedBy?: string;
 
 
-//   extra fields for eventcenters and catering booking
-eventName
-eventTheme
-eventType
-description
-noOfGuest
-specialRequirements
-images
-dishTypes
-cuisine
+  //   extra fields for eventcenters and catering booking
+  eventName
+  eventTheme
+  eventType
+  description
+  noOfGuest
+  specialRequirements
+  images
+  dishTypes
+  cuisine
 
 }
 
+export class UpdateRequestQuoteDto {
+  @ApiProperty({
+    description: 'budgetfor this request for quotation',
+    example: "100-200",
+    type: String,
+  })
+  budget?: string;
+
+  @ApiProperty({ type: 'string', required: true })
+  @IsNotEmpty()
+  @IsArray()
+  @IsString({ each: true })
+  timeslotId: string[];
+
+  @ApiProperty({
+    description: 'Notes from the customer about the booking',
+    example: 'Please bring cleaning supplies.',
+    type: String,
+  })
+  customerNotes?: string;
+
+  @ApiProperty({
+    description: 'Billing address in JSON format',
+    example: { street: '123 Main St', city: 'Lagos', country: 'Nigeria' },
+    type: BillingAddress,
+  })
+  @IsNotEmpty()
+  @ValidateNested()
+  @Type(() => BillingAddress)
+  billingAddress: BillingAddress;
+
+  @ApiProperty({
+    description: 'Current booking status',
+    enum: BookingStatus,
+    example: BookingStatus.CONFIRMED,
+  })
+  @IsEnum(BookingStatus)
+  @IsNotEmpty()
+  status: InvoiceStatus;
+
+
+
+  @ApiProperty({
+    description: 'User ID of the person who deleted the booking',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    type: String,
+  })
+  @IsUUID()
+  @IsOptional()
+  deletedBy?: string;
+
+}
 
 export class UpdateEventBookingDto extends PartialType(CreateBookingDto) {
 
-    @IsDateString()
-    @IsOptional()
-    deletedAt?: Date;
+  @IsDateString()
+  @IsOptional()
+  deletedAt?: Date;
 
-    @IsUUID()
-    @IsOptional()
-    deletedBy?: string;
+  @IsUUID()
+  @IsOptional()
+  deletedBy?: string;
 }
 
 export class UpdateCateringBookingDto extends PartialType(CreateBookingDto) {
 
-    @IsDateString()
-    @IsOptional()
-    deletedAt?: Date;
+  @IsDateString()
+  @IsOptional()
+  deletedAt?: Date;
 
-    @IsUUID()
-    @IsOptional()
-    deletedBy?: string;
+  @IsUUID()
+  @IsOptional()
+  deletedBy?: string;
 }
 
 export class UpdateTimeslotDto extends PartialType(CreateTimeslotDto) {
 
-    
-    @ApiProperty({ type: 'string', required: false })
-    @IsOptional()
-    @IsUUID()
-    bookingId?: string;
 
-    @ApiProperty({ type: 'string', required: false })
-    @IsOptional()
-    @IsString({ each: true })
-    previousBookings?: string;
+  @ApiProperty({ type: 'string', required: false })
+  @IsOptional()
+  @IsUUID()
+  bookingId?: string;
 
-    @ApiProperty({ type: 'string', required: false })
-    @IsOptional()
-    @IsUUID()
-    updatedBy?: string;
+  @ApiProperty({ type: 'string', required: false })
+  @IsOptional()
+  @IsString({ each: true })
+  previousBookings?: string;
 
-    @ApiProperty({ type: 'string', required: false })
-    @IsOptional()
-    @IsUUID()
-    deletedBy?: string;
+  @ApiProperty({ type: 'string', required: false })
+  @IsOptional()
+  @IsUUID()
+  updatedBy?: string;
+
+  @ApiProperty({ type: 'string', required: false })
+  @IsOptional()
+  @IsUUID()
+  deletedBy?: string;
 }

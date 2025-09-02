@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, IsDateString, Min } from 'class-validator';
+import { BillingAddress } from './create-booking.dto';
 
 export enum LocationStatus {
     ACTIVE = "ACTIVE",
@@ -36,13 +37,18 @@ export enum SpecialRequirement {
     TEMPERATUREADJUSTMENT = "TEMPERATUREADJUSTMENT"
 }
 
-
+export enum InvoiceStatus {
+    PENDING = 'PENDING',
+    PAID = 'PAID',
+    OVERDUE = 'OVERDUE',
+}
 
 export class BookingDto {
     id: string;
     customerId?: string;
     confirmedBy?: string;
     confirmedAt?: Date;
+    serviceProvider?: string;
     servicebooking_id?: string;
     serviceType: ServiceType;
     subTotal: number;
@@ -106,6 +112,30 @@ export class TimeslotDto {
     deletedBy?: string;
 }
 
+export class RequestQuoteDto {
+    id: string;
+    customerId?: string;
+    serviceProvider: string;
+    serviceId?: string;
+    serviceType: ServiceType;
+    budget: string;
+    quoteReference: string;
+    status: InvoiceStatus;
+    isTermsAccepted: boolean;
+    isCancellationPolicyAccepted: boolean;
+    isLiabilityWaiverSigned: boolean;
+    source?: BookingSource;
+    customerNotes?: string;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt?: Date;
+    deletedBy?: string;
+    billingAddress: BillingAddress
+    booking?: BookingDto
+}
+
+
+
 export class ManyTimeslotDto{
     count: number;
     data: TimeslotDto[];
@@ -161,4 +191,10 @@ export class ManyRequestBookingDto {
 export class ManyBookingDto {
     count: number;
     data: BookingDto[];
+}
+
+
+export class ManyRequestQuoteDto {
+    count: number;
+    data: RequestQuoteDto[];
 }

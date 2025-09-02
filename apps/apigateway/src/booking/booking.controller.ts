@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req } from '@nestjs/common';
 import { BookingService, RequestQuoteService, TimeSlotService } from './booking.service';
-import { CreateBookingDto, CreateManyTimeSlotDto, CreateRequestQuoteDto, ManyRequestTimeSlotDto, UpdateBookingDto, UpdateTimeslotDto,  } from '@shared/contracts/booking';
+import { CreateBookingDto, CreateManyTimeSlotDto, CreateRequestQuoteDto, ManyRequestTimeSlotDto, UpdateBookingDto, UpdateRequestQuoteDto, UpdateTimeslotDto,  } from '@shared/contracts/booking';
 import { UserDto } from '@shared/contracts/users';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
@@ -88,8 +88,8 @@ export class RequestQuoteController {
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Patch(':id')
-    update(@Param('id') id: string, @Body() updateBookingDto: UpdateBookingDto) {
-        return this.requestQuoteService.update(id, updateBookingDto);
+    update(@Param('id') id: string, @Body() updateRequestQuoteDto: UpdateRequestQuoteDto) {
+        return this.requestQuoteService.update(id, updateRequestQuoteDto);
     }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)

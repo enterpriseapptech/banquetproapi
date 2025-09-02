@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { BadRequestException, ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { $Enums, Prisma } from '../prisma/@prisma/booking';
-import { CreateBookingDto, BookingDto, ManyBookingDto, TimeslotDto, CreateManyTimeSlotDto, ManyTimeslotDto, ManyRequestTimeSlotDto, UpdateTimeslotDto, UpdateBookingDto, PaymentStatus, ServiceType, BookingStatus, BookingSource, CreateRequestQuoteDto } from '@shared/contracts/booking';
-import { EventCenterDto, EVENTCENTERPATTERN, ManyRequestEventCenterDto } from '@shared/contracts/eventcenters';
+import { CreateBookingDto, BookingDto, ManyBookingDto, TimeslotDto, CreateManyTimeSlotDto, ManyTimeslotDto, ManyRequestTimeSlotDto, UpdateTimeslotDto, UpdateBookingDto, PaymentStatus, ServiceType, BookingStatus, BookingSource, CreateRequestQuoteDto, RequestQuoteDto, UpdateRequestQuoteDto } from '@shared/contracts/booking';
+import { EventCenterDto, EVENTCENTERPATTERN, } from '@shared/contracts/eventcenters';
 import { ManyEventCentersDto } from '@shared/contracts/eventcenters';
 import { UniqueIdentifierDto, UserDto, USERPATTERN, } from '@shared/contracts/users';
 import { DatabaseService } from '../database/database.service';
@@ -542,7 +542,7 @@ export class RequestQuoteService {
 		private readonly databaseService: DatabaseService
 	) { }
 
-	async create(createBookingDto: CreateRequestQuoteDto): Promise<any> {
+	async create(createBookingDto: CreateRequestQuoteDto): Promise<RequestQuoteDto> {
 		try {
 			let notificationSubject: string;
 			let Service: EventCenterDto | CateringDto;
@@ -651,7 +651,9 @@ export class RequestQuoteService {
 			});
 			return {
 				...newQuote,
+				serviceType: newQuote.serviceType as unknown as ServiceType,
 				billingAddress: instanceToPlain(newQuote.billingDetails) as BillingAddress,
+				source: newQuote.source as unknown as BookingSource,
 				status: newQuote.status as unknown as InvoiceStatus,
 			};
 		} catch (error) {
@@ -680,21 +682,21 @@ export class RequestQuoteService {
 		if (serviceType) whereClause.serviceType = serviceType;
 		if (serviceProvider) whereClause.serviceProvider =  serviceProvider
 
-		const bookings = await this.databaseService.booking.findMany({
+		const requestQuotes = await this.databaseService.requestQuote.findMany({
 			where: whereClause,
 			take: limit,
 			skip: offset,
 		});
 
-		const count = await this.databaseService.booking.count({ where: whereClause });
+		const count = await this.databaseService.requestQuote.count({ where: whereClause });
 
-		return { count, data: bookings.map(booking => this.mapToBookingDto(booking)) };
+		return { count, data: requestQuotes.map(requestQuote => this.mapToBookingDto(requestQuote)) };
 	}
 
 	
-	async findOne(id: string): Promise<BookingDto> {
+	async findOne(id: string): Promise<RequestQuoteDto> {
 
-		const booking = await this.databaseService.booking.findUnique({
+		const booking = await this.databaseService.requestQuote.findUnique({
 			where: {
 				id: id,
 				deletedAt: null
@@ -703,15 +705,12 @@ export class RequestQuoteService {
 		if (!booking) {
 			throw new NotFoundException("Event center not found or has been deleted")
 		}
-		const bookingDto: BookingDto = {
+		const bookingDto: RequestQuoteDto = {
 			...booking,
-			subTotal: Number(booking.subTotal),
-			discount: Number(booking.discount),
-			total: Number(booking.total),
-			status: booking.status as unknown as BookingStatus,
-			paymentStatus: booking.paymentStatus as unknown as PaymentStatus,
+			status: booking.status as unknown as InvoiceStatus,
 			serviceType: booking.serviceType as unknown as ServiceType,
-			source: booking.source as unknown as BookingSource
+			source: booking.source as unknown as BookingSource,
+			billingAddress: booking.billingDetails as unknown as BillingAddress,
 		};
 
 		return bookingDto;
@@ -719,26 +718,22 @@ export class RequestQuoteService {
 	}
 
 
-	async update(id: string, updateBookingDto: UpdateBookingDto): Promise<BookingDto> {
+	async update(id: string, updateRequestQuoteDto: UpdateRequestQuoteDto): Promise<RequestQuoteDto> {
 		try {
-			const updateEventCenterInput: Prisma.BookingUpdateInput = {
-				...updateBookingDto,
-				paymentStatus: updateBookingDto.paymentStatus ? updateBookingDto.paymentStatus as $Enums.PaymentStatus : undefined,
-				status: updateBookingDto.status ? updateBookingDto.status as $Enums.BookingStatus : undefined,
-				source: updateBookingDto.source ? updateBookingDto.source as $Enums.BookingSource : undefined,
+			const updateRequestQuoteInput: Prisma.RequestQuoteUpdateInput = {
+				...updateRequestQuoteDto,
+				status: updateRequestQuoteDto.status ? updateRequestQuoteDto.status as $Enums.InvoiceStatus : undefined,
 			};
-			const booking = await this.databaseService.booking.update({
+
+			const booking = await this.databaseService.requestQuote.update({
 				where: { id },
-				data: updateEventCenterInput
+				data: updateRequestQuoteInput
 			});
 
-			const bookingDto: BookingDto = {
+			const bookingDto: RequestQuoteDto = {
 				...booking,
-				subTotal: Number(booking.subTotal),
-				discount: Number(booking.discount),
-				total: Number(booking.total),
-				status: booking.status as unknown as BookingStatus,
-				paymentStatus: booking.paymentStatus as unknown as PaymentStatus,
+				status: booking.status as unknown as InvoiceStatus,
+				billingAddress: booking.billingDetails as unknown as BillingAddress,
 				serviceType: booking.serviceType as unknown as ServiceType,
 				source: booking.source as unknown as BookingSource
 			};
@@ -749,10 +744,10 @@ export class RequestQuoteService {
 		}
 	}
 
-	async remove(id: string, updaterId: string): Promise<BookingDto> {
+	async remove(id: string, updaterId: string): Promise<RequestQuoteDto> {
 
 		const deletedBooking = await this.databaseService.$transaction(async (prisma) => {
-			const booking = await this.databaseService.booking.update({
+			const booking = await this.databaseService.requestQuote.update({
 				where: { id },
 				data: {
 					deletedAt: new Date(),
@@ -787,154 +782,17 @@ export class RequestQuoteService {
 
 			return booking
 		});
-		const bookingDto: BookingDto = {
+		const requestQuote: RequestQuoteDto = {
 			...deletedBooking,
-			subTotal: Number(deletedBooking.subTotal),
-			discount: Number(deletedBooking.discount),
-			total: Number(deletedBooking.total),
-			status: deletedBooking.status as unknown as BookingStatus,
-			paymentStatus: deletedBooking.paymentStatus as unknown as PaymentStatus,
+			status: deletedBooking.status as unknown as InvoiceStatus,
 			serviceType: deletedBooking.serviceType as unknown as ServiceType,
-			source: deletedBooking.source as unknown as BookingSource
+			source: deletedBooking.source as unknown as BookingSource,
+			billingAddress: deletedBooking.billingDetails as unknown as BillingAddress,
 		};
 
-		return bookingDto;
+		return requestQuote;
 
 	}
-
-
-	async cancel(id: string, updateBookingDto: UpdateBookingDto): Promise<BookingDto> {
-		
-		try {
-			const cancelledBooking = await this.databaseService.$transaction(async (prisma) => {
-				const booking = await this.databaseService.booking.update({
-					where: { id },
-					data: {
-						canceledAt: new Date(),
-						cancelledBy: updateBookingDto.cancelledBy,
-						cancelationReason: updateBookingDto.cancellationReason
-					}
-				});
-				await prisma.timeSlot.updateMany({
-					where: { bookingId: booking.id}, // Replace bookingId with the actual ID
-					data: {
-						bookingId: null,
-						isAvailable: true,
-						previousBookings: { push: booking.id }  
-					}, // Replace newTimeslot with the new value
-				});
-
-				return booking
-			});
-			
-			const bookingDto: BookingDto = {
-				...cancelledBooking,
-				subTotal: Number(cancelledBooking.subTotal),
-				discount: Number(cancelledBooking.discount),
-				total: Number(cancelledBooking.total),
-				status: cancelledBooking.status as unknown as BookingStatus,
-				paymentStatus: cancelledBooking.paymentStatus as unknown as PaymentStatus,
-				serviceType: cancelledBooking.serviceType as unknown as ServiceType,
-				source: cancelledBooking.source as unknown as BookingSource
-			};
-
-			return bookingDto;
-		} catch (error) {
-			throw new InternalServerErrorException(error);
-		}
-	}
-
-	async reschedule(id: string, updateBookingDto: UpdateBookingDto): Promise<BookingDto> {
-
-		try {
-			const rescheduleBooking = await this.databaseService.$transaction(async (prisma) => {
-				const timeslots = await this.databaseService.timeSlot.findMany({
-					where: {
-						bookingId: id
-					}
-				});
-				const previousDatesArray = timeslots.map(slot =>`${slot.startTime.toISOString()} - ${slot.endTime.toISOString()}`);
-
-				const freedTimeSlots = await prisma.timeSlot.updateMany({
-					where: { bookingId: id },
-					data: {
-						bookingId: null,
-						isAvailable: true,
-						previousBookings: { push: id }
-					}, 
-				});
-
-				const booking = await this.databaseService.booking.update({
-					where: { id },
-					data: {
-						rescheduledAt: new Date(),
-						rescheduledBy: updateBookingDto.rescheduledBy,
-						previousDates: { push: previousDatesArray }  
-
-					}
-				});
-
-				await prisma.timeSlot.updateMany({
-					where: { id: { in: updateBookingDto.timeslotId } },
-					data: {
-						bookingId: booking.id,
-						isAvailable: false
-					}, 
-				});
-
-				return booking
-			});
-			// to do notification
-			const bookingDto: BookingDto = {
-				...rescheduleBooking,
-				subTotal: Number(rescheduleBooking.subTotal),
-				discount: Number(rescheduleBooking.discount),
-				total: Number(rescheduleBooking.total),
-				status: rescheduleBooking.status as unknown as BookingStatus,
-				paymentStatus: rescheduleBooking.paymentStatus as unknown as PaymentStatus,
-				serviceType: rescheduleBooking.serviceType as unknown as ServiceType,
-				source: rescheduleBooking.source as unknown as BookingSource
-			};
-
-			return bookingDto;
-		} catch (error) {
-			throw new InternalServerErrorException(error);
-		}
-	}
-
-	async confirm(id: string, updateBookingDto: UpdateBookingDto): Promise<BookingDto> {
-
-		try {
-			const confirmedBooking = await this.databaseService.$transaction(async (prisma) => {
-				const booking = await this.databaseService.booking.update({
-					where: { id },
-					data: {
-						confirmedBy: updateBookingDto.confirmedBy,
-						confirmedAt: new Date()
-					}
-				});
-
-				return booking
-			});
-
-			// to do notification
-			const bookingDto: BookingDto = {
-				...confirmedBooking,
-				subTotal: Number(confirmedBooking.subTotal),
-				discount: Number(confirmedBooking.discount),
-				total: Number(confirmedBooking.total),
-				status: confirmedBooking.status as unknown as BookingStatus,
-				paymentStatus: confirmedBooking.paymentStatus as unknown as PaymentStatus,
-				serviceType: confirmedBooking.serviceType as unknown as ServiceType,
-				source: confirmedBooking.source as unknown as BookingSource
-			};
-
-			return bookingDto;
-		} catch (error) {
-			throw new InternalServerErrorException(error);
-		}
-	}
-
 
 	/**
 	 * 
@@ -949,7 +807,8 @@ export class RequestQuoteService {
 			status: booking.status as unknown as BookingStatus,
 			paymentStatus: booking.paymentStatus as unknown as PaymentStatus,
 			serviceType: booking.serviceType as unknown as ServiceType,
-			source: booking.source as unknown as BookingSource
+			source: booking.source as unknown as BookingSource,
+			billingAddress: booking.billingDetails as unknown as BillingAddress,
 		};
 	}
 
