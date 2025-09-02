@@ -38,7 +38,7 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/apps ./apps
 
 # 12. Expose service port (change per service)
-EXPOSE 8003
+EXPOSE 8002
 
 # 13. Start the microservice
 CMD ["sh", "-c", "yarn prisma migrate deploy --schema=/app/apps/notifications/prisma/schema.prisma && yarn start:prodNotifications"]

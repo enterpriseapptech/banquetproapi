@@ -65,8 +65,8 @@ export class RequestQuoteController {
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post()
-    async create(@Body() createBookingDto: CreateRequestQuoteDto) {
-        return this.requestQuoteService.create(createBookingDto);
+    async create(@Body() createRequestQuoteDto: CreateRequestQuoteDto) {
+        return this.requestQuoteService.create(createRequestQuoteDto);
     }
 
     @Get(':id')
@@ -83,7 +83,6 @@ export class RequestQuoteController {
         @Query('startDate') startDate: Date,
         @Query('endDate') endDate: Date
     ) {
-         console.log({serviceId})
         return this.requestQuoteService.findAll(limit, offset, serviceId, serviceProvider, startDate, endDate);
     }
 
