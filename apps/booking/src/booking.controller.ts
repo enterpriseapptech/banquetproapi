@@ -2,7 +2,7 @@ import { Controller } from '@nestjs/common';
 import { BookingService, RequestQuoteService, TimeSlotService } from './booking.service';
 import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import { catchError, from, throwError } from 'rxjs';
-import { BOOKINGPATTERN, CreateBookingDto, CreateManyTimeSlotDto, CreateRequestQuoteDto, ManyRequestTimeSlotDto, REQUESTQUOTEPATTERN, TIMESLOTPATTERN, UpdateBookingDto, UpdateTimeslotDto } from '@shared/contracts/booking';
+import { BOOKINGPATTERN, CreateBookingDto, CreateManyTimeSlotDto, CreateRequestQuoteDto, ManyRequestTimeSlotDto, REQUESTQUOTEPATTERN, TIMESLOTPATTERN, UpdateBookingDto, UpdateRequestQuoteDto, UpdateTimeslotDto } from '@shared/contracts/booking';
 
 @Controller()
 export class BookingController {
@@ -25,9 +25,9 @@ export class BookingController {
     }
 
     @MessagePattern(BOOKINGPATTERN.FINDALL)
-    findAll(@Payload() data: { limit: number, offset: number, serviceId?: string, serviceProvider?: string, bookingReference?: string}) {
-        const { limit, offset, serviceProvider, bookingReference} = data
-        return from(this.bookingService.findAll(limit, offset, serviceProvider, bookingReference)).pipe(
+    findAll(@Payload() data: { limit: number, offset: number, serviceType?: string, serviceId?: string, serviceProvider?: string, bookingReference?: string}) {
+        const { limit, offset, serviceType, serviceId, serviceProvider, bookingReference} = data
+        return from(this.bookingService.findAll(limit, offset, serviceType, serviceId, serviceProvider, bookingReference)).pipe(
                 catchError((err) => {
                     console.error("Error in UsersService:", err);
                     return throwError(() => new RpcException({
@@ -114,9 +114,9 @@ export class  RequestQuoteController {
     }
 
     @MessagePattern(REQUESTQUOTEPATTERN.FINDALL)
-    findAll(@Payload() data: { limit: number, offset: number, serviceId?: string, serviceProvider?: string, bookingReference?: string}) {
-        const { limit, offset, serviceProvider, bookingReference} = data
-        return from(this.requestQuoteService.findAll(limit, offset, serviceProvider, bookingReference)).pipe(
+    findAll(@Payload() data: { limit: number, offset: number, serviceType?: string, serviceId?: string, serviceProvider?: string, quoteReference?: string}) {
+        const { limit, offset, serviceType, serviceId, serviceProvider, quoteReference} = data
+        return from(this.requestQuoteService.findAll(limit, offset, serviceType, serviceId, serviceProvider, quoteReference)).pipe(
                 catchError((err) => {
                     console.error("Error in requestQuoteService:", err);
                     return throwError(() => new RpcException({
@@ -147,9 +147,9 @@ export class  RequestQuoteController {
         }
     
     @MessagePattern(REQUESTQUOTEPATTERN.UPDATE)
-        update(@Payload() data: { id: string, updateBookingDto: UpdateBookingDto}) {
-            const { id, updateBookingDto} = data
-        return from(this.requestQuoteService.update(id, updateBookingDto)).pipe(
+        update(@Payload() data: { id: string, updateRequestQuoteDto: UpdateRequestQuoteDto}) {
+            const { id, updateRequestQuoteDto} = data
+        return from(this.requestQuoteService.update(id, updateRequestQuoteDto)).pipe(
                 catchError((err) => {
                     console.error("Error in requestQuoteService:", err);
                     return throwError(() => new RpcException({
