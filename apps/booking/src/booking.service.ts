@@ -703,7 +703,7 @@ export class RequestQuoteService {
 			}
 		});
 		if (!booking) {
-			throw new NotFoundException("Event center not found or has been deleted")
+			throw new NotFoundException("Request for quote not found or has been deleted")
 		}
 		const bookingDto: RequestQuoteDto = {
 			...booking,

@@ -25,9 +25,9 @@ export class BookingController {
     }
 
     @MessagePattern(BOOKINGPATTERN.FINDALL)
-    findAll(@Payload() data: { limit: number, offset: number, serviceId?: string, serviceProvider?: string, bookingReference?: string}) {
-        const { limit, offset, serviceProvider, bookingReference} = data
-        return from(this.bookingService.findAll(limit, offset, serviceProvider, bookingReference)).pipe(
+    findAll(@Payload() data: { limit: number, offset: number, serviceType?: string, serviceId?: string, serviceProvider?: string, bookingReference?: string}) {
+        const { limit, offset, serviceType, serviceId, serviceProvider, bookingReference} = data
+        return from(this.bookingService.findAll(limit, offset, serviceType, serviceId, serviceProvider, bookingReference)).pipe(
                 catchError((err) => {
                     console.error("Error in UsersService:", err);
                     return throwError(() => new RpcException({
@@ -114,9 +114,9 @@ export class  RequestQuoteController {
     }
 
     @MessagePattern(REQUESTQUOTEPATTERN.FINDALL)
-    findAll(@Payload() data: { limit: number, offset: number, serviceId?: string, serviceProvider?: string, bookingReference?: string}) {
-        const { limit, offset, serviceProvider, bookingReference} = data
-        return from(this.requestQuoteService.findAll(limit, offset, serviceProvider, bookingReference)).pipe(
+    findAll(@Payload() data: { limit: number, offset: number, serviceType?: string, serviceId?: string, serviceProvider?: string, quoteReference?: string}) {
+        const { limit, offset, serviceType, serviceId, serviceProvider, quoteReference} = data
+        return from(this.requestQuoteService.findAll(limit, offset, serviceType, serviceId, serviceProvider, quoteReference)).pipe(
                 catchError((err) => {
                     console.error("Error in requestQuoteService:", err);
                     return throwError(() => new RpcException({
