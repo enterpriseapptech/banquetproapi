@@ -274,6 +274,13 @@ export class BookingService {
 			where: {
 				id: id,
 				deletedAt: null
+			},
+			include: {
+				requestedTimeSlots: true,
+				confirmedTimeSlots: true,
+				eventCenterBooking: true,
+				cateringBooking: true,
+				requestQuote: true
 			}
 		});
 		if (!booking) {
@@ -700,6 +707,10 @@ export class RequestQuoteService {
 			where: {
 				id: id,
 				deletedAt: null
+			},
+			include: {
+				requestedTimeSlots: true,
+
 			}
 		});
 		if (!booking) {

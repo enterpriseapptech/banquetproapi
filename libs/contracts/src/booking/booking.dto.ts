@@ -74,7 +74,11 @@ export class BookingDto {
     updatedAt: Date;
     deletedAt?: Date;
     deletedBy?: string;
-    eventCenterBooking?: EventCenterBookingDto; // Optional if linked to an event center booking
+    cateringBooking?: any
+    requestQuote?: any
+    confirmedTimeSlots?: TimeslotDto[]
+    requestedTimeSlots?: TimeslotDto[]
+    eventCenterBooking?: any; // Optional if linked to an event center booking
 }
 
 
@@ -94,6 +98,25 @@ export class EventCenterBookingDto {
     deletedAt?: Date;
     deletedBy?: string;
 }
+
+
+// export class EventCenterBookingDto {
+//     id: string;
+//     eventcenterId: string;
+//     bookingId: string;
+//     eventName?: string;
+//     eventTheme?: string;
+//     eventType?: string;
+//     description?: string;
+//     noOfGuest?: number;
+//     specialRequirements?: SpecialRequirement[];
+//     images: string[];
+//     createdAt: Date;
+//     updatedAt: Date;
+//     deletedAt?: Date;
+//     deletedBy?: string;
+// }
+
 
 export class TimeslotDto {
     id: string;
@@ -132,6 +155,7 @@ export class RequestQuoteDto {
     deletedBy?: string;
     billingAddress: BillingAddress
     booking?: BookingDto
+    requestedTimeSlots?: TimeslotDto[]
 }
 
 
