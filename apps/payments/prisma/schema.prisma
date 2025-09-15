@@ -64,15 +64,13 @@ model Payment {
 model Invoice {
   id                String    @id @default(uuid())
   userId            String
-  bookingId         String
+  bookingId         String?
+  subscriptionId    String?    // invoice is either for boooking or subscription
   items             Json[]
-  subTotal          Decimal @db.Decimal(10, 2)
-  discount          Decimal? @db.Decimal(10, 2)
-  total             Decimal @db.Decimal(10, 2)
   amountDue         Decimal @db.Decimal(10, 2) // this is the actual amount to be paid 
   currency          String? @default("#")
   note              String?
-  billingAddress    Json 
+  billingAddress    Json
   status            InvoiceStatus
   dueDate           DateTime
   createdAt         DateTime  @default(now())
@@ -81,8 +79,14 @@ model Invoice {
   deletedBy         String?
 
 
-  payment           Payment? 
+  payments          Payment[] // an invoice can be paid twice in the case of payment errors
+  subscription     Subscriptions? @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+  @@index([bookingId])
+  @@index([subscriptionId])
+  @@index([status])
+  @@index([currency])
 }
 
 
@@ -121,16 +125,47 @@ model Dispute {
   payment     Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade)
 }
 
+model Subscriptions {
+  // this model contains all service provider payments for fees, subscriptions, FeaturedPlans
+  id                      String @id @default(uuid())
+  serviceProviderId       String
+  serviceId               String
+  type                    PaymentType
+  feesId                  String
+  subscriptionplanId      String
+  featuredPlanId          String
+  status                  Status  // keeps track of active and inactive subscriptions. payment activates
+  expiryDate              DateTime
+  fees                    Fees @relation(fields: [feesId], references: [id], onDelete: Cascade)
+  subscriptionplan        SubscriptionPlans @relation(fields: [subscriptionplanId], references: [id], onDelete: Cascade)
+  featuredPlan            FeaturedPlans @relation(fields: [featuredPlanId], references: [id], onDelete: Cascade)
+  invoice                 Invoice[]
+
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime?
+  updatedBy               String?
+  deletedAt               DateTime?
+  deletedBy               String?         
+  @@unique([serviceProviderId, feesId])
+  @@unique([serviceProviderId, subscriptionplanId])
+  @@unique([serviceProviderId, featuredPlanId])
+  @@index([status])
+  @@index([expiryDate])
+}
+
+
 model Fees {
   id                    String   @id @default(uuid())
   name                  FeesType
   amount                Decimal
   status                Status 
   createdAt             DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  updatedAt             DateTime @updatedAt
   updatedBy             String?
   deletedAt             DateTime?
   deletedBy             String?
+
+  subscriptions         Subscriptions[]
 }
 
 model SubscriptionPlans {
@@ -144,6 +179,8 @@ model SubscriptionPlans {
   updatedBy     String?
   deletedAt     DateTime?
   deletedBy     String?
+
+  subscriptions         Subscriptions[]
 }
 
 model FeaturedPlans {
@@ -157,6 +194,8 @@ model FeaturedPlans {
   updatedBy     String?
   deletedAt     DateTime?
   deletedBy     String?
+
+  subscriptions         Subscriptions[]
 }
 
 /* ENUMS */
@@ -164,6 +203,13 @@ model FeaturedPlans {
 enum FeesType {
   KYC
   CERTIFICATION
+}
+
+enum PaymentType {
+  KYC
+  CERTIFICATION
+  FEATUREDPLANS
+  SUBSCRIPTIONPLANS
 }
 
 
@@ -191,6 +237,7 @@ enum PaymentStatus {
 
 enum InvoiceStatus {
   PENDING
+  PARTIALLY_PAID
   PAID
   OVERDUE
 }

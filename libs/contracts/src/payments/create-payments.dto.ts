@@ -34,7 +34,10 @@ export enum InvoiceStatus {
     PENDING = 'PENDING',
     PAID = 'PAID',
     OVERDUE = 'OVERDUE',
+    PARTIALLY_PAID = 'PARTIALLY_PAID'
 }
+
+
 
 export enum RefundStatus {
     REQUESTED = 'REQUESTED',
@@ -213,6 +216,112 @@ export class CreateInvoiceDto {
     deletedBy?: string;
 }
 
+export class CreateInvoiceDtoForSubscriptions {
+    @ApiProperty({
+        description: 'ID of the user associated with the invoice',
+        example: '123e4567-e89b-12d3-a456-426614174000',
+    })
+    @IsNotEmpty()
+    @IsUUID()
+    userId: string;
+
+    @ApiProperty({
+        description: 'ID of the subscription related to the invoice',
+        example: 'b1f1a0e5-14aa-4a21-a70f-d3ad0edc5a51',
+    })
+    @IsNotEmpty()
+    @IsString()
+    @IsUUID()
+    subscriptionId: string;
+
+    @ApiProperty({
+        description: 'ID of the payment associated with the invoice (optional)',
+        example: 'a6b0c9d3-1e29-4f9d-8466-f82ad9f2d6cb',
+        required: false,
+    })
+    @IsOptional()
+    @IsString()
+    @IsUUID()
+    paymentId?: string;
+
+    @ApiProperty({
+        description: 'Invoice items in JSON format',
+        example: [{ item: 'Laptop', amount: 1200 }, { item: 'Mouse', amount: 25 }],
+    })
+    @IsJSON()
+    items: InvoiceItem[];
+
+    @ApiProperty({
+        description: 'Subtotal before discount',
+        example: 1225.0,
+        type: Number,
+    })
+    @IsNotEmpty()
+    @IsNumber({ maxDecimalPlaces: 2 })
+    subTotal: number;
+
+    @ApiProperty({
+        description: 'Discount applied to the invoice',
+        example: 25.0,
+        type: Number,
+    })
+    @IsOptional()
+    @IsNumber({ maxDecimalPlaces: 2 })
+    discount?: number;
+
+    @ApiProperty({
+        description: 'Total amount after discount',
+        example: 1200.0,
+        type: Number,
+    })
+    @IsNumber({ maxDecimalPlaces: 2 })
+    total: number;
+
+    @ApiProperty({
+        description: 'Total amount after discount',
+        example: 1200.0,
+        type: Number,
+    })
+    @IsNumber({ maxDecimalPlaces: 2 })
+    amountDue: number;
+
+    @ApiProperty({
+        description: 'Currency used for the invoice',
+        example: '#',
+        required: false,
+    })
+    @IsOptional()
+    @IsString()
+    currency?: string;
+
+
+    @ApiProperty({
+        description: 'Billing address in JSON format',
+        example: { street: '123 Main St', city: 'Lagos', country: 'Nigeria' },
+    })
+    @IsNotEmpty()
+    @IsJSON()
+    billingAddress: BillingAddress;
+
+    @ApiProperty({
+        description: 'Due date for payment',
+        example: '2025-09-01T00:00:00.000Z',
+    })
+    @IsNotEmpty()
+    @IsDateString()
+    dueDate: Date;
+
+
+    @ApiProperty({
+        description: 'ID of the user who deleted the invoice',
+        example: '987e6543-e21b-45d4-b567-526614174111',
+        required: false,
+    })
+    @IsOptional()
+    @IsUUID()
+    deletedBy?: string;
+}
+
 export class CreatePaymentDto {
     @ApiProperty()
     @IsString()
@@ -221,7 +330,6 @@ export class CreatePaymentDto {
     @ApiProperty()
     @IsString()
     invoiceId: string;
-
 
     @ApiProperty()
     @IsString()

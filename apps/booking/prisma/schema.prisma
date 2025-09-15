@@ -29,7 +29,7 @@ model Booking {
   discount                      Decimal @banquestprobookingdb.Decimal(10, 2)
   total                         Decimal @banquestprobookingdb.Decimal(10, 2)
   invoice                       String[] //a booking can have more than 1 invoice for services that needs deposit
-  paymentStatus                 PaymentStatus
+  paymentStatus                 InvoiceStatus
   status                        BookingStatus
   isTermsAccepted               Boolean
   isCancellationPolicyAccepted  Boolean
@@ -73,7 +73,7 @@ model RequestQuote {
   serviceProvider               String
   serviceType                   ServiceType
   budget                        String
-  status                        InvoiceStatus
+  status                        InvoiceStatus @default(GENERATED)
   quoteReference                String
   isTermsAccepted               Boolean
   isCancellationPolicyAccepted  Boolean
@@ -198,9 +198,9 @@ enum InvoiceStatus {
   PENDING
   PAID
   OVERDUE
-  SENT
+  GENERATED
+  PARTIALLY_PAID
 }
-
 
 enum BookingStatus {
   PENDING
@@ -210,21 +210,10 @@ enum BookingStatus {
   CANCELED
 }
 
-enum PaymentStatus {
-  UNPAID
-  FULLY_PAID
-  PARTIALLY_PAID
-}
 
 enum SpecialRequirement {
   WHEELCHAIRACCESS
   TEMPERATUREADJUSTMENT
 }
 
-// enum PaymentStatus {
-//   UNPAID
-//   FULLY_PAID
-//   PARTIALLY_PAID
-//   PENDING_CONFIRMATION
-//   PAYMENT_CONFIRMED
-// }
+

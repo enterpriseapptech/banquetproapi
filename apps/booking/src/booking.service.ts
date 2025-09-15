@@ -1,17 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { BadRequestException, ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { $Enums, Prisma } from '../prisma/@prisma/booking';
-import { CreateBookingDto, BookingDto, ManyBookingDto, TimeslotDto, CreateManyTimeSlotDto, ManyTimeslotDto, ManyRequestTimeSlotDto, UpdateTimeslotDto, UpdateBookingDto, PaymentStatus, ServiceType, BookingStatus, BookingSource, CreateRequestQuoteDto, RequestQuoteDto, UpdateRequestQuoteDto } from '@shared/contracts/booking';
+import { CreateBookingDto, BookingDto, ManyBookingDto, TimeslotDto, CreateManyTimeSlotDto, ManyTimeslotDto,
+	 ManyRequestTimeSlotDto, UpdateTimeslotDto, UpdateBookingDto, ServiceType, BookingStatus, 
+	 BookingSource, CreateRequestQuoteDto, RequestQuoteDto, UpdateRequestQuoteDto, 
+	 InvoiceStatus} from '@shared/contracts/booking';
 import { EventCenterDto, EVENTCENTERPATTERN, } from '@shared/contracts/eventcenters';
-import { ManyEventCentersDto } from '@shared/contracts/eventcenters';
 import { UniqueIdentifierDto, UserDto, USERPATTERN, } from '@shared/contracts/users';
 import { DatabaseService } from '../database/database.service';
 import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
 import { EVENT_CENTER_CLIENT, NOTIFICATION_CLIENT, USER_CLIENT, CATERING_CLIENT, PAYMENT_CLIENT } from '@shared/contracts';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { CateringDto, CATERINGPATTERN, ManyCateringDto, ManyRequestCateringDto } from '@shared/contracts/catering';
-import { BillingAddress, CreateInvoiceDto, InvoiceDto, InvoiceItem, INVOICEPATTERN, InvoiceStatus } from '@shared/contracts/payments';
+import { CateringDto, CATERINGPATTERN} from '@shared/contracts/catering';
+import { BillingAddress, CreateInvoiceDto, InvoiceDto, InvoiceItem, INVOICEPATTERN , InvoiceStatus as PaymentInvoiceStatus} from '@shared/contracts/payments';
 import { instanceToPlain } from 'class-transformer';
 
 @Injectable()
@@ -146,8 +148,8 @@ export class BookingService {
 				isLiabilityWaiverSigned: createBookingDto.isLiabilityWaiverSigned,
 				bookingReference: Math.random().toString(16).substring(2, 8),
 				source: createBookingDto.source as $Enums.BookingSource,
-				paymentStatus: 'UNPAID' as $Enums.PaymentStatus,
-				status: 'PENDING' as $Enums.BookingStatus,
+				paymentStatus: $Enums.InvoiceStatus.GENERATED,
+				status: $Enums.BookingStatus.PENDING,
 				serviceNotes: createBookingDto.serviceNotes,
 				customerNotes: createBookingDto.customerNotes,
 				createdBy: createBookingDto.createdBy,
@@ -223,12 +225,14 @@ export class BookingService {
 			});
 			return {
 				...invoice,
+				bookingId: newBooking.id,
 				items: invoice.items as InvoiceItem[],
 				billingAddress: invoice.billingAddress as BillingAddress,
-				subTotal: Number(invoice.subTotal),
-				discount: Number(invoice.discount),
-				total: Number(invoice.total),
-				status: invoice.status as unknown as InvoiceStatus,
+				subTotal: Number(newBooking.subTotal),
+				discount: Number(newBooking.discount),
+				total: Number(newBooking.total),
+				amountDue: Number(invoice.amountDue),
+				status: invoice.status as unknown as PaymentInvoiceStatus,
 			};
 		} catch (error) {
 			console.log(error)
@@ -292,7 +296,7 @@ export class BookingService {
 			discount: Number(booking.discount),
 			total: Number(booking.total),
 			status: booking.status as unknown as BookingStatus,
-			paymentStatus: booking.paymentStatus as unknown as PaymentStatus,
+			paymentStatus: booking.paymentStatus as unknown as InvoiceStatus,
 			serviceType: booking.serviceType as unknown as ServiceType,
 			source: booking.source as unknown as BookingSource
 		};
@@ -306,7 +310,7 @@ export class BookingService {
 		try {
 			const updateEventCenterInput: Prisma.BookingUpdateInput = {
 				...updateBookingDto,
-				paymentStatus: updateBookingDto.paymentStatus ? updateBookingDto.paymentStatus as $Enums.PaymentStatus : undefined,
+				paymentStatus: updateBookingDto.paymentStatus ? updateBookingDto.paymentStatus as $Enums.InvoiceStatus : undefined,
 				status: updateBookingDto.status ? updateBookingDto.status as $Enums.BookingStatus : undefined,
 				source: updateBookingDto.source ? updateBookingDto.source as $Enums.BookingSource : undefined,
 			};
@@ -321,7 +325,7 @@ export class BookingService {
 				discount: Number(booking.discount),
 				total: Number(booking.total),
 				status: booking.status as unknown as BookingStatus,
-				paymentStatus: booking.paymentStatus as unknown as PaymentStatus,
+				paymentStatus: booking.paymentStatus as unknown as InvoiceStatus,
 				serviceType: booking.serviceType as unknown as ServiceType,
 				source: booking.source as unknown as BookingSource
 			};
@@ -376,7 +380,7 @@ export class BookingService {
 			discount: Number(deletedBooking.discount),
 			total: Number(deletedBooking.total),
 			status: deletedBooking.status as unknown as BookingStatus,
-			paymentStatus: deletedBooking.paymentStatus as unknown as PaymentStatus,
+			paymentStatus: deletedBooking.paymentStatus as unknown as InvoiceStatus,
 			serviceType: deletedBooking.serviceType as unknown as ServiceType,
 			source: deletedBooking.source as unknown as BookingSource
 		};
@@ -416,7 +420,7 @@ export class BookingService {
 				discount: Number(cancelledBooking.discount),
 				total: Number(cancelledBooking.total),
 				status: cancelledBooking.status as unknown as BookingStatus,
-				paymentStatus: cancelledBooking.paymentStatus as unknown as PaymentStatus,
+				paymentStatus: cancelledBooking.paymentStatus as unknown as InvoiceStatus,
 				serviceType: cancelledBooking.serviceType as unknown as ServiceType,
 				source: cancelledBooking.source as unknown as BookingSource
 			};
@@ -474,7 +478,7 @@ export class BookingService {
 				discount: Number(rescheduleBooking.discount),
 				total: Number(rescheduleBooking.total),
 				status: rescheduleBooking.status as unknown as BookingStatus,
-				paymentStatus: rescheduleBooking.paymentStatus as unknown as PaymentStatus,
+				paymentStatus: rescheduleBooking.paymentStatus as unknown as InvoiceStatus,
 				serviceType: rescheduleBooking.serviceType as unknown as ServiceType,
 				source: rescheduleBooking.source as unknown as BookingSource
 			};
@@ -507,7 +511,7 @@ export class BookingService {
 				discount: Number(confirmedBooking.discount),
 				total: Number(confirmedBooking.total),
 				status: confirmedBooking.status as unknown as BookingStatus,
-				paymentStatus: confirmedBooking.paymentStatus as unknown as PaymentStatus,
+				paymentStatus: confirmedBooking.paymentStatus as unknown as InvoiceStatus,
 				serviceType: confirmedBooking.serviceType as unknown as ServiceType,
 				source: confirmedBooking.source as unknown as BookingSource
 			};
@@ -530,7 +534,7 @@ export class BookingService {
 			discount: Number(booking.discount),
 			total: Number(booking.total),
 			status: booking.status as unknown as BookingStatus,
-			paymentStatus: booking.paymentStatus as unknown as PaymentStatus,
+			paymentStatus: booking.paymentStatus as unknown as InvoiceStatus,
 			serviceType: booking.serviceType as unknown as ServiceType,
 			source: booking.source as unknown as BookingSource
 		};
@@ -630,7 +634,7 @@ export class RequestQuoteService {
 				isLiabilityWaiverSigned: createBookingDto.isLiabilityWaiverSigned,
 				quoteReference: Math.random().toString(16).substring(2, 8),
 				source: createBookingDto.source as $Enums.BookingSource,
-				status: 'PENDING' as $Enums.InvoiceStatus,
+				status: $Enums.InvoiceStatus.GENERATED,
 				customerNotes: createBookingDto.customerNotes,
 				requestedTimeSlots: {
 					connect: createBookingDto.timeslotId.map((singleId) => {return {id: singleId}})
@@ -816,7 +820,7 @@ export class RequestQuoteService {
 			discount: Number(booking.discount),
 			total: Number(booking.total),
 			status: booking.status as unknown as BookingStatus,
-			paymentStatus: booking.paymentStatus as unknown as PaymentStatus,
+			paymentStatus: booking.paymentStatus as unknown as InvoiceStatus,
 			serviceType: booking.serviceType as unknown as ServiceType,
 			source: booking.source as unknown as BookingSource,
 			billingAddress: booking.billingDetails as unknown as BillingAddress,

@@ -26,12 +26,6 @@ export enum BookingStatus {
     CANCELED = "CANCELED"
 }
 
-export enum PaymentStatus {
-    UNPAID = "UNPAID",
-    FULLY_PAID = "FULLY_PAID",
-    PARTIALLY_PAID = "PARTIALLY_PAID"
-}
-
 export enum SpecialRequirement {
     WHEELCHAIRACCESS = "WHEELCHAIRACCESS",
     TEMPERATUREADJUSTMENT = "TEMPERATUREADJUSTMENT"
@@ -41,7 +35,10 @@ export enum InvoiceStatus {
     PENDING = 'PENDING',
     PAID = 'PAID',
     OVERDUE = 'OVERDUE',
+    GENERATED = 'GENERATED',
+    PARTIALLY_PAID = "PARTIALLY_PAID"
 }
+
 
 export class BookingDto {
     id: string;
@@ -55,7 +52,7 @@ export class BookingDto {
     discount?: number;
     total: number;
     invoice: string[]
-    paymentStatus: PaymentStatus;
+    paymentStatus: InvoiceStatus;
     status: BookingStatus;
     isTermsAccepted: boolean;
     isCancellationPolicyAccepted: boolean;

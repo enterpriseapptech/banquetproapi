@@ -80,9 +80,10 @@ export class InvoiceDto  {
     bookingId: string;
     paymentId?: string;
     items: InvoiceItem[];
-    subTotal: number;
+    subTotal?: number;
     discount?: number;
-    total: number;
+    total?: number;
+    amountDue: number;
     currency?: string;
     note?: string;
     billingAddress: BillingAddress;

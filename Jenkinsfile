@@ -5,9 +5,8 @@ pipeline {
         AWS_REGION = 'eu-north-1'
         ACCOUNT_ID = credentials('aws_account_id')
         GITHUB_TOKEN = credentials('GITHUB-ACCESS-TOKEN')
-        ECS_CLUSTER = 'banquetpro-cluster'
-        EC2_HOST = 'ubuntu@ec2-13-61-137-254.eu-north-1.compute.amazonaws.com'      // change user and IP accordingly
-        SSH_KEY = credentials('EC2_DEPLOY_KEY')
+        EC2_HOST = credentials('EC2_HOST')    // change user and IP accordingly
+        SSH_KEY = credentials('HOSTINGER_DEPLOY_KEY')
     }
 
     options {
@@ -527,7 +526,7 @@ def deployService(Map svc) {
             
         """
 
-        sshagent(credentials: ['EC2_DEPLOY_KEY']) {
+        sshagent(credentials: ['HOSTINGER_DEPLOY_KEY']) {
             sh """
                 echo "Listing contents of working directory..."
                 pwd

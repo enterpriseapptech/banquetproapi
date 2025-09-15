@@ -3,7 +3,7 @@ import { BillingAddress, CreateBookingDto, CreateTimeslotDto } from './create-bo
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { IsArray, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ArrayUnique, ValidateNested, } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { BookingStatus, InvoiceStatus, PaymentStatus } from './booking.dto';
+import { BookingStatus, InvoiceStatus } from './booking.dto';
 import { Type } from 'class-transformer';
 
 
@@ -48,12 +48,12 @@ export class UpdateBookingDto extends PartialType(CreateBookingDto) {
 
   @ApiProperty({
     description: 'Payment status of the booking',
-    enum: PaymentStatus,
-    example: PaymentStatus.FULLY_PAID,
+    enum: InvoiceStatus,
+    example: InvoiceStatus.PAID,
   })
-  @IsEnum(PaymentStatus)
+  @IsEnum(InvoiceStatus)
   @IsNotEmpty()
-  paymentStatus: PaymentStatus;
+  paymentStatus: InvoiceStatus;
 
   @ApiProperty({
     description: 'Current booking status',

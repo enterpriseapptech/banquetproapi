@@ -8,13 +8,10 @@ CREATE TYPE "BookingSource" AS ENUM ('WEB', 'MOBILE');
 CREATE TYPE "ServiceType" AS ENUM ('CATERING', 'EVENTCENTER');
 
 -- CreateEnum
-CREATE TYPE "InvoiceStatus" AS ENUM ('PENDING', 'PAID', 'OVERDUE', 'SENT');
+CREATE TYPE "InvoiceStatus" AS ENUM ('PENDING', 'PAID', 'OVERDUE', 'GENERATED', 'PARTIALLY_PAID');
 
 -- CreateEnum
 CREATE TYPE "BookingStatus" AS ENUM ('PENDING', 'CONFIRMED', 'RESERVED', 'POSTPONED', 'CANCELED');
-
--- CreateEnum
-CREATE TYPE "PaymentStatus" AS ENUM ('UNPAID', 'FULLY_PAID', 'PARTIALLY_PAID');
 
 -- CreateEnum
 CREATE TYPE "SpecialRequirement" AS ENUM ('WHEELCHAIRACCESS', 'TEMPERATUREADJUSTMENT');
@@ -34,7 +31,7 @@ CREATE TABLE "Booking" (
     "discount" DECIMAL(10,2) NOT NULL,
     "total" DECIMAL(10,2) NOT NULL,
     "invoice" TEXT[],
-    "paymentStatus" "PaymentStatus" NOT NULL,
+    "paymentStatus" "InvoiceStatus" NOT NULL,
     "status" "BookingStatus" NOT NULL,
     "isTermsAccepted" BOOLEAN NOT NULL,
     "isCancellationPolicyAccepted" BOOLEAN NOT NULL,
@@ -66,7 +63,7 @@ CREATE TABLE "RequestQuote" (
     "serviceProvider" TEXT NOT NULL,
     "serviceType" "ServiceType" NOT NULL,
     "budget" TEXT NOT NULL,
-    "status" "InvoiceStatus" NOT NULL,
+    "status" "InvoiceStatus" NOT NULL DEFAULT 'GENERATED',
     "quoteReference" TEXT NOT NULL,
     "isTermsAccepted" BOOLEAN NOT NULL,
     "isCancellationPolicyAccepted" BOOLEAN NOT NULL,

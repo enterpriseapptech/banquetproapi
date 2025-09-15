@@ -410,7 +410,7 @@ export class PaymentMethodController {
 }
 
 @Controller()
-export class PaymentsServiceController {
+export class PaymentsController {
   constructor(private readonly paymentService: PaymentsService ) { }
 
   @MessagePattern(PAYMENTPATTERN.CREATE)
@@ -529,16 +529,19 @@ export class InvoiceController {
     )
   }
 
+
   @MessagePattern(INVOICEPATTERN.FINDALL)
-  findAll(@Payload() limit: number, @Payload() offset: number) {
-    return from(this.invoiceService.findAll(limit, offset)).pipe(
-      catchError((err) => {
-        console.error("Error in InvoiceService:", err);
-        return throwError(() => new RpcException({
-          statusCode: err.response.statusCode || 500,
-          message: err.message || "Internal Server Error",
-          error: err.response.error || "Sever error",
-        }));
+  findAll(@Payload() data: { limit: number, offset: number, subscriptionId?: string, bookingId?: string, userId?: string, status?: string, currency?: string, deleted?: boolean}) {
+    const { limit, offset, subscriptionId, bookingId, userId, status, currency, deleted } = data
+      return from(this.invoiceService.findAll(limit, offset, subscriptionId, bookingId, userId, status, currency, deleted)).pipe(
+        catchError((err) => {
+          console.error("Error in InvoiceService:", err);
+          return throwError(() => new RpcException({
+            statusCode: err.response.statusCode || 500,
+            message: err.message || "Internal Server Error",
+            error: err.response.error || "Sever error",
+          })
+        );
 
       })
     );
