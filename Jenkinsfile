@@ -96,7 +96,7 @@ pipeline {
                         port: 8000,
                         rm: 'apps/users apps/booking apps/catering  apps/notifications apps/payments apps/eventcenters apps/management ',
                         prisma: '',
-                        start: 'nohup yarn start:prod > ${service}.log 2>&1 &'
+                        start: 'nohup yarn start:prod > apigateway.log 2>&1 &'
 
                     )
                 }
@@ -140,7 +140,7 @@ pipeline {
                         port: 8007, 
                         rm: 'apps/apigateway apps/booking apps/catering apps/notifications apps/payments apps/eventcenters apps/users libs/contracts/src/eventcenterbooking libs/contracts/src/booking libs/contracts/src/catering libs/contracts/src/payments libs/contracts/src/eventcenters libs/contracts/src/booking.ts  libs/contracts/src/payments.ts libs/contracts/src/eventcenters.ts',
                         prisma: 'yarn prisma generate --schema=apps/management/prisma/schema.prisma',
-                        start: 'nohup yarn start:prodManagement > ${service}.log 2>&1 &'
+                        start: 'nohup yarn start:prodManagement > management.log 2>&1 &'
                     )
                 }
             }
@@ -184,7 +184,7 @@ pipeline {
                         port: 8001, 
                         rm: 'apps/apigateway apps/booking apps/catering apps/management apps/notifications apps/payments apps/eventcenters libs/contracts/src/eventcenterbooking libs/contracts/src/booking libs/contracts/src/management libs/contracts/src/catering libs/contracts/src/payments libs/contracts/src/eventcenters libs/contracts/src/booking.ts  libs/contracts/src/payments.ts libs/contracts/src/eventcenters.ts libs/contracts/src/management.ts',
                         prisma: 'yarn prisma generate --schema=apps/users/prisma/schema.prisma',
-                        start: 'nohup yarn start:prodUsers > ${service}.log 2>&1 &'
+                        start: 'nohup yarn start:prodUsers > users.log 2>&1 &'
                     
                     )
                 }
