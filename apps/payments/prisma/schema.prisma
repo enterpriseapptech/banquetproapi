@@ -63,6 +63,7 @@ model Payment {
 /* INVOICES */
 model Invoice {
   id                String    @id @default(uuid())
+  reference         String @unique
   userId            String
   bookingId         String?
   subscriptionId    String?    // invoice is either for boooking or subscription

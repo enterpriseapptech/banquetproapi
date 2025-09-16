@@ -3,6 +3,7 @@ import { InvoiceController, SubscriptionPlansController } from './payments.contr
 import { FeaturedPlanService, InvoiceService, PaymentsService, SubscriptionPlansService } from './payments.service';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseService } from '../database/database.service';
+import { StripePaymentService } from './stripe.payment';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { DatabaseService } from '../database/database.service';
     PaymentsService,
     SubscriptionPlansService,
     FeaturedPlanService,
-    InvoiceService
+    InvoiceService,
+    StripePaymentService
 
   ],
 })

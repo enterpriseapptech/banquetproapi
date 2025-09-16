@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { $Enums, Prisma } from '../prisma/@prisma/payments';
-import { UpdateFeeDto, UpdateSubscriptionPlanDto, FeaturedPlanDto, FeesDto, PaymentDto, SubscriptionPlanDto, CreateFeaturedPlanDto, CreateFeeDto, CreatePaymentDto, CreateSubscriptionPlanDto, FeesType, PaymentReason, IPaymentStatus, Status, UpdatePaymentDto, CreatePaymentMethodDto, PaymentMethodDto, UpdatePaymentMethodDto, CreateInvoiceDto, InvoiceDto, InvoiceStatus, UpdateInvoiceDto, InvoiceItem, BillingAddress, CreateInvoiceDtoForSubscriptions } from '@shared/contracts/payments';
+import { UpdateFeeDto, UpdateSubscriptionPlanDto, FeaturedPlanDto, FeesDto, PaymentDto, SubscriptionPlanDto, CreateFeaturedPlanDto, CreateFeeDto, CreatePaymentDto, CreateSubscriptionPlanDto, FeesType, PaymentReason, IPaymentStatus, Status, UpdatePaymentDto, CreatePaymentMethodDto, PaymentMethodDto, UpdatePaymentMethodDto, CreateInvoiceDto, InvoiceDto, InvoiceStatus, UpdateInvoiceDto, InvoiceItem, BillingAddress, CreateInvoiceDtoForSubscriptions, GeneratePaymentDto, PaymentGateWay } from '@shared/contracts/payments';
 import { instanceToPlain } from 'class-transformer';
 
 
@@ -10,6 +10,25 @@ export class PaymentsService {
     constructor(
         private readonly databaseService: DatabaseService
     ) { }
+
+    async initiate(generatePaymentDto: GeneratePaymentDto){
+        try {
+            // fetch invoice details
+            // const invoice = this.databaseService.invoice.findUniqueOrThrow({where:{id: generatePaymentDto.invoiceId}})
+            switch (generatePaymentDto.paymentGateWay) {
+                case PaymentGateWay.stripe:
+                    
+                    break;
+            
+                default:
+                    break;
+            }
+        } catch (error) {
+            
+        }
+        
+
+    }
 
     async create(createPaymentDto: CreatePaymentDto): Promise<PaymentDto> {
         const newPaymentInput: Prisma.PaymentCreateInput = {
@@ -209,6 +228,7 @@ export class InvoiceService {
         }
         const newInvoiceInput: Prisma.InvoiceCreateInput = {
             userId: createInvoiceDto.userId,
+            reference: Math.random().toString(16).substring(2, 8),
             bookingId: createInvoiceDto.bookingId,
             items: instanceToPlain(createInvoiceDto.items ) as Prisma.JsonArray,
             amountDue: createInvoiceDto.amountDue,
@@ -256,6 +276,7 @@ export class InvoiceService {
         }
         const newInvoiceInput: Prisma.InvoiceCreateInput = {
             userId: createInvoiceDto.userId,
+            reference: Math.random().toString(16).substring(2, 8),
             subscription: { connect: { id: createInvoiceDto.subscriptionId } },
             items: instanceToPlain(createInvoiceDto.items ) as Prisma.JsonArray,
             amountDue: createInvoiceDto.amountDue,
