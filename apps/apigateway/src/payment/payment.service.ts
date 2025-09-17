@@ -1,13 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { PAYMENT_CLIENT } from '@shared/contracts';
-import { CreateInvoiceDto, CreatePaymentDto, CreatePaymentMethodDto, InvoiceDto, INVOICEPATTERN, PaymentDto, PaymentMethodDto, PAYMENTMETHODPATTERN, PAYMENTPATTERN, UpdateInvoiceDto, UpdatePaymentDto, UpdatePaymentMethodDto } from '@shared/contracts/payments';
+import { CreateInvoiceDto, CreatePaymentDto, CreatePaymentMethodDto, GeneratePaymentDto, InvoiceDto, INVOICEPATTERN, PaymentDto, PaymentMethodDto, PAYMENTMETHODPATTERN, PAYMENTPATTERN, UpdateInvoiceDto, UpdatePaymentDto, UpdatePaymentMethodDto } from '@shared/contracts/payments';
 
 @Injectable()
 export class PaymentService {
     constructor(
         @Inject(PAYMENT_CLIENT) private readonly paymentClient: ClientProxy
     ) { }
+
+    initiate(generatePaymentDto: GeneratePaymentDto) {
+        console.log({generatePaymentDto})
+        return this.paymentClient.send<string, GeneratePaymentDto>(PAYMENTPATTERN.INITIATE, generatePaymentDto)
+    }
 
     create(createPaymentDto: CreatePaymentDto) {
         return this.paymentClient.send<PaymentDto, CreatePaymentDto>(PAYMENTPATTERN.CREATE, createPaymentDto)
@@ -82,42 +87,42 @@ export class PaymentMethodService {
 @Injectable()
 export class InvoiceService {
     constructor(
-        @Inject(PAYMENT_CLIENT) private readonly paymentClient: ClientProxy
+        @Inject(PAYMENT_CLIENT) private readonly invoiceClient: ClientProxy
     ) { }
 
     create(createInvoiceDto: CreateInvoiceDto) {
-        return this.paymentClient.send<InvoiceDto, CreateInvoiceDto>(INVOICEPATTERN.CREATE, createInvoiceDto)
+        return this.invoiceClient.send<InvoiceDto, CreateInvoiceDto>(INVOICEPATTERN.CREATE, createInvoiceDto)
     }
 
     findAll(limit: number, offset: number, subscriptionId?: string, bookingId?: string, userId?: string, status?: string, currency?: string, deleted?: boolean) {
-        return this.paymentClient.send<{ count: number; docs: InvoiceDto[] }, {limit: number, offset: number, subscriptionId?: string, bookingId?: string, userId?: string, status?: string, currency?: string, deleted?: boolean}>(INVOICEPATTERN.FINDALL, {limit, offset, subscriptionId, bookingId, userId, status, currency, deleted})
+        return this.invoiceClient.send<{ count: number; docs: InvoiceDto[] }, {limit: number, offset: number, subscriptionId?: string, bookingId?: string, userId?: string, status?: string, currency?: string, deleted?: boolean}>(INVOICEPATTERN.FINDALL, {limit, offset, subscriptionId, bookingId, userId, status, currency, deleted})
     }
 
     findOne(id: string) {
-        return this.paymentClient.send<InvoiceDto, string>(INVOICEPATTERN.FINDBYID, id)
+        return this.invoiceClient.send<InvoiceDto, string>(INVOICEPATTERN.FINDBYID, id)
     }
 
     update(id: string, updateInvoiceDto: UpdateInvoiceDto) {
-        return this.paymentClient.send<InvoiceDto, { id: string, updateInvoiceDto: UpdateInvoiceDto }>(INVOICEPATTERN.UPDATE, {
+        return this.invoiceClient.send<InvoiceDto, { id: string, updateInvoiceDto: UpdateInvoiceDto }>(INVOICEPATTERN.UPDATE, {
             id,
             updateInvoiceDto
         })
     }
 
     read(id: string) {
-        return this.paymentClient.send<InvoiceDto, { id: string}>(INVOICEPATTERN.UPDATE, { id})
+        return this.invoiceClient.send<InvoiceDto, { id: string}>(INVOICEPATTERN.UPDATE, { id})
     }
 
     readAll(userId: string) {
-        return this.paymentClient.send<InvoiceDto, {userId: string}>(INVOICEPATTERN.UPDATE, {userId})
+        return this.invoiceClient.send<InvoiceDto, {userId: string}>(INVOICEPATTERN.UPDATE, {userId})
     }
 
     remove(id: string, updaterId: any) {
-        return this.paymentClient.send<InvoiceDto, { id: string, updaterId: string }>(INVOICEPATTERN.DELETE, { id, updaterId })
+        return this.invoiceClient.send<InvoiceDto, { id: string, updaterId: string }>(INVOICEPATTERN.DELETE, { id, updaterId })
     }
 
     permanentDelete(id: string) {
-        return this.paymentClient.send<PaymentDto, { id: string}>(INVOICEPATTERN.DELETE, { id})
+        return this.invoiceClient.send<PaymentDto, { id: string}>(INVOICEPATTERN.DELETE, { id})
     }
  
 }

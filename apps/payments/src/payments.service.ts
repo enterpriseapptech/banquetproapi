@@ -3,28 +3,52 @@ import { DatabaseService } from '../database/database.service';
 import { $Enums, Prisma } from '../prisma/@prisma/payments';
 import { UpdateFeeDto, UpdateSubscriptionPlanDto, FeaturedPlanDto, FeesDto, PaymentDto, SubscriptionPlanDto, CreateFeaturedPlanDto, CreateFeeDto, CreatePaymentDto, CreateSubscriptionPlanDto, FeesType, PaymentReason, IPaymentStatus, Status, UpdatePaymentDto, CreatePaymentMethodDto, PaymentMethodDto, UpdatePaymentMethodDto, CreateInvoiceDto, InvoiceDto, InvoiceStatus, UpdateInvoiceDto, InvoiceItem, BillingAddress, CreateInvoiceDtoForSubscriptions, GeneratePaymentDto, PaymentGateWay } from '@shared/contracts/payments';
 import { instanceToPlain } from 'class-transformer';
+import { StripePaymentService } from './stripe.payment';
+import { PaystackPaymentService } from './paystack.payment';
 
 
 @Injectable()
 export class PaymentsService {
     constructor(
-        private readonly databaseService: DatabaseService
+        private readonly databaseService: DatabaseService,
+        private readonly stripePaymentService: StripePaymentService,
+        private readonly paystackPaymentService: PaystackPaymentService
     ) { }
 
-    async initiate(generatePaymentDto: GeneratePaymentDto){
+    async initiate(generatePaymentDto: GeneratePaymentDto): Promise<string>{
         try {
             // fetch invoice details
-            // const invoice = this.databaseService.invoice.findUniqueOrThrow({where:{id: generatePaymentDto.invoiceId}})
+            const email = 'egeregav@gmail.com'
+            const invoice = await this.databaseService.invoice.findUniqueOrThrow({where:{id: generatePaymentDto.invoiceId}})
+            let paymentUrl:string;
+            
             switch (generatePaymentDto.paymentGateWay) {
                 case PaymentGateWay.stripe:
-                    
+                    paymentUrl = await this.stripePaymentService.generatePaymentUrl(
+                        invoice.id,
+                        invoice.reference,
+                        invoice.currency,
+                        Number(invoice.amountDue)
+                    );
                     break;
-            
+
+                case PaymentGateWay.paystack:
+                    paymentUrl = await this.paystackPaymentService.generatePaymentUrl(
+                        invoice.id,
+                        invoice.reference,
+                        invoice.currency,
+                        Number(invoice.amountDue),
+                        email
+                    );
+                    break;
                 default:
                     break;
             }
+            console.log({paymentUrl})
+            return paymentUrl;
         } catch (error) {
-            
+    
+            throw error
         }
         
 

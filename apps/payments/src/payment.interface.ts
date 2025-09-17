@@ -1,4 +1,10 @@
 export interface PaymentServiceInterface {
-    generatePaymentUrl(): Promise<string> // payment url
+    generatePaymentUrl(
+        invoiceId: string,
+        reference: string,
+        currency: string,
+        amount: number,
+        email?: string,
+    ): Promise<string> // payment url
     savePayment(): Promise<void>
 }

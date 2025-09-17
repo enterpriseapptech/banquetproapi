@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Re
 import { InvoiceService, PaymentMethodService, PaymentService } from './payment.service';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
-import { CreateInvoiceDto, CreatePaymentDto, CreatePaymentMethodDto, UpdatePaymentDto, UpdatePaymentMethodDto } from '@shared/contracts/payments';
+import { CreateInvoiceDto, CreatePaymentDto, CreatePaymentMethodDto, GeneratePaymentDto, UpdatePaymentDto, UpdatePaymentMethodDto } from '@shared/contracts/payments';
 import { firstValueFrom } from 'rxjs';
 import { UserDto } from '@shared/contracts/users';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -60,9 +60,16 @@ export class InvoiceController {
     }
 
 }
+@ApiTags('payment')
 @Controller('payment')
 export class PaymentController {
     constructor(private readonly paymentService: PaymentService) { }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Post('initiate')
+    initiate(@Body() generatePaymentDto: GeneratePaymentDto) {
+        return this.paymentService.initiate(generatePaymentDto);
+    }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post('create')
@@ -99,6 +106,7 @@ export class PaymentController {
 
 }
 
+@ApiTags('paymentmethod')
 @Controller('paymentmethod')
 export class PaymentMethodController {
     constructor(private readonly paymentMethodService: PaymentMethodService,

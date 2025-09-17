@@ -42,7 +42,7 @@ model Payment {
   reference               String  // refernece to track this payment on the payment provider Id
   paymentAuthorization    Json?
   // to do - store more details about the payment from the provider
-  currency                String    @default("USD")
+  currency                Currency    @default(NGN)
   paymentReason           PaymentReason
   status                  PaymentStatus
   transactionId           String    @unique
@@ -69,7 +69,7 @@ model Invoice {
   subscriptionId    String?    // invoice is either for boooking or subscription
   items             Json[]
   amountDue         Decimal @db.Decimal(10, 2) // this is the actual amount to be paid 
-  currency          String? @default("#")
+  currency          Currency? @default(NGN)
   note              String?
   billingAddress    Json
   status            InvoiceStatus
@@ -200,6 +200,14 @@ model FeaturedPlans {
 }
 
 /* ENUMS */
+enum Currency {
+  NGN
+  USD
+  GHS
+  ZAR
+  KES
+  XOF
+}
 
 enum FeesType {
   KYC

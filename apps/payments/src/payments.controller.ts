@@ -6,7 +6,7 @@ import { catchError } from 'rxjs/operators';
 import { from, throwError } from 'rxjs';
 import { FeaturedPlanService, FeesService, InvoiceService, PaymentMethodService, PaymentsService, SubscriptionPlansService } from './payments.service';
 import { FEATUREDPLANSPATTERN, FEESPATTERN, INVOICEPATTERN, PAYMENTMETHODPATTERN, PAYMENTPATTERN, SUBSCRIPTIONPLANSPATTERN } from '@shared/contracts/payments/payments.pattern';
-import { CreateFeaturedPlanDto, CreateFeeDto, CreateInvoiceDto, CreatePaymentDto, CreatePaymentMethodDto, CreateSubscriptionPlanDto } from '@shared/contracts/payments/create-payments.dto';
+import { CreateFeaturedPlanDto, CreateFeeDto, CreateInvoiceDto, CreatePaymentDto, CreatePaymentMethodDto, CreateSubscriptionPlanDto, GeneratePaymentDto } from '@shared/contracts/payments/create-payments.dto';
 import { UpdateFeaturedPlanDto, UpdateFeeDto, UpdateInvoiceDto, UpdatePaymentDto, UpdatePaymentMethodDto, UpdateSubscriptionPlanDto } from '@shared/contracts/payments/update-payments.dto';
 
 @Controller()
@@ -413,6 +413,22 @@ export class PaymentMethodController {
 export class PaymentsController {
   constructor(private readonly paymentService: PaymentsService ) { }
 
+  @MessagePattern(PAYMENTPATTERN.INITIATE)
+  initiate(@Payload() generatePaymentDto: GeneratePaymentDto) {
+    return from(this.paymentService.initiate(generatePaymentDto)).pipe(
+      catchError((err) => {
+        console.error("Error in paymentService:", err);
+        return throwError(() => new RpcException({
+          statusCode: err.response.statusCode || 500,
+          message: err.message || "Internal Server Error",
+          error: err.response.error || "Sever error",
+        }));
+
+      })
+    )
+  }
+
+
   @MessagePattern(PAYMENTPATTERN.CREATE)
   create(@Payload() createPaymentDto: CreatePaymentDto) {
     return from(this.paymentService.create(createPaymentDto)).pipe(
@@ -513,6 +529,7 @@ export class PaymentsController {
 export class InvoiceController {
   constructor(private readonly invoiceService: InvoiceService ) { }
 
+  
   @MessagePattern(INVOICEPATTERN.CREATE)
   create(@Payload() createInvoiceDto: CreateInvoiceDto) {
     console.log({createInvoiceDto})

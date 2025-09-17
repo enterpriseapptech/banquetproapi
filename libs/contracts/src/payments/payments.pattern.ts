@@ -1,4 +1,5 @@
 export const PAYMENTPATTERN = {
+    INITIATE: 'payment.initiate',
     FINDALL: 'payment.findAll',
     FINDBYID: 'payment.findOneById',
     CREATE: 'payment.create',

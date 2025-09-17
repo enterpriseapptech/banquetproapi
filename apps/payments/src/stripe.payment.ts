@@ -11,22 +11,22 @@ export class StripePaymentService implements PaymentServiceInterface{
         this.#stripeSecret = this.configService.get<string>("STRIPE_SECRET")
     }
 
-    async generatePaymentUrl(): Promise<string> {
+    async generatePaymentUrl(
+        invoiceId: string,
+        reference: string,
+        currency: string,
+        amount: number
+    ): Promise<string> {
         const stripe = new Stripe(this.#stripeSecret, {})
-        const YOUR_DOMAIN = 'http://www.banquetpro.com';
-        const session = await stripe.checkout.sessions.create({
-            line_items: [
-            {
-                // Provide the exact Price ID (for example, price_1234) of the product you want to sell
-                price: '{{PRICE_ID}}',
-                quantity: 1,
-            },
-            ],
-            mode: 'payment',
-            success_url: `${YOUR_DOMAIN}/success.html`,
-            cancel_url: `${YOUR_DOMAIN}/cancel.html`,
+
+        const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount * 100 , // ₦50 (in kobo)
+        currency: currency.toLowerCase(),
+        automatic_payment_methods: { enabled: true },
         });
-       return session.url 
+
+        return paymentIntent.client_secret;
+
     }
 
     async savePayment(): Promise<void> {

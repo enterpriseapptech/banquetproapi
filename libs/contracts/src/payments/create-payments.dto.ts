@@ -58,6 +58,15 @@ export enum PaymentOption {
     TRANSFER = 'TRANSFER',
 }
 
+export enum Currency {
+  NGN='NGN',
+  USD='USD',
+  GHS='GHS',
+  ZAR='ZAR',
+  KES='KES',
+  XOF='XOF',
+}
+
 export class CreatePaymentMethodDto {
     @ApiProperty({ example: 'Visa', description: 'Payment provider name' })
     @IsString()
@@ -169,8 +178,8 @@ export class CreateInvoiceDto {
         required: false,
     })
     @IsOptional()
-    @IsString()
-    currency?: string;
+    @IsEnum(Currency)
+    currency?: Currency;
 
     @ApiProperty({
         description: 'Additional notes for the invoice',
@@ -291,8 +300,9 @@ export class CreateInvoiceDtoForSubscriptions {
         required: false,
     })
     @IsOptional()
-    @IsString()
-    currency?: string;
+    @IsEnum(Currency)
+    currency?: Currency;
+
 
 
     @ApiProperty({
@@ -326,6 +336,7 @@ export enum PaymentGateWay{
     stripe='stripe',
     paystack='paystack'
 }
+
 
 export class GeneratePaymentDto {
 
@@ -371,8 +382,8 @@ export class CreatePaymentDto {
 
     @ApiProperty({ default: 'USD' })
     @IsOptional()
-    @IsString()
-    currency?: string;
+    @IsEnum(Currency)
+    currency?: Currency;
 
     @ApiProperty({ enum: PaymentReason })
     @IsEnum(PaymentReason)
