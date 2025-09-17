@@ -322,6 +322,23 @@ export class CreateInvoiceDtoForSubscriptions {
     deletedBy?: string;
 }
 
+export enum PaymentGateWay{
+    stripe='stripe',
+    paystack='paystack'
+}
+
+export class GeneratePaymentDto {
+
+    @ApiProperty()
+    @IsString()
+    invoiceId: string;
+
+    @ApiProperty()
+    @IsEnum(PaymentGateWay)
+    paymentGateWay: PaymentGateWay;
+
+}
+
 export class CreatePaymentDto {
     @ApiProperty()
     @IsString()

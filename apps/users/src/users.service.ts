@@ -96,6 +96,7 @@ export class UsersService {
 
                 // create personal access token for user account verification
                 const hexCode = Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0");
+                console.log(`email verification code ${hexCode}`)
                 const expiry = new Date();
                 expiry.setHours(expiry.getHours() + 3);
 
