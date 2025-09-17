@@ -4,6 +4,9 @@ import { FeaturedPlanService, InvoiceService, PaymentsService, SubscriptionPlans
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseService } from '../database/database.service';
 import { StripePaymentService } from './stripe.payment';
+import { NOTIFICATION_CLIENT } from '@shared/contracts';
+import { ClientConfigService } from '../client-config/client-config.service';
+import { ClientProxyFactory } from '@nestjs/microservices';
 
 @Module({
   imports: [
@@ -19,7 +22,16 @@ import { StripePaymentService } from './stripe.payment';
     SubscriptionPlansService,
     FeaturedPlanService,
     InvoiceService,
-    StripePaymentService
+    StripePaymentService,
+     {
+          provide: NOTIFICATION_CLIENT,
+          useFactory: (configService: ClientConfigService) => {
+              const NotificationsClientOptions = configService.NotificationsClientOptions;
+              // console.log('Creating ClientProxy with options:', usersClientOptions);
+              return ClientProxyFactory.create(NotificationsClientOptions);
+          },
+          inject: [ClientConfigService],
+      }
 
   ],
 })
