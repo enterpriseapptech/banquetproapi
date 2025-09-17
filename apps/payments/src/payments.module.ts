@@ -7,6 +7,7 @@ import { StripePaymentService } from './stripe.payment';
 import { NOTIFICATION_CLIENT } from '@shared/contracts';
 import { ClientConfigService } from '../client-config/client-config.service';
 import { ClientProxyFactory } from '@nestjs/microservices';
+import { ClientConfigModule } from '../client-config/client-config.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ClientProxyFactory } from '@nestjs/microservices';
                 isGlobal: true,
                 envFilePath: '../env',
             }),
+            ClientConfigModule,
   ],
   controllers: [SubscriptionPlansController, InvoiceController],
   providers: [
@@ -23,6 +25,7 @@ import { ClientProxyFactory } from '@nestjs/microservices';
     FeaturedPlanService,
     InvoiceService,
     StripePaymentService,
+    ClientConfigService,
      {
           provide: NOTIFICATION_CLIENT,
           useFactory: (configService: ClientConfigService) => {
