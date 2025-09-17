@@ -228,7 +228,7 @@ pipeline {
                         port: 8002, 
                         rm: 'apps/apigateway apps/booking apps/catering  apps/users apps/payments apps/eventcenters apps/management libs/contracts/src/eventcenterbooking  libs/contracts/src/management libs/contracts/src/payments libs/contracts/src/eventcenters libs/contracts/src/payments libs/contracts/src/payments.ts libs/contracts/src/eventcenters.ts libs/contracts/src/management.ts',
                         prisma: 'yarn prisma generate --schema=apps/notifications/prisma/schema.prisma',
-                        start: 'nohup yarn start:prodNotifications > ${service}.log 2>&1 &'
+                        start: 'nohup yarn start:prodNotifications > notifications.log 2>&1 &'
                     
                     )
                 }
@@ -272,7 +272,7 @@ pipeline {
                         port: 8003, 
                         rm: 'apps/apigateway apps/booking apps/catering apps/payments apps/management libs/contracts/src/eventcenterbooking libs/contracts/src/booking libs/contracts/src/catering libs/contracts/src/payments libs/contracts/src/booking.ts  libs/contracts/src/payments.ts',
                         prisma: 'yarn prisma generate --schema=apps/eventcenters/prisma/schema.prisma',
-                        start: 'nohup yarn start:prodEventcenters > ${service}.log 2>&1 &'
+                        start: 'nohup yarn start:prodEventcenters > eventcenters.log 2>&1 &'
                     
                     )
                 }
@@ -317,7 +317,7 @@ pipeline {
                         port: 8005, 
                         rm: 'apps/apigateway apps/booking apps/users apps/payments apps/management apps/eventcenters libs/contracts/src/eventcenterbooking libs/contracts/src/booking  libs/contracts/src/payments libs/contracts/src/eventcenters libs/contracts/src/booking.ts  libs/contracts/src/payments.ts  libs/contracts/src/eventcenters.ts',
                         prisma: 'yarn prisma generate --schema=apps/catering/prisma/schema.prisma',
-                        start: 'nohup yarn start:prodCatering > ${service}.log 2>&1 &'
+                        start: 'nohup yarn start:prodCatering > catering.log 2>&1 &'
                     
                     )
                 }
@@ -362,7 +362,7 @@ pipeline {
                         port: 8004, 
                         rm: 'apps/apigateway apps/users apps/catering  apps/notifications apps/payments apps/eventcenters apps/management',
                         prisma: 'yarn prisma generate --schema=apps/booking/prisma/schema.prisma',
-                        start: 'nohup yarn start:prodBooking > ${service}.log 2>&1 &'
+                        start: 'nohup yarn start:prodBooking > booking.log 2>&1 &'
                     
                     )
                 }
@@ -407,7 +407,7 @@ pipeline {
                         port: 8006, 
                         rm: 'apps/apigateway apps/users apps/catering  apps/notifications apps/booking apps/eventcenters apps/management libs/contracts/src/eventcenterbooking libs/contracts/src/booking  libs/contracts/src/catering libs/contracts/src/eventcenters libs/contracts/src/booking.ts  libs/contracts/src/catering.ts  libs/contracts/src/eventcenters.ts',
                         prisma: 'yarn prisma generate --schema=apps/payments/prisma/schema.prisma',
-                        start: 'nohup yarn start:prodPayments > ${service}.log 2>&1 &'
+                        start: 'nohup yarn start:prodPayments > payments.log 2>&1 &'
                     
                     )
                 }
