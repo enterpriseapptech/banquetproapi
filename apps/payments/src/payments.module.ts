@@ -4,9 +4,7 @@ import { FeaturedPlanService, InvoiceService, PaymentsService, SubscriptionPlans
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseService } from '../database/database.service';
 import { StripePaymentService } from './stripe.payment';
-import { NOTIFICATION_CLIENT } from '@shared/contracts';
 import { ClientConfigService } from '../client-config/client-config.service';
-import { ClientProxyFactory } from '@nestjs/microservices';
 import { ClientConfigModule } from '../client-config/client-config.module';
 import { PaystackPaymentService } from './paystack.payment';
 
@@ -28,16 +26,6 @@ import { PaystackPaymentService } from './paystack.payment';
     StripePaymentService,
     PaystackPaymentService,
     ClientConfigService,
-    {
-      provide: NOTIFICATION_CLIENT,
-      useFactory: (configService: ClientConfigService) => {
-        const NotificationsClientOptions = configService.NotificationsClientOptions;
-        // console.log('Creating ClientProxy with options:', usersClientOptions);
-        return ClientProxyFactory.create(NotificationsClientOptions);
-      },
-      inject: [ClientConfigService],
-    }
-
   ],
 })
 export class PaymentsModule { }
