@@ -12,6 +12,14 @@ export enum BookingSource {
     WEB = "WEB",
     MOBILE = "MOBILE"
 }
+export enum Currency {
+  NGN='NGN',
+  USD='USD',
+  GHS='GHS',
+  ZAR='ZAR',
+  KES='KES',
+  XOF='XOF',
+}
 
 export enum ServiceType {
     CATERING = "CATERING",

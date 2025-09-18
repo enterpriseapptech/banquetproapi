@@ -17,7 +17,7 @@ import {
 } from 'class-validator';
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { BookingSource, ServiceType, SpecialRequirement } from './booking.dto';
+import { BookingSource, Currency, ServiceType, SpecialRequirement } from './booking.dto';
 import { Type } from 'class-transformer';
 
 
@@ -208,8 +208,8 @@ export class CreateBookingDto {
 
     @ApiProperty({ default: 'USD' })
     @IsOptional()
-    @IsString()
-    currency?: string;
+    @IsEnum(Currency)
+    currency?: Currency;
 
 
     @ApiPropertyOptional({ type: 'string', required: true })
