@@ -726,7 +726,6 @@ export class RequestQuoteService {
 			status: booking.status as unknown as InvoiceStatus,
 			serviceType: booking.serviceType as unknown as ServiceType,
 			source: booking.source as unknown as BookingSource,
-			billingAddress: booking.billingDetails as unknown as BillingAddress,
 		};
 
 		return bookingDto;
