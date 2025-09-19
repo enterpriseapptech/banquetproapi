@@ -159,7 +159,7 @@ export class RequestQuoteDto {
     deletedAt?: Date;
     deletedBy?: string;
     billingAddress: BillingAddress
-    booking?: BookingDto
+    booking?: any
     requestedTimeSlots?: TimeslotDto[]
 }
 

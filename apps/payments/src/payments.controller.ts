@@ -416,8 +416,7 @@ export class PaymentsController {
   @MessagePattern(PAYMENTPATTERN.INITIATE)
   initiate(@Payload() generatePaymentDto: GeneratePaymentDto) {
     return from(this.paymentService.initiate(generatePaymentDto)).pipe(
-      catchError((err) => {
-        console.error("Error in paymentService:", err);
+      catchError((err) => { 
         return throwError(() => new RpcException({
           statusCode: err.response.statusCode || 500,
           message: err.message || "Internal Server Error",
@@ -568,11 +567,10 @@ export class InvoiceController {
   findOne(@Payload() id: string) {
     return from(this.invoiceService.findOne(id)).pipe(
       catchError((err) => {
-        console.error("Error in InvoiceService:", err);
         return throwError(() => new RpcException({
-          statusCode: err.response.statusCode || 500,
-          message: err.message || "Internal Server Error",
-          error: err.response.error || "Sever error",
+          statusCode: err.response.statusCode || 404,
+          message: err.message || "Invoice not found",
+          error: err.response.error || "Invoice not found",
         }));
 
       })

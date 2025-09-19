@@ -1,10 +1,11 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { $Enums, Prisma } from '../prisma/@prisma/payments';
 import { UpdateFeeDto, UpdateSubscriptionPlanDto, FeaturedPlanDto, FeesDto, PaymentDto, SubscriptionPlanDto, CreateFeaturedPlanDto, CreateFeeDto, CreatePaymentDto, CreateSubscriptionPlanDto, FeesType, PaymentReason, IPaymentStatus, Status, UpdatePaymentDto, CreatePaymentMethodDto, PaymentMethodDto, UpdatePaymentMethodDto, CreateInvoiceDto, InvoiceDto, InvoiceStatus, UpdateInvoiceDto, InvoiceItem, BillingAddress, CreateInvoiceDtoForSubscriptions, GeneratePaymentDto, PaymentGateWay } from '@shared/contracts/payments';
 import { instanceToPlain } from 'class-transformer';
 import { StripePaymentService } from './stripe.payment';
 import { PaystackPaymentService } from './paystack.payment';
+
 
 
 @Injectable()
@@ -19,7 +20,14 @@ export class PaymentsService {
         try {
             // fetch invoice details
             const email = 'egeregav@gmail.com'
-            const invoice = await this.databaseService.invoice.findUniqueOrThrow({where:{id: generatePaymentDto.invoiceId}})
+            const invoice = await this.databaseService.invoice.findUnique({where:{id: generatePaymentDto.invoiceId}})
+            if(!invoice){
+                throw new NotFoundException({
+                    statusCode: 404,
+                    message: "Invoice not found",
+                    error: "Invoice not found",
+                });
+            }
             let paymentUrl:string;
             
             switch (generatePaymentDto.paymentGateWay) {

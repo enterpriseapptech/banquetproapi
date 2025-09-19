@@ -714,6 +714,7 @@ export class RequestQuoteService {
 			},
 			include: {
 				requestedTimeSlots: true,
+				booking: true,
 
 			}
 		});
