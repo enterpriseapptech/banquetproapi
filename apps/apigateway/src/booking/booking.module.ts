@@ -18,7 +18,7 @@ import { ClientConfigModule } from '../client-config/client-config.module';
             provide: BOOKING_CLIENT,
             useFactory: (configService: ClientConfigService) => {
                 const bookingClientOptions = configService.BookingClientOptions;
-                // console.log('Creating bookingClientOptions ClientProxy with options:', bookingClientOptions);
+                console.log('Creating bookingClientOptions ClientProxy with options:', bookingClientOptions);
                 return ClientProxyFactory.create(bookingClientOptions);
             },
             inject: [ClientConfigService],
