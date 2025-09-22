@@ -88,6 +88,7 @@ export class BookingService {
 
 			// validate customer account
 			let accounts = await firstValueFrom(this.userClient.send<UserDto[], UniqueIdentifierDto[]>(USERPATTERN.FINDMANYBYUNIQUEIDENTIFIER, [{id: createBookingDto.customerId}, {id: Service.serviceProviderId}]));
+			console.log({accounts})
 			accounts = Array.isArray(accounts) ? accounts : Object.values(accounts)
 			const customer = accounts.find((user) => user.id === createBookingDto.customerId)
 			const serviceProvider = accounts.find((user) => user.id !== createBookingDto.customerId)
@@ -189,7 +190,7 @@ export class BookingService {
 			}
 
 			const newBooking = await await this.databaseService.booking.create({ data: newBookingInput });
-			
+			console.log({newBooking})
 
 			const createInvoice: CreateInvoiceDto = {
 				userId: createBookingDto.customerId,
@@ -212,7 +213,7 @@ export class BookingService {
 					description: 'Invoice generation Error: we couldnt automatically generate your invoice, kindly contact admin'
 				});
 			}
-			
+			console.log({invoice})
 			//  notify service provider of booking
 			this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
 				type: 'EMAIL',
@@ -961,7 +962,6 @@ export class TimeSlotService {
 				skip: manyRequestTimeSlotDto.offset || 0,
 			});
 
-			console.log("triggering a change")
 			const count = await prisma.timeSlot.count({
 				where: whereClause,
 			});
