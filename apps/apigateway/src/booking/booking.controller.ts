@@ -20,6 +20,7 @@ export class BookingController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post()
     async create(@Body() createBookingDto: CreateBookingDto, @Req() req: AuthenticatedRequest) {
+        console.log({createBookingDto})
         const user: UserDto = await firstValueFrom(req.user)
         createBookingDto.createdBy = user.id
         return this.bookingService.create(createBookingDto);
