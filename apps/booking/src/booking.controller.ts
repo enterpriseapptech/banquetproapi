@@ -10,6 +10,7 @@ export class BookingController {
 
     @MessagePattern(BOOKINGPATTERN.CREATE)
     create(@Payload() createBookingDto: CreateBookingDto) {
+        console.log({createBookingDto})
         return from(this.bookingService.create(createBookingDto)).pipe(
             catchError((err) => {
                 console.error("Error in bookingService:", err);
