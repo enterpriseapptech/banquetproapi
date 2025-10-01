@@ -64,4 +64,5 @@ export class ManyRequestCateringDto {
     city?: string;
     state?: string;
     country?: string;
+    search?: string;
 }

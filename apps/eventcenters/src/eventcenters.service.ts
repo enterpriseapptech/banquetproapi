@@ -88,6 +88,7 @@ export class EventcentersService {
         offset?: number,
         serviceProvider?: string,
         city?: string,
+        search?: string,
     ): Promise<ManyEventCentersDto> {
         if (serviceProvider) {
             const eventCenters = await this.databaseService.eventCenter.findMany({
@@ -109,7 +110,21 @@ export class EventcentersService {
 
         const whereClause: any = { deletedAt: null };
         if (city) whereClause.city = { equals: city, mode: "insensitive" };
-
+        const amenityValues = Object.values($Enums.Amenities);
+        // Only build the condition if it’s a valid enum
+        const amenitiesFilter = amenityValues.includes(search.toUpperCase() as any)
+        ? { amenities: { has: search as any } }
+        : undefined;
+        if (search) {
+            whereClause.OR = [
+                { name: { contains: search, mode: "insensitive" } },
+                { eventTypes: { has: search} },
+                { description: { contains: search, mode: "insensitive" } },
+                { venueLayout: { contains: search, mode: "insensitive" } },
+                amenitiesFilter,
+                { city: { contains: search, mode: "insensitive" } },
+            ].filter(Boolean)
+        }
         if (Object.keys(whereClause).length > 0) {
             const eventCenters = await this.databaseService.eventCenter.findMany({
                 where: whereClause,

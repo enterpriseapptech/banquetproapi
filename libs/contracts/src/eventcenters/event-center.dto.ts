@@ -35,6 +35,7 @@ export class ManyRequestEventCenterDto {
     city?: string;
     state?: string;
     country?: string;
+    search?: string;
 }
 
 export class ManyEventCentersDto {

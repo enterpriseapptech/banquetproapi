@@ -77,8 +77,9 @@ export class EventcentersController {
         @Query('city') city: string,  
         @Query('state') state: string,
         @Query('country') country: string,
+        @Query('search') search: string,
     ) {
-        return this.eventcentersService.findAll(limit, offset, serviceProvider, city, state, country);
+        return this.eventcentersService.findAll(limit, offset, serviceProvider, city, state, country, search);
     }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)

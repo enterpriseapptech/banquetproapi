@@ -13,7 +13,7 @@ export class CateringService {
         return this.cateringClient.send<CateringDto, CreateCateringDto>(CATERINGPATTERN.CREATE, createCateringDto)
     }
 
-    findAll(limit: number, offset: number, serviceProvider?: string, city? : string, state?: string, country?: string) {
+    findAll(limit: number, offset: number, serviceProvider?: string, city? : string, state?: string, country?: string, search?: string) {
       return this.cateringClient.send<ManyCateringDto, ManyRequestCateringDto>(CATERINGPATTERN.FINDALL,
             {   limit,
                 offset,
@@ -21,6 +21,7 @@ export class CateringService {
                 city,
                 state,
                 country,
+                search
             })
     }
 

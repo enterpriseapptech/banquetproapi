@@ -25,9 +25,9 @@ export class CateringController {
       }
   
       @MessagePattern(CATERINGPATTERN.FINDALL)
-      findAll(@Payload() data: { limit?: number, offset?: number, serviceProvider?: string, city?: string, state?: string, country?: string, }) {
-          const { limit, offset, serviceProvider, city, state, country } = data
-          return from(this.cateringService.findAll(limit, offset, serviceProvider, city, state, country)).pipe(
+      findAll(@Payload() data: { limit?: number, offset?: number, serviceProvider?: string, city?: string, state?: string, country?: string, search?: string }) {
+          const { limit, offset, serviceProvider, city, state, country, search } = data
+          return from(this.cateringService.findAll(limit, offset, serviceProvider, city, state, country, search)).pipe(
               catchError((err) => {
                   console.error("Error in Catering Service:", err);
                   return throwError(() => new RpcException({

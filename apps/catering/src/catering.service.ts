@@ -96,7 +96,8 @@ export class CateringService {
         serviceProvider?: string, 
         city?: string, 
         state?: string, 
-        country?: string)
+        country?: string,
+        search?: string)
         : Promise<ManyCateringDto> {
 
         if (serviceProvider) {
@@ -118,7 +119,14 @@ export class CateringService {
         if (state) whereClause.state = { equals: state, mode: "insensitive" };
         if (country) whereClause.country = { equals: country, mode: "insensitive" };
         if (city) whereClause.city = { equals: city, mode: "insensitive" };
-
+        if (search) {
+            whereClause.OR = [
+                { name: { contains: search, mode: "insensitive" } },
+                { eventTypes: { has: search} },
+                { tagLine: { contains: search, mode: "insensitive" } },
+                { description: { contains: search, mode: "insensitive" } },
+            ];
+        }
         if (Object.keys(whereClause).length > 0) {
             const caterings = await this.databaseService.catering.findMany({
                 where: whereClause,

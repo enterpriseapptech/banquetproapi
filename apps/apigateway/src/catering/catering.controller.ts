@@ -82,8 +82,9 @@ export class CateringController {
     @Query('city') city: string,
     @Query('state') state: string,
     @Query('country') country: string,
+    @Query('search') search: string,
   ) {
-    return this.cateringService.findAll(limit, offset, serviceProvider, city, state, country);
+    return this.cateringService.findAll(limit, offset, serviceProvider, city, state, country, search);
   }
 
   @UseGuards(JwtAuthGuard, VerificationGuard)
