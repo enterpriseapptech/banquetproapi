@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsNumber, IsInt, IsDateString, IsJSON, IsUrl, IsUUID } from 'class-validator';
+import { IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsNumber, IsInt, IsDateString, IsJSON, IsUrl, IsUUID, IsArray } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsImageFile } from '../media/images';
 import { BillingAddress, InvoiceItem } from './payments.dto';
@@ -198,13 +198,20 @@ export class CreateInvoiceDto {
     @IsJSON()
     billingAddress: BillingAddress;
 
-    // @ApiProperty({
-    //     description: 'Status of the invoice',
-    //     example: 'PENDING',
-    //     enum: InvoiceStatus,
-    // })
-    // @IsEnum(InvoiceStatus)
-    // status?: InvoiceStatus;
+    @ApiProperty({
+        description: 'Array of invoice UUIDs to remove or replace from the booking',
+        example: [
+            '550e8400-e29b-41d4-a716-446655440000',
+            '550e8400-e29b-41d4-a716-446655440111',
+        ],
+        type: [String],
+        format: 'uuid',
+        required: false,
+    })
+    @IsOptional()
+    @IsArray()
+    @IsUUID('4', { each: true })
+    replaceInvoice?: string[]; // used to remove an older invoice from the system and detach from booking
 
     @ApiProperty({
         description: 'Due date for payment',

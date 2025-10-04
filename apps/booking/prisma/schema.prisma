@@ -28,7 +28,7 @@ model Booking {
   subTotal                      Decimal @banquestprobookingdb.Decimal(10, 2)
   discount                      Decimal @banquestprobookingdb.Decimal(10, 2)
   total                         Decimal @banquestprobookingdb.Decimal(10, 2)
-  invoice                       String[] //a booking can have more than 1 invoice for services that needs deposit
+  invoice                       String[]  // a booking can have more than 1 invoice for services that needs deposit
   paymentStatus                 InvoiceStatus
   status                        BookingStatus
   isTermsAccepted               Boolean

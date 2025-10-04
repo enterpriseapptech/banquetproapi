@@ -545,6 +545,24 @@ export class InvoiceController {
     )
   }
 
+  
+  @MessagePattern(INVOICEPATTERN.BOOKINGGENERATE)
+  generate(@Payload() createInvoiceDto: CreateInvoiceDto) {
+
+    return from(this.invoiceService.generate(createInvoiceDto)).pipe(
+      catchError((err) => {
+        console.error("Error in InvoiceService:", err);
+        return throwError(() => new RpcException({
+          statusCode: err.response.statusCode || 500,
+          message: err.message || "Internal Server Error",
+          error: err.response.error || "Sever error",
+        }));
+
+      })
+    )
+  }
+
+
 
   @MessagePattern(INVOICEPATTERN.FINDALL)
   findAll(@Payload() data: { limit: number, offset: number, subscriptionId?: string, bookingId?: string, userId?: string, status?: string, currency?: string, deleted?: boolean}) {

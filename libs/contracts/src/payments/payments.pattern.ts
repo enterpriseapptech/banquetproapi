@@ -28,6 +28,7 @@ export const INVOICEPATTERN = {
     FINDALL: 'invoice.findAll',
     FINDBYID: 'invoice.findOneById',
     CREATE: 'invoice.create',
+    BOOKINGGENERATE: 'invoice.bookingGenerate',
     UPDATE: 'invoice.update',
     DELETE: 'invoice.delete',
 }

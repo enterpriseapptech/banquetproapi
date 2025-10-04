@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { $Enums, Prisma } from '../prisma/@prisma/payments';
 import { UpdateFeeDto, UpdateSubscriptionPlanDto, FeaturedPlanDto, FeesDto, PaymentDto, SubscriptionPlanDto, CreateFeaturedPlanDto, CreateFeeDto, CreatePaymentDto, CreateSubscriptionPlanDto, FeesType, PaymentReason, IPaymentStatus, Status, UpdatePaymentDto, CreatePaymentMethodDto, PaymentMethodDto, UpdatePaymentMethodDto, CreateInvoiceDto, InvoiceDto, InvoiceStatus, UpdateInvoiceDto, InvoiceItem, BillingAddress, CreateInvoiceDtoForSubscriptions, GeneratePaymentDto, PaymentGateWay } from '@shared/contracts/payments';
@@ -240,7 +240,8 @@ export class InvoiceService {
         private readonly databaseService: DatabaseService
     ) { }
 
-    async create(createInvoiceDto: CreateInvoiceDto): Promise<InvoiceDto> {
+    // used by created booking to make a first invoice for the booking
+    async generate(createInvoiceDto: CreateInvoiceDto): Promise<InvoiceDto> {
         //  validate total
         if(!createInvoiceDto.items){
             throw new InternalServerErrorException('We could not generate invoice, as the items been paid for were not listed', {
@@ -258,6 +259,78 @@ export class InvoiceService {
                 description: 'We could not generate invoice, total amount is incorrect for the items'
             }); 
         }
+        const newInvoiceInput: Prisma.InvoiceCreateInput = {
+            userId: createInvoiceDto.userId,
+            reference: Math.random().toString(16).substring(2, 8),
+            bookingId: createInvoiceDto.bookingId,
+            items: instanceToPlain(createInvoiceDto.items ) as Prisma.JsonArray,
+            amountDue: createInvoiceDto.amountDue,
+            currency: createInvoiceDto.currency,
+            dueDate: createInvoiceDto.dueDate,
+            note: createInvoiceDto.note,
+            billingAddress:  instanceToPlain(createInvoiceDto.billingAddress) as Prisma.JsonObject,
+            status: "PENDING" as $Enums.InvoiceStatus,
+        }
+
+        try {
+            // Start a transaction - for an all or fail process of creating a user
+            const invoice = await this.databaseService.invoice.create({ data: newInvoiceInput });
+            console.log({invoice})   
+            return {
+                ...invoice,
+                items: instanceToPlain(invoice.items) as InvoiceItem[],
+                billingAddress: instanceToPlain(invoice.billingAddress) as BillingAddress,
+                amountDue: Number(invoice.amountDue),
+                status: invoice.status as unknown as InvoiceStatus,
+            };
+
+        } catch (error:any) {
+            throw error
+        }
+    }
+
+    // this is used to create another invoice and the amount is to be determined by the service provider strictly
+    async create(createInvoiceDto: CreateInvoiceDto): Promise<InvoiceDto> {
+
+        // check invoices to replace if already paid for 
+        await this.databaseService.$transaction(async (prisma) => {
+            if(createInvoiceDto.replaceInvoice && createInvoiceDto.replaceInvoice.length > 0){
+                const invoices = await prisma.invoice.findMany({
+                    where: {
+                        id: {
+                            in: createInvoiceDto.replaceInvoice
+                        },
+                        status: $Enums.InvoiceStatus.PAID || $Enums.InvoiceStatus.PARTIALLY_PAID
+                    }
+                });
+
+                if(invoices && invoices.length > 0){
+                    throw new BadRequestException('One or More of the invoice you want to replace has been paid for and can not be replaced or deleted', {
+                        cause: new Error(),
+                        description: 'One or More of the invoice you want to replace has been paid for and can not be replaced or deleted'
+                    });
+                }
+            }
+        })
+        
+        //  validate total
+        if(!createInvoiceDto.items){
+            throw new InternalServerErrorException('We could not generate invoice, as the items been paid for were not listed', {
+                cause: new Error(),
+                description: 'We could not generate invoice, as the items been paid for are not listed'
+            });
+        }
+
+        let itemsTotal = 0;
+        createInvoiceDto.items.forEach((item)=>{itemsTotal += item.amount})
+        const discount = itemsTotal * (createInvoiceDto.discount / 100)
+        if((itemsTotal - discount) !== (createInvoiceDto.total)){
+           throw new InternalServerErrorException(`We could not generate invoice, total amount is incorrect for the items. Should be ${itemsTotal - discount}`, {
+                cause: new Error(),
+                description: 'We could not generate invoice, total amount is incorrect for the items'
+            }); 
+        }
+
         const newInvoiceInput: Prisma.InvoiceCreateInput = {
             userId: createInvoiceDto.userId,
             reference: Math.random().toString(16).substring(2, 8),
@@ -424,8 +497,23 @@ export class InvoiceService {
     async remove(id: string, updaterId: string): Promise<InvoiceDto> {
 
         const invoice = await this.databaseService.$transaction(async (prisma) => {
+            
+            const invoices = await prisma.invoice.findUnique({
+                where: {
+                    id,
+                    status: $Enums.InvoiceStatus.PAID || $Enums.InvoiceStatus.PARTIALLY_PAID
+                }
+            });
+
+            if(invoices){
+                throw new BadRequestException('The invoice you want to replace has been paid for and can not be replaced or deleted', {
+                    cause: new Error(),
+                    description: 'One or More of the invoice you want to replace has been paid for and can not be replaced or deleted'
+                });
+            }
+            
             const deletedInvoice = await prisma.invoice.update({
-                where: { id },
+                where: { id, status: { not : $Enums.InvoiceStatus.PAID || $Enums.InvoiceStatus.PARTIALLY_PAID }},
                 data: {
                     deletedAt: new Date(),
                     deletedBy: updaterId

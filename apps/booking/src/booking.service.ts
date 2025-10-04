@@ -15,6 +15,7 @@ import { firstValueFrom } from 'rxjs';
 import { CateringDto, CATERINGPATTERN} from '@shared/contracts/catering';
 import { BillingAddress, CreateInvoiceDto, InvoiceDto, InvoiceItem, INVOICEPATTERN , InvoiceStatus as PaymentInvoiceStatus} from '@shared/contracts/payments';
 import { instanceToPlain } from 'class-transformer';
+import {v4 as uuidv4 } from 'uuid'
 
 @Injectable()
 export class BookingService {
@@ -133,7 +134,9 @@ export class BookingService {
 					description: 'We could not generate invoice, total amount is incorrect for the items'
 				}); 
 			}
+			const bookingId = uuidv4();
 			const newBookingInput: Prisma.BookingCreateInput = {
+				id: bookingId,
 				customerId: createBookingDto.customerId,
 				serviceProvider: serviceProvider.id,
 				requestQuote: createBookingDto.requestQuoteId 
@@ -156,25 +159,22 @@ export class BookingService {
 				createdBy: createBookingDto.createdBy,
 				requestedTimeSlots: {
 					connect: createBookingDto.timeslotId.map((singleId) => {return {id: singleId}})
-				}
-			}
-
-			if ($Enums.ServiceType.EVENTCENTER) {
-				newBookingInput.eventCenterBooking = {
-					create: {
-						eventcenterId: createBookingDto.serviceId,
-						eventName: createBookingDto.eventName,
-						eventTheme: createBookingDto.eventTheme,
-						eventType: createBookingDto.eventType,
-						description: createBookingDto.description,
-						noOfGuest: createBookingDto.noOfGuest,
-						specialRequirements: createBookingDto.specialRequirements as $Enums.SpecialRequirement[],
-					}
-				}
-				notificationSubject = "A customer just booked your Event Center";
-			} else if ($Enums.ServiceType.CATERING) {
-				
-					newBookingInput.cateringBooking = {
+				},
+				eventCenterBooking: createBookingDto.serviceType === $Enums.ServiceType.EVENTCENTER 
+				? 	{
+						create: {
+							eventcenterId: createBookingDto.serviceId,
+							eventName: createBookingDto.eventName,
+							eventTheme: createBookingDto.eventTheme,
+							eventType: createBookingDto.eventType,
+							description: createBookingDto.description,
+							noOfGuest: createBookingDto.noOfGuest,
+							specialRequirements: createBookingDto.specialRequirements as $Enums.SpecialRequirement[],
+						
+						}
+					} 
+				:null,
+				cateringBooking: createBookingDto.serviceType === $Enums.ServiceType.CATERING ? {
 					create: {
 						cateringId: createBookingDto.serviceId,
 						eventName: createBookingDto.eventName,
@@ -185,16 +185,13 @@ export class BookingService {
 						noOfGuest: createBookingDto.noOfGuest,
 						specialRequirements: createBookingDto.specialRequirements as $Enums.SpecialRequirement[],
 					}
-				}
-				notificationSubject = "A customer just booked your catering service";
+				}:
+				null
 			}
-
-			const newBooking = await await this.databaseService.booking.create({ data: newBookingInput });
-			console.log({newBooking})
 
 			const createInvoice: CreateInvoiceDto = {
 				userId: createBookingDto.customerId,
-				bookingId: newBooking.id,
+				bookingId,
 				items: createBookingDto.items,
 				subTotal: createBookingDto.subTotal,
 				discount: createBookingDto.discount,
@@ -206,15 +203,23 @@ export class BookingService {
 				dueDate: createBookingDto.dueDate,
 			}
 
-			const invoice = await firstValueFrom(this.paymentClient.send<InvoiceDto, CreateInvoiceDto>(INVOICEPATTERN.CREATE, createInvoice))
+			const invoice = await firstValueFrom(this.paymentClient.send<InvoiceDto, CreateInvoiceDto>(INVOICEPATTERN.BOOKINGGENERATE, createInvoice))
 			if (!invoice) {
 				throw new InternalServerErrorException('Invoice error', {
 					cause: new Error(),
 					description: 'Invoice generation Error: we couldnt automatically generate your invoice, kindly contact admin'
 				});
 			}
-			console.log({invoice})
+			newBookingInput.invoice  = [invoice.id]
+			const newBooking = await await this.databaseService.booking.create({ data: newBookingInput });
+
 			//  notify service provider of booking
+			if ($Enums.ServiceType.EVENTCENTER) {
+				notificationSubject = "A customer just booked your Event Center";
+			} else if ($Enums.ServiceType.CATERING) {
+				notificationSubject = "A customer just booked your catering service";
+			}
+
 			this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
 				type: 'EMAIL',
 				recipientId: newBooking.customerId,
@@ -224,6 +229,7 @@ export class BookingService {
 					recipientEmail: customer.email,
 				},
 			});
+
 			return {
 				...invoice,
 				bookingId: newBooking.id,
@@ -235,6 +241,7 @@ export class BookingService {
 				amountDue: Number(invoice.amountDue),
 				status: invoice.status as unknown as PaymentInvoiceStatus,
 			};
+
 		} catch (error) {
 			console.log(error)
 			throw error

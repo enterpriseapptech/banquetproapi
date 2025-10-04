@@ -79,7 +79,6 @@ model Invoice {
   deletedAt         DateTime?
   deletedBy         String?
 
-
   payments          Payment[] // an invoice can be paid twice in the case of payment errors
   subscription     Subscriptions? @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 
