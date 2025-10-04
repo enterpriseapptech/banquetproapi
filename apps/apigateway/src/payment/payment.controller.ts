@@ -1,10 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, UseInterceptors, UploadedFile, HttpCode, HttpStatus } from '@nestjs/common';
 import { InvoiceService, PaymentMethodService, PaymentService } from './payment.service';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
-import { CreateInvoiceDto,
+import {
+    CreateInvoiceDto,
     //  CreatePaymentDto, 
-    CreatePaymentMethodDto, GeneratePaymentDto, UpdatePaymentDto, UpdatePaymentMethodDto } from '@shared/contracts/payments';
+    CreatePaymentMethodDto, GeneratePaymentDto, UpdatePaymentDto, UpdatePaymentMethodDto
+} from '@shared/contracts/payments';
 import { firstValueFrom } from 'rxjs';
 import { UserDto } from '@shared/contracts/users';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -13,7 +15,7 @@ import { ApiTags } from '@nestjs/swagger';
 
 
 interface AuthenticatedRequest extends Request {
-  user?: any; // Change `any` to your actual user type if known
+    user?: any; // Change `any` to your actual user type if known
 }
 
 
@@ -33,7 +35,7 @@ export class InvoiceController {
         return this.invoiceService.findOne(id);
     }
 
-    
+
     @Get()
     findAll(
         @Query('limit') limit: number,
@@ -74,10 +76,19 @@ export class PaymentController {
     }
 
 
-    @Post('create')
-    create(@Body() createPaymentDto: any) {
-        console.log({createPaymentDto});
-        // return this.paymentService.create(createPaymentDto);
+    // @Post('webhook')
+    // create(@Body() createPaymentDto: any) {
+    //     console.log({ createPaymentDto });
+    //     // return this.paymentService.create(createPaymentDto);
+    // }
+
+
+    @Post('webhook')
+    @HttpCode(HttpStatus.OK)
+    create(@Body() payload: any) {
+        console.log('🔔 Stripe Event Received:');
+        console.log(JSON.stringify(payload, null, 2));
+        return { received: true };
     }
 
     @Get(':id')
