@@ -23,6 +23,10 @@ export class StripePaymentService implements PaymentServiceInterface{
         amount: amount * 100 , // ₦50 (in kobo)
         currency: currency.toLowerCase(),
         automatic_payment_methods: { enabled: true },
+        metadata: {
+            invoiceId,
+            reference
+        }
         });
 
         return paymentIntent.client_secret;
