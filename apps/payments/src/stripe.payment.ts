@@ -15,7 +15,8 @@ export class StripePaymentService implements PaymentServiceInterface{
         invoiceId: string,
         reference: string,
         currency: string,
-        amount: number
+        amount: number,
+        email?: string,
     ): Promise<string> {
         const stripe = new Stripe(this.#stripeSecret, {})
 
@@ -23,6 +24,7 @@ export class StripePaymentService implements PaymentServiceInterface{
         amount: amount * 100 , // ₦50 (in kobo)
         currency: currency.toLowerCase(),
         automatic_payment_methods: { enabled: true },
+        receipt_email: email,
         metadata: {
             invoiceId,
             reference

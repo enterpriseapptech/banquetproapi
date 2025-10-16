@@ -5,6 +5,7 @@ export interface PaymentServiceInterface {
         currency: string,
         amount: number,
         email?: string,
+        callback_url?: string
     ): Promise<string> // payment url
     savePayment(): Promise<void>
 }

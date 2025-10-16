@@ -355,6 +355,10 @@ export class GeneratePaymentDto {
     @IsEnum(PaymentGateWay)
     paymentGateWay: PaymentGateWay;
 
+    @ApiProperty()
+    @IsString()
+    @IsOptional()
+    callback_url?: string
 }
 
 export class CreatePaymentDto {

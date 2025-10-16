@@ -8,6 +8,7 @@ export class PaystackPaymentService implements PaymentServiceInterface{
         currency: string,
         amount: number,
         email?: string,
+        callback_url?: string
     ): Promise<string> {
         const headers = {
             Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
@@ -18,6 +19,8 @@ export class PaystackPaymentService implements PaymentServiceInterface{
             amount: amount * 100,
             email,
             currency,
+            reference,
+            callback_url, // where Paystack redirects after payment
             metadata: {
                 invoiceId,
                 reference,
