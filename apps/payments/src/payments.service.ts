@@ -18,7 +18,7 @@ export class PaymentsService {
 
     async initiate(generatePaymentDto: GeneratePaymentDto): Promise<string>{
         try {
-            // fetch invoice details
+
             const email = 'egeregav@gmail.com'
             const invoice = await this.databaseService.invoice.findUnique({where:{id: generatePaymentDto.invoiceId}})
             if(!invoice){
@@ -29,7 +29,6 @@ export class PaymentsService {
                 });
             }
             let paymentUrl:string;
-            
             switch (generatePaymentDto.paymentGateWay) {
                 case PaymentGateWay.stripe:
                     paymentUrl = await this.stripePaymentService.generatePaymentUrl(
@@ -52,10 +51,10 @@ export class PaymentsService {
                 default:
                     break;
             }
-            console.log({paymentUrl})
+
             return paymentUrl;
         } catch (error) {
-    
+
             throw error
         }
         

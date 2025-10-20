@@ -359,6 +359,10 @@ export class GeneratePaymentDto {
     @IsString()
     @IsOptional()
     callback_url?: string
+
+    @ApiProperty()
+    @IsString()
+    email: string
 }
 
 export class CreatePaymentDto {
