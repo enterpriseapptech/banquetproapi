@@ -563,9 +563,14 @@ def deployService(Map svc) {
 
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "
                     cd /home/ubuntu/${containerName} &&
-                    pm2 start yarn --name ${containerName} -- run start &&
+                    pm2 start yarn --name ${containerName} -- run start \
+                    --log-date-format='YYYY-MM-DD HH:mm:ss' \
+                    --output '/home/ubuntu/${containerName}/out.log' \
+                    --error '/home/ubuntu/${containerName}/error.log' &&
                     pm2 save
                 "
+                pm2 start yarn --name ${containerName} -- run start \
+      
                 
                 echo "${containerName} Service started and detached successfully"
             """
