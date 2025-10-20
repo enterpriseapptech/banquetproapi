@@ -537,6 +537,16 @@ def deployService(Map svc) {
                 scp -o StrictHostKeyChecking=no ${containerName}.tar.gz ${EC2_HOST}:/home/ubuntu/
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "ls -l /home/ubuntu/${containerName}.tar.gz"
 
+                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "
+                    if pm2 list | grep -q ${containerName}; then
+                        echo 'Stopping existing ${containerName} app...'
+                        pm2 stop ${containerName} || true
+                        pm2 delete ${containerName} || true
+                    else
+                        echo 'No existing ${containerName} process found.'
+                    fi
+                "
+
                 echo "Cleaning old service directory and preparing fresh deploy dir"
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "
                     rm -rf /home/ubuntu/${containerName} || true && \
@@ -551,26 +561,12 @@ def deployService(Map svc) {
                 echo "Installing dependencies"
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && yarn install --production"
 
-                echo "Checking if port ${port} is in use and killing the process if needed"
-                ssh -o StrictHostKeyChecking=no ${EC2_HOST} "
-                    PID=\$(lsof -ti tcp:${port})
-                    if [ ! -z \"\$PID\" ]; then
-                        echo \"Killing process using port ${port}: \$PID\"
-                        kill -9 \$PID
-                    else
-                        echo \"No process found using port ${port}\"
-                    fi
-                "
-
-                echo "Starting service in production"
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "
                     cd /home/ubuntu/${containerName} &&
-                    cp temporary/${path}/.env .env &&
-                    ls
-                    ${start}
-                    cat .log
-                    disown
+                    pm2 start yarn --name ${containerName} -- run start &&
+                    pm2 save
                 "
+                
                 echo "${containerName} Service started and detached successfully"
             """
         }
