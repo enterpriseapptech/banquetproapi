@@ -541,7 +541,6 @@ def deployService(Map svc) {
                     if pm2 list | grep -q ${containerName}; then
                         echo 'Stopping existing ${containerName} app...'
                         pm2 stop ${containerName} || true
-                        pm2 delete ${containerName} || true
                     else
                         echo 'No existing ${containerName} process found.'
                     fi
@@ -562,12 +561,8 @@ def deployService(Map svc) {
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && yarn install --production"
 
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "
-                    if sudo lsof -i :${port}; then
-                        echo "Port ${port} still in use, killing process..."
-                        sudo fuser -k ${port}/tcp
-                    fi
                     cd /home/ubuntu/${containerName} &&
-                    pm2 start 'yarn ${start}' --name users-service \
+                    pm2 restart 'yarn ${start}' --name ${containerName} \
                         --log-date-format=\'YYYY-MM-DD HH:mm:ss\' \
                         --output \'/home/ubuntu/${containerName}/out.log\' \
                         --error \'/home/ubuntu/${containerName}/error.log\' \
