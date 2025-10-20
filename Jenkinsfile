@@ -562,12 +562,15 @@ def deployService(Map svc) {
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && yarn install --production"
 
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "
-                    cd /home/ubuntu/${containerName} &&
-                    pm2 start yarn --name ${containerName} -- run start \
-                    --log-date-format='YYYY-MM-DD HH:mm:ss' \
-                    --output '/home/ubuntu/${containerName}/out.log' \
-                    --error '/home/ubuntu/${containerName}/error.log' &&
-                    pm2 save
+                     sudo -u ubuntu bash -c '
+                        cd /home/ubuntu/${containerName} &&
+                        pm2 start yarn --name ${containerName} -- run start \
+                            --log-date-format=\"YYYY-MM-DD HH:mm:ss\" \
+                            --output \"/home/ubuntu/${containerName}/out.log\" \
+                            --error \"/home/ubuntu/${containerName}/error.log\" \
+                            --env \"NODE_ENV=production,PORT=${port}\" &&
+                        pm2 save
+                    '
                 "
                 pm2 start yarn --name ${containerName} -- run start \
       
