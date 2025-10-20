@@ -562,6 +562,10 @@ def deployService(Map svc) {
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "cd /home/ubuntu/${containerName} && yarn install --production"
 
                 ssh -o StrictHostKeyChecking=no ${EC2_HOST} "
+                    if sudo lsof -i :${port}; then
+                        echo "Port ${port} still in use, killing process..."
+                        sudo fuser -k ${port}/tcp
+                    fi
                     cd /home/ubuntu/${containerName} &&
                     pm2 start 'yarn ${start}' --name users-service \
                         --log-date-format=\'YYYY-MM-DD HH:mm:ss\' \

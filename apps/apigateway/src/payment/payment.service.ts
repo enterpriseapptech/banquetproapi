@@ -10,7 +10,6 @@ export class PaymentService {
     ) { }
 
     initiate(generatePaymentDto: GeneratePaymentDto) {
-        console.log({generatePaymentDto})
         return this.paymentClient.send<string, GeneratePaymentDto>(PAYMENTPATTERN.INITIATE, generatePaymentDto)
     }
 
