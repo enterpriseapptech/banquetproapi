@@ -541,6 +541,7 @@ def deployService(Map svc) {
                     if pm2 list | grep -q ${containerName}; then
                         echo 'Stopping existing ${containerName} app...'
                         pm2 stop ${containerName} || true
+                        sleep 2
                     else
                         echo 'No existing ${containerName} process found.'
                     fi
