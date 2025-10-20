@@ -18,8 +18,6 @@ export class PaymentsService {
 
     async initiate(generatePaymentDto: GeneratePaymentDto): Promise<string>{
         try {
-
-            const email = 'egeregav@gmail.com'
             const invoice = await this.databaseService.invoice.findUnique({where:{id: generatePaymentDto.invoiceId}})
             if(!invoice){
                 throw new NotFoundException({
@@ -45,7 +43,7 @@ export class PaymentsService {
                         invoice.reference,
                         invoice.currency,
                         Number(invoice.amountDue),
-                        email
+                        generatePaymentDto.email
                     );
                     break;
                 default:
