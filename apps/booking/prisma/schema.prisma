@@ -52,7 +52,7 @@ model Booking {
 
   eventCenterBooking            EventCenterBooking?
   cateringBooking               CateringBooking?
-  requestQuote                  RequestQuote? @relation(fields: [requestQuoteId], references: [id]) // this quote might have a booking or not
+  requestQuote                  RequestQuote? @relation("BookingToRequestQuote", fields: [requestQuoteId], references: [id]) // this quote might have a booking or not
   confirmedTimeSlots            TimeSlot[]  @relation("ConfirmedTimeSlots") // a single booking can contains a list of timeslots, spanning even into days
   requestedTimeSlots            TimeSlot[]  @relation("RequestedTimeSlots")
 
@@ -86,7 +86,7 @@ model RequestQuote {
   deletedBy                     String?  
   billingDetails                Json
 
-  booking                       Booking?
+  booking                       Booking?  @relation("BookingToRequestQuote")
   requestedTimeSlots            TimeSlot[]  // a single booking can contains a list of timeslots, spanning even into days
   @@index([customerId])
   @@index([serviceId])

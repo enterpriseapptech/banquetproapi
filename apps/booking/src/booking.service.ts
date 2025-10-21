@@ -89,7 +89,7 @@ export class BookingService {
 
 			// validate customer account
 			let accounts = await firstValueFrom(this.userClient.send<UserDto[], UniqueIdentifierDto[]>(USERPATTERN.FINDMANYBYUNIQUEIDENTIFIER, [{id: createBookingDto.customerId}, {id: Service.serviceProviderId}]));
-			console.log({accounts})
+
 			accounts = Array.isArray(accounts) ? accounts : Object.values(accounts)
 			const customer = accounts.find((user) => user.id === createBookingDto.customerId)
 			const serviceProvider = accounts.find((user) => user.id !== createBookingDto.customerId)
@@ -173,7 +173,7 @@ export class BookingService {
 						
 						}
 					} 
-				:null,
+				: undefined,
 				cateringBooking: createBookingDto.serviceType === $Enums.ServiceType.CATERING ? {
 					create: {
 						cateringId: createBookingDto.serviceId,
@@ -185,8 +185,7 @@ export class BookingService {
 						noOfGuest: createBookingDto.noOfGuest,
 						specialRequirements: createBookingDto.specialRequirements as $Enums.SpecialRequirement[],
 					}
-				}:
-				null
+				}: undefined
 			}
 
 			const createInvoice: CreateInvoiceDto = {
