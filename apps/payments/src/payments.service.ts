@@ -18,7 +18,9 @@ export class PaymentsService {
 
     async initiate(generatePaymentDto: GeneratePaymentDto): Promise<string>{
         try {
+            console.log({generatePaymentDtoquery: generatePaymentDto})
             const invoice = await this.databaseService.invoice.findUnique({where:{id: generatePaymentDto.invoiceId}})
+            console.log({invoice})
             if(!invoice){
                 throw new NotFoundException({
                     statusCode: 404,
@@ -27,14 +29,17 @@ export class PaymentsService {
                 });
             }
             let paymentUrl:string;
+            console.log({invoice})
             switch (generatePaymentDto.paymentGateWay) {
                 case PaymentGateWay.stripe:
+                    console.log({invoice})
                     paymentUrl = await this.stripePaymentService.generatePaymentUrl(
                         invoice.id,
                         invoice.reference,
                         invoice.currency,
                         Number(invoice.amountDue)
                     );
+                    console.log({invoice})
                     break;
 
                 case PaymentGateWay.paystack:
@@ -51,9 +56,22 @@ export class PaymentsService {
             }
 
             return paymentUrl;
-        } catch (error) {
-
-            throw error
+        } catch (err:any) {
+            console.error({ err });
+            if(err.type && err.type === 'StripeInvalidRequestError'){
+                throw new InternalServerErrorException({
+                    statusCode: err.raw.statusCode || 500,
+                    message: `${err.raw.code}: ${err.message }`|| "Internal Server Error from Paystack",
+                    error: err.raw.rawType || "Sever error",
+                });
+            }
+            
+           
+            throw new InternalServerErrorException({
+                statusCode: err.response.status || 500,
+                message: `${err.response.message}: ${err.message }`|| "Internal Server Error from Paystack",
+                error: err.response.code || "Sever error",
+            });
         }
         
 
