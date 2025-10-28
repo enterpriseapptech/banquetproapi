@@ -6,9 +6,10 @@ import { PAYMENT_CLIENT } from '@shared/contracts';
 import { ClientProxyFactory } from '@nestjs/microservices';
 import { ClientConfigModule } from '../client-config/client-config.module';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { BookingModule } from '../booking/booking.module';
 
 @Module({
-    imports: [ClientConfigModule],
+    imports: [ClientConfigModule, BookingModule],
     controllers: [PaymentController, InvoiceController, PaymentMethodController],
     providers: [PaymentService, InvoiceService,PaymentMethodService, CloudinaryService,
         ClientConfigService,

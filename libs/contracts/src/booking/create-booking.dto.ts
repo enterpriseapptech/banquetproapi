@@ -19,6 +19,7 @@ import {
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { BookingSource, Currency, ServiceType, SpecialRequirement } from './booking.dto';
 import { Type } from 'class-transformer';
+import { UserDto } from '../users';
 
 
 export class InvoiceItem {
@@ -63,6 +64,17 @@ export class CreateBookingDto {
     @IsNotEmpty()
     customerId: string;
 
+    @ApiProperty({ type: () => UserDto, required: false })
+    @IsObject()
+    @IsOptional()
+    customer?: UserDto;
+
+    @ApiProperty({ type: () => UserDto, required: false })
+    @IsObject()
+    @IsOptional()
+    serviceProvider?: UserDto;
+
+
     @ApiProperty({ type: 'string', required: true })
     @IsNotEmpty()
     @IsArray()
@@ -88,13 +100,19 @@ export class CreateBookingDto {
     @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
     subTotal: number;
 
+    @ApiProperty({ type: 'number', required: true })
+    @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
+    amountDue: number;
+
     @ApiProperty({ type: 'number', required: false })
     @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
+    @IsOptional()
     discount?: number;
 
     @ApiProperty({ type: 'number', required: true })
     @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
-    total: number;
+    @IsOptional()
+    total?: number;
 
     @ApiProperty({ type: 'boolean', required: true })
     @IsBoolean()
@@ -224,6 +242,16 @@ export class CreateRequestQuoteDto {
     @IsUUID()
     @IsNotEmpty()
     customerId: string;
+    
+    @ApiProperty({ type: () => UserDto, required: false })
+    @IsObject()
+    @IsOptional()
+    customer?: UserDto;
+
+    @ApiProperty({ type: () => UserDto, required: false })
+    @IsObject()
+    @IsOptional()
+    serviceProvider?: UserDto;
 
     @ApiProperty({ type: 'string', required: true })
     @IsNotEmpty()

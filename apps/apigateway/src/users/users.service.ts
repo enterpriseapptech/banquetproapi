@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { HttpException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { UpdateUserDto, CreateUserDto, USERPATTERN, UserDto, LoginUserDto, UserFilterDto, UpdateUserPasswordDto, } from '@shared/contracts/users';
+import { UpdateUserDto, CreateUserDto, USERPATTERN, UserDto, LoginUserDto, UserFilterDto, UpdateUserPasswordDto, UniqueIdentifierDto, } from '@shared/contracts/users';
 import { USER_CLIENT } from '@shared/contracts';
 
 
@@ -56,6 +56,10 @@ export class UsersService {
     
     findAll(limit: number, offset: number, search?: string, filter?: UserFilterDto) {
         return this.userClient.send<UserDto[], { limit: number, offset: number, search?: string, filter?: UserFilterDto }>(USERPATTERN.FINDALLUSERS, { limit, offset, search, filter })
+    }
+
+    findManyByUnique(data: UniqueIdentifierDto[]) {
+        return this.userClient.send<UserDto[], UniqueIdentifierDto[]>(USERPATTERN.FINDMANYBYUNIQUEIDENTIFIER, data)
     }
 
     findOne(id: string) {

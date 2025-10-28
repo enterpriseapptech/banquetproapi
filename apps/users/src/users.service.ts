@@ -320,7 +320,6 @@ export class UsersService {
     }
 
     async findManyByUnique(uniqueDetails: UniqueIdentifierDto[]): Promise<UserDto[]> {
-
         const users = await this.databaseService.user.findMany({
             where: {
                 OR: uniqueDetails.map((u) => ({
@@ -334,7 +333,6 @@ export class UsersService {
     }
 
     async findOne(id: string): Promise<UserDto> {
-        console.log("finding 1")
         const user = await this.databaseService.user.findUnique({
             where: {
                 id: id

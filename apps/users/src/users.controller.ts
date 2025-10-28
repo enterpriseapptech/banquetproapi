@@ -103,7 +103,7 @@ export class UsersController {
 	
 	@MessagePattern(USERPATTERN.FINDALLUSERS)
 	findAll(@Payload() data: {limit: number, offset: number, search?: string, filter?: UserFilterDto}) {
-		console.log({data})
+		
 		return from(this.userService.findAll(data.limit, data.offset, data.search, data.filter)).pipe(
 			catchError((err) => {
 				

@@ -22,5 +22,6 @@ import { CloudinaryModule } from '../cloudinary/cloudinary.module';
             inject: [ClientConfigService],
         }
     ],
+    exports: [CateringService],
 })
 export class CateringModule { }

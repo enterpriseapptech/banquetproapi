@@ -5,9 +5,12 @@ import { ClientProxyFactory } from '@nestjs/microservices';
 import { ClientConfigService } from '../client-config/client-config.service';
 import { BOOKING_CLIENT } from '@shared/contracts';
 import { ClientConfigModule } from '../client-config/client-config.module';
+import { UsersModule } from '../users/users.module';
+import { CateringModule } from '../catering/catering.module';
+import { EventcentersModule } from '../eventcenters/eventcenters.module';
 
 @Module({
-    imports:[ClientConfigModule],
+    imports:[ClientConfigModule, UsersModule, CateringModule, EventcentersModule],
     controllers: [BookingController, TimeSlotController, RequestQuoteController],
     providers: [
         BookingService,
@@ -25,5 +28,6 @@ import { ClientConfigModule } from '../client-config/client-config.module';
         }
 
     ],
+    exports: [BookingService],
 })
 export class BookingModule { }

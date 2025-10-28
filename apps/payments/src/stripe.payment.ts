@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { PaymentServiceInterface } from "./payment.interface";
 import { ConfigService } from "@nestjs/config";
 import Stripe from "stripe";
+import { PaymentReason } from "@shared/contracts/payments";
 
 @Injectable()
 export class StripePaymentService implements PaymentServiceInterface{
@@ -16,6 +17,7 @@ export class StripePaymentService implements PaymentServiceInterface{
         reference: string,
         currency: string,
         amount: number,
+        paymentReason: PaymentReason,
         email?: string,
     ): Promise<string> {
         const stripe = new Stripe(this.#stripeSecret, {})
@@ -27,7 +29,9 @@ export class StripePaymentService implements PaymentServiceInterface{
         receipt_email: email,
         metadata: {
             invoiceId,
-            reference
+            reference,
+            amountCharged: amount,
+            paymentReason
         }
         });
 

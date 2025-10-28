@@ -41,5 +41,6 @@ dotenv.config({ path: './apps/apigateway/.env' });
             inject: [ClientConfigService],
         }
     ],
+    exports: [UsersService],
 })
 export class UsersModule { }

@@ -16,6 +16,7 @@ import { CateringDto, CATERINGPATTERN} from '@shared/contracts/catering';
 import { BillingAddress, CreateInvoiceDto, InvoiceDto, InvoiceItem, INVOICEPATTERN , InvoiceStatus as PaymentInvoiceStatus} from '@shared/contracts/payments';
 import { instanceToPlain } from 'class-transformer';
 import {v4 as uuidv4 } from 'uuid'
+import { Decimal } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class BookingService {
@@ -31,121 +32,18 @@ export class BookingService {
 	async create(createBookingDto: CreateBookingDto): Promise<InvoiceDto> {
 		try {
 			let notificationSubject: string;
-			let Service: EventCenterDto | CateringDto;
-			let amountDue: number;
-			let itemsTotal = 0;
-
-			switch (createBookingDto.serviceType) {
-				case $Enums.ServiceType.EVENTCENTER:
-					Service = await firstValueFrom(this.eventClient.send<EventCenterDto, string>(EVENTCENTERPATTERN.FINDONEBYID, createBookingDto.serviceId))
-					
-					if (!Service) {
-						throw new NotFoundException('event center not found for booking');
-
-					}else if(Service.status !== 'ACTIVE'){
-						throw new BadRequestException(`This service is inactive and can not accept booking`, {
-							cause: new Error(),
-							description: `This service is inactive and can not accept booking`
-						});
-						
-					}else if(createBookingDto.noOfGuest > Service.sittingCapacity){
-						throw new BadRequestException(`Sitting capacity error`, {
-							cause: new Error(),
-							description: `Your number of guest exceed the sitting capacity`
-						});
-
-					}else if(createBookingDto.createdBy !== Service.serviceProviderId){
-						amountDue = (Service.depositPercentage /100) * (Service.pricingPerSlot * createBookingDto.timeslotId.length)
-						createBookingDto.discount = Service.discountPercentage ?? 0	
-					}else if(createBookingDto.createdBy === Service.serviceProviderId && createBookingDto.discount === undefined){
-						createBookingDto.discount = Service.discountPercentage
-					}
-					
-					break;
-				case $Enums.ServiceType.CATERING:
-					Service = await firstValueFrom(this.cateringClient.send<CateringDto, string>(CATERINGPATTERN.FINDONEBYID, createBookingDto.serviceId))
-					if (!Service) {
-						throw new NotFoundException('Catering service not found for booking');
-					}else if(Service.status !== 'ACTIVE'){
-						throw new BadRequestException(`This service is inactive and can not accept booking`, {
-							cause: new Error(),
-							description: `This service is inactive and can not accept booking`
-						});
-					}else if(createBookingDto.createdBy !== Service.serviceProviderId){
-						throw new BadRequestException(`Bookign error`, {
-							cause: new Error(),
-							description: `Only requests for quotes are allowed`
-						});
-
-					}else if(createBookingDto.createdBy === Service.serviceProviderId && createBookingDto.discount === undefined){
-						createBookingDto.discount = Service.discountPercentage
-					}
-					
-					break;
-				default:
-					throw new NotFoundException('Invalid service been booked');
-					
-			}
-
-			// validate customer account
-			let accounts = await firstValueFrom(this.userClient.send<UserDto[], UniqueIdentifierDto[]>(USERPATTERN.FINDMANYBYUNIQUEIDENTIFIER, [{id: createBookingDto.customerId}, {id: Service.serviceProviderId}]));
-
-			accounts = Array.isArray(accounts) ? accounts : Object.values(accounts)
-			const customer = accounts.find((user) => user.id === createBookingDto.customerId)
-			const serviceProvider = accounts.find((user) => user.id !== createBookingDto.customerId)
-
-			if (!customer) {
-				throw new NotFoundException('We could not verify user account', {
-					cause: new Error(),
-					description: 'We could not verify user account'
-				});
-				
-			}else if (customer.status !== "ACTIVE") {
-				throw new NotFoundException('User account is restricted or deacitvated!', {
-					cause: new Error(),
-					description: 'User account is restricted or deacitvated!'
-				});
-			}
-
-			if (!serviceProvider) {
-				throw new NotFoundException('We could not verify this service Provider account', {
-					cause: new Error(),
-					description: 'We could not verify user account'
-				});
-				
-			}else if (serviceProvider.status !== "ACTIVE") {
-				throw new NotFoundException('Service Provider account is restricted or deacitvated!', {
-					cause: new Error(),
-					description: 'User account is restricted or deacitvated!'
-				});
-			}
-
-			if(!createBookingDto.items){
-				throw new BadRequestException('We could not validate your booking', {
-					cause: new Error(),
-					description: 'We could not validate your booking, as the items been paid for are not listed'
-				});
-			}
-			createBookingDto.items.map((item)=>{itemsTotal += item.amount})
-			const discount = itemsTotal * (createBookingDto.discount /100)
-			if((itemsTotal - discount) !== (createBookingDto.total)){
-				throw new BadRequestException(`We could not generate invoice, total amount is incorrect for the items. Should be ${itemsTotal - discount}`, {
-					cause: new Error(),
-					description: 'We could not generate invoice, total amount is incorrect for the items'
-				}); 
-			}
 			const bookingId = uuidv4();
 			const newBookingInput: Prisma.BookingCreateInput = {
 				id: bookingId,
 				customerId: createBookingDto.customerId,
-				serviceProvider: serviceProvider.id,
+				serviceProvider: createBookingDto.serviceProvider.id,
 				requestQuote: createBookingDto.requestQuoteId 
 				? { connect: { id: createBookingDto.requestQuoteId } }
 				: undefined,
 				serviceId: createBookingDto.serviceId,
 				serviceType: createBookingDto.serviceType as $Enums.ServiceType,
 				subTotal: createBookingDto.subTotal,
-				discount: discount,
+				discount: createBookingDto.discount,
 				total: createBookingDto.total,
 				isTermsAccepted: createBookingDto.isTermsAccepted,
 				isCancellationPolicyAccepted: createBookingDto.isCancellationPolicyAccepted,
@@ -194,7 +92,7 @@ export class BookingService {
 				items: createBookingDto.items,
 				subTotal: createBookingDto.subTotal,
 				discount: createBookingDto.discount,
-				amountDue: amountDue ? amountDue : (Service.depositPercentage /100) * createBookingDto.total,
+				amountDue: createBookingDto.amountDue,
 				total: createBookingDto.total,
 				currency: createBookingDto.currency,
 				note: createBookingDto.serviceNotes,
@@ -225,7 +123,7 @@ export class BookingService {
 				data: {
 					subject: notificationSubject,
 					message: `A customer just booked your service, view details and confirm booking`,
-					recipientEmail: customer.email,
+					recipientEmail: createBookingDto.customer.email,
 				},
 			});
 
@@ -313,21 +211,57 @@ export class BookingService {
 	}
 
 
-	async update(id: string, updateBookingDto: UpdateBookingDto): Promise<BookingDto> {
+	// async update(id: string, updateBookingDto: UpdateBookingDto): Promise<BookingDto> {
+	// 	try {
+	// 		const updateEventCenterInput: Prisma.BookingUpdateInput = {
+	// 			...updateBookingDto,
+	// 			paymentStatus: updateBookingDto.paymentStatus ? updateBookingDto.paymentStatus as $Enums.InvoiceStatus : undefined,
+	// 			status: updateBookingDto.status ? updateBookingDto.status as $Enums.BookingStatus : undefined,
+	// 			source: updateBookingDto.source ? updateBookingDto.source as $Enums.BookingSource : undefined,
+	// 		};
+	// 		const booking = await this.databaseService.booking.update({
+	// 			where: { id },
+	// 			data: updateEventCenterInput
+	// 		});
+
+	// 		const bookingDto: BookingDto = {
+	// 			...booking,
+	// 			subTotal: Number(booking.subTotal),
+	// 			discount: Number(booking.discount),
+	// 			total: Number(booking.total),
+	// 			status: booking.status as unknown as BookingStatus,
+	// 			paymentStatus: booking.paymentStatus as unknown as InvoiceStatus,
+	// 			serviceType: booking.serviceType as unknown as ServiceType,
+	// 			source: booking.source as unknown as BookingSource
+	// 		};
+
+	// 		return bookingDto;
+	// 	} catch (error) {
+	// 		throw new ConflictException(error);
+	// 	}
+	// }
+
+	 
+	
+	async updatePayment(id: string, amountPaid: Decimal): Promise<BookingDto> {
 		try {
-			const updateEventCenterInput: Prisma.BookingUpdateInput = {
-				...updateBookingDto,
-				paymentStatus: updateBookingDto.paymentStatus ? updateBookingDto.paymentStatus as $Enums.InvoiceStatus : undefined,
-				status: updateBookingDto.status ? updateBookingDto.status as $Enums.BookingStatus : undefined,
-				source: updateBookingDto.source ? updateBookingDto.source as $Enums.BookingSource : undefined,
-			};
-			const booking = await this.databaseService.booking.update({
+			
+			const booking = await this.databaseService.booking.findUnique({
 				where: { id },
-				data: updateEventCenterInput
+			});
+			let paymentStatus: $Enums.InvoiceStatus
+			if(amountPaid > booking.total || amountPaid == booking.total){
+			   paymentStatus = $Enums.InvoiceStatus.PAID
+
+			}else{
+				paymentStatus = $Enums.InvoiceStatus.PARTIALLY_PAID
+			}
+			const updatedBooking = await this.databaseService.booking.update({
+				where: { id }, data: { paymentStatus }
 			});
 
 			const bookingDto: BookingDto = {
-				...booking,
+				...updatedBooking,
 				subTotal: Number(booking.subTotal),
 				discount: Number(booking.discount),
 				total: Number(booking.total),
@@ -337,11 +271,47 @@ export class BookingService {
 				source: booking.source as unknown as BookingSource
 			};
 
+						// validate customer account
+			const accounts = await firstValueFrom(this.userClient.send<UserDto[], UniqueIdentifierDto[]>(USERPATTERN.FINDMANYBYUNIQUEIDENTIFIER, [{id: booking.customerId}, {id: booking.serviceProvider}]));
+
+			const customer = accounts.find((user) => user.id === booking.customerId)
+			const serviceProvider = accounts.find((user) => user.id !== booking.customerId)
+
+			if (!customer) {
+				// fail silently
+			}else{
+				// send notification to customer and service provider
+				this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
+					type: 'EMAIL',
+					recipientId: customer.id,
+					data: {
+						subject: "Payment Invoice",
+						message: `We received your payment`,
+						recipientEmail: customer.email,
+					},
+				});
+			}
+
+			if (!serviceProvider || serviceProvider.status !== "ACTIVE") {
+				// fail silently
+			}else {
+				// send notification to customer and service provider
+				this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
+					type: 'EMAIL',
+					recipientId: customer.id,
+					data: {
+						subject: "Payment Invoice",
+						message: `We received your payment`,
+						recipientEmail: customer.email,
+					},
+				});
+			}
 			return bookingDto;
 		} catch (error) {
 			throw new ConflictException(error);
 		}
 	}
+
 
 	async remove(id: string, updaterId: string): Promise<BookingDto> {
 
@@ -560,93 +530,27 @@ export class RequestQuoteService {
 		private readonly databaseService: DatabaseService
 	) { }
 
-	async create(createBookingDto: CreateRequestQuoteDto): Promise<RequestQuoteDto> {
+	async create(createRequestQuoteDto: CreateRequestQuoteDto): Promise<RequestQuoteDto> {
 		try {
 			let notificationSubject: string;
-			let Service: EventCenterDto | CateringDto;
-			
-			
-			switch (createBookingDto.serviceType) {
-				case $Enums.ServiceType.EVENTCENTER:
-					Service = await firstValueFrom(this.eventClient.send<EventCenterDto, string>(EVENTCENTERPATTERN.FINDONEBYID, createBookingDto.serviceId))
-					
-					if (!Service) {
-						throw new NotFoundException('event center not found for booking');
-
-					}else if(Service.status !== 'ACTIVE'){
-						throw new BadRequestException(`This service is inactive and can not accept booking`, {
-							cause: new Error(),
-							description: `This service is inactive and can not accept booking`
-						});
-						
-					}
-					
-					break;
-				case $Enums.ServiceType.CATERING:
-					Service = await firstValueFrom(this.cateringClient.send<CateringDto, string>(CATERINGPATTERN.FINDONEBYID, createBookingDto.serviceId))
-					if (!Service) {
-						throw new NotFoundException('Catering service not found for booking');
-					}else if(Service.status !== 'ACTIVE'){
-						throw new BadRequestException(`This service is inactive and can not accept booking`, {
-							cause: new Error(),
-							description: `This service is inactive and can not accept booking`
-						});
-					}
-					
-					break;
-				default:
-					throw new NotFoundException('Invalid service been booked');
-					
-			}
-
-			let accounts = await firstValueFrom(this.userClient.send<UserDto[], UniqueIdentifierDto[]>(USERPATTERN.FINDMANYBYUNIQUEIDENTIFIER, [{id: createBookingDto.customerId}, {id: Service.serviceProviderId}]));
-			accounts = Array.isArray(accounts) ? accounts : Object.values(accounts)
-			const customer = accounts.find((user) => user.id === createBookingDto.customerId)
-			const serviceProvider = accounts.find((user) => user.id !== createBookingDto.customerId)
-
-			if (!customer) {
-				throw new NotFoundException('We could not verify user account', {
-					cause: new Error(),
-					description: 'We could not verify user account'
-				});
-				
-			}else if (customer.status !== "ACTIVE") {
-				throw new NotFoundException('User account is restricted or deacitvated!', {
-					cause: new Error(),
-					description: 'User account is restricted or deacitvated!'
-				});
-			}
-
-			if (!serviceProvider) {
-				throw new NotFoundException('We could not verify this service Provider account', {
-					cause: new Error(),
-					description: 'We could not verify user account'
-				});
-				
-			}else if (serviceProvider.status !== "ACTIVE") {
-				throw new NotFoundException('Service Provider account is restricted or deacitvated!', {
-					cause: new Error(),
-					description: 'User account is restricted or deacitvated!'
-				});
-			}
-
+			console.log({createRequestQuoteDto})
 			const newRequestQuoteInput: Prisma.RequestQuoteCreateInput = {
-				customerId: createBookingDto.customerId,
-				serviceId: createBookingDto.serviceId,
-				serviceType: createBookingDto.serviceType as $Enums.ServiceType,
-				serviceProvider: serviceProvider.id,
-				budget: createBookingDto.budget,
-				isTermsAccepted: createBookingDto.isTermsAccepted,
-				isCancellationPolicyAccepted: createBookingDto.isCancellationPolicyAccepted,
-				isLiabilityWaiverSigned: createBookingDto.isLiabilityWaiverSigned,
+				customerId: createRequestQuoteDto.customerId,
+				serviceId: createRequestQuoteDto.serviceId,
+				serviceType: createRequestQuoteDto.serviceType as $Enums.ServiceType,
+				serviceProvider: createRequestQuoteDto.serviceProvider.id,
+				budget: createRequestQuoteDto.budget,
+				isTermsAccepted: createRequestQuoteDto.isTermsAccepted,
+				isCancellationPolicyAccepted: createRequestQuoteDto.isCancellationPolicyAccepted,
+				isLiabilityWaiverSigned: createRequestQuoteDto.isLiabilityWaiverSigned,
 				quoteReference: Math.random().toString(16).substring(2, 8),
-				source: createBookingDto.source as $Enums.BookingSource,
+				source: createRequestQuoteDto.source as $Enums.BookingSource,
 				status: $Enums.InvoiceStatus.GENERATED,
-				customerNotes: createBookingDto.customerNotes,
+				customerNotes: createRequestQuoteDto.customerNotes,
 				requestedTimeSlots: {
-					connect: createBookingDto.timeslotId.map((singleId) => {return {id: singleId}})
+					connect: createRequestQuoteDto.timeslotId.map((singleId) => {return {id: singleId}})
 				},
-				billingDetails: instanceToPlain(createBookingDto.billingAddress)
+				billingDetails: instanceToPlain(createRequestQuoteDto.billingAddress)
 			}
 
 			if ($Enums.ServiceType.EVENTCENTER) {
@@ -660,11 +564,11 @@ export class RequestQuoteService {
 			//  notify service provider of booking
 			this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
 				type: 'EMAIL',
-				recipientId: serviceProvider.id,
+				recipientId: createRequestQuoteDto.serviceProvider.id,
 				data: {
 					subject: notificationSubject,
 					message: `A customer just booked your service, view details and confirm booking`,
-					recipientEmail: serviceProvider.email,
+					recipientEmail: createRequestQuoteDto.serviceProvider.email,
 				},
 			});
 			return {

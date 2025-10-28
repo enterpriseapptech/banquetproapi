@@ -1,6 +1,7 @@
 import axios from "axios";
 import { PaymentServiceInterface } from "./payment.interface";
 import { InternalServerErrorException } from "@nestjs/common";
+import { PaymentReason } from "@shared/contracts/payments";
 
 export class PaystackPaymentService implements PaymentServiceInterface{
     async generatePaymentUrl(
@@ -8,6 +9,7 @@ export class PaystackPaymentService implements PaymentServiceInterface{
         reference: string,
         currency: string,
         amount: number,
+        paymentReason: PaymentReason,
         email?: string,
         callback_url?: string
     ): Promise<string> {
@@ -25,7 +27,8 @@ export class PaystackPaymentService implements PaymentServiceInterface{
                 metadata: {
                     invoiceId,
                     reference,
-                    amountCharged: amount
+                    amountCharged: amount,
+                    paymentReason
                 }
             }
             const initilizePaystackPayment =  await axios.post('https://api.paystack.co/transaction/initialize', body, {headers})

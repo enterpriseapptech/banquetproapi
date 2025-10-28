@@ -13,6 +13,7 @@ export class BookingService {
     ) { }
 
     create(createBookingDto: CreateBookingDto) {
+       
         return this.bookingClient.send<BookingDto, CreateBookingDto>(BOOKINGPATTERN.CREATE, createBookingDto)
     }
     
@@ -37,6 +38,13 @@ export class BookingService {
         return this.bookingClient.send<BookingDto, { id: string, updateBookingDto: UpdateBookingDto }>(BOOKINGPATTERN.UPDATE, {
             id,
             updateBookingDto
+        })
+    }
+
+    updatePayment(id: string, amount: number) {
+        return this.bookingClient.emit<BookingDto, { id: string, amount: number }>(BOOKINGPATTERN.UPDATEPAYMENT, {
+            id,
+            amount
         })
     }
 

@@ -23,5 +23,6 @@ import { CloudinaryModule } from '../cloudinary/cloudinary.module';
         inject: [ClientConfigService],
     }
   ],
+  exports: [EventcentersService],
 })
 export class EventcentersModule {}

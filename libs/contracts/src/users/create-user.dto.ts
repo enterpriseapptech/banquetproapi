@@ -13,7 +13,6 @@ export enum ServiceType {
     EVENTCENTERS= 'EVENTCENTERS',
     CATERING= 'CATERING',
     ALL= 'ALL'
-    
 }
 
 

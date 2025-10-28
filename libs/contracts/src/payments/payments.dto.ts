@@ -54,6 +54,10 @@ export class PaymentMethodDto {
 
 export class PaymentDto {
     id: string;
+    totalPaymentDue?: number;
+    totalPaymentPaid?: number;
+    bookingId?: string;
+    subscritpionId?: string;
     userId: string;
     user?: {name: string}; // can populate the user object depending on use case
     amount: number;

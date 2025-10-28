@@ -4,14 +4,16 @@ import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
 import {
     CreateInvoiceDto,
+    CreatePaymentDto,
     //  CreatePaymentDto, 
-    CreatePaymentMethodDto, GeneratePaymentDto, UpdatePaymentDto, UpdatePaymentMethodDto
+    CreatePaymentMethodDto, GeneratePaymentDto, IPaymentStatus, PaymentMethod, UpdatePaymentDto, UpdatePaymentMethodDto
 } from '@shared/contracts/payments';
 import { firstValueFrom } from 'rxjs';
 import { UserDto } from '@shared/contracts/users';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { ApiTags } from '@nestjs/swagger';
+import { BookingService } from '../booking/booking.service';
 
 
 interface AuthenticatedRequest extends Request {
@@ -67,7 +69,11 @@ export class InvoiceController {
 @ApiTags('payment')
 @Controller('payment')
 export class PaymentController {
-    constructor(private readonly paymentService: PaymentService) { }
+    constructor(private readonly paymentService: PaymentService,
+        private readonly bookingService: BookingService
+    ) { }
+
+
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post('initiate')
@@ -76,19 +82,53 @@ export class PaymentController {
     }
 
 
-    // @Post('webhook')
-    // create(@Body() createPaymentDto: any) {
-    //     console.log({ createPaymentDto });
-    //     // return this.paymentService.create(createPaymentDto);
-    // }
-
-
     @Post('webhook')
     @HttpCode(HttpStatus.OK)
-    create(@Body() payload: any) {
-        console.log('🔔 Stripe Event Received:');
-        console.log(JSON.stringify(payload, null, 2));
-        return { received: true };
+    async create(@Body() payload: any) {
+        try {
+             let paymentData: CreatePaymentDto 
+            if(payload.event && payload.event === 'charge.success') {
+                // paystack payment succeeded
+                paymentData = {
+                invoiceId: payload.data.metadata.invoiceId, 
+                reference: payload.data.metadata.reference,
+                paymentReference: payload.data.reference,
+                amountCharged: payload.data.metadata.amountCharged,
+                amount: payload.data.amount/100,
+                paymentMethod: PaymentMethod.PAYSTACK,
+                currency: payload.data.currency,
+                paidAt: payload.data.paid_at,
+                status: payload.data.status === 'success' ? IPaymentStatus.COMPLETED :  IPaymentStatus.FAILED,
+                paymentReason: payload.data.metadata.paymentReason,
+                transactionId: String(payload.data.id),
+                };
+            }else if(payload.type === 'payment_intent.succeeded') {
+                // stripe payment succeeded
+                paymentData = {
+                paymentReason: payload.data.object.metadata.paymentReason,
+                transactionId: payload.data.object.id,
+                invoiceId: payload.data.object.metadata.invoiceId, 
+                reference: payload.data.object.metadata.reference,
+                paymentReference: payload.request.idempotency_key,
+                amountCharged: payload.data.object.metadata.amountCharged/100,
+                amount: payload.data.object.amount_received/100,
+                paymentMethod: PaymentMethod.STRIPE,
+                currency: payload.data.object.currency.toUpperCase(),
+                paidAt: new Date(payload.data.object.created * 1000).toISOString(),
+                status: payload.data.object.status === 'succeeded' ? IPaymentStatus.COMPLETED :  IPaymentStatus.FAILED,
+                };
+            }
+            const payment = await firstValueFrom(this.paymentService.create(paymentData))
+            console.log({payment})
+            await this.bookingService.updatePayment(payment.bookingId, payment.totalPaymentPaid );
+            
+            return { received: true };
+        } catch (error) {
+            console.log({error})
+            // console.log({payload})
+            return { received: true };
+        }
+       
     }
 
     @Get(':id')
@@ -102,6 +142,7 @@ export class PaymentController {
         @Query('offset') offset: number,
         @Query('search') search?: string,
     ) {
+        console.log({limit, offset, search})
         return this.paymentService.findAll(limit, offset, search);
     }
 

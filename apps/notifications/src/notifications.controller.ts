@@ -58,28 +58,28 @@ export class NotificationsController {
 }
 
 
-@Controller()
-export class ReviewController {
-  constructor(private readonly reviewService: ReviewService) {}
+// @Controller()
+// export class ReviewController {
+//   constructor(private readonly reviewService: ReviewService) {}
 
-  @MessagePattern(REVIEWPATTERN.CREATE)
-  create(@Payload() dto: CreateReviewDto) {
-    return this.reviewService.create(dto);
-  }
+//   @MessagePattern(REVIEWPATTERN.CREATE)
+//   create(@Payload() dto: CreateReviewDto) {
+//     return this.reviewService.create(dto);
+//   }
 
-  @MessagePattern(REVIEWPATTERN.UPDATE)
-  update(@Payload() data: { reviewId: string; dto: UpdateReviewDto }) {
-    return this.reviewService.update(data.reviewId, data.dto);
-  }
+//   @MessagePattern(REVIEWPATTERN.UPDATE)
+//   update(@Payload() data: { reviewId: string; dto: UpdateReviewDto }) {
+//     return this.reviewService.update(data.reviewId, data.dto);
+//   }
 
-  @MessagePattern(REVIEWPATTERN.PERMENENTDELETE)
-  delete(@Payload() id: string ) {
-    return this.reviewService.permanentDelete(id);
-  }
+//   @MessagePattern(REVIEWPATTERN.PERMENENTDELETE)
+//   delete(@Payload() id: string ) {
+//     return this.reviewService.permanentDelete(id);
+//   }
 
 
-  @MessagePattern(REVIEWPATTERN.FINDALL)
-  findAll(@Payload() data: {limit: number, offset: number, search?: string, filter?: ReviewFilter}) {
-    return this.reviewService.findAll(data.limit, data.offset, data.search, data.filter );
-  }
-}
+//   @MessagePattern(REVIEWPATTERN.FINDALL)
+//   findAll(@Payload() data: {limit: number, offset: number, search?: string, filter?: ReviewFilter}) {
+//     return this.reviewService.findAll(data.limit, data.offset, data.search, data.filter );
+//   }
+// }

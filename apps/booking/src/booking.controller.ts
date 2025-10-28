@@ -1,8 +1,11 @@
 import { Controller } from '@nestjs/common';
 import { BookingService, RequestQuoteService, TimeSlotService } from './booking.service';
-import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
+import { EventPattern, MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import { catchError, from, throwError } from 'rxjs';
-import { BOOKINGPATTERN, CreateBookingDto, CreateManyTimeSlotDto, CreateRequestQuoteDto, ManyRequestTimeSlotDto, REQUESTQUOTEPATTERN, TIMESLOTPATTERN, UpdateBookingDto, UpdateRequestQuoteDto, UpdateTimeslotDto } from '@shared/contracts/booking';
+import { BOOKINGPATTERN, CreateBookingDto, CreateManyTimeSlotDto, CreateRequestQuoteDto, ManyRequestTimeSlotDto, REQUESTQUOTEPATTERN, TIMESLOTPATTERN, 
+    // UpdateBookingDto, 
+    UpdateRequestQuoteDto, UpdateTimeslotDto } from '@shared/contracts/booking';
+import { Decimal } from '@prisma/client/runtime/library';
 
 @Controller()
 export class BookingController {
@@ -10,7 +13,6 @@ export class BookingController {
 
     @MessagePattern(BOOKINGPATTERN.CREATE)
     create(@Payload() createBookingDto: CreateBookingDto) {
-        console.log({createBookingDto})
         return from(this.bookingService.create(createBookingDto)).pipe(
             catchError((err) => {
                 console.error("Error in bookingService:", err);
@@ -58,23 +60,38 @@ export class BookingController {
     
         }
     
-    @MessagePattern(BOOKINGPATTERN.UPDATE)
-        update(@Payload() data: { id: string, updateBookingDto: UpdateBookingDto}) {
-            const { id, updateBookingDto} = data
-        return from(this.bookingService.update(id, updateBookingDto)).pipe(
-                catchError((err) => {
-                    console.error("Error in EventService:", err);
-                    return throwError(() => new RpcException({
-                        statusCode: err.response.statusCode || 500,
-                        message: err.message || "Internal Server Error",
-                        error: err.response.error || "Sever error",
-                    }));
+    // @MessagePattern(BOOKINGPATTERN.UPDATE)
+    // update(@Payload() data: { id: string, updateBookingDto: UpdateBookingDto}) {
+    //     const { id, updateBookingDto} = data
+    // return from(this.bookingService.update(id, updateBookingDto)).pipe(
+    //         catchError((err) => {
+    //             console.error("Error in EventService:", err);
+    //             return throwError(() => new RpcException({
+    //                 statusCode: err.response.statusCode || 500,
+    //                 message: err.message || "Internal Server Error",
+    //                 error: err.response.error || "Sever error",
+    //             }));
+
+    //         })
+    //     );
+    // }
     
-                })
-            );
-    
-        }
-    
+    @EventPattern(BOOKINGPATTERN.UPDATEPAYMENT)
+    updatePayment(@Payload() data: { id: string, amountPaid: number }) {
+        const { id, amountPaid} = data
+        return from(this.bookingService.updatePayment(id, new Decimal(amountPaid))).pipe(
+            catchError((err) => {
+                console.error("Error in EventService:", err);
+                return throwError(() => new RpcException({
+                    statusCode: err.response.statusCode || 500,
+                    message: err.message || "Internal Server Error",
+                    error: err.response.error || "Sever error",
+                }));
+
+            })
+        );
+    }
+
     @MessagePattern(BOOKINGPATTERN.DELETE)
         remove(@Payload() data: { id: string, updaterId: string }) {
             const { id, updaterId } = data

@@ -3,6 +3,7 @@ export const BOOKINGPATTERN = {
     FINDONEBYID: 'booking.findOneById',
     CREATE: 'booking.create',
     UPDATE: 'booking.update',
+    UPDATEPAYMENT: 'booking.updatePayment',
     DELETE: 'booking.delete',
 }
 

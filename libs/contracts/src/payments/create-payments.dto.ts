@@ -22,6 +22,13 @@ export enum PaymentReason {
     SERVICEREQUEST = 'SERVICEREQUEST'
 }
 
+
+export enum PaymentMethod{
+  STRIPE = 'STRIPE',
+  PAYSTACK = 'PAYSTACK'
+}
+
+
 export enum IPaymentStatus {
     PENDING = 'PENDING',
     COMPLETED = 'COMPLETED',
@@ -363,20 +370,30 @@ export class GeneratePaymentDto {
     @ApiProperty()
     @IsString()
     email: string
+
+    @ApiProperty({ enum: PaymentReason })
+    @IsEnum(PaymentReason)
+    paymentReason: PaymentReason;
+
 }
 
 export class CreatePaymentDto {
     @ApiProperty()
     @IsString()
-    userId: string;
+    userId?: string;
+
+    @ApiProperty()
+    @IsString()
+    paidAt: string;
 
     @ApiProperty()
     @IsString()
     invoiceId: string;
 
-    @ApiProperty()
-    @IsString()
-    paymentMethodId: string;
+    @ApiProperty({ enum: PaymentMethod })
+    @IsEnum(PaymentMethod)
+    paymentMethod: PaymentMethod;
+
 
     @ApiProperty()
     @IsNumber()
@@ -389,6 +406,11 @@ export class CreatePaymentDto {
     @ApiProperty()
     @IsString()
     reference: string;
+
+    @ApiProperty()
+    @IsString()
+    paymentReference: string;
+
 
     @ApiProperty({ required: false, type: Object })
     @IsOptional()

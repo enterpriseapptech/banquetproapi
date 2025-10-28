@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { NotificationsController, ReviewController } from './notifications.controller';
-import { NotificationsService, ReviewService } from './notifications.service';
+import { NotificationsController } from './notifications.controller';
+import { NotificationsService } from './notifications.service';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ClientConfigModule } from '../client-config/client-config.module';
 import { DatabaseService } from '../database/database.service';
@@ -28,9 +28,11 @@ dotenv.config({ path: './apps/notifications/.env' });
             }
         }),
     ],
-    controllers: [NotificationsController, ReviewController],
+    controllers: [NotificationsController, 
+        // ReviewController
+    ],
     providers: [
-        ReviewService,
+        // ReviewService,
         NotificationsService,
         DatabaseService,
         
