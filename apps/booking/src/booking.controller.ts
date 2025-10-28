@@ -77,11 +77,12 @@ export class BookingController {
     // }
     
     @EventPattern(BOOKINGPATTERN.UPDATEPAYMENT)
-    updatePayment(@Payload() data: { id: string, amountPaid: number }) {
-        const { id, amountPaid} = data
-        return from(this.bookingService.updatePayment(id, new Decimal(amountPaid))).pipe(
+    updatePayment(@Payload() data: { id: string, amount: number }) {
+        console.log({data})
+        const { id, amount} = data
+        return from(this.bookingService.updatePayment(id, new Decimal(amount))).pipe(
             catchError((err) => {
-                console.error("Error in EventService:", err);
+                console.error("Error in Booking Service:", err);
                 return throwError(() => new RpcException({
                     statusCode: err.response.statusCode || 500,
                     message: err.message || "Internal Server Error",

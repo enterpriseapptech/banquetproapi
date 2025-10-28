@@ -42,6 +42,7 @@ export class BookingService {
     }
 
     updatePayment(id: string, amount: number) {
+        console.log({id, amount})
         return this.bookingClient.emit<BookingDto, { id: string, amount: number }>(BOOKINGPATTERN.UPDATEPAYMENT, {
             id,
             amount

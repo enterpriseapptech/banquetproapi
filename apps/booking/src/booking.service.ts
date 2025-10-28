@@ -272,8 +272,8 @@ export class BookingService {
 			};
 
 						// validate customer account
-			const accounts = await firstValueFrom(this.userClient.send<UserDto[], UniqueIdentifierDto[]>(USERPATTERN.FINDMANYBYUNIQUEIDENTIFIER, [{id: booking.customerId}, {id: booking.serviceProvider}]));
-
+			let accounts = await firstValueFrom(this.userClient.send<UserDto[], UniqueIdentifierDto[]>(USERPATTERN.FINDMANYBYUNIQUEIDENTIFIER, [{id: booking.customerId}, {id: booking.serviceProvider}]));
+			accounts = Array.isArray(accounts) ? accounts : Object.values(accounts)	
 			const customer = accounts.find((user) => user.id === booking.customerId)
 			const serviceProvider = accounts.find((user) => user.id !== booking.customerId)
 

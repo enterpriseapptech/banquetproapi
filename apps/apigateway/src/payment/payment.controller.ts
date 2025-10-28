@@ -119,7 +119,6 @@ export class PaymentController {
                 };
             }
             const payment = await firstValueFrom(this.paymentService.create(paymentData))
-            console.log({payment})
             await this.bookingService.updatePayment(payment.bookingId, payment.totalPaymentPaid );
             
             return { received: true };
