@@ -38,7 +38,6 @@ export class CountryController {
 
     @ApiOperation({ summary: 'Get all Country' })
     @ApiResponse({ status: 200, description: 'Success' })
-    @UseGuards(JwtAuthGuard, VerificationGuard)
     @Get()
     findAll(
         @Query('limit') limit: number,
@@ -125,7 +124,6 @@ export class StateController {
 
     @ApiOperation({ summary: 'Get all state' })
     @ApiResponse({ status: 200, description: 'Success' })
-    @UseGuards(JwtAuthGuard, VerificationGuard)
     @Get()
     findAll(
         @Query('limit') limit: number,
