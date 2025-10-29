@@ -213,7 +213,7 @@ export class NotificationsService {
 
 	async send(payload: NotificationInterface): Promise<void> {
 		const { type, recipientId, data } = payload;
-
+		console.log({data})
 		if (type === 'EMAIL') {
 			await this.retryOperation(() => this.sendEmail(payload));
 		}

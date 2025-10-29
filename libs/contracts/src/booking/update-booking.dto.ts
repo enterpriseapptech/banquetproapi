@@ -7,20 +7,20 @@ import { BookingStatus, InvoiceStatus } from './booking.dto';
 import { Type } from 'class-transformer';
 
 
-export class UpdateBookingDto extends PartialType(CreateBookingDto) {
-  @ApiProperty({
-    description: 'Discount applied to the booking, if any',
-    example: 10,
-    type: Number,
-  })
-  discount?: number;
+export class UpdateBookingDto {
 
+  @ApiProperty({ type: 'string', required: true })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  timeslotId?: string[];
 
   @ApiProperty({
     description: 'List of selected booking dates',
     example: ['2025-08-01T10:00:00Z', '2025-08-02T12:00:00Z'],
     type: [String],
   })
+  @IsOptional()
   bookingDates?: string[];
 
   @ApiProperty({
@@ -28,6 +28,7 @@ export class UpdateBookingDto extends PartialType(CreateBookingDto) {
     example: 'Customer prefers morning appointments.',
     type: String,
   })
+  @IsOptional()
   serviceNotes?: string;
 
   @ApiProperty({
@@ -35,6 +36,8 @@ export class UpdateBookingDto extends PartialType(CreateBookingDto) {
     example: 'Please bring cleaning supplies.',
     type: String,
   })
+
+  @IsOptional()
   customerNotes?: string;
 
   @ApiProperty({
@@ -52,8 +55,8 @@ export class UpdateBookingDto extends PartialType(CreateBookingDto) {
     example: InvoiceStatus.PAID,
   })
   @IsEnum(InvoiceStatus)
-  @IsNotEmpty()
-  paymentStatus: InvoiceStatus;
+  @IsOptional()
+  paymentStatus?: InvoiceStatus;
 
   @ApiProperty({
     description: 'Current booking status',
@@ -61,8 +64,8 @@ export class UpdateBookingDto extends PartialType(CreateBookingDto) {
     example: BookingStatus.CONFIRMED,
   })
   @IsEnum(BookingStatus)
-  @IsNotEmpty()
-  status: BookingStatus;
+  @IsOptional()
+  status?: BookingStatus;
 
   @ApiProperty({
     description: 'User ID of the person who rescheduled the booking',
@@ -112,15 +115,15 @@ export class UpdateBookingDto extends PartialType(CreateBookingDto) {
 
 
   //   extra fields for eventcenters and catering booking
-  eventName
-  eventTheme
-  eventType
-  description
-  noOfGuest
-  specialRequirements
-  images
-  dishTypes
-  cuisine
+  // eventName
+  // eventTheme
+  // eventType
+  // description
+  // noOfGuest
+  // specialRequirements
+  // images
+  // dishTypes
+  // cuisine
 
 }
 
@@ -133,7 +136,7 @@ export class UpdateRequestQuoteDto {
   budget?: string;
 
   @ApiProperty({ type: 'string', required: true })
-  @IsNotEmpty()
+    @IsOptional()
   @IsArray()
   @IsString({ each: true })
   timeslotId: string[];
@@ -150,7 +153,7 @@ export class UpdateRequestQuoteDto {
     example: { street: '123 Main St', city: 'Lagos', country: 'Nigeria' },
     type: BillingAddress,
   })
-  @IsNotEmpty()
+    @IsOptional()
   @ValidateNested()
   @Type(() => BillingAddress)
   billingAddress: BillingAddress;
@@ -161,7 +164,7 @@ export class UpdateRequestQuoteDto {
     example: BookingStatus.CONFIRMED,
   })
   @IsEnum(BookingStatus)
-  @IsNotEmpty()
+    @IsOptional()
   status: InvoiceStatus;
 
 

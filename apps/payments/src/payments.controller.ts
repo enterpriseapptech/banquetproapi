@@ -431,9 +431,9 @@ export class InvoiceController {
   constructor(private readonly invoiceService: InvoiceService ) { }
 
   
-  @MessagePattern(INVOICEPATTERN.CREATE)
-  create(@Payload() createInvoiceDto: CreateInvoiceDto) {
-    return from(this.invoiceService.create(createInvoiceDto)).pipe(
+  @MessagePattern(INVOICEPATTERN.CREATESECONDINVOICE)
+  createSecondInvoice(@Payload() createInvoiceDto: CreateInvoiceDto) {
+    return from(this.invoiceService.createSecondInvoice(createInvoiceDto)).pipe(
       catchError((err) => {
         console.error("Error in InvoiceService:", err);
         return throwError(() => new RpcException({

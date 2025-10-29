@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, NotFoundException, BadRequestException } from '@nestjs/common';
 import { BookingService, RequestQuoteService, TimeSlotService } from './booking.service';
-import { CreateBookingDto, CreateManyTimeSlotDto, CreateRequestQuoteDto, ManyRequestTimeSlotDto, ServiceType, UpdateBookingDto, UpdateRequestQuoteDto, UpdateTimeslotDto, } from '@shared/contracts/booking';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { BookingStatus, CreateBookingDto, CreateManyTimeSlotDto, CreateRequestQuoteDto, ManyRequestTimeSlotDto, ServiceType, UpdateBookingDto, UpdateRequestQuoteDto, UpdateTimeslotDto, } from '@shared/contracts/booking';
 import { UserDto } from '@shared/contracts/users';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
@@ -21,7 +22,7 @@ interface AuthenticatedRequest extends Request {
 @Controller('booking')
 export class BookingController {
     constructor(private readonly bookingService: BookingService,
-        private readonly cateringService: CateringService, 
+        private readonly cateringService: CateringService,
         private readonly eventcentersService: EventcentersService,
         private readonly userService: UsersService
     ) { }
@@ -35,17 +36,17 @@ export class BookingController {
             let actualAmountDue: number;
             const requestuser: UserDto = await firstValueFrom(req.user)
             createBookingDto.createdBy = requestuser.id
-            createBookingDto.items.map((item)=>{itemsTotal += item.amount})
-            if(!createBookingDto.items){
+            createBookingDto.items.map((item) => { itemsTotal += item.amount })
+            if (!createBookingDto.items) {
                 throw new BadRequestException('We could not validate your booking', {
                     cause: new Error(),
                     description: 'We could not validate your booking, as the items been paid for are not listed'
                 });
-            }else if(itemsTotal !== createBookingDto.subTotal){
+            } else if (itemsTotal !== createBookingDto.subTotal) {
                 throw new BadRequestException(`We could not generate invoice, sub-total amount is incorrect for the items. Should be ${itemsTotal}`, {
                     cause: new Error(),
                     description: 'We could not generate invoice, sub-total amount is incorrect for the items'
-                }); 
+                });
             }
             switch (createBookingDto.serviceType) {
                 case ServiceType.EVENTCENTER:
@@ -67,7 +68,7 @@ export class BookingController {
 
                     }
                     else if (createBookingDto.createdBy !== Service.serviceProviderId) {
-                        createBookingDto.discount =((Service.depositPercentage ?? 0) / 100) * (Service.pricingPerSlot * createBookingDto.timeslotId.length)
+                        createBookingDto.discount = ((Service.depositPercentage ?? 0) / 100) * (Service.pricingPerSlot * createBookingDto.timeslotId.length)
                         createBookingDto.total = (Service.pricingPerSlot * createBookingDto.timeslotId.length) - createBookingDto.discount;
                         actualAmountDue = createBookingDto.total * (Service.depositPercentage / 100)
                     } else if (createBookingDto.createdBy === Service.serviceProviderId && createBookingDto.discount === undefined) {
@@ -75,17 +76,17 @@ export class BookingController {
                         actualAmountDue = createBookingDto.amountDue
                         createBookingDto.total = createBookingDto.subTotal - createBookingDto.discount;
                     }
-                    if(createBookingDto.amountDue > createBookingDto.total){
-                            throw new BadRequestException(`Amount due can not be more than total amount for service. A discount of ${createBookingDto.discount} was applied and total is ${createBookingDto.total}`, {
-                                cause: new Error(),
-                                description: 'We could not generate invoice, your booking amount is not okay'
-                            }); 
-                            
+                    if (createBookingDto.amountDue > createBookingDto.total) {
+                        throw new BadRequestException(`Amount due can not be more than total amount for service. A discount of ${createBookingDto.discount} was applied and total is ${createBookingDto.total}`, {
+                            cause: new Error(),
+                            description: 'We could not generate invoice, your booking amount is not okay'
+                        });
+
                     }
                     break;
                 case ServiceType.CATERING:
                     Service = await firstValueFrom(this.cateringService.findOne(createBookingDto.serviceId))
-                    actualAmountDue = createBookingDto.amountDue 
+                    actualAmountDue = createBookingDto.amountDue
 
                     if (!Service) {
                         throw new NotFoundException('Catering service not found for booking');
@@ -103,38 +104,38 @@ export class BookingController {
                         });
 
                     } else if (createBookingDto.createdBy === Service.serviceProviderId) {
-                        if( createBookingDto.discount === undefined){
+                        if (createBookingDto.discount === undefined) {
                             createBookingDto.discount = createBookingDto.subTotal * (Service.discountPercentage / 100)
-                        }else{
-                        createBookingDto.total = createBookingDto.subTotal - (createBookingDto.discount );
+                        } else {
+                            createBookingDto.total = createBookingDto.subTotal - (createBookingDto.discount);
                         }
                         createBookingDto.total = createBookingDto.subTotal - createBookingDto.discount;
-                        if(createBookingDto.amountDue > createBookingDto.total){
+                        if (createBookingDto.amountDue > createBookingDto.total) {
                             throw new BadRequestException(`Amount due can not be more than total amount for service. A discount of ${createBookingDto.discount} was applied and total is ${createBookingDto.total}`, {
                                 cause: new Error(),
                                 description: 'We could not generate invoice, your booking amount is not okay'
-                            }); 
-                            
+                            });
+
                         }
                     }
                     break;
                 default:
                     throw new NotFoundException('Invalid service been booked');
             }
-            
-            if(  (itemsTotal - createBookingDto.discount) !== (createBookingDto.total)){
+
+            if ((itemsTotal - createBookingDto.discount) !== (createBookingDto.total)) {
                 throw new BadRequestException(`We could not generate invoice, total amount is incorrect for the items. 
                     Should be ${itemsTotal - createBookingDto.discount}, a discount of ${createBookingDto.discount} was applied`, {
                     cause: new Error(),
                     description: 'We could not generate invoice, total amount is incorrect for the items'
-                }); 
+                });
 
-            }else if(createBookingDto.amountDue < actualAmountDue || createBookingDto.amountDue > createBookingDto.total ){
+            } else if (createBookingDto.amountDue < actualAmountDue || createBookingDto.amountDue > createBookingDto.total) {
                 throw new BadRequestException(`You can't pay less then ${actualAmountDue} or more than ${createBookingDto.total}. A discount of ${createBookingDto.discount} was applied and your total is ${createBookingDto.total}`, {
                     cause: new Error(),
                     description: 'We could not generate invoice, your booking amount is not okay'
-                }); 
-                
+                });
+
             }
 
             // validate customer and service provider account
@@ -142,7 +143,7 @@ export class BookingController {
             accounts = Array.isArray(accounts) ? accounts : Object.values(accounts)
             const customer = accounts.find((user) => user.id === createBookingDto.customerId)
             const serviceProvider = accounts.find((user) => user.id !== createBookingDto.customerId)
-            
+
             if (!customer) {
                 throw new NotFoundException('We could not verify user account', {
                     cause: new Error(),
@@ -169,9 +170,9 @@ export class BookingController {
                 });
             }
 
-            return this.bookingService.create({...createBookingDto, customer, serviceProvider});
+            return this.bookingService.create({ ...createBookingDto, customer, serviceProvider });
         } catch (error) {
-            console.log({error})
+            console.log({ error })
             throw error
         }
     }
@@ -197,7 +198,37 @@ export class BookingController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Patch(':id')
     update(@Param('id') id: string, @Body() updateBookingDto: UpdateBookingDto) {
-        return this.bookingService.update(id, updateBookingDto);
+        const booking =  this.bookingService.update(id, updateBookingDto);
+        // if (updateBookingDto.status) {
+        //     switch (updateBookingDto.status) {
+        //         case BookingStatus.CONFIRMED:
+        //             // notify users
+        //             // send notification to customer and service provider
+        //             this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
+        //                 type: 'EMAIL',
+        //                 recipientId: customer.id,
+        //                 data: {
+        //                     subject: "Payment Invoice",
+        //                     message: `We received your payment`,
+        //                     recipientEmail: customer.email,
+        //                 },
+        //             });
+        //             break;
+        //         case BookingStatus.RESERVED:
+        //             // handle reserved status
+        //             break;
+        //         case BookingStatus.POSTPONED:
+        //             // handle postponed status
+        //             break;
+        //         case BookingStatus.CANCELED:
+        //             // handle canceled status
+        //             break;
+
+        //         default:
+        //             break;
+        //     }
+        // }
+        return booking
     }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
@@ -213,7 +244,7 @@ export class BookingController {
 @Controller('requestQuote')
 export class RequestQuoteController {
     constructor(private readonly requestQuoteService: RequestQuoteService,
-        private readonly cateringService: CateringService, 
+        private readonly cateringService: CateringService,
         private readonly eventcentersService: EventcentersService,
         private readonly userService: UsersService
     ) { }
@@ -221,9 +252,9 @@ export class RequestQuoteController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post()
     async create(@Body() createRequestQuoteDto: CreateRequestQuoteDto) {
-                try {
+        try {
             let Service: EventCenterDto | CateringDto;
-            
+
             switch (createRequestQuoteDto.serviceType) {
                 case ServiceType.EVENTCENTER:
                     Service = await firstValueFrom(this.eventcentersService.findOne(createRequestQuoteDto.serviceId));
@@ -241,7 +272,7 @@ export class RequestQuoteController {
                     break;
                 case ServiceType.CATERING:
                     Service = await firstValueFrom(this.cateringService.findOne(createRequestQuoteDto.serviceId))
-                   
+
 
                     if (!Service) {
                         throw new NotFoundException('Catering service not found for booking');
@@ -257,7 +288,7 @@ export class RequestQuoteController {
                 default:
                     throw new NotFoundException('Invalid service been booked');
             }
-        
+
 
             // validate customer and service provider account
             let accounts = await firstValueFrom(this.userService.findManyByUnique([{ id: createRequestQuoteDto.customerId }, { id: Service.serviceProviderId }]));
@@ -294,7 +325,7 @@ export class RequestQuoteController {
 
             return this.requestQuoteService.create(createRequestQuoteDto);
         } catch (error) {
-            console.log({error})
+            console.log({ error })
             throw error
         }
     }

@@ -211,35 +211,34 @@ export class BookingService {
 	}
 
 
-	// async update(id: string, updateBookingDto: UpdateBookingDto): Promise<BookingDto> {
-	// 	try {
-	// 		const updateEventCenterInput: Prisma.BookingUpdateInput = {
-	// 			...updateBookingDto,
-	// 			paymentStatus: updateBookingDto.paymentStatus ? updateBookingDto.paymentStatus as $Enums.InvoiceStatus : undefined,
-	// 			status: updateBookingDto.status ? updateBookingDto.status as $Enums.BookingStatus : undefined,
-	// 			source: updateBookingDto.source ? updateBookingDto.source as $Enums.BookingSource : undefined,
-	// 		};
-	// 		const booking = await this.databaseService.booking.update({
-	// 			where: { id },
-	// 			data: updateEventCenterInput
-	// 		});
+	async update(id: string, updateBookingDto: UpdateBookingDto): Promise<BookingDto> {
+		try {
+			const updateBookingDtoInput: Prisma.BookingUpdateInput = {
+				...updateBookingDto,
+				paymentStatus: updateBookingDto.paymentStatus ? updateBookingDto.paymentStatus as $Enums.InvoiceStatus : undefined,
+				status: updateBookingDto.status ? updateBookingDto.status as $Enums.BookingStatus : undefined,
+			};
+			const booking = await this.databaseService.booking.update({
+				where: { id },
+				data: updateBookingDtoInput
+			});
 
-	// 		const bookingDto: BookingDto = {
-	// 			...booking,
-	// 			subTotal: Number(booking.subTotal),
-	// 			discount: Number(booking.discount),
-	// 			total: Number(booking.total),
-	// 			status: booking.status as unknown as BookingStatus,
-	// 			paymentStatus: booking.paymentStatus as unknown as InvoiceStatus,
-	// 			serviceType: booking.serviceType as unknown as ServiceType,
-	// 			source: booking.source as unknown as BookingSource
-	// 		};
+			const bookingDto: BookingDto = {
+				...booking,
+				subTotal: Number(booking.subTotal),
+				discount: Number(booking.discount),
+				total: Number(booking.total),
+				status: booking.status as unknown as BookingStatus,
+				paymentStatus: booking.paymentStatus as unknown as InvoiceStatus,
+				serviceType: booking.serviceType as unknown as ServiceType,
+				source: booking.source as unknown as BookingSource
+			};
 
-	// 		return bookingDto;
-	// 	} catch (error) {
-	// 		throw new ConflictException(error);
-	// 	}
-	// }
+			return bookingDto;
+		} catch (error) {
+			throw new ConflictException(error);
+		}
+	}
 
 	 
 	

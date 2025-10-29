@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { $Enums, Prisma } from '../prisma/@prisma/payments';
-import { UpdateFeeDto, UpdateSubscriptionPlanDto, FeaturedPlanDto, FeesDto, PaymentDto, SubscriptionPlanDto, CreateFeaturedPlanDto, CreateFeeDto, CreatePaymentDto, CreateSubscriptionPlanDto, FeesType, PaymentReason, IPaymentStatus, Status, UpdatePaymentDto, CreateInvoiceDto, InvoiceDto, InvoiceStatus, UpdateInvoiceDto, InvoiceItem, BillingAddress, CreateInvoiceDtoForSubscriptions, GeneratePaymentDto, PaymentGateWay } from '@shared/contracts/payments';
+import { UpdateFeeDto, UpdateSubscriptionPlanDto, FeaturedPlanDto, FeesDto, PaymentDto, SubscriptionPlanDto, CreateFeaturedPlanDto, CreateFeeDto, CreatePaymentDto, CreateSubscriptionPlanDto, FeesType, PaymentReason, IPaymentStatus, Status, UpdatePaymentDto, CreateInvoiceDto, InvoiceDto, InvoiceStatus, UpdateInvoiceDto, InvoiceItem, BillingAddress, CreateInvoiceDtoForSubscriptions, GeneratePaymentDto, PaymentGateWay, CreateSecondInvoiceDto } from '@shared/contracts/payments';
 import { instanceToPlain } from 'class-transformer';
 import { StripePaymentService } from './stripe.payment';
 import { PaystackPaymentService } from './paystack.payment';
@@ -122,15 +122,15 @@ export class PaymentsService {
 
                 // update invoice
                 let status: $Enums.InvoiceStatus;
-             
+
                 if (paymentAmount.gt(amountDue)) {
-                 status = $Enums.InvoiceStatus.OVER_PAID;
+                    status = $Enums.InvoiceStatus.OVER_PAID;
                 } else if (paymentAmount.equals(amountDue)) {
-                 status = $Enums.InvoiceStatus.PAID;
+                    status = $Enums.InvoiceStatus.PAID;
                 } else {
-                 status = $Enums.InvoiceStatus.PARTIALLY_PAID;
+                    status = $Enums.InvoiceStatus.PARTIALLY_PAID;
                 }
-                
+
                 await prisma.invoice.update({ where: { id: createPaymentDto.invoiceId }, data: { status } });
 
                 // check the total payments made now for this booking or subscription
@@ -151,7 +151,7 @@ export class PaymentsService {
                     totalPaid += totalInvoicePaid;
                 }
 
-                return {...payment, totalPaymentDue: totalDue, totalPaymentPaid: totalPaid, bookingId: invoice.bookingId, subscriptionId: invoice.subscriptionId};
+                return { ...payment, totalPaymentDue: totalDue, totalPaymentPaid: totalPaid, bookingId: invoice.bookingId, subscriptionId: invoice.subscriptionId };
             });
 
             return {
@@ -173,10 +173,10 @@ export class PaymentsService {
         }
     }
 
-    async findAll(limit: number, offset: number, search: string): Promise<  {
+    async findAll(limit: number, offset: number, search: string): Promise<{
         count: number;
         data: PaymentDto[];
-    } > {
+    }> {
         const whereClause: any = { deletedAt: null };
 
         // Normalize search input
@@ -214,35 +214,35 @@ export class PaymentsService {
 
         // Optional total count for pagination
         const count = await this.databaseService.payment.count({ where: whereClause });
-       return {
-                count,
-                data: payments.map(payment => this.mapToPaymentDto(payment))
-            };
+        return {
+            count,
+            data: payments.map(payment => this.mapToPaymentDto(payment))
+        };
     }
 
     async findOne(id: string): Promise<PaymentDto> {
         try {
             const payment = await this.databaseService.payment.findUnique({
-            where: {
-                id: id,
-                deletedAt: null
-            },
-            include:{
-                invoice: true,
-                refund: true,
-                dispute: true
-            }
-        });
+                where: {
+                    id: id,
+                    deletedAt: null
+                },
+                include: {
+                    invoice: true,
+                    refund: true,
+                    dispute: true
+                }
+            });
 
-        return {
-            ...payment,
-            amount: Number(payment.amount),
-            amountCharged: Number(payment.amountCharged),
-            paymentReason: payment.paymentReason as unknown as PaymentReason,
-            paymentAuthorization: payment.paymentAuthorization as Record<string, any>,
-            status: payment.status as unknown as IPaymentStatus,
-            paymentMethod: payment.paymentMethod
-        };
+            return {
+                ...payment,
+                amount: Number(payment.amount),
+                amountCharged: Number(payment.amountCharged),
+                paymentReason: payment.paymentReason as unknown as PaymentReason,
+                paymentAuthorization: payment.paymentAuthorization as Record<string, any>,
+                status: payment.status as unknown as IPaymentStatus,
+                paymentMethod: payment.paymentMethod
+            };
         } catch (error) {
             throw new NotFoundException({
                 statusCode: 404,
@@ -250,7 +250,7 @@ export class PaymentsService {
                 error: "Payment not found",
             });
         }
-        
+
 
     }
 
@@ -386,8 +386,80 @@ export class InvoiceService {
     }
 
     // this is used to create another invoice and the amount is to be determined by the service provider strictly
-    async create(createInvoiceDto: CreateInvoiceDto): Promise<InvoiceDto> {
+    async createSecondInvoice(createInvoiceDto: CreateSecondInvoiceDto): Promise<InvoiceDto> {
+        try {
+           
+        // check invoices to replace if already paid for 
+        const invoice = await this.databaseService.$transaction(async (prisma) => {
+            // find first invoice or other invoices
+            const invoices = await prisma.invoice.findMany({
+                where: {
+                    bookingId: createInvoiceDto.bookingId,
+                },
+                orderBy: {
+                    createdAt: 'asc',
+                },
+                select: {
+                    id: true,
+                    userId: true,
+                    items: true,
+                    currency: true,
+                    billingAddress: true,
+                    payments: {
+                        select: {
+                            amount: true,
+                        },
+                    },
+                },
+            });
 
+            if (invoices.length === 0) {
+                throw new NotFoundException({
+                    statusCode: 404,
+                    message: "No invoices found for this booking",
+                    error: "No invoices found for this booking",
+                });
+            }
+
+            const totalPaid = invoices.reduce((acc, invoice) => {
+                const invoiceTotal = invoice.payments.reduce(
+                (sum, payment) => sum + Number(payment.amount),
+                0
+                );
+                return acc + invoiceTotal;
+            }, 0);
+            const amountDue = createInvoiceDto.booking.total - totalPaid
+            const newInvoiceInput: Prisma.InvoiceCreateInput = {
+                userId: invoices[0].userId,
+                reference: Math.random().toString(16).substring(2, 8),
+                bookingId: createInvoiceDto.bookingId,
+                items: invoices[0].items,
+                amountDue: amountDue,
+                currency: invoices[0].currency,
+                dueDate: createInvoiceDto.dueDate,
+                note: createInvoiceDto.note,
+                billingAddress: invoices[0].billingAddress,
+                status: "PENDING" as $Enums.InvoiceStatus,
+            }
+            return await this.databaseService.invoice.create({ data: newInvoiceInput });
+
+           
+        })
+
+        return {
+                ...invoice,
+                items: instanceToPlain(invoice.items) as InvoiceItem[],
+                billingAddress: instanceToPlain(invoice.billingAddress) as BillingAddress,
+                amountDue: Number(invoice.amountDue),
+                status: invoice.status as unknown as InvoiceStatus,
+            };
+
+        } catch (error: any) {
+            throw error
+        }
+    }
+
+    async replace(createInvoiceDto: CreateInvoiceDto): Promise<InvoiceDto> {
         // check invoices to replace if already paid for 
         await this.databaseService.$transaction(async (prisma) => {
             if (createInvoiceDto.replaceInvoice && createInvoiceDto.replaceInvoice.length > 0) {
@@ -406,6 +478,9 @@ export class InvoiceService {
                         description: 'One or More of the invoice you want to replace has been paid for and can not be replaced or deleted'
                     });
                 }
+
+            } else {
+                // create a second invoice
             }
         })
 
@@ -456,6 +531,8 @@ export class InvoiceService {
             throw error
         }
     }
+
+
 
     async createInvoiceForSubscriptions(createInvoiceDto: CreateInvoiceDtoForSubscriptions): Promise<InvoiceDto> {
         //  validate total
@@ -540,33 +617,33 @@ export class InvoiceService {
     async findOne(id: string): Promise<InvoiceDto> {
         try {
             const invoice = await this.databaseService.invoice.findUnique({
-            where: {
-                id: id,
-                deletedAt: null
-            },
-            include: {
-                payments: true,
-                subscription: true
+                where: {
+                    id: id,
+                    deletedAt: null
+                },
+                include: {
+                    payments: true,
+                    subscription: true
 
-            }
-        });
+                }
+            });
 
-        return {
-            ...invoice,
-            items: instanceToPlain(invoice.items) as InvoiceItem[],
-            billingAddress: instanceToPlain(invoice.billingAddress) as BillingAddress,
-            amountDue: Number(invoice.amountDue),
-            status: invoice.status as unknown as InvoiceStatus,
-        };
+            return {
+                ...invoice,
+                items: instanceToPlain(invoice.items) as InvoiceItem[],
+                billingAddress: instanceToPlain(invoice.billingAddress) as BillingAddress,
+                amountDue: Number(invoice.amountDue),
+                status: invoice.status as unknown as InvoiceStatus,
+            };
         } catch (error) {
             throw new NotFoundException({
                 statusCode: 404,
                 message: "Invoice not found",
                 error: "Invoice not found",
             });
-            
+
         }
-        
+
 
     }
 

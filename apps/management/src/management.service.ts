@@ -67,28 +67,23 @@ export class CountryService {
     ) { }
 
     async create(createCountryDto: CreateCountryDto): Promise<CountryDto> {
-        
-        const newCountryInput: Prisma.CountryCreateInput = {
-            name: createCountryDto.name,
-            code: createCountryDto.code,
-            currency: createCountryDto.currency,
-            currencyCode: createCountryDto.currencyCode,
-            currencySymbol: createCountryDto.currencySymbol,
-            updatedBy: createCountryDto.updatedBy
-        }
+       
 
         try {
-            // Start a transaction - for an all or fail process of creating a user
-            const country = await this.databaseService.$transaction(async (prisma) => {
-                const country = await prisma.country.create({ data: newCountryInput });
-                return country; // Return created user
-            });
-
-            return country;
-
+             const newCountryInput: Prisma.CountryCreateInput = {
+                name: createCountryDto.name,
+                code: createCountryDto.code,
+                currency: createCountryDto.currency,
+                currencyCode: createCountryDto.currencyCode,
+                currencySymbol: createCountryDto.currencySymbol,
+                updatedBy: createCountryDto.updatedBy
+            }
+            
+            const country = await this.databaseService.country.create({ data: newCountryInput });
+            return country; 
         } catch (error) {
-            console.log({error})
-            throw new InternalServerErrorException('sever error could not create service', {
+            // console.log({error})
+            throw new InternalServerErrorException('sever error could not create country', {
                 cause: new Error(),
                 description: error.message
             });

@@ -1,7 +1,8 @@
-import { IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsNumber, IsInt, IsDateString, IsJSON, IsUrl, IsUUID, IsArray } from 'class-validator';
+import { IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsNumber, IsInt, IsDateString, IsJSON, IsUrl, IsUUID, IsArray, IsObject } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsImageFile } from '../media/images';
 import { BillingAddress, InvoiceItem } from './payments.dto';
+import { BookingDto } from '../booking';
 
 export enum FeesType {
     CERTIFICATION = 'CERTIFICATION',
@@ -237,6 +238,45 @@ export class CreateInvoiceDto {
     @IsOptional()
     @IsUUID()
     deletedBy?: string;
+}
+
+export class CreateSecondInvoiceDto {
+
+    @ApiProperty({
+        description: 'ID of the booking related to the invoice',
+        example: 'b1f1a0e5-14aa-4a21-a70f-d3ad0edc5a51',
+    })
+    @IsNotEmpty()
+    @IsString()
+    @IsUUID()
+    bookingId: string;
+
+
+    @ApiProperty({
+        description: 'ID of the booking related to the invoice',
+        example: 'b1f1a0e5-14aa-4a21-a70f-d3ad0edc5a51',
+    })
+    @IsOptional()
+    @IsObject()
+    booking?: BookingDto;
+    
+    @ApiProperty({
+        description: 'Due date for payment',
+        example: '2025-09-01T00:00:00.000Z',
+    })
+    @IsNotEmpty()
+    @IsDateString()
+    dueDate: Date;
+
+    @ApiProperty({
+        description: 'Additional notes for the invoice',
+        example: 'Thank you for your purchase!',
+        required: false,
+    })
+    @IsOptional()
+    @IsString()
+    note?: string;
+
 }
 
 export class CreateInvoiceDtoForSubscriptions {

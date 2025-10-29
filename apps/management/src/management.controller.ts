@@ -82,8 +82,8 @@ export class CountryController {
 	}
 
 	@MessagePattern(COUNTRYPATTERN.FINDALL)
-	findAll(@Payload() limit: number, @Payload() offset: number) {
-		return from(this.countryService.findAll(limit, offset)).pipe(
+	findAll(@Payload() data: { limit: number, offset: number, deletedAt?: boolean, search?: string }) {
+		return from(this.countryService.findAll(data.limit, data.offset, data.deletedAt, data.search)).pipe(
 			catchError((err) => {
 				console.error("Error in countryService:", err);
 				return throwError(() => new RpcException({
@@ -182,8 +182,8 @@ export class StateController {
 	}
 
 	@MessagePattern(STATEPATTERN.FINDALL)
-	findAll(@Payload() limit: number, @Payload() offset: number) {
-		return from(this.stateService.findAll(limit, offset)).pipe(
+	findAll(@Payload() data: { limit: number, offset: number, deletedAt?: boolean, search?: string }) {
+		return from(this.stateService.findAll(data.limit, data.offset, data.deletedAt, data.search)).pipe(
 			catchError((err) => {
 				console.error("Error in stateService:", err);
 				return throwError(() => new RpcException({

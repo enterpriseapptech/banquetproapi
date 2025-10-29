@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { PAYMENT_CLIENT } from '@shared/contracts';
-import { CreateInvoiceDto, CreatePaymentDto, CreatePaymentMethodDto, GeneratePaymentDto, InvoiceDto, INVOICEPATTERN, PaymentDto, PaymentMethodDto, PAYMENTMETHODPATTERN, PAYMENTPATTERN, UpdateInvoiceDto, UpdatePaymentDto, UpdatePaymentMethodDto } from '@shared/contracts/payments';
+import { CreateInvoiceDto, CreatePaymentDto, CreatePaymentMethodDto, CreateSecondInvoiceDto, GeneratePaymentDto, InvoiceDto, INVOICEPATTERN, PaymentDto, PaymentMethodDto, PAYMENTMETHODPATTERN, PAYMENTPATTERN, UpdateInvoiceDto, UpdatePaymentDto, UpdatePaymentMethodDto } from '@shared/contracts/payments';
 
 @Injectable()
 export class PaymentService {
@@ -91,6 +91,11 @@ export class InvoiceService {
 
     create(createInvoiceDto: CreateInvoiceDto) {
         return this.invoiceClient.send<InvoiceDto, CreateInvoiceDto>(INVOICEPATTERN.CREATE, createInvoiceDto)
+    }
+
+    createSecondInvoice(createInvoiceDto: CreateSecondInvoiceDto) {
+        
+        return this.invoiceClient.send<InvoiceDto, CreateSecondInvoiceDto>(INVOICEPATTERN.CREATESECONDINVOICE, createInvoiceDto)
     }
 
     findAll(limit: number, offset: number, subscriptionId?: string, bookingId?: string, userId?: string, status?: string, currency?: string, deleted?: boolean) {

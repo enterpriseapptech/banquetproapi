@@ -14,7 +14,7 @@ interface AuthenticatedRequest extends Request {
     user?: any; // Change `any` to your actual user type if known
 }
 
-@ApiTags('admin')
+@ApiTags('country')
 @Controller('admin/country')
 export class CountryController {
     constructor(private readonly countryService: CountryService) { }
@@ -29,6 +29,9 @@ export class CountryController {
             throw new UnauthorizedException('Access token has expired');
         }
         const user: UserDto = await firstValueFrom(authuser)
+        if(user.userType !== 'ADMIN') {
+            throw new UnauthorizedException('Only Admins can create Country');
+        }
         createCountryDto.updatedBy = user.id
         return this.countryService.create(createCountryDto);
     }
@@ -107,7 +110,16 @@ export class StateController {
     @ApiResponse({ status: 200, description: 'Success' })
     @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
     @Post()
-    create(@Body() createStateDto: CreateStateDto) {
+    async create(@Body() createStateDto: CreateStateDto, @Req() req: AuthenticatedRequest) {
+        const authuser = req.user;
+        if (!authuser) {
+            throw new UnauthorizedException('Access token has expired');
+        }
+        const user: UserDto = await firstValueFrom(authuser)
+        if(user.userType !== 'ADMIN') {
+            throw new UnauthorizedException('Only Admins can create Country');
+        }
+        createStateDto.updatedBy = user.id
         return this.stateService.create(createStateDto);
     }
 
@@ -118,11 +130,12 @@ export class StateController {
     findAll(
         @Query('limit') limit: number,
         @Query('offset') offset: number,
-        @Query('deletedAt') deletedAt?: boolean,
+        @Query('deletedAt') deletedAt?: string,
         @Query('search') search?: string,
     ) {
-
-        return this.stateService.findAll(limit, offset, deletedAt, search)
+        const delete_at = deletedAt === 'true';
+        console.log({limit, offset, delete_at, search})
+        return this.stateService.findAll(limit, offset, delete_at, search)
        
     }
 

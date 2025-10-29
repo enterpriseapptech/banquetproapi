@@ -70,7 +70,7 @@ export class StateService {
 		deletedAt?: boolean,
 		search?: string, 
 	) {
-
+		console.log({limit, offset, deletedAt, search})
 		return this.stateClient.send<StateDto[], { 
 			limit: number, 
 			offset: number, 

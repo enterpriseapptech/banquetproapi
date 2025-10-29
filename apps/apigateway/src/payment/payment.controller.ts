@@ -6,7 +6,7 @@ import {
     CreateInvoiceDto,
     CreatePaymentDto,
     //  CreatePaymentDto, 
-    CreatePaymentMethodDto, GeneratePaymentDto, IPaymentStatus, PaymentMethod, UpdatePaymentDto, UpdatePaymentMethodDto
+    CreatePaymentMethodDto, CreateSecondInvoiceDto, GeneratePaymentDto, IPaymentStatus, PaymentMethod, UpdatePaymentDto, UpdatePaymentMethodDto
 } from '@shared/contracts/payments';
 import { firstValueFrom } from 'rxjs';
 import { UserDto } from '@shared/contracts/users';
@@ -24,12 +24,21 @@ interface AuthenticatedRequest extends Request {
 @ApiTags('invoice')
 @Controller('invoice')
 export class InvoiceController {
-    constructor(private readonly invoiceService: InvoiceService) { }
+    constructor(private readonly invoiceService: InvoiceService,
+        private readonly bookingService: BookingService) { }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post('create')
     create(@Body() createInvoiceDto: CreateInvoiceDto) {
         return this.invoiceService.create(createInvoiceDto);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Post('create-invoice')
+    async createInvoice(@Body() createInvoiceDto: CreateSecondInvoiceDto) {
+        createInvoiceDto.booking = await firstValueFrom(this.bookingService.findOne(createInvoiceDto.bookingId));
+        console.log({createInvoiceDto: createInvoiceDto.booking})
+        return this.invoiceService.createSecondInvoice(createInvoiceDto);
     }
 
     @Get(':id')
@@ -66,6 +75,7 @@ export class InvoiceController {
     }
 
 }
+
 @ApiTags('payment')
 @Controller('payment')
 export class PaymentController {
