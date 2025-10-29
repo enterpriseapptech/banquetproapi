@@ -405,7 +405,7 @@ pipeline {
                         localImage: "payments-image",
                         build: 'payments',
                         port: 8006, 
-                        rm: 'apps/apigateway apps/users apps/catering  apps/notifications apps/booking apps/eventcenters apps/management libs/contracts/src/eventcenterbooking libs/contracts/src/catering libs/contracts/src/eventcenters libs/contracts/src/booking.ts  libs/contracts/src/catering.ts  libs/contracts/src/eventcenters.ts',
+                        rm: 'apps/apigateway apps/users apps/catering  apps/notifications apps/booking apps/eventcenters apps/management libs/contracts/src/eventcenterbooking libs/contracts/src/catering libs/contracts/src/eventcenters libs/contracts/src/catering.ts  libs/contracts/src/eventcenters.ts',
                         prisma: 'yarn prisma generate --schema=apps/payments/prisma/schema.prisma',
                         start: 'start:prodPayments'
                     
