@@ -128,7 +128,6 @@ export class CountryService {
         return { count, docs: countries };
     }
     
-
     async findOne(id: string): Promise<CountryDto> {
 
         const country = await this.databaseService.country.findUnique({
@@ -270,6 +269,17 @@ export class StateService {
         return { count, docs: states };
     }
     
+    
+    async findMany(
+        ids: string[],
+    ): Promise< CountryDto[]> {
+        const whereClause: any = {deletedAt: null, id: { in:ids} };
+        // Fetch paginated services with applied filters
+        const states = await this.databaseService.state.findMany({
+            where: whereClause,
+        });
+        return states ;
+    }
 
     async findOne(id: string): Promise<StateDto> {
 

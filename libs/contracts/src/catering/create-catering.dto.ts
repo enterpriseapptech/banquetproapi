@@ -9,6 +9,7 @@ import {
     IsNumber,
     IsBoolean,
     ValidateNested,
+    IsEmail,
 } from 'class-validator';
 import { ImageUploadDto } from '../media/images';
 
@@ -19,6 +20,10 @@ export class CreateCateringDto {
     @IsNotEmpty()
     serviceProviderId: string;
 
+    @ApiProperty({ type: 'string', required: true })
+    @IsEmail()
+    @IsOptional()
+    serviceProviderEmail?: string;
 
     @ApiProperty({
         description: 'Name of the event center',

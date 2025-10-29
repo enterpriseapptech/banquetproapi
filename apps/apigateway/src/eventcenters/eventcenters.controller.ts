@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, UseInterceptors, BadRequestException, UploadedFiles } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, UseInterceptors, BadRequestException, UploadedFiles, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { EventcentersService } from './eventcenters.service';
 import { CreateEventCenterDto, UpdateEventCenterDto, } from '@shared/contracts/eventcenters';
 import { UserDto } from '@shared/contracts/users';
@@ -13,6 +13,8 @@ import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { ImageUploadDto } from '@shared/contracts';
+import { StateService } from '../management/management.service';
+import { UsersService } from '../users/users.service';
 
 // Extend the Request type to include 'user'
 interface AuthenticatedRequest extends Request {
@@ -22,13 +24,34 @@ interface AuthenticatedRequest extends Request {
 export class EventcentersController {
     constructor(
         private readonly eventcentersService: EventcentersService,
-        private readonly cloudinaryService: CloudinaryService
+        private readonly cloudinaryService: CloudinaryService,
+        private readonly stateService: StateService,
+        private readonly userService: UsersService
     ) { }
 
 
     @UseGuards(JwtAuthGuard, VerificationGuard, AccountStatusGuard)
     @Post('create')
     async create(@Body() createEventcenterDto: any) {
+         // validate service provider
+        const serviceProvider = await firstValueFrom(this.userService.findOne(createEventcenterDto.serviceProviderId));
+
+        if (!serviceProvider) {
+        throw new NotFoundException("could not verify service provider account")
+        }
+
+        if (serviceProvider?.status !== "ACTIVE") {
+        throw new UnauthorizedException("service provider account is not active")
+        }
+        if(!createEventcenterDto.location){
+            throw new BadRequestException('Location state for this service is required');
+        }
+        const state = await firstValueFrom(this.stateService.findOne(createEventcenterDto.location));
+        if(!state){
+            throw new BadRequestException('Invalid location state');
+        }
+
+        createEventcenterDto.serviceProviderEmail = serviceProvider.email
         return this.eventcentersService.create(createEventcenterDto);
     }
 
@@ -75,11 +98,10 @@ export class EventcentersController {
         @Query('offset') offset: number,
         @Query('serviceProvider') serviceProvider: string,
         @Query('city') city: string,  
-        @Query('state') state: string,
-        @Query('country') country: string,
+        @Query('location') location: string,
         @Query('search') search: string,
     ) {
-        return this.eventcentersService.findAll(limit, offset, serviceProvider, city, state, country, search);
+        return this.eventcentersService.findAll(limit, offset, serviceProvider, city, location, search);
     }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)

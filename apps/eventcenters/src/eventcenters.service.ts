@@ -18,40 +18,29 @@ export class EventcentersService {
     ) { }
 
     async create(createEventCenterDto: CreateEventCenterDto): Promise<EventCenterDto> {
-
-        const newEventCenterInput: Prisma.EventCenterCreateInput = {
-            serviceProviderId: createEventCenterDto.serviceProviderId,
-            name: createEventCenterDto.name,
-            eventTypes: createEventCenterDto.eventTypes,
-            discountPercentage: createEventCenterDto.discountPercentage || 0,
-            depositPercentage: createEventCenterDto.depositPercentage,
-            description: createEventCenterDto.description,
-            pricingPerSlot: createEventCenterDto.pricingPerSlot,
-            sittingCapacity: createEventCenterDto.sittingCapacity,
-            venueLayout: createEventCenterDto.venueLayout,
-            amenities: createEventCenterDto.amenities as $Enums.Amenities[],
-            images: createEventCenterDto.images,
-            termsOfUse: createEventCenterDto.termsOfUse,
-            cancellationPolicy: createEventCenterDto.cancellationPolicy,
-            streetAddress: createEventCenterDto.streetAddress,
-            streetAddress2: createEventCenterDto.streetAddress2,
-            city: createEventCenterDto.city,
-            location: createEventCenterDto.location,
-            postal: createEventCenterDto.postal,
-            contact: createEventCenterDto.contact,
-            status: createEventCenterDto.status as $Enums.ServiceStatus
-        }
-        // validate service provider
-        const serviceProvider = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDBYID, newEventCenterInput.serviceProviderId));
-        if (!serviceProvider) {
-            throw new NotFoundException("could not verify service provider account")
-        }
-
-        if (serviceProvider?.status !== "ACTIVE") {
-            throw new UnauthorizedException("service provider account is not active")
-        }
-
         try {
+            const newEventCenterInput: Prisma.EventCenterCreateInput = {
+                serviceProviderId: createEventCenterDto.serviceProviderId,
+                name: createEventCenterDto.name,
+                eventTypes: createEventCenterDto.eventTypes,
+                discountPercentage: createEventCenterDto.discountPercentage || 0,
+                depositPercentage: createEventCenterDto.depositPercentage,
+                description: createEventCenterDto.description,
+                pricingPerSlot: createEventCenterDto.pricingPerSlot,
+                sittingCapacity: createEventCenterDto.sittingCapacity,
+                venueLayout: createEventCenterDto.venueLayout,
+                amenities: createEventCenterDto.amenities as $Enums.Amenities[],
+                images: createEventCenterDto.images,
+                termsOfUse: createEventCenterDto.termsOfUse,
+                cancellationPolicy: createEventCenterDto.cancellationPolicy,
+                streetAddress: createEventCenterDto.streetAddress,
+                streetAddress2: createEventCenterDto.streetAddress2,
+                city: createEventCenterDto.city,
+                location: createEventCenterDto.location,
+                postal: createEventCenterDto.postal,
+                contact: createEventCenterDto.contact,
+                status: createEventCenterDto.status as $Enums.ServiceStatus
+            }
             // Start a transaction - for an all or fail process
             const neweventCenter = await  this.databaseService.eventCenter.create({ data: newEventCenterInput });
             console.log({neweventCenter})
@@ -59,11 +48,11 @@ export class EventcentersService {
             //  emit a email notification - notification event
             this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
                 type: 'EMAIL',
-                recipientId: serviceProvider,
+                recipientId: createEventCenterDto.serviceProviderId,
                 data: {
                     subject: 'New Event Venue!',
                     message: `you successfully added a new event venue`,
-                    recipientEmail: serviceProvider.email,
+                    recipientEmail: createEventCenterDto.serviceProviderEmail,
                 },
             });
             const eventCenterDto: EventCenterDto = {
@@ -88,6 +77,7 @@ export class EventcentersService {
         offset?: number,
         serviceProvider?: string,
         city?: string,
+        location?: string,
         search?: string,
     ): Promise<ManyEventCentersDto> {
         if (serviceProvider) {
@@ -110,7 +100,7 @@ export class EventcentersService {
 
         const whereClause: any = { deletedAt: null };
         if (city) whereClause.city = { equals: city, mode: "insensitive" };
-        
+        if (location) whereClause.location = { equals: location };
         if (search) {
             whereClause.OR = [
                 { name: { contains: search, mode: "insensitive" } },

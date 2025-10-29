@@ -1,11 +1,9 @@
-import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { $Enums, Prisma } from '../prisma/@prisma/catering';
 import { CreateCateringDto, CateringDto, ManyCateringDto, UpdateCateringDto, ServiceStatus } from '@shared/contracts/catering';
 import { DatabaseService } from '../database/database.service';
 import { ClientProxy } from '@nestjs/microservices';
-import { firstValueFrom } from 'rxjs';
 import { NOTIFICATION_CLIENT, USER_CLIENT } from '@shared/contracts';
-import { USERPATTERN, UserDto } from '@shared/contracts/users';
 import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
 
 @Injectable()
@@ -18,44 +16,34 @@ export class CateringService {
 
     async create(createCateringDto: CreateCateringDto): Promise<CateringDto> {
 
-        const newCateringInput: Prisma.CateringCreateInput = {
-            serviceProviderId: createCateringDto.serviceProviderId,
-            name: createCateringDto.name,
-            eventTypes: createCateringDto.eventTypes,
-            tagLine: createCateringDto.tagLine,
-            depositPercentage: createCateringDto.depositPercentage,
-            startPrice: createCateringDto.startPrice,
-            minCapacity: createCateringDto.minCapacity,
-            maxCapacity: createCateringDto.maxCapacity,
-            description: createCateringDto.description,
-            dishTypes: createCateringDto.dishTypes,
-            cuisine: createCateringDto.cuisine,
-            images: createCateringDto.images,
-            termsOfUse: createCateringDto.termsOfUse,
-            cancellationPolicy: createCateringDto.cancellationPolicy,
-            streetAddress: createCateringDto.streetAddress,
-            streetAddress2: createCateringDto.streetAddress2,
-            city: createCateringDto.city,
-            postal: createCateringDto.postal,
-            location: createCateringDto.location,
-            contact: createCateringDto.contact,
-            status: $Enums.ServiceStatus.ACTIVE
-        }
 
-        // validate service provider
-        const serviceProvider = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDBYID, newCateringInput.serviceProviderId));
-
-        if (!serviceProvider) {
-            throw new NotFoundException("could not verify service provider account")
-        }
-
-        if (serviceProvider?.status !== "ACTIVE") {
-            throw new UnauthorizedException("service provider account is not active")
-        }
 
         try {
             // Start a transaction - for an all or fail process
             const newcatering = await this.databaseService.$transaction(async (prisma) => {
+                const newCateringInput: Prisma.CateringCreateInput = {
+                    serviceProviderId: createCateringDto.serviceProviderId,
+                    name: createCateringDto.name,
+                    eventTypes: createCateringDto.eventTypes,
+                    tagLine: createCateringDto.tagLine,
+                    depositPercentage: createCateringDto.depositPercentage,
+                    startPrice: createCateringDto.startPrice,
+                    minCapacity: createCateringDto.minCapacity,
+                    maxCapacity: createCateringDto.maxCapacity,
+                    description: createCateringDto.description,
+                    dishTypes: createCateringDto.dishTypes,
+                    cuisine: createCateringDto.cuisine,
+                    images: createCateringDto.images,
+                    termsOfUse: createCateringDto.termsOfUse,
+                    cancellationPolicy: createCateringDto.cancellationPolicy,
+                    streetAddress: createCateringDto.streetAddress,
+                    streetAddress2: createCateringDto.streetAddress2,
+                    city: createCateringDto.city,
+                    postal: createCateringDto.postal,
+                    location: createCateringDto.location,
+                    contact: createCateringDto.contact,
+                    status: $Enums.ServiceStatus.ACTIVE
+                }
                 const catering = await prisma.catering.create({ data: newCateringInput });
                 return catering
             });
@@ -63,11 +51,11 @@ export class CateringService {
             //  emit a email notification - notification event
             this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
                 type: 'EMAIL',
-                recipientId: serviceProvider,
+                recipientId: createCateringDto.serviceProviderId,
                 data: {
                     subject: 'New Catering Service!',
                     message: `you successfully added a new catering service`,
-                    recipientEmail: serviceProvider.email,
+                    recipientEmail: createCateringDto.serviceProviderEmail,
                 },
             });
             const cateringDto: CateringDto = {
@@ -92,10 +80,10 @@ export class CateringService {
 
     async findAll(
         limit?: number,
-        offset?: number, 
-        serviceProvider?: string, 
-        city?: string, 
-        state?: string, 
+        offset?: number,
+        serviceProvider?: string,
+        city?: string,
+        state?: string,
         country?: string,
         search?: string)
         : Promise<ManyCateringDto> {
@@ -110,7 +98,7 @@ export class CateringService {
             });
             return {
                 count,
-                data: caterings.map(eventCenter => this.mapToCateringDto(eventCenter))  
+                data: caterings.map(eventCenter => this.mapToCateringDto(eventCenter))
             }
         }
 
@@ -122,7 +110,7 @@ export class CateringService {
         if (search) {
             whereClause.OR = [
                 { name: { contains: search, mode: "insensitive" } },
-                { eventTypes: { has: search} },
+                { eventTypes: { has: search } },
                 { tagLine: { contains: search, mode: "insensitive" } },
                 { description: { contains: search, mode: "insensitive" } },
             ];
@@ -146,7 +134,7 @@ export class CateringService {
         const count = await this.databaseService.catering.count()
         return {
             count,
-            data: caterings.map(catering => this.mapToCateringDto(catering))  
+            data: caterings.map(catering => this.mapToCateringDto(catering))
         }
 
 
@@ -204,10 +192,10 @@ export class CateringService {
         });
 
         const cateringDto: CateringDto = {
-                    ...catering,
-                    rating: catering.rating as unknown as number,
-                    status: catering.status as unknown as ServiceStatus,
-                };
+            ...catering,
+            rating: catering.rating as unknown as number,
+            status: catering.status as unknown as ServiceStatus,
+        };
         return cateringDto;
     }
 

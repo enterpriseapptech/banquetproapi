@@ -6,9 +6,11 @@ import { CATERING_CLIENT } from '@shared/contracts';
 import { ClientConfigModule } from '../client-config/client-config.module';
 import { ClientProxyFactory } from '@nestjs/microservices';
 import { CloudinaryModule } from '../cloudinary/cloudinary.module';
+import { ManagementModule } from '../management/management.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
-    imports: [ClientConfigModule, CloudinaryModule],
+    imports: [ClientConfigModule, CloudinaryModule, ManagementModule, UsersModule],
     controllers: [CateringController],
     providers: [
         CateringService,

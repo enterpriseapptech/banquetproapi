@@ -70,7 +70,7 @@ export class StateService {
 		deletedAt?: boolean,
 		search?: string, 
 	) {
-		console.log({limit, offset, deletedAt, search})
+		
 		return this.stateClient.send<StateDto[], { 
 			limit: number, 
 			offset: number, 
@@ -79,6 +79,11 @@ export class StateService {
 		}>(STATEPATTERN.FINDALL, {limit, offset, deletedAt, search })
 	
 	}
+
+	findMany(ids: string[]) {
+		return this.stateClient.send<StateDto[], string[]>(STATEPATTERN.FINDMANY, ids)
+	}
+
 
 	findOne(id: string) {
 		return this.stateClient.send<StateDto, string>(STATEPATTERN.FINDONEBYID, id)

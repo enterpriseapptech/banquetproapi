@@ -15,14 +15,13 @@ export class EventcentersService {
        return this.eventClient.send<EventCenterDto, CreateEventCenterDto>(EVENTCENTERPATTERN.CREATEEVENTCENTER, createEventcenterDto)
     }
 
-    findAll(limit: number, offset: number, serviceProvider?: string, city? : string, state?: string, country?: string, search?: string) {
+    findAll(limit: number, offset: number, serviceProvider?: string, city? : string, location?: string, search?: string) {
         return this.eventClient.send<ManyEventCentersDto, ManyRequestEventCenterDto>(EVENTCENTERPATTERN.FINDALLEVENTCENTER,
             {   limit,
                 offset,
                 serviceProvider,
                 city,
-                state,
-                country,
+                location,
                 search
             })
     }

@@ -18,6 +18,7 @@ export const COUNTRYPATTERN = {
 
 export const STATEPATTERN = {
     FINDALL: 'state.findAll',
+    FINDMANY: 'state.findMany',
     FINDONEBYID: 'state.findOneById',
     CREATE: 'state.create',
     UPDATE: 'state.update',

@@ -96,6 +96,7 @@ export class CountryController {
 		);
 	}
 
+
 	@MessagePattern(COUNTRYPATTERN.FINDONEBYID)
 	findOne(@Payload() id: string) {
 		return from(this.countryService.findOne(id)).pipe(
@@ -184,6 +185,21 @@ export class StateController {
 	@MessagePattern(STATEPATTERN.FINDALL)
 	findAll(@Payload() data: { limit: number, offset: number, deletedAt?: boolean, search?: string }) {
 		return from(this.stateService.findAll(data.limit, data.offset, data.deletedAt, data.search)).pipe(
+			catchError((err) => {
+				console.error("Error in stateService:", err);
+				return throwError(() => new RpcException({
+					statusCode: err.response.statusCode || 500,
+					message: err.message || "Internal Server Error",
+					error: err.response.error || "Sever error",
+				}));
+
+			})
+		);
+	}
+
+	@MessagePattern(STATEPATTERN.FINDMANY)
+	findMany(@Payload() id: string[]) {		
+		return from(this.stateService.findMany(id)).pipe(
 			catchError((err) => {
 				console.error("Error in stateService:", err);
 				return throwError(() => new RpcException({

@@ -32,5 +32,6 @@ import { ClientProxyFactory } from '@nestjs/microservices';
         },
           
     ],
+    exports: [StateService]
 })
 export class ManagementModule { }

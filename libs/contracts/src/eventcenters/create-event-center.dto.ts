@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsInt, Min, IsArray, IsNumber, IsBoolean, ValidateNested } from 'class-validator';
+import { IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsInt, Min, IsArray, IsNumber, IsBoolean, ValidateNested, IsEmail, IsUUID } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ImageUploadDto, } from '../media/images';
 import { Type } from 'class-transformer';
@@ -21,10 +21,21 @@ export class CreateEventCenterDto {
         maxLength: 40,
         example: '550e8400-e29b-41d4-a716-446655440000'
     })
-    @IsString()
-    @Length(26, 40)
+    @IsUUID()
+    @IsNotEmpty()
     serviceProviderId: string;
 
+
+    @ApiProperty({
+        description: 'Unique ID of the service provider',
+        minLength: 26,
+        maxLength: 40,
+        example: '550e8400-e29b-41d4-a716-446655440000'
+    })
+    @IsEmail()
+    @IsOptional()
+    serviceProviderEmail?: string;
+    
     @ApiProperty({
         description: 'Name of the event center',
         minLength: 3,

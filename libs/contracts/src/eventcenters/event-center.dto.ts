@@ -33,8 +33,7 @@ export class ManyRequestEventCenterDto {
     offset?: number;
     serviceProvider?: string;
     city?: string;
-    state?: string;
-    country?: string;
+    location?: string;
     search?: string;
 }
 

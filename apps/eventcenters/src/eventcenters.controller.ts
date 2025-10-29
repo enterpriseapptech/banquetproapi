@@ -30,9 +30,9 @@ export class EventcentersController {
     }
 
     @MessagePattern(EVENTCENTERPATTERN.FINDALLEVENTCENTER)
-    findAll(@Payload() data: { limit?: number, offset?: number, serviceProvider?: string, city?: string, search?: string }) {
-        const { limit, offset, serviceProvider, city, search} = data
-        return from(this.eventcentersService.findAll(limit, offset, serviceProvider, city, search)).pipe(
+    findAll(@Payload() data: { limit?: number, offset?: number, serviceProvider?: string, city?: string, location?: string, search?: string }) {
+        const { limit, offset, serviceProvider, city, location, search} = data
+        return from(this.eventcentersService.findAll(limit, offset, serviceProvider, city, location, search)).pipe(
             catchError((err) => {
                 console.error("Error in UsersService:", err);
                 return throwError(() => new RpcException({

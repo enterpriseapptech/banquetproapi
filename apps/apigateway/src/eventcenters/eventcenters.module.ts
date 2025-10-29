@@ -6,9 +6,11 @@ import { ClientConfigService } from '../client-config/client-config.service';
 import { EVENT_CENTER_CLIENT } from '@shared/contracts';
 import { ClientProxyFactory } from '@nestjs/microservices';
 import { CloudinaryModule } from '../cloudinary/cloudinary.module';
+import { ManagementModule } from '../management/management.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [ClientConfigModule, CloudinaryModule],
+  imports: [ClientConfigModule, CloudinaryModule, ManagementModule, UsersModule],
   controllers: [EventcentersController],
   providers: [
     EventcentersService,
