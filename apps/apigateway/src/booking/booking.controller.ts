@@ -182,6 +182,7 @@ export class BookingController {
         return this.bookingService.findOne(id);
     }
 
+    @UseGuards(JwtAuthGuard, VerificationGuard)
     @Get()
     findAll(
         @Query('limit') limit: number,
@@ -336,6 +337,7 @@ export class RequestQuoteController {
         return this.requestQuoteService.findOne(id);
     }
 
+    @UseGuards(JwtAuthGuard, VerificationGuard)
     @Get()
     findAll(
         @Query('limit') limit: number,
