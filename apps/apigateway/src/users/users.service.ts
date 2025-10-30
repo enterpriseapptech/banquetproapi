@@ -35,6 +35,7 @@ export class UsersService {
 
     logout(id: string) {
         console.log('Gateway sending logout message...');
+        
         return this.userClient.send<string>(USERPATTERN.LOGOUT, id);
     }
 

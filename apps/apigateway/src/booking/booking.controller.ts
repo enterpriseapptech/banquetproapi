@@ -14,7 +14,7 @@ import { CateringService } from '../catering/catering.service';
 import { EventcentersService } from '../eventcenters/eventcenters.service';
 
 
-interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequest extends Request {
     user?: any; // Change `any` to your actual user type if known
 }
 
@@ -193,7 +193,6 @@ export class BookingController {
         @Query('startDate') startDate: Date,
         @Query('endDate') endDate: Date
     ) {
-        console.log({ serviceId })
         return this.bookingService.findAll(limit, offset, customerId, serviceId, serviceProvider, startDate, endDate);
     }
 

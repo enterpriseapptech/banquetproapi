@@ -1,10 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto, LoginUserDto, UpdateUserDto, UpdateUserPasswordDto, UserFilterDto } from '@shared/contracts/users';
+import { CreateUserDto, LoginUserDto, UpdateUserDto, UpdateUserPasswordDto, UserDto, UserFilterDto } from '@shared/contracts/users';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
 // import { AdminRoleGuard } from '../jwt/admin.guard';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { AuthenticatedRequest } from '../booking/booking.controller';
+import { firstValueFrom } from 'rxjs';
 
 
 @ApiTags('users')
@@ -26,8 +28,9 @@ export class UsersController {
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post('logout')
-    logout(@Body() id: string) {
-        return this.usersService.logout(id);
+    async logout(@Req() req: AuthenticatedRequest) {
+        const requestuser: UserDto = await firstValueFrom(req.user)
+        return this.usersService.logout(requestuser.id, );
     }
 
 

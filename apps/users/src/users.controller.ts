@@ -42,8 +42,8 @@ export class UsersController {
 	}
 	
 	@MessagePattern(USERPATTERN.LOGOUT)
-	logout(@Payload() payload: {id: string}) {
-		return from(this.userService.logout(payload.id)).pipe(
+	logout(@Payload()id: string) {
+		return from(this.userService.logout(id)).pipe(
 			catchError((err) => {
 				
 				return throwError(() => new RpcException({

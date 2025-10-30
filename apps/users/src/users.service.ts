@@ -164,11 +164,6 @@ export class UsersService {
             });
         }
 
-        // if (!user.isEmailVerified) {
-        //     throw new UnauthorizedException('Verification error!, kindly verifify your email before logging in.');
-        // }
-
-
         if (user.status === $Enums.UserStatus.RESTRICTED || user.status === $Enums.UserStatus.DEACTIVATED) {
             throw new UnauthorizedException('Unauthorized error, user account is restricted.');
         }
@@ -237,14 +232,21 @@ export class UsersService {
     }
 
     async logout(userId: string): Promise<boolean> {
-        await this.databaseService.user.update({
-            where: { id: userId },
-            data: {
-            refreshToken: null
-            },
-        });
-
+        try {
+            const user = await this.databaseService.user.update({
+                where: { id: userId },
+                data: {
+                    refreshToken: null
+                },
+            });
         return true;
+        } catch (error) {
+            throw new InternalServerErrorException('sever error could not logout user', {
+                cause: error,
+                description: 'sever error could not logout user',
+            });
+        }
+        
     }
 
     async refreshLogin(token: string): Promise<{ access_token: string; refresh_token: string }> {
