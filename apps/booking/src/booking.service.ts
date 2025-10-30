@@ -149,6 +149,7 @@ export class BookingService {
 	async findAll(
 		limit: number,
 		offset: number,
+		customerId?: string,
 		serviceType?: string,
 		serviceId?: string,
 		serviceProvider?: string,
@@ -164,7 +165,8 @@ export class BookingService {
 		if (serviceId) whereClause.serviceId = serviceId;
 		if (serviceType) whereClause.serviceType = serviceType;
 		if (serviceProvider) whereClause.serviceProvider = serviceProvider;
-
+		if (customerId) whereClause.customerId = customerId;
+		
 		const bookings = await this.databaseService.booking.findMany({
 			where: whereClause,
 			take: limit,

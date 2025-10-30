@@ -29,9 +29,9 @@ export class BookingController {
     }
 
     @MessagePattern(BOOKINGPATTERN.FINDALL)
-    findAll(@Payload() data: { limit: number, offset: number, serviceType?: string, serviceId?: string, serviceProvider?: string, bookingReference?: string}) {
-        const { limit, offset, serviceType, serviceId, serviceProvider, bookingReference} = data
-        return from(this.bookingService.findAll(limit, offset, serviceType, serviceId, serviceProvider, bookingReference)).pipe(
+    findAll(@Payload() data: { limit: number, offset: number, customerId?: string, serviceType?: string, serviceId?: string, serviceProvider?: string, bookingReference?: string}) {
+        const { limit, offset, customerId, serviceType, serviceId, serviceProvider, bookingReference} = data
+        return from(this.bookingService.findAll(limit, offset, customerId, serviceType, serviceId, serviceProvider, bookingReference)).pipe(
                 catchError((err) => {
                     console.error("Error in UsersService:", err);
                     return throwError(() => new RpcException({

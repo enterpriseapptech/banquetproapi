@@ -16,8 +16,8 @@ export class BookingService {
        
         return this.bookingClient.send<BookingDto, CreateBookingDto>(BOOKINGPATTERN.CREATE, createBookingDto)
     }
-    
-    findAll(limit: number, offset: number, serviceId?: string, serviceProvider?: string, startDate?: Date, endDate?: Date) {
+
+    findAll(limit: number, offset: number, customerId?: string, serviceId?: string, serviceProvider?: string, startDate?: Date, endDate?: Date) {
         console.log({serviceId})
         return this.bookingClient.send<ManyBookingDto, ManyRequestBookingDto>(BOOKINGPATTERN.FINDALL,
             {
@@ -67,7 +67,7 @@ export class RequestQuoteService {
         return this.bookingClient.send<any, CreateRequestQuoteDto>(REQUESTQUOTEPATTERN.CREATE, createRequestQuoteDto)
     }
     
-    findAll(limit: number, offset: number, serviceId?: string, serviceProvider?: string, startDate?: Date, endDate?: Date) {
+    findAll(limit: number, offset: number, customerId?: string, serviceId?: string, serviceProvider?: string, startDate?: Date, endDate?: Date) {
 
         return this.bookingClient.send<ManyRequestQuoteDto, ManyRequestBookingDto>(REQUESTQUOTEPATTERN.FINDALL,
             {

@@ -186,13 +186,14 @@ export class BookingController {
     findAll(
         @Query('limit') limit: number,
         @Query('offset') offset: number,
+        @Query('customerId') customerId: string,
         @Query('serviceId') serviceId: string,
         @Query('serviceProvider') serviceProvider: string,
         @Query('startDate') startDate: Date,
         @Query('endDate') endDate: Date
     ) {
         console.log({ serviceId })
-        return this.bookingService.findAll(limit, offset, serviceId, serviceProvider, startDate, endDate);
+        return this.bookingService.findAll(limit, offset, customerId, serviceId, serviceProvider, startDate, endDate);
     }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
@@ -339,12 +340,13 @@ export class RequestQuoteController {
     findAll(
         @Query('limit') limit: number,
         @Query('offset') offset: number,
+        @Query('customerId') customerId: string,
         @Query('serviceId') serviceId: string,
         @Query('serviceProvider') serviceProvider: string,
         @Query('startDate') startDate: Date,
         @Query('endDate') endDate: Date
     ) {
-        return this.requestQuoteService.findAll(limit, offset, serviceId, serviceProvider, startDate, endDate);
+        return this.requestQuoteService.findAll(limit, offset, customerId, serviceId, serviceProvider, startDate, endDate);
     }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
