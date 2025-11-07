@@ -23,6 +23,7 @@ model Booking {
   confirmedAt                   DateTime?
   servicebookingId              String? // eventcenterbooking, catering booking , etc
   serviceId                     String
+  serviceName                   String?
   serviceProvider               String
   serviceType                   ServiceType
   subTotal                      Decimal @banquestprobookingdb.Decimal(10, 2)
@@ -70,6 +71,7 @@ model RequestQuote {
   id                            String    @id @default(uuid())
   customerId                    String // customer booking the venue, points to an ID on users table
   serviceId                     String
+  serviceName                   String?
   serviceProvider               String
   serviceType                   ServiceType
   budget                        String

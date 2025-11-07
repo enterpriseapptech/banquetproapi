@@ -53,6 +53,7 @@ export class BookingDto {
     customerId?: string;
     confirmedBy?: string;
     confirmedAt?: Date;
+    serviceName?: string;
     serviceProvider?: string;
     servicebooking_id?: string;
     serviceType: ServiceType;
@@ -145,6 +146,7 @@ export class RequestQuoteDto {
     customerId?: string;
     serviceProvider: string;
     serviceId?: string;
+     serviceName?: string;
     serviceType: ServiceType;
     budget: string;
     quoteReference: string;

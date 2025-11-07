@@ -87,6 +87,12 @@ export class CreateBookingDto {
     serviceId: string;
 
     @ApiProperty({ type: 'string', required: true })
+    @IsString()
+    @IsOptional()
+    serviceName: string;
+
+
+    @ApiProperty({ type: 'string', required: true })
     @IsUUID()
     @IsOptional()
     requestQuoteId: string;
@@ -263,6 +269,12 @@ export class CreateRequestQuoteDto {
     @IsUUID()
     @IsNotEmpty()
     serviceId: string;
+
+    
+    @ApiProperty({ type: 'string', required: true })
+    @IsString()
+    @IsOptional()
+    serviceName: string;
 
     @ApiProperty({ type: 'string', required: true })
     @IsEnum(ServiceType)

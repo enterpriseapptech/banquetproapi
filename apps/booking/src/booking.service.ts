@@ -31,6 +31,7 @@ export class BookingService {
 
 	async create(createBookingDto: CreateBookingDto): Promise<InvoiceDto> {
 		try {
+			console.log({createBookingDto})
 			let notificationSubject: string;
 			const bookingId = uuidv4();
 			const newBookingInput: Prisma.BookingCreateInput = {
@@ -41,6 +42,7 @@ export class BookingService {
 				? { connect: { id: createBookingDto.requestQuoteId } }
 				: undefined,
 				serviceId: createBookingDto.serviceId,
+				serviceName: createBookingDto.serviceName,
 				serviceType: createBookingDto.serviceType as $Enums.ServiceType,
 				subTotal: createBookingDto.subTotal,
 				discount: createBookingDto.discount,
@@ -534,10 +536,10 @@ export class RequestQuoteService {
 	async create(createRequestQuoteDto: CreateRequestQuoteDto): Promise<RequestQuoteDto> {
 		try {
 			let notificationSubject: string;
-			console.log({createRequestQuoteDto})
 			const newRequestQuoteInput: Prisma.RequestQuoteCreateInput = {
 				customerId: createRequestQuoteDto.customerId,
 				serviceId: createRequestQuoteDto.serviceId,
+				serviceName: createRequestQuoteDto.serviceName,
 				serviceType: createRequestQuoteDto.serviceType as $Enums.ServiceType,
 				serviceProvider: createRequestQuoteDto.serviceProvider.id,
 				budget: createRequestQuoteDto.budget,
@@ -635,6 +637,7 @@ export class RequestQuoteService {
 		}
 		const bookingDto: RequestQuoteDto = {
 			...booking,
+			billingAddress: instanceToPlain(booking.billingDetails) as BillingAddress,
 			status: booking.status as unknown as InvoiceStatus,
 			serviceType: booking.serviceType as unknown as ServiceType,
 			source: booking.source as unknown as BookingSource,

@@ -39,6 +39,8 @@ model User {
   deletedBy       String?
   
   // Relations
+  catering           String[]
+  eventCenter        String[]
   admin                     Admin? 
   serviceProvider           ServiceProvider? 
   customer                  Customer?        

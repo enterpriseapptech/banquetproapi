@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { HttpException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { UpdateUserDto, CreateUserDto, USERPATTERN, UserDto, LoginUserDto, UserFilterDto, UpdateUserPasswordDto, UniqueIdentifierDto, } from '@shared/contracts/users';
+import { UpdateUserDto, CreateUserDto, USERPATTERN, UserDto, LoginUserDto, UserFilterDto, UpdateUserPasswordDto, UniqueIdentifierDto, BookMarkType, } from '@shared/contracts/users';
 import { USER_CLIENT } from '@shared/contracts';
 
 
@@ -50,6 +50,10 @@ export class UsersService {
         }
     }
 
+    bookmark(id: string, serviceType: BookMarkType, userId: string) {
+        console.log({userId})
+        return this.userClient.send<UserDto, { id: string, serviceType: BookMarkType, userId: string }>(USERPATTERN.BOOKMARK, {id, serviceType, userId})    
+    }
     
     resend(id: string) {
         return this.userClient.send<UserDto, { id: string }>(USERPATTERN.RESENDUSER, { id })    

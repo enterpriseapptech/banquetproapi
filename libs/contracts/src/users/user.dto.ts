@@ -6,6 +6,11 @@ export enum UserStatus{
     RESTRICTED = 'RESTRICTED'
 };
 
+export enum BookMarkType{
+    catering ="catering",
+    eventcenter = "eventcenter"
+}
+
 export class ServiceProviderDto {
  
     id: string;

@@ -1,12 +1,13 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto, LoginUserDto, UpdateUserDto, UpdateUserPasswordDto, UserDto, UserFilterDto } from '@shared/contracts/users';
+import { BookMarkType, CreateUserDto, LoginUserDto, UpdateUserDto, UpdateUserPasswordDto, UserDto, UserFilterDto } from '@shared/contracts/users';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
 // import { AdminRoleGuard } from '../jwt/admin.guard';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthenticatedRequest } from '../booking/booking.controller';
 import { firstValueFrom } from 'rxjs';
+
 
 
 @ApiTags('users')
@@ -49,8 +50,16 @@ export class UsersController {
 
     @Post('resend-verification')
     resend(@Body() { id}) {
-        return this.usersService.resend(id)
+        return this.usersService.resend(id)    
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Post('bookmark')
+    async bookmark(@Body() bookmark: { id: string, serviceType: BookMarkType}, @Req() req: AuthenticatedRequest) {
         
+        const requestuser: UserDto = await firstValueFrom(req.user)
+        const {id, serviceType} = bookmark
+        return this.usersService.bookmark(id, serviceType, requestuser.id);
     }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)

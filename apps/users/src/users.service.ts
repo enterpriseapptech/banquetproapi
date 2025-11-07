@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { $Enums, Prisma } from '../prisma/@prisma/users';
-import { CreateUserDto, UpdateUserDto, UserDto, LoginUserDto, UserType, UserStatus, ServiceType, UserFilterDto, UpdateUserPasswordDto, UniqueIdentifierDto } from '@shared/contracts/users';
+import { CreateUserDto, UpdateUserDto, UserDto, LoginUserDto, UserType, UserStatus, ServiceType, UserFilterDto, UpdateUserPasswordDto, UniqueIdentifierDto, BookMarkType } from '@shared/contracts/users';
 import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
 import { DatabaseService } from '../database/database.service';
 import { NOTIFICATION_CLIENT } from './constants';
 import { ClientProxy } from '@nestjs/microservices';
 import { JwtService } from '@nestjs/jwt';
+
 
 @Injectable()
 export class UsersService {
@@ -15,14 +16,14 @@ export class UsersService {
         @Inject(NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
         private readonly jwtService: JwtService,
         private readonly databaseService: DatabaseService
-    ) {}
+    ) { }
 
     async create(createUserDto: CreateUserDto): Promise<UserDto> {
         const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
         // restrict admin account on creation pending approval
-        const userStatus = createUserDto.userType === $Enums.UserType.ADMIN ? $Enums.UserStatus.RESTRICTED : $Enums.UserStatus.ACTIVE 
-        
+        const userStatus = createUserDto.userType === $Enums.UserType.ADMIN ? $Enums.UserStatus.RESTRICTED : $Enums.UserStatus.ACTIVE
+
         const newUserInput: Prisma.UserCreateInput = {
             firstName: createUserDto.firstName,
             lastName: createUserDto.lastName,
@@ -41,7 +42,7 @@ export class UsersService {
 
         // if email is not unique and contains a value, throw error cos user exists already
         if (IsEmailNotUnique) {
-           
+
             throw new ConflictException('This email has been used, kindly login to your account', {
                 cause: new Error(),
                 description: 'existing user'
@@ -54,7 +55,7 @@ export class UsersService {
             const account = await this.databaseService.$transaction(async (prisma) => {
 
                 // Create the user
-                const user = await prisma.user.create({data: newUserInput});
+                const user = await prisma.user.create({ data: newUserInput });
 
                 // Create the related entity based on user type
                 switch (user.userType) {
@@ -69,8 +70,8 @@ export class UsersService {
                         await prisma.serviceProvider.create({
                             data: {
                                 id: user.id,
-                                businessName: createUserDto.businessName, 
-                                serviceType: createUserDto.serviceType 
+                                businessName: createUserDto.businessName,
+                                serviceType: createUserDto.serviceType
                             }
                         });
                         break;
@@ -122,16 +123,16 @@ export class UsersService {
                     recipientEmail: account.user.email,
                 },
             });
-            
+
             const userAccount: UserDto = {
-                ...account.user ,
+                ...account.user,
                 userType: account.user.userType as unknown as UserType,
                 status: account.user.status as unknown as UserStatus,
             };
             return userAccount;
 
         } catch (error) {
-           
+
             throw new ConflictException('sever error could not create user', {
                 cause: new Error(),
                 description: 'User account creation failed, please try again'
@@ -139,7 +140,7 @@ export class UsersService {
         }
 
 
-        
+
     }
 
     async login(loginUserDto: LoginUserDto) {
@@ -178,7 +179,7 @@ export class UsersService {
         const validatePassword = await bcrypt.compare(password, user.password);
 
         if (!validatePassword) {
-            
+
             await this.databaseService.user.update({
                 where: { email: email },
                 data: {
@@ -217,18 +218,18 @@ export class UsersService {
                 loginAttempts: 1,
                 lastLoginAt: new Date(),
                 refreshToken: refreshToken
-             }
+            }
         });
-        
+
         return {
-            user: {...user, refreshToken:undefined, password: undefined,},
+            user: { ...user, refreshToken: undefined, password: undefined, },
             access_token: this.jwtService.sign({ sub: user.id, type: user.userType, isEmailVerified: user.isEmailVerified }, {
                 secret: process.env.JWT_ACCESS_TOKEN_SECRET,
-                expiresIn: '59m', 
+                expiresIn: '59m',
             }),
             refresh_token: refreshToken,
         };
-        
+
     }
 
     async logout(userId: string): Promise<boolean> {
@@ -239,14 +240,14 @@ export class UsersService {
                     refreshToken: null
                 },
             });
-        return true;
+            return true;
         } catch (error) {
             throw new InternalServerErrorException('sever error could not logout user', {
                 cause: error,
                 description: 'sever error could not logout user',
             });
         }
-        
+
     }
 
     async refreshLogin(token: string): Promise<{ access_token: string; refresh_token: string }> {
@@ -259,14 +260,14 @@ export class UsersService {
         }
 
         // Generate new tokens
-       const refreshToken = this.jwtService.sign({ sub: user.id, type: user.userType, isEmailVerified: user.isEmailVerified }, {
+        const refreshToken = this.jwtService.sign({ sub: user.id, type: user.userType, isEmailVerified: user.isEmailVerified }, {
             secret: process.env.JWT_REFRESH_TOKEN_SECRET,
             expiresIn: '7d',
         });
 
         const accessToken = this.jwtService.sign({ sub: user.id, type: user.userType, isEmailVerified: user.isEmailVerified }, {
-                secret: process.env.JWT_ACCESS_TOKEN_SECRET,
-                expiresIn: '59m', 
+            secret: process.env.JWT_ACCESS_TOKEN_SECRET,
+            expiresIn: '59m',
         });
 
         // Store new refresh token
@@ -274,7 +275,7 @@ export class UsersService {
             where: { id: user.id },
             data: {
                 refreshToken: refreshToken
-             }
+            }
         });
 
         return {
@@ -284,8 +285,8 @@ export class UsersService {
     }
 
     async findAll(limit: number, offset: number, search?: string, filter?: UserFilterDto): Promise<{ count: number; docs: UserDto[] }> {
-        console.log({UserType})
-        const whereClause:any = {
+        console.log({ UserType })
+        const whereClause: any = {
             deletedAt: null,
             ...(filter?.userType && { userType: filter.userType }),
             ...(filter?.status && { status: filter.status }),
@@ -293,24 +294,24 @@ export class UsersService {
             ...(filter?.state && { state: filter.state }),
             ...(filter?.country && { country: filter.country }),
             ...(search && {
-            OR: [
-                { firstName: { contains: search, mode: 'insensitive' } },
-                { lastName: { contains: search, mode: 'insensitive' } },
-                { email: { contains: search, mode: 'insensitive' } },
-                { location: { contains: search, mode: 'insensitive' } },
-                { city: { contains: search, mode: 'insensitive' } },
-                { state: { contains: search, mode: 'insensitive' } },
-                { country: { contains: search, mode: 'insensitive' } },
-            ],
+                OR: [
+                    { firstName: { contains: search, mode: 'insensitive' } },
+                    { lastName: { contains: search, mode: 'insensitive' } },
+                    { email: { contains: search, mode: 'insensitive' } },
+                    { location: { contains: search, mode: 'insensitive' } },
+                    { city: { contains: search, mode: 'insensitive' } },
+                    { state: { contains: search, mode: 'insensitive' } },
+                    { country: { contains: search, mode: 'insensitive' } },
+                ],
             }),
         };
 
         const [users, count] = await this.databaseService.$transaction([
             this.databaseService.user.findMany({
-            where: whereClause,
-            take: limit,
-            skip: offset,
-            orderBy: { createdAt: 'desc' },
+                where: whereClause,
+                take: limit,
+                skip: offset,
+                orderBy: { createdAt: 'desc' },
             }),
             this.databaseService.user.count({ where: whereClause }),
         ]);
@@ -328,10 +329,11 @@ export class UsersService {
                     id: u.id ?? undefined,
                     email: u.email ?? undefined,
                 })),
-            }});
-        return {...users.map(user => this.mapToUserDto(user))};
+            }
+        });
+        return { ...users.map(user => this.mapToUserDto(user)) };
 
-        
+
     }
 
     async findOne(id: string): Promise<UserDto> {
@@ -363,7 +365,7 @@ export class UsersService {
             serviceProvider: user.serviceProvider
                 ? {
                     ...user.serviceProvider,
-                    serviceType: user.serviceProvider.serviceType as  unknown as ServiceType,
+                    serviceType: user.serviceProvider.serviceType as unknown as ServiceType,
                     workingHours:
                         typeof user.serviceProvider.workingHours === 'string'
                             ? JSON.parse(user.serviceProvider.workingHours)
@@ -372,18 +374,18 @@ export class UsersService {
                 : null
         };
 
-        
+
     }
 
     async update(id: string, updateUserDto: UpdateUserDto): Promise<UserDto> {
-        const {...userData } = updateUserDto;
+        const { ...userData } = updateUserDto;
 
         const account = await this.databaseService.$transaction(async (prisma) => {
             const user = await prisma.user.findUnique({
                 where: { id },
                 include: {
-                admin: true,
-                serviceProvider: true,
+                    admin: true,
+                    serviceProvider: true,
                 },
             });
 
@@ -391,16 +393,16 @@ export class UsersService {
                 throw new NotFoundException('User not found');
             }
 
-            const userUpdated =  prisma.user.update({
+            const userUpdated = prisma.user.update({
                 where: { id },
                 data: userData,
-                })
+            })
 
 
             return userUpdated; // Return created user
         });
-       
-    	return  {
+
+        return {
             ...account,
             status: account.status as unknown as UserStatus,
             userType: account.userType as unknown as UserType,
@@ -452,6 +454,58 @@ export class UsersService {
         // return { message: 'User updated successfully' };
     }
 
+    async bookmark(id: string, serviceType: BookMarkType, userId: string) {
+        const account = await this.databaseService.$transaction(async (prisma) => {
+            const user = await prisma.user.findUnique({
+                where: { id: userId },
+            });
+
+            if (!user) {
+                throw new NotFoundException('User not found', {
+                    cause: new Error(),
+                    description: 'User not found'
+                });
+            }
+
+            let updatedField: string[] = [];
+
+            switch (serviceType) {
+                case BookMarkType.catering:
+                    updatedField = user.catering.includes(id)
+                        ? user.catering.filter(item => item !== id) // remove
+                        : [...user.catering, id]; // add
+                    return await prisma.user.update({
+                        where: { id: userId },
+                        data: { catering: updatedField },
+                    });
+                    break;
+
+                case BookMarkType.eventcenter:
+                    updatedField = user.eventCenter.includes(id)
+                        ? user.eventCenter.filter(item => item !== id)
+                        : [...user.eventCenter, id];
+                    return await prisma.user.update({
+                        where: { id: userId },
+                        data: { eventCenter: updatedField },
+                    });
+                    break;
+
+                default:
+                    throw new BadRequestException('Invalid service type', {
+                        cause: new Error(),
+                        description: 'User not found'
+                    });
+                  
+            }
+          
+        });
+        const userAccount: UserDto = {
+                ...account,
+                userType: account.userType as unknown as UserType,
+                status: account.status as unknown as UserStatus,
+            };
+        return userAccount;
+    } ;
 
     remove(id: number) {
         return `This action removes a #${id} user`;
@@ -460,7 +514,7 @@ export class UsersService {
     async verify(id: string, token: string) {
         const personalAccessToken = await this.databaseService.personalAccessTokens.findUnique({
             where: {
-                userId_type: { userId: id, type: 'VERIFYACCOUNT' } , 
+                userId_type: { userId: id, type: 'VERIFYACCOUNT' },
                 token: token
             }
         });
@@ -499,7 +553,7 @@ export class UsersService {
         });
 
         if (!user) {
-        
+
             throw new NotFoundException('This user does not exist in our system', {
                 cause: new Error(),
                 description: 'could not find a valid user'
@@ -519,7 +573,7 @@ export class UsersService {
         }
 
         const personalAccessToken = await this.databaseService.personalAccessTokens.upsert({
-            where: { userId_type: { userId: user.id, type: 'VERIFYACCOUNT' } }, 
+            where: { userId_type: { userId: user.id, type: 'VERIFYACCOUNT' } },
             update: {
                 token: personalAccessTokenInput.token,
                 expiry: personalAccessTokenInput.expiry,
@@ -537,7 +591,7 @@ export class UsersService {
                 cause: new Error(),
                 description: 'server error, could not generate verification code'
             });
-            
+
             // should log error to logger later on when logger is available
         }
 
@@ -551,13 +605,13 @@ export class UsersService {
                 recipientEmail: user.email,
             },
         });
-        return user 
+        return user
     }
 
     async forgotPassword(email: string): Promise<string> {
-        
+
         try {
-            
+
             // Start a transaction - for an all or fail process of creating a user
             const account = await this.databaseService.$transaction(async (prisma) => {
                 const user = await this.databaseService.user.findUnique({
@@ -573,7 +627,7 @@ export class UsersService {
                     });
 
                 }
-                
+
                 // create personal access token for user account verification
                 const hexCode = Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0");
                 const expiry = new Date();
@@ -627,7 +681,7 @@ export class UsersService {
                             — Banquet Pro Team
                         </p>
                         </div>`
-                    
+
                 },
             });
 
@@ -641,23 +695,24 @@ export class UsersService {
 
     }
 
-    private async verifyPasswordToken(token: string, tokenId: string): Promise<{isMatch: boolean, userId: string}> {
+    private async verifyPasswordToken(token: string, tokenId: string): Promise<{ isMatch: boolean, userId: string }> {
         try {
             const account = await this.databaseService.$transaction(async (prisma) => {
-                
+
                 const personalAccessToken = await prisma.personalAccessTokens.findUnique({
                     where: {
                         id: tokenId
                     },
-                    select: {userId: true, token: true}
+                    select: { userId: true, token: true }
                 });
                 const isMatch = token === personalAccessToken.token
 
                 return { isMatch, userId: personalAccessToken.userId }; // Return created user
             })
 
-            return { isMatch: account.isMatch, userId: account.userId 
-          };
+            return {
+                isMatch: account.isMatch, userId: account.userId
+            };
 
         } catch (error) {
             throw new Error(error);
@@ -666,8 +721,8 @@ export class UsersService {
 
     async changePassword(updateUserPasswordDto: UpdateUserPasswordDto): Promise<any> {
         try {
-            
-            if (!updateUserPasswordDto.oldPassword && !updateUserPasswordDto.token ) {
+
+            if (!updateUserPasswordDto.oldPassword && !updateUserPasswordDto.token) {
                 throw new UnauthorizedException('unauthorized request, no token or previous password provided', {
                     cause: new Error(),
                     description: 'unauthorized'
@@ -676,7 +731,7 @@ export class UsersService {
 
             let UserId: string
             if (updateUserPasswordDto.token) {
-                const verifyToken = await this.verifyPasswordToken(updateUserPasswordDto.token, updateUserPasswordDto.id )
+                const verifyToken = await this.verifyPasswordToken(updateUserPasswordDto.token, updateUserPasswordDto.id)
                 if (!verifyToken.isMatch) throw new UnauthorizedException('Unauthorized request! Change password token mismatch');
                 UserId = verifyToken.userId
             } else {
@@ -688,13 +743,13 @@ export class UsersService {
 
                 const isMatch = await bcrypt.compare(updateUserPasswordDto.oldPassword, userPasword.password);
                 if (!isMatch) throw new UnauthorizedException('Incorrect old password, could not update password');
-                UserId =userPasword.id
+                UserId = userPasword.id
             }
 
             const User = await this.databaseService.$transaction(async (prisma) => {
                 const userPasword = await prisma.user.findUnique({
                     where: { id: UserId },
-                    select:{password:true, id: true}
+                    select: { password: true, id: true }
                 });
 
                 const passwordHistoryInput: Prisma.PasswordHistoryCreateInput = {

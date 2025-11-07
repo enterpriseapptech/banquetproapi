@@ -83,6 +83,7 @@ export class BookingController {
                         });
 
                     }
+                    createBookingDto.serviceName = Service.name
                     break;
                 case ServiceType.CATERING:
                     Service = await firstValueFrom(this.cateringService.findOne(createBookingDto.serviceId))
@@ -118,6 +119,7 @@ export class BookingController {
 
                         }
                     }
+                    createBookingDto.serviceName = Service.name
                     break;
                 default:
                     throw new NotFoundException('Invalid service been booked');
@@ -269,7 +271,7 @@ export class RequestQuoteController {
                         });
 
                     }
-
+                    createRequestQuoteDto.serviceName = Service.name
                     break;
                 case ServiceType.CATERING:
                     Service = await firstValueFrom(this.cateringService.findOne(createRequestQuoteDto.serviceId))
@@ -285,6 +287,7 @@ export class RequestQuoteController {
                         });
 
                     }
+                    createRequestQuoteDto.serviceName = Service.name
                     break;
                 default:
                     throw new NotFoundException('Invalid service been booked');
