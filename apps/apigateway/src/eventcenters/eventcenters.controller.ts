@@ -87,10 +87,7 @@ export class EventcentersController {
         return this.eventcentersService.update(id, updateEventcenterDto);
     }
 
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.eventcentersService.findOne(id);
-    }
+
 
     @Get()
     findAll(
@@ -102,6 +99,18 @@ export class EventcentersController {
         @Query('search') search: string,
     ) {
         return this.eventcentersService.findAll(limit, offset, serviceProvider, city, location, search);
+    }
+
+    @Get('/bookmarks')
+    findAllWithUnique(
+        @Query('ids') ids: string[],
+    ) {
+        return this.eventcentersService.findAllWithUnique(ids);
+    }
+
+    @Get(':id')
+    findOne(@Param('id') id: string) {
+        return this.eventcentersService.findOne(id);
     }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)

@@ -1,5 +1,6 @@
 export const EVENTCENTERPATTERN = {
     FINDALLEVENTCENTER: 'event.center.findAll',
+    FINDALLBYUNIQUEEVENTCENTER: 'event.center.findAllByUnique',
     FINDONEBYID: 'event.center.findOneById',
     FINDALLBYLOCATION: 'event.center.findOneAllLocation',
     FINDALLBYSERVICEPROVIDER: 'event.center.findOneAllServiceProvider',

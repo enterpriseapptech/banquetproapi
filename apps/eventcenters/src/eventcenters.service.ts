@@ -72,6 +72,18 @@ export class EventcentersService {
         
     }
 
+    async findAllWithUnique(ids: string[]): Promise<EventCenterDto[]> {
+        
+          const eventCenters = await this.databaseService.eventCenter.findMany({
+                where: {
+                    id: { in: ids },
+                    deletedAt: null
+                }
+            });
+        return eventCenters.map(eventCenter => this.mapToEventCenterDto(eventCenter))
+        
+    }
+
     async findAll(
         limit?: number,
         offset?: number,
@@ -139,7 +151,6 @@ export class EventcentersService {
     }
 
     async findOne(id: string): Promise<EventCenterDto> {
-       
         const eventCenter = await this.databaseService.eventCenter.findUnique({
             where: {
                 id: id,

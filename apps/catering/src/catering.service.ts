@@ -70,13 +70,21 @@ export class CateringService {
                 description: 'new catering service creation failed, please try again'
             });
         }
-
-
-
-
-
-
     }
+
+
+    async findAllWithUnique(ids: string[]): Promise<CateringDto[]> {
+        console.log({ids})
+        const caterings = await this.databaseService.catering.findMany({
+            where: {
+                id: { in: ids },
+                deletedAt: null
+            }
+        });
+    return caterings.map(catering => this.mapToCateringDto(catering))
+        
+    }
+
 
     async findAll(
         limit?: number,

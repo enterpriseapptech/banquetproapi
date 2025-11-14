@@ -46,11 +46,29 @@ export class EventcentersController {
 
     }
 
+    @MessagePattern(EVENTCENTERPATTERN.FINDALLBYUNIQUEEVENTCENTER)
+    findAllWithUnique(@Payload() ids: string[]) {
+        return from(this.eventcentersService.findAllWithUnique(ids)).pipe(
+            catchError((err) => {
+                console.error("Error in Event Service findAllWithUnique:", err);
+                return throwError(() => new RpcException({
+                    statusCode: err.response.statusCode || 500,
+                    message: err.message || "Internal Server Error",
+                    error: err.response.error || "Sever error",
+                }));
+
+            })
+        );
+
+    }
+    
+
     @MessagePattern(EVENTCENTERPATTERN.FINDONEBYID)
     findOne(@Payload() id: string) {
+         
         return from(this.eventcentersService.findOne(id)).pipe(
             catchError((err) => {
-                console.error("Error in UsersService:", err);
+                console.error("Error in Event Service:", err);
                 return throwError(() => new RpcException({
                     statusCode: err.response.statusCode || 500,
                     message: err.message || "Internal Server Error",

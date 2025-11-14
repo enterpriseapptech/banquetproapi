@@ -26,6 +26,13 @@ export class EventcentersService {
             })
     }
 
+    findAllWithUnique(ids: string[]) {
+        return this.eventClient.send<EventCenterDto[], string[]>(EVENTCENTERPATTERN.FINDALLBYUNIQUEEVENTCENTER,
+            ids)
+    }
+
+    
+
     findOne(id: string) {
         return this.eventClient.send<EventCenterDto, string>(EVENTCENTERPATTERN.FINDONEBYID, id)
     }

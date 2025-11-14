@@ -101,11 +101,17 @@ export class CateringController {
     return this.cateringService.update(id, updateCateringDto);
   }
 
+  @Get('/bookmarks')
+  findAllWithUnique(
+      @Query('ids') ids: string[],
+  ) {
+        return this.cateringService.findAllWithUnique(ids);
+  }
+  
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.cateringService.findOne(id);
   }
-
 
   @Get()
   findAll(

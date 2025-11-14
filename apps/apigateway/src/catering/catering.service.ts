@@ -25,6 +25,12 @@ export class CateringService {
             })
     }
 
+    
+    findAllWithUnique(ids: string[]) {
+        return this.cateringClient.send<CateringDto[], string[]>(CATERINGPATTERN.FINDALLBYUNIQUEEVENTCENTER,
+            ids)
+    }
+    
     findOne(id: string) {
         return this.cateringClient.send<CateringDto, string>(CATERINGPATTERN.FINDONEBYID, id)
     }
