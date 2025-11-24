@@ -227,6 +227,7 @@ export class NotificationsService {
 	// pending a job or task or service that would handle the sending of emails
 	private async sendEmail(payload: NotificationInterface): Promise<void> {
 		const { data } = payload;
+		console.log({data})
 		const templatePath = path.join(process.cwd(), data.templatePath);
     	let html = fs.readFileSync(templatePath, 'utf-8');
 
