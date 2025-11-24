@@ -10,6 +10,9 @@ import { BOOKING_CLIENT, USER_CLIENT } from '@shared/contracts';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { UserDto, USERPATTERN } from '@shared/contracts/users';
+import * as fs from 'fs';
+import * as path from 'path';
+
 @Injectable()
 export class NotificationsService {
 	constructor(
@@ -212,7 +215,7 @@ export class NotificationsService {
 
 
 	async send(payload: NotificationInterface): Promise<void> {
-		const { type, recipientId, data } = payload;
+		const { type,  data } = payload;
 		console.log({data})
 		if (type === 'EMAIL') {
 			await this.retryOperation(() => this.sendEmail(payload));
@@ -223,14 +226,24 @@ export class NotificationsService {
 
 	// pending a job or task or service that would handle the sending of emails
 	private async sendEmail(payload: NotificationInterface): Promise<void> {
-		const { type, recipientId, data } = payload;
+		const { data } = payload;
+		const templatePath = path.join(process.cwd(), data.templatePath);
+    	let html = fs.readFileSync(templatePath, 'utf-8');
+
+		html = html
+			.replace('{{name}}', payload.data.recipientName || "Customer")
+			.replace('{{verificationCode}}', payload.data.code || "")
+			.replace('{{year}}', new Date().getFullYear().toString());
+
+		
 		const sendMail = await this.mailService.sendMail({
-			from: "Banquet Pro",
+			from: `"Banquet Pro" <${process.env.SMTP_USER || "support@banquetpay.com"}>`,
 			to: data.recipientEmail,
-			subject: data.subject,
+			subject: data.subject,	
 			text: data.message,
-			html: data.html
+			html,
 		});
+
 		console.log({sendMail})
 	}
 

@@ -116,11 +116,13 @@ export class UsersService {
             //  emit a email verification - notification event
             this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
                 type: 'EMAIL',
-                recipientId: account.user.id,
                 data: {
                     subject: 'Email Verification Notice!',
                     message: `Thank you for signing up! here is your verification code ${account.personalaAccessTokens.token}`,
                     recipientEmail: account.user.email,
+                    recipientName: `${account.user.firstName} ${account.user.lastName}`,
+                    templatePath: 'templates/emails/verification.html',
+                    code: account.personalaAccessTokens.token
                 },
             });
 
