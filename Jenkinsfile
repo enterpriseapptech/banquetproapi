@@ -501,7 +501,7 @@ def deployService(Map svc) {
 
             echo "Copying to temporary directory"
             rsync -av --exclude=temporary/ --exclude=node_modules/ ./ temporary/
-            cp -r .env package.json yarn.lock temporary/
+            cp -r .env package.json yarn.lock templates temporary/ 
             ls -la temporary/
 
             echo "Installing dependencies"
@@ -518,7 +518,7 @@ def deployService(Map svc) {
             echo "Creating ${containerName}tar.gz with microservice and config files and Compressing artifacts..."
             cd ..
             
-            tar -czf ${containerName}.tar.gz temporary/dist temporary/apps temporary/package.json temporary/yarn.lock temporary/${path}/.env
+            tar -czf ${containerName}.tar.gz temporary/dist temporary/apps temporary/templates temporary/package.json temporary/yarn.lock temporary/${path}/.env
             pwd
             ls -la
             
