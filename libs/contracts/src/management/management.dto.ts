@@ -1,4 +1,5 @@
 export class AppSettingDto {
+    serviceCharge: number;
     notifyOnRequest: boolean;
     notifyCertifiedOnly: boolean;
     visibleToCertifiedOnly: boolean;

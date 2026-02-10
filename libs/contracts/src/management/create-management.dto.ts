@@ -1,4 +1,4 @@
-import {IsBoolean, IsOptional, IsString} from 'class-validator';
+import {IsBoolean, IsNumber, IsOptional, IsString} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 
@@ -14,6 +14,10 @@ export enum Status {
 
 
 export class CreateAppSettingDto {
+
+    @ApiProperty({ type: 'number', required: true, description: 'Platform fee, fixed amount (not %)' })
+    @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
+    serviceCharge: number;
 
     @ApiProperty({ type: 'boolean', required: true })
     @IsBoolean()

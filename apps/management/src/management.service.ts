@@ -15,6 +15,7 @@ export class AppSettingService {
 
     async create(createAppSettingDto: CreateAppSettingDto): Promise<AppSettingDto> {
         const newAppSettingInput: Prisma.AppSettingsCreateInput = {
+            serviceCharge: createAppSettingDto.serviceCharge,
             notifyCertifiedOnly: createAppSettingDto.notifyCertifiedOnly,
             notifyOnRequest: createAppSettingDto.notifyOnRequest,
             visibleToCertifiedOnly: createAppSettingDto.visibleToCertifiedOnly
@@ -23,7 +24,7 @@ export class AppSettingService {
         try {
             const appSettings = await this.databaseService.appSettings.create({ data: newAppSettingInput });
               
-            return appSettings;
+            return {...appSettings, serviceCharge: appSettings.serviceCharge.toNumber() }
 
         } catch (error) {
             throw new InternalServerErrorException('sever error could not create service category', {
@@ -35,7 +36,7 @@ export class AppSettingService {
 
     async find(): Promise<AppSettingDto> {
         const appSetting = await this.databaseService.appSettings.findFirst();
-        return appSetting;
+        return {...appSetting, serviceCharge: appSetting.serviceCharge.toNumber() }
 
     }
 
@@ -51,7 +52,7 @@ export class AppSettingService {
             });
 
 
-            return appSetting;
+            return {...appSetting, serviceCharge: appSetting.serviceCharge.toNumber() };
 
         } catch (error) {
             throw new ConflictException(error);
