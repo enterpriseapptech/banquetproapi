@@ -62,7 +62,7 @@ export class CountryController {
     @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
     @Patch(':id')
     async update(@Param('id') id: string, @Body() updateCountryDto: UpdateCountryDto, @Req() req: AuthenticatedRequest) {
-                const authuser = req.user;
+        const authuser = req.user;
         if (!authuser) {
             throw new UnauthorizedException('Access token has expired');
         }
@@ -75,7 +75,7 @@ export class CountryController {
     @ApiOperation({ summary: 'Soft Delete Country' })
     @ApiResponse({ status: 200, description: 'Success' })
     @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
-    @Delete(':id')
+    @Post(':id')
     async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
                 const authuser = req.user;
         if (!authuser) {
@@ -90,13 +90,9 @@ export class CountryController {
     @ApiResponse({ status: 200, description: 'Success' })
     @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
     @Delete(':id')
-    async permanentDelete(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
-                const authuser = req.user;
-        if (!authuser) {
-            throw new UnauthorizedException('Access token has expired');
-        }
-        const user: UserDto = await firstValueFrom(authuser)
-        return this.countryService.permanentDelete(id, user.id);
+    async permanentDelete(@Param('id') id: string) {
+
+        return this.countryService.permanentDelete(id);
     }
 
 }
@@ -157,7 +153,7 @@ export class StateController {
     @ApiOperation({ summary: 'Soft Delete state' })
     @ApiResponse({ status: 200, description: 'Success' })
     @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
-    @Delete(':id')
+    @Post(':id')
     async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
                 const authuser = req.user;
         if (!authuser) {
@@ -172,13 +168,8 @@ export class StateController {
     @ApiResponse({ status: 200, description: 'Success' })
     @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
     @Delete(':id')
-    async permanentDelete(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
-                const authuser = req.user;
-        if (!authuser) {
-            throw new UnauthorizedException('Access token has expired');
-        }
-        const user: UserDto = await firstValueFrom(authuser)
-        return this.stateService.permanentDelete(id, user.id);
+    async permanentDelete(@Param('id') id: string) {
+        return this.stateService.permanentDelete(id);
     }
 
 }

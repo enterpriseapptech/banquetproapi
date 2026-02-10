@@ -5,6 +5,7 @@ import { DatabaseService } from '../database/database.service';
 import { CreateCountryDto, CreateStateDto,  CreateAppSettingDto } from '@shared/contracts/management/create-management.dto';
 import { AppSettingDto, CountryDto,  StateDto } from '@shared/contracts/management/management.dto';
 import { UpdateAppSettingDto, UpdateCountryDto, UpdateStateDto } from '@shared/contracts/management/update-management.dto';
+import { PrismaErrorHandler } from '@shared/contracts/prisma.error.handler';
 
 @Injectable()
 export class AppSettingService {
@@ -67,8 +68,6 @@ export class CountryService {
     ) { }
 
     async create(createCountryDto: CreateCountryDto): Promise<CountryDto> {
-       
-
         try {
              const newCountryInput: Prisma.CountryCreateInput = {
                 name: createCountryDto.name,
@@ -82,7 +81,7 @@ export class CountryService {
             const country = await this.databaseService.country.create({ data: newCountryInput });
             return country; 
         } catch (error) {
-            // console.log({error})
+            PrismaErrorHandler.handle(error, Prisma);
             throw new InternalServerErrorException('sever error could not create country', {
                 cause: new Error(),
                 description: error.message
@@ -159,13 +158,14 @@ export class CountryService {
             return country;
 
         } catch (error) {
+            PrismaErrorHandler.handle(error, Prisma);
             throw new ConflictException(error);
         }
     }
 
     async remove(id: string, updaterId: string): Promise<CountryDto> {
-
-        const deletedCountry = await this.databaseService.$transaction(async (prisma) => {
+        try {
+          const deletedCountry = await this.databaseService.$transaction(async (prisma) => {
             const deletedCountry = await prisma.country.update({
                 where: { id },
                 data: {
@@ -178,19 +178,31 @@ export class CountryService {
         });
 
         return deletedCountry;
-
+  
+        } catch (error) {
+            PrismaErrorHandler.handle(error, Prisma);
+            throw new InternalServerErrorException('sever error could not delete country', {
+                cause: new Error(),
+                description: error.message
+            });
+        }
+        
     }
 
     async permanentDelete(id: string): Promise<CountryDto> {
-
-        const deletedCountry = await this.databaseService.$transaction(async (prisma) => {
-            const deletedCountry = await prisma.country.delete({
+        try {
+            const deletedCountry = await this.databaseService.country.delete({
                 where: { id },
             });
-            return deletedCountry
-        });
+            return deletedCountry;
+        } catch (error) {
+            PrismaErrorHandler.handle(error, Prisma);
+            throw new InternalServerErrorException('sever error could not delete country', {
+                cause: new Error(),
+                description: error.message
+            });
+        }
 
-        return deletedCountry;
 
     }
 }
@@ -222,6 +234,7 @@ export class StateService {
             return State;
 
         } catch (error) {
+            PrismaErrorHandler.handle(error, Prisma);
             throw new InternalServerErrorException('sever error could not create service', {
                 cause: new Error(),
                 description: 'State creation failed, please try again'
@@ -312,38 +325,46 @@ export class StateService {
             return State;
 
         } catch (error) {
+            PrismaErrorHandler.handle(error, Prisma);
             throw new ConflictException(error);
         }
     }
 
     async remove(id: string, updaterId: string): Promise<StateDto> {
-
-        const deletedState = await this.databaseService.$transaction(async (prisma) => {
-            const deletedState = await prisma.state.update({
+        try {
+            const deletedState = await this.databaseService.state.update({
                 where: { id },
                 data: {
                     deletedAt: new Date(),
                     deletedBy: updaterId
                 }
             });
+            return deletedState; 
+        } catch (error) {
+            PrismaErrorHandler.handle(error, Prisma);
+            throw new InternalServerErrorException('sever error could not delete state', {
+                cause: new Error(),
+                description: error.message
+            });
+        }
 
-            return deletedState
-        });
-
-        return deletedState;
 
     }
 
     async permanentDelete(id: string): Promise<StateDto> {
-
-        const deletedState = await this.databaseService.$transaction(async (prisma) => {
-            const deletedState = await prisma.state.delete({
+        try {
+            const deletedState = await this.databaseService.state.delete({
                 where: { id },
             });
             return deletedState
-        });
+        } catch (error) {
+            PrismaErrorHandler.handle(error, Prisma);
+            throw new InternalServerErrorException('sever error could not delete state', {
+                cause: new Error(),
+                description: error.message
+            });
+        }
 
-        return deletedState;
 
     }
 }

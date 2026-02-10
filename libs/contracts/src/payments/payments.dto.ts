@@ -1,169 +1,356 @@
-
 import { IsNumber, IsOptional, IsString } from "class-validator";
-import { FeesType, InvoiceStatus, PaymentReason, RefundStatus, Status, IPaymentStatus } from "./create-payments.dto";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import {
+  FeesType,
+  InvoiceStatus,
+  IPaymentStatus,
+  PaymentReason,
+  RefundStatus,
+  Status,
+} from "./create-payments.dto";
+import { UserDto } from "../users";
+
 
 export class InvoiceItem {
-  @ApiProperty({ description: 'Item name', example: 'Laptop' })
+  @ApiProperty({ description: "Item name", example: "Laptop" })
   @IsString()
   item: string;
 
-  @ApiProperty({ description: 'Item amount', example: 1200 })
+  @ApiProperty({ description: "Item amount", example: 1200 })
   @IsNumber()
   amount: number;
 }
 
 export class BillingAddress {
-  @ApiProperty({ example: '123 Main St' })
+  @ApiProperty({ example: "123 Main St" })
   @IsString()
   street: string;
 
-  @ApiProperty({ example: '123 Main St' })
+  @ApiProperty({ example: "123 Main St" })
   @IsOptional()
   @IsString()
   street2?: string;
 
-  @ApiProperty({ example: 'Ikeja' })
+  @ApiProperty({ example: "Ikeja" })
   @IsString()
   city: string;
 
-  @ApiProperty({ example: 'Lagos' })
+  @ApiProperty({ example: "Lagos" })
   @IsString()
   state: string;
 
-  @ApiProperty({ example: 'Nigeria' })
+  @ApiProperty({ example: "Nigeria" })
   @IsString()
   country: string;
 
-  @ApiProperty({ example: '200911' })
+  @ApiProperty({ example: "200911" })
   @IsString()
   postal: string;
 }
 
 export class PaymentMethodDto {
-    id: string;
-    provider: string;
-    providerLogo: string;
-    status: Status;
-    createdAt: Date;
-    createdBy?: string;
-    updatedAt: Date;
-    deletedAt?: Date;
-}
+  @ApiProperty({ example: "pm_123" })
+  id: string;
 
+  @ApiProperty({ example: "stripe" })
+  provider: string;
+
+  @ApiPropertyOptional({ example: "https://cdn.example.com/logo.png" })
+  providerLogo: string;
+
+  @ApiProperty({ enum: Status })
+  status: Status;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  createdAt: Date;
+
+  @ApiPropertyOptional({ example: "user_123" })
+  createdBy?: string;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  updatedAt: Date;
+
+  @ApiPropertyOptional({ example: "2024-01-01T00:00:00.000Z" })
+  deletedAt?: Date;
+}
 
 export class PaymentDto {
-    id: string;
-    totalPaymentDue?: number;
-    totalPaymentPaid?: number;
-    bookingId?: string;
-    subscritpionId?: string;
-    userId: string;
-    user?: {name: string}; // can populate the user object depending on use case
-    amount: number;
-    amountCharged: number;
-    reference: string;
-    paymentAuthorization: Record<string, any>;
-    currency: string;
-    paymentReason: PaymentReason;
-    status: IPaymentStatus;
-    transactionId: string;
-    createdAt: Date;
-    updatedAt: Date;
-    updatedBy?: string
-    deletedat?: Date;
-    deletedBy?: string;
-    paymentMethod: PaymentMethodDto | string;
+  @ApiProperty({ example: "uuid" })
+  id: string;
+
+  @ApiPropertyOptional({ example: 5000 })
+  totalPaymentDue?: number;
+
+  @ApiPropertyOptional({ example: 2500 })
+  totalPaymentPaid?: number;
+
+  @ApiPropertyOptional({ example: "book_123" })
+  bookingId?: string;
+
+  @ApiPropertyOptional({ example: "sub_123" })
+  subscritpionId?: string;
+
+  @ApiProperty({ example: "user_123" })
+  userId: string;
+
+  @ApiPropertyOptional({ type: "object", additionalProperties: { type: 'object' }})
+  user?: UserDto; 
+
+  @ApiProperty({ example: 2500 })
+  amount: number;
+
+  @ApiProperty({ example: 2500 })
+  amountCharged: number;
+
+  @ApiProperty({ example: "ref_123" })
+  reference: string;
+
+  @ApiProperty({ type: "object", additionalProperties: { type: 'object' },})
+  paymentAuthorization: Record<string, any>;
+
+  @ApiProperty({ example: "NGN" })
+  currency: string;
+
+  @ApiProperty({ enum: PaymentReason })
+  paymentReason: PaymentReason;
+
+  @ApiProperty({ enum: IPaymentStatus })
+  status: IPaymentStatus;
+
+  @ApiProperty({ example: "txn_123" })
+  transactionId: string;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  createdAt: Date;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  updatedAt: Date;
+
+  @ApiPropertyOptional({ example: "user_123" })
+  updatedBy?: string;
+
+  @ApiPropertyOptional({ example: "2024-01-01T00:00:00.000Z" })
+  deletedat?: Date;
+
+  @ApiPropertyOptional({ example: "user_123" })
+  deletedBy?: string;
+
+  @ApiProperty({
+    oneOf: [{ $ref: "#/components/schemas/PaymentMethodDto" }, { type: "string" }],
+  })
+  paymentMethod: PaymentMethodDto | string;
 }
 
+export class InvoiceDto {
+  @ApiProperty({ example: "inv_123" })
+  id: string;
 
+  @ApiProperty({ example: "user_123" })
+  userId: string;
 
-export class InvoiceDto  {
-    id: string;
-    userId: string;
-    bookingId: string;
-    paymentId?: string;
-    items: InvoiceItem[];
-    subTotal?: number;
-    discount?: number;
-    total?: number;
-    amountDue: number;
-    currency?: string;
-    note?: string;
-    billingAddress: BillingAddress;
-    status: InvoiceStatus;
-    dueDate: Date;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedat?: Date;
-    deletedBy?: string;
-    payment?: PaymentDto;
+  @ApiProperty({ example: "book_123" })
+  bookingId: string;
 
+  @ApiPropertyOptional({ example: "pay_123" })
+  paymentId?: string;
+
+  @ApiProperty({ type: [InvoiceItem] })
+  items: InvoiceItem[];
+
+  @ApiPropertyOptional({ example: 5000 })
+  subTotal?: number;
+
+  @ApiPropertyOptional({ example: 500 })
+  discount?: number;
+
+  @ApiPropertyOptional({ example: 4500 })
+  total?: number;
+
+  @ApiProperty({ example: 4500 })
+  amountDue: number;
+
+  @ApiPropertyOptional({ example: "NGN" })
+  currency?: string;
+
+  @ApiPropertyOptional({ example: "Thanks for your business" })
+  note?: string;
+
+  @ApiProperty({ type: BillingAddress })
+  billingAddress: BillingAddress;
+
+  @ApiProperty({ enum: InvoiceStatus })
+  status: InvoiceStatus;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  dueDate: Date;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  createdAt: Date;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  updatedAt: Date;
+
+  @ApiPropertyOptional({ example: "2024-01-01T00:00:00.000Z" })
+  deletedat?: Date;
+
+  @ApiPropertyOptional({ example: "user_123" })
+  deletedBy?: string;
+
+  @ApiPropertyOptional({ type: PaymentDto })
+  payment?: PaymentDto;
 }
 
-export class RefundDto{
-    id: string;
-    paymentId: string;
-    amount: number;
-    reason: string;
-    status: InvoiceStatus;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedat?: Date;
-    deletedBy?: string;
-    payment: PaymentDto;
+export class RefundDto {
+  @ApiProperty({ example: "ref_123" })
+  id: string;
 
+  @ApiProperty({ example: "pay_123" })
+  paymentId: string;
+
+  @ApiProperty({ example: 2500 })
+  amount: number;
+
+  @ApiProperty({ example: "Duplicate payment" })
+  reason: string;
+
+  @ApiProperty({ enum: InvoiceStatus })
+  status: InvoiceStatus;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  createdAt: Date;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  updatedAt: Date;
+
+  @ApiPropertyOptional({ example: "2024-01-01T00:00:00.000Z" })
+  deletedat?: Date;
+
+  @ApiPropertyOptional({ example: "user_123" })
+  deletedBy?: string;
+
+  @ApiProperty({ type: PaymentDto })
+  payment: PaymentDto;
 }
 
 export class DisputeDto {
-    id: string;
-    userId: string;
-    paymentId: string;
-    serviceRequestId: string;
-    reason: string;
-    status: RefundStatus;
-    dueDate: Date;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedat?: Date;
-    deletedBy?: string;
-    payment: PaymentDto;
+  @ApiProperty({ example: "disp_123" })
+  id: string;
 
+  @ApiProperty({ example: "user_123" })
+  userId: string;
+
+  @ApiProperty({ example: "pay_123" })
+  paymentId: string;
+
+  @ApiProperty({ example: "srv_123" })
+  serviceRequestId: string;
+
+  @ApiProperty({ example: "Chargeback" })
+  reason: string;
+
+  @ApiProperty({ enum: RefundStatus })
+  status: RefundStatus;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  dueDate: Date;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  createdAt: Date;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  updatedAt: Date;
+
+  @ApiPropertyOptional({ example: "2024-01-01T00:00:00.000Z" })
+  deletedat?: Date;
+
+  @ApiPropertyOptional({ example: "user_123" })
+  deletedBy?: string;
+
+  @ApiProperty({ type: PaymentDto })
+  payment: PaymentDto;
 }
-
 
 export class SubscriptionPlanDto {
-    id: string;
-    plan: string;
-    amount: number;
-    timeFrame: number;
-    status: Status;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedat?: Date;
-    deletedBy?: string;
+  @ApiProperty({ example: "plan_123" })
+  id: string;
+
+  @ApiProperty({ example: "Gold" })
+  plan: string;
+
+  @ApiProperty({ example: 10000 })
+  amount: number;
+
+  @ApiProperty({ example: 12 })
+  timeFrame: number;
+
+  @ApiProperty({ enum: Status })
+  status: Status;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  createdAt: Date;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  updatedAt: Date;
+
+  @ApiPropertyOptional({ example: "2024-01-01T00:00:00.000Z" })
+  deletedat?: Date;
+
+  @ApiPropertyOptional({ example: "user_123" })
+  deletedBy?: string;
 }
 
-
 export class FeaturedPlanDto {
-    id: string;
-    plan: string;
-    amount: number;
-    timeFrame: number;
-    status: Status;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedat?: Date;
-    deletedBy?: string;
+  @ApiProperty({ example: "plan_123" })
+  id: string;
+
+  @ApiProperty({ example: "Platinum" })
+  plan: string;
+
+  @ApiProperty({ example: 15000 })
+  amount: number;
+
+  @ApiProperty({ example: 12 })
+  timeFrame: number;
+
+  @ApiProperty({ enum: Status })
+  status: Status;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  createdAt: Date;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  updatedAt: Date;
+
+  @ApiPropertyOptional({ example: "2024-01-01T00:00:00.000Z" })
+  deletedat?: Date;
+
+  @ApiPropertyOptional({ example: "user_123" })
+  deletedBy?: string;
 }
 
 export class FeesDto {
-    id: string;
-    name: FeesType;
-    amount: number;
-    status: Status;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedat?: Date;
-    deletedBy?: string;
+  @ApiProperty({ example: "fee_123" })
+  id: string;
+
+  @ApiProperty({ enum: FeesType })
+  name: FeesType;
+
+  @ApiProperty({ example: 250 })
+  amount: number;
+
+  @ApiProperty({ enum: Status })
+  status: Status;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  createdAt: Date;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  updatedAt: Date;
+
+  @ApiPropertyOptional({ example: "2024-01-01T00:00:00.000Z" })
+  deletedat?: Date;
+
+  @ApiPropertyOptional({ example: "user_123" })
+  deletedBy?: string;
+
 }

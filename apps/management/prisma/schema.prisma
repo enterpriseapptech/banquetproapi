@@ -16,6 +16,8 @@ datasource db {
 
 model AppSettings {
   id                          String  @id @default("singleton")
+  serviceCharge               Decimal // platform fee, fixed amount not %
+  kycMethod                   @default (Manual)
   notifyOnRequest             Boolean @default(true)
   notifyCertifiedOnly         Boolean @default(true)
   visibleToCertifiedOnly      Boolean @default(true)
@@ -62,9 +64,9 @@ model City {
   deletedBy   String?
 }
 
-enum FeesType {
-  KYC
-  CERTIFICATION
+enum KycMethod{
+  Manual
+  AUTOMATIC
 }
 
 enum Status {

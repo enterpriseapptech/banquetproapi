@@ -47,8 +47,8 @@ export class CountryService {
 
 	}
 
-	permanentDelete(id: string, updaterId: string) {
-		return this.countryClient.send<CountryDto, { id: string, updaterId: string }>(COUNTRYPATTERN.PERMANENTDELETE, { id, updaterId })
+	permanentDelete(id: string) {
+		return this.countryClient.send<CountryDto, string>(COUNTRYPATTERN.PERMANENTDELETE, id)
 
 	}
 
@@ -89,8 +89,8 @@ export class StateService {
 		return this.stateClient.send<StateDto, string>(STATEPATTERN.FINDONEBYID, id)
 	}
 
-	update(id: string, updatestateDto: UpdateStateDto) {
-		return this.stateClient.send<StateDto, { id: string, updatestateDto: UpdateStateDto }>(STATEPATTERN.UPDATE, { id, updatestateDto })
+	update(id: string, updateStateDto: UpdateStateDto) {
+		return this.stateClient.send<StateDto, { id: string, updateStateDto: UpdateStateDto }>(STATEPATTERN.UPDATE, { id, updateStateDto })
 	}
 
 	remove(id: string, updaterId: string) {
@@ -98,8 +98,8 @@ export class StateService {
 
 	}
 
-	permanentDelete(id: string, updaterId: string) {
-		return this.stateClient.send<StateDto, { id: string, updaterId: string }>(STATEPATTERN.PERMANENTDELETE, { id, updaterId })
+	permanentDelete(id: string) {
+		return this.stateClient.send<StateDto, string>(STATEPATTERN.PERMANENTDELETE,  id)
 
 	}
 

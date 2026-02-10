@@ -115,7 +115,8 @@ export class CountryController {
 
 
 	@MessagePattern(COUNTRYPATTERN.UPDATE)
-	update(@Payload() id: string, @Payload() updateCountryDto: UpdateCountryDto) {
+	update(@Payload() data: {id: string, updateCountryDto: UpdateCountryDto}) {
+		const {id, updateCountryDto} = data;
 		return from(this.countryService.update(id, updateCountryDto)).pipe(
 			catchError((err) => {
 				console.error("Error in countryService:", err);
@@ -130,7 +131,8 @@ export class CountryController {
 	}
 
 	@MessagePattern(COUNTRYPATTERN.DELETE)
-	remove(@Payload() id: string, @Payload() updaterId: string) {
+	remove(@Payload() data: {id: string, updaterId: string}) {
+		const {id, updaterId} = data;
 		return from(this.countryService.remove(id, updaterId)).pipe(
 			catchError((err) => {
 				console.error("Error in countryService:", err);
@@ -230,7 +232,9 @@ export class StateController {
 
 
 	@MessagePattern(STATEPATTERN.UPDATE)
-	update(@Payload() id: string, @Payload() updateStateDto: UpdateStateDto) {
+	update(@Payload() data: {id: string, updateStateDto: UpdateStateDto}) {
+		const {id, updateStateDto} = data;
+		console.log({data})
 		return from(this.stateService.update(id, updateStateDto)).pipe(
 			catchError((err) => {
 				console.error("Error in stateService:", err);
@@ -245,7 +249,8 @@ export class StateController {
 	}
 
 	@MessagePattern(STATEPATTERN.DELETE)
-	remove(@Payload() id: string, @Payload() updaterId: string) {
+	remove(@Payload() data: {id: string, updaterId: string}) {
+		const {id, updaterId} = data;
 		return from(this.stateService.remove(id, updaterId)).pipe(
 			catchError((err) => {
 				console.error("Error in stateService:", err);
