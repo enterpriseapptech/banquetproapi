@@ -5,7 +5,9 @@ import {
   InvoiceStatus,
   IPaymentStatus,
   PaymentReason,
+  PaymentType,
   RefundStatus,
+  ServiceType,
   Status,
 } from "./create-payments.dto";
 import { UserDto } from "../users";
@@ -78,6 +80,9 @@ export class PaymentDto {
   @ApiProperty({ example: "uuid" })
   id: string;
 
+  @ApiProperty({ example: "inv_123" })
+  invoiceId: string;
+
   @ApiPropertyOptional({ example: 5000 })
   totalPaymentDue?: number;
 
@@ -89,6 +94,15 @@ export class PaymentDto {
 
   @ApiPropertyOptional({ example: "sub_123" })
   subscritpionId?: string;
+
+  @ApiPropertyOptional({ enum: ServiceType })
+  serviceType?: ServiceType;
+
+  @ApiPropertyOptional({ example: "svc_123" })
+  serviceId?: string;
+
+  @ApiPropertyOptional({ example: "plan_123" })
+  subscriptionPlanId?: string;
 
   @ApiProperty({ example: "user_123" })
   userId: string;
@@ -148,11 +162,20 @@ export class InvoiceDto {
   @ApiProperty({ example: "user_123" })
   userId: string;
 
-  @ApiProperty({ example: "book_123" })
-  bookingId: string;
+  @ApiPropertyOptional({ example: "book_123" })
+  bookingId?: string;
 
   @ApiPropertyOptional({ example: "pay_123" })
   paymentId?: string;
+
+  @ApiPropertyOptional({ enum: ServiceType })
+  serviceType?: ServiceType;
+
+  @ApiPropertyOptional({ example: "svc_123" })
+  serviceId?: string;
+
+  @ApiPropertyOptional({ example: "plan_123" })
+  subscriptionPlanId?: string;
 
   @ApiProperty({ type: [InvoiceItem] })
   items: InvoiceItem[];
@@ -326,6 +349,50 @@ export class FeaturedPlanDto {
 
   @ApiPropertyOptional({ example: "user_123" })
   deletedBy?: string;
+}
+
+export class SubscriptionDto {
+  @ApiProperty({ example: 'sub_123' })
+  id: string;
+
+  @ApiProperty({ example: 'sp_123' })
+  serviceProviderId: string;
+
+  @ApiProperty({ example: 'svc_123' })
+  serviceId: string;
+
+  @ApiProperty({ enum: PaymentType })
+  type: PaymentType;
+
+  @ApiProperty({ example: 'fee_123' })
+  feesId: string;
+
+  @ApiProperty({ example: 'plan_123' })
+  subscriptionplanId: string;
+
+  @ApiProperty({ example: 'fp_123' })
+  featuredPlanId: string;
+
+  @ApiProperty({ enum: Status })
+  status: Status;
+
+  @ApiProperty({ example: '2026-01-01T00:00:00.000Z' })
+  expiryDate: Date;
+
+  @ApiProperty({ example: '2024-01-01T00:00:00.000Z' })
+  createdAt: Date;
+
+  @ApiProperty({ example: '2024-01-01T00:00:00.000Z' })
+  updatedAt: Date;
+
+  @ApiPropertyOptional({ example: '2024-01-01T00:00:00.000Z' })
+  deletedAt?: Date;
+
+  @ApiPropertyOptional({ example: 'user_123' })
+  deletedBy?: string;
+
+  @ApiPropertyOptional({ type: () => InvoiceDto, description: 'Invoice created alongside this subscription' })
+  invoice?: InvoiceDto;
 }
 
 export class FeesDto {

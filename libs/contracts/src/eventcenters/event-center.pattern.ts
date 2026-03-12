@@ -17,3 +17,12 @@ export const EVENTCENTERBOOKINGPATTERN = {
     UPDATE: 'event.center.booking.update',
     DELETE: 'event.center.booking.delete',
 }
+
+export const EVENTCENTERSUBSCRIPTIONPATTERN = {
+    FINDALL: 'event.center.subscription.findAll',
+    FINDBYID: 'event.center.subscription.findOneById',
+    CREATE: 'event.center.subscription.create',
+    UPDATE: 'event.center.subscription.update',
+    DELETE: 'event.center.subscription.delete',
+    ACTIVATEBYINVOICEID: 'event.center.subscription.activateByInvoiceId',
+}

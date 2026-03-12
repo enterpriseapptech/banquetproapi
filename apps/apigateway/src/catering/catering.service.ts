@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { CreateCateringDto, UpdateCateringDto, CateringDto, CATERINGPATTERN, ManyCateringDto, ManyRequestCateringDto } from '@shared/contracts/catering';
+import { CreateCateringDto, CreateServiceSubscriptionDto, UpdateCateringDto, CateringDto, CATERINGPATTERN, CATERINGSUBSCRIPTIONPATTERN, ManyCateringDto, ManyRequestCateringDto, ServiceSubscriptionDto } from '@shared/contracts/catering';
 import { CATERING_CLIENT } from '@shared/contracts';
 
 @Injectable()
@@ -44,5 +44,21 @@ export class CateringService {
 
     remove(id: string, updaterId: any) {
         return this.cateringClient.send<CateringDto, { id: string, updaterId: string }>(CATERINGPATTERN.DELETE, { id, updaterId })
+    }
+
+    createSubscription(dto: CreateServiceSubscriptionDto) {
+        return this.cateringClient.send<ServiceSubscriptionDto, CreateServiceSubscriptionDto>(CATERINGSUBSCRIPTIONPATTERN.CREATE, dto);
+    }
+
+    findAllSubscriptions(limit: number, offset: number, serviceId?: string) {
+        return this.cateringClient.send<{ count: number; docs: ServiceSubscriptionDto[] }, { limit: number; offset: number; serviceId?: string }>(CATERINGSUBSCRIPTIONPATTERN.FINDALL, { limit, offset, serviceId });
+    }
+
+    findOneSubscription(id: string) {
+        return this.cateringClient.send<ServiceSubscriptionDto, string>(CATERINGSUBSCRIPTIONPATTERN.FINDBYID, id);
+    }
+
+    activateSubscriptionByInvoiceId(invoiceId: string) {
+        return this.cateringClient.send<ServiceSubscriptionDto, string>(CATERINGSUBSCRIPTIONPATTERN.ACTIVATEBYINVOICEID, invoiceId);
     }
 }

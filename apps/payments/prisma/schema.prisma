@@ -55,11 +55,14 @@ model Payment {
 
 /* INVOICES */
 model Invoice {
-  id                String    @id @default(uuid())
-  reference         String @unique
+  id                String      @id @default(uuid())
+  reference         String      @unique
   userId            String
   bookingId         String?
-  subscriptionId    String?    // invoice is either for boooking or subscription
+  subscriptionId    String?     // invoice is either for booking or subscription
+  serviceType       ServiceType?  // which microservice to notify on payment (for subscriptions)
+  serviceId         String?     // the service's ID in the respective DB
+  subscriptionPlanId String?    // which subscription plan was purchased
   items             Json[]
   amountDue         Decimal @db.Decimal(10, 2) // this is the actual amount to be paid 
   currency          Currency? @default(NGN)
@@ -149,7 +152,7 @@ model Subscriptions {
 
 model Fees {
   id                    String   @id @default(uuid())
-  name                  FeesType
+  name                  FeesType @unique
   amount                Decimal
   status                Status 
   createdAt             DateTime @default(now())
@@ -159,21 +162,24 @@ model Fees {
   deletedBy             String?
 
   subscriptions         Subscriptions[]
+  
+  @@unique([name, amount])
 }
 
 model SubscriptionPlans {
   id                    String   @id @default(uuid())
-  plan                  String
+  plan                  String 
   amount                Decimal
   timeFrame             Int  // number of days this subscription covers
   status                Status  
-  createdAt     DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  updatedBy     String?
-  deletedAt     DateTime?
-  deletedBy     String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  updatedBy             String?
+  deletedAt             DateTime?
+  deletedBy             String?
 
   subscriptions         Subscriptions[]
+  // indexes are mananged manually via migration raw sql
 }
 
 model FeaturedPlans {
@@ -255,6 +261,11 @@ enum DisputeStatus {
   OPEN
   RESOLVED
   REJECTED
+}
+
+enum ServiceType {
+  EVENTCENTER
+  CATERING
 }
 
 enum PaymentOption {

@@ -1,12 +1,33 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, UseInterceptors, UploadedFile, HttpCode, HttpStatus } from '@nestjs/common';
-import { InvoiceService, PaymentMethodService, PaymentService } from './payment.service';
+import { DisputeService, FeaturedPlanService, FeesService, InvoiceService, PaymentMethodService, PaymentService, RefundService, SubscriptionService, SubscriptionPlanService } from './payment.service';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
+import { AdminRoleGuard } from '../jwt/admin.guard';
 import {
+    CreateDisputeDto,
+    CreateFeaturedPlanDto,
+    CreateFeeDto,
     CreateInvoiceDto,
     CreatePaymentDto,
-    //  CreatePaymentDto, 
-    CreatePaymentMethodDto, CreateSecondInvoiceDto, GeneratePaymentDto, IPaymentStatus, PaymentMethod, UpdatePaymentDto, UpdatePaymentMethodDto
+    CreatePaymentMethodDto,
+    CreateRefundDto,
+    CreateSecondInvoiceDto,
+    CreateSubscriptionDto,
+    CreateSubscriptionPlanDto,
+    GeneratePaymentDto,
+    InitiateServiceSubscriptionDto,
+    IPaymentStatus,
+    PaymentMethod,
+    PaymentReason,
+    ServiceType,
+    UpdateDisputeDto,
+    UpdateFeaturedPlanDto,
+    UpdateFeeDto,
+    UpdatePaymentDto,
+    UpdatePaymentMethodDto,
+    UpdateRefundDto,
+    UpdateSubscriptionDto,
+    UpdateSubscriptionPlanDto,
 } from '@shared/contracts/payments';
 import { firstValueFrom } from 'rxjs';
 import { UserDto } from '@shared/contracts/users';
@@ -14,6 +35,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { ApiTags } from '@nestjs/swagger';
 import { BookingService } from '../booking/booking.service';
+import { EventcentersService } from '../eventcenters/eventcenters.service';
+import { CateringService } from '../catering/catering.service';
 
 
 interface AuthenticatedRequest extends Request {
@@ -24,8 +47,10 @@ interface AuthenticatedRequest extends Request {
 @ApiTags('invoice')
 @Controller('invoice')
 export class InvoiceController {
-    constructor(private readonly invoiceService: InvoiceService,
-        private readonly bookingService: BookingService) { }
+    constructor(
+        private readonly invoiceService: InvoiceService,
+        private readonly bookingService: BookingService,
+    ) { }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post('create')
@@ -80,7 +105,9 @@ export class InvoiceController {
 @Controller('payment')
 export class PaymentController {
     constructor(private readonly paymentService: PaymentService,
-        private readonly bookingService: BookingService
+        private readonly bookingService: BookingService,
+        private readonly eventcentersService: EventcentersService,
+        private readonly cateringService: CateringService,
     ) { }
 
 
@@ -129,8 +156,16 @@ export class PaymentController {
                 };
             }
             const payment = await firstValueFrom(this.paymentService.create(paymentData))
-            await this.bookingService.updatePayment(payment.bookingId, payment.totalPaymentPaid );
-            
+            if (payment.paymentReason === PaymentReason.SUBSCRIPTION && payment.serviceType && payment.invoiceId) {
+                if (payment.serviceType === ServiceType.EVENTCENTER) {
+                    await firstValueFrom(this.eventcentersService.activateSubscriptionByInvoiceId(payment.invoiceId));
+                } else if (payment.serviceType === ServiceType.CATERING) {
+                    await firstValueFrom(this.cateringService.activateSubscriptionByInvoiceId(payment.invoiceId));
+                }
+            } else if (payment.bookingId) {
+                await this.bookingService.updatePayment(payment.bookingId, payment.totalPaymentPaid);
+            }
+
             return { received: true };
         } catch (error) {
             console.log({error})
@@ -221,4 +256,313 @@ export class PaymentMethodController {
         return this.paymentMethodService.permanentDelete(id);
     }
 
+}
+
+@ApiTags('subscription-plans')
+@Controller('subscription-plans')
+export class SubscriptionPlanController {
+    constructor(private readonly subscriptionPlanService: SubscriptionPlanService) {}
+
+    @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
+    @Post()
+    create(@Body() dto: CreateSubscriptionPlanDto) {
+        console.log({dto})
+        return this.subscriptionPlanService.create(dto);
+    }
+
+    @Get()
+    findAll(@Query('limit') limit: number, @Query('offset') offset: number) {
+        return this.subscriptionPlanService.findAll(limit, offset);
+    }
+
+    @Get(':id')
+    findOne(@Param('id') id: string) {
+        return this.subscriptionPlanService.findOne(id);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
+    @Patch(':id')
+    update(@Param('id') id: string, @Body() dto: UpdateSubscriptionPlanDto) {
+        return this.subscriptionPlanService.update(id, dto);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
+    @Delete(':id')
+    async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+        const user: UserDto = await firstValueFrom(req.user);
+        return this.subscriptionPlanService.remove(id, user.id);
+    }
+}
+
+@ApiTags('featured-plans')
+@Controller('featured-plans')
+export class FeaturedPlanController {
+    constructor(private readonly featuredPlanService: FeaturedPlanService) {}
+
+    @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
+    @Post()
+    create(@Body() dto: CreateFeaturedPlanDto) {
+        return this.featuredPlanService.create(dto);
+    }
+
+    @Get()
+    findAll(@Query('limit') limit: number, @Query('offset') offset: number) {
+        return this.featuredPlanService.findAll(limit, offset);
+    }
+
+    @Get(':id')
+    findOne(@Param('id') id: string) {
+        return this.featuredPlanService.findOne(id);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
+    @Patch(':id')
+    update(@Param('id') id: string, @Body() dto: UpdateFeaturedPlanDto) {
+        return this.featuredPlanService.update(id, dto);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
+    @Delete(':id')
+    async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+        const user: UserDto = await firstValueFrom(req.user);
+        return this.featuredPlanService.remove(id, user.id);
+    }
+}
+
+@ApiTags('fees')
+@Controller('fees')
+export class FeesController {
+    constructor(private readonly feesService: FeesService) {}
+
+    @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
+    @Post()
+    create(@Body() dto: CreateFeeDto) {
+        return this.feesService.create(dto);
+    }
+
+    @Get()
+    findAll(@Query('limit') limit: number, @Query('offset') offset: number) {
+        return this.feesService.findAll(limit, offset);
+    }
+
+    @Get(':id')
+    findOne(@Param('id') id: string) {
+        return this.feesService.findOne(id);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
+    @Patch(':id')
+    update(@Param('id') id: string, @Body() dto: UpdateFeeDto) {
+        return this.feesService.update(id, dto);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
+    @Delete(':id')
+    async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+        const user: UserDto = await firstValueFrom(req.user);
+        return this.feesService.remove(id, user.id);
+    }
+}
+
+@ApiTags('subscriptions')
+@Controller('subscriptions')
+export class SubscriptionController {
+    constructor(
+        private readonly subscriptionService: SubscriptionService,
+        private readonly eventcentersService: EventcentersService,
+        private readonly cateringService: CateringService,
+    ) {}
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Post()
+    async create(@Body() dto: CreateSubscriptionDto, @Req() req: AuthenticatedRequest) {
+        const user: UserDto = await firstValueFrom(req.user);
+        dto.serviceProviderId = user.id;
+
+        if (dto.serviceType === ServiceType.EVENTCENTER) {
+            await firstValueFrom(this.eventcentersService.findOne(dto.serviceId));
+        } else if (dto.serviceType === ServiceType.CATERING) {
+            await firstValueFrom(this.cateringService.findOne(dto.serviceId));
+        }
+
+        // subscription plan will be validated in the subscription service as its same microservice
+        return this.subscriptionService.create(dto);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Get()
+    findAll(
+        @Query('limit') limit: number,
+        @Query('offset') offset: number,
+        @Query('serviceProviderId') serviceProviderId?: string,
+        @Query('status') status?: string,
+    ) {
+        return this.subscriptionService.findAll(limit, offset, serviceProviderId, status);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Get(':id')
+    findOne(@Param('id') id: string) {
+        return this.subscriptionService.findOne(id);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Patch(':id')
+    update(@Param('id') id: string, @Body() dto: UpdateSubscriptionDto) {
+        return this.subscriptionService.update(id, dto);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Delete(':id')
+    async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+        const user: UserDto = await firstValueFrom(req.user);
+        return this.subscriptionService.remove(id, user.id);
+    }
+}
+
+@ApiTags('refunds')
+@Controller('refunds')
+export class RefundController {
+    constructor(private readonly refundService: RefundService) {}
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Post()
+    create(@Body() dto: CreateRefundDto) {
+        return this.refundService.create(dto);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Get()
+    findAll(
+        @Query('limit') limit: number,
+        @Query('offset') offset: number,
+        @Query('paymentId') paymentId?: string,
+    ) {
+        return this.refundService.findAll(limit, offset, paymentId);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Get(':id')
+    findOne(@Param('id') id: string) {
+        return this.refundService.findOne(id);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Patch(':id')
+    update(@Param('id') id: string, @Body() dto: UpdateRefundDto) {
+        return this.refundService.update(id, dto);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Delete(':id')
+    async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+        const user: UserDto = await firstValueFrom(req.user);
+        return this.refundService.remove(id, user.id);
+    }
+}
+
+@ApiTags('disputes')
+@Controller('disputes')
+export class DisputeController {
+    constructor(private readonly disputeService: DisputeService) {}
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Post()
+    create(@Body() dto: CreateDisputeDto) {
+        return this.disputeService.create(dto);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Get()
+    findAll(
+        @Query('limit') limit: number,
+        @Query('offset') offset: number,
+        @Query('userId') userId?: string,
+        @Query('paymentId') paymentId?: string,
+    ) {
+        return this.disputeService.findAll(limit, offset, userId, paymentId);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Get(':id')
+    findOne(@Param('id') id: string) {
+        return this.disputeService.findOne(id);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Patch(':id')
+    update(@Param('id') id: string, @Body() dto: UpdateDisputeDto) {
+        return this.disputeService.update(id, dto);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Delete(':id')
+    async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+        const user: UserDto = await firstValueFrom(req.user);
+        return this.disputeService.remove(id, user.id);
+    }
+}
+
+@ApiTags('service-subscriptions')
+@Controller('service-subscriptions')
+export class ServiceSubscriptionController {
+    constructor(
+        private readonly invoiceService: InvoiceService,
+        private readonly subscriptionPlanService: SubscriptionPlanService,
+        private readonly eventcentersService: EventcentersService,
+        private readonly cateringService: CateringService,
+    ) {}
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Post('initiate')
+    async initiate(@Body() dto: InitiateServiceSubscriptionDto) {
+        const plan = await firstValueFrom(this.subscriptionPlanService.findOne(dto.subscriptionPlanId));
+        const invoice = await firstValueFrom(
+            this.invoiceService.createServiceSubscriptionInvoice({
+                userId: dto.userId,
+                serviceType: dto.serviceType,
+                serviceId: dto.serviceId,
+                subscriptionPlanId: dto.subscriptionPlanId,
+                amountDue: Number(plan.amount),
+                currency: dto.currency,
+                billingAddress: dto.billingAddress,
+                dueDate: dto.dueDate,
+                note: dto.note,
+            })
+        );
+        const expiryDate = new Date(Date.now() + plan.timeFrame * 24 * 60 * 60 * 1000);
+        const subscriptionDto = { serviceId: dto.serviceId, subscriptionPlanId: dto.subscriptionPlanId, invoiceId: invoice.id, expiryDate };
+        const subscription = await firstValueFrom(
+            dto.serviceType === ServiceType.EVENTCENTER
+                ? this.eventcentersService.createSubscription(subscriptionDto)
+                : this.cateringService.createSubscription(subscriptionDto)
+        );
+        return { subscription, invoice, plan };
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Get()
+    findAll(
+        @Query('serviceType') serviceType: ServiceType,
+        @Query('serviceId') serviceId: string,
+        @Query('limit') limit: number,
+        @Query('offset') offset: number,
+    ) {
+        if (serviceType === ServiceType.EVENTCENTER) {
+            return this.eventcentersService.findAllSubscriptions(limit, offset, serviceId);
+        }
+        return this.cateringService.findAllSubscriptions(limit, offset, serviceId);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Get(':id')
+    findOne(
+        @Param('id') id: string,
+        @Query('serviceType') serviceType: ServiceType,
+    ) {
+        if (serviceType === ServiceType.EVENTCENTER) {
+            return this.eventcentersService.findOneSubscription(id);
+        }
+        return this.cateringService.findOneSubscription(id);
+    }
 }

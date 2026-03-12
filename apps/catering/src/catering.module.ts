@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { CateringController } from './catering.controller';
-import { CateringService } from './catering.service';
+import { CateringController, CateringSubscriptionController } from './catering.controller';
+import { CateringService, CateringSubscriptionService } from './catering.service';
 import { ConfigModule } from '@nestjs/config';
 import { ClientConfigModule } from '../client-config/client-config.module';
 import { DatabaseService } from '../database/database.service';
@@ -16,9 +16,10 @@ import { USER_CLIENT, NOTIFICATION_CLIENT } from '@shared/contracts';
         }),
         ClientConfigModule,
     ],
-    controllers: [CateringController],
+    controllers: [CateringController, CateringSubscriptionController],
     providers: [
         CateringService,
+        CateringSubscriptionService,
         DatabaseService,
         ClientConfigService,
         {

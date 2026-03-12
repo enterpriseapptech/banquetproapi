@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import {  CreateEventCenterDto, UpdateEventCenterDto, EventCenterDto, EVENTCENTERPATTERN, ManyEventCentersDto, ManyRequestEventCenterDto } from '@shared/contracts/eventcenters';
+import {  CreateEventCenterDto, CreateServiceSubscriptionDto, UpdateEventCenterDto, EventCenterDto, EVENTCENTERPATTERN, EVENTCENTERSUBSCRIPTIONPATTERN, ManyEventCentersDto, ManyRequestEventCenterDto, ServiceSubscriptionDto } from '@shared/contracts/eventcenters';
 import { EVENT_CENTER_CLIENT } from '@shared/contracts';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
@@ -46,5 +46,21 @@ export class EventcentersService {
 
     remove(id: string, updaterId: any) {
         return this.eventClient.send<EventCenterDto, { id: string, updaterId: string }>(EVENTCENTERPATTERN.DELETEEVENTCENTER, { id, updaterId })
+    }
+
+    createSubscription(dto: CreateServiceSubscriptionDto) {
+        return this.eventClient.send<ServiceSubscriptionDto, CreateServiceSubscriptionDto>(EVENTCENTERSUBSCRIPTIONPATTERN.CREATE, dto);
+    }
+
+    findAllSubscriptions(limit: number, offset: number, serviceId?: string) {
+        return this.eventClient.send<{ count: number; docs: ServiceSubscriptionDto[] }, { limit: number; offset: number; serviceId?: string }>(EVENTCENTERSUBSCRIPTIONPATTERN.FINDALL, { limit, offset, serviceId });
+    }
+
+    findOneSubscription(id: string) {
+        return this.eventClient.send<ServiceSubscriptionDto, string>(EVENTCENTERSUBSCRIPTIONPATTERN.FINDBYID, id);
+    }
+
+    activateSubscriptionByInvoiceId(invoiceId: string) {
+        return this.eventClient.send<ServiceSubscriptionDto, string>(EVENTCENTERSUBSCRIPTIONPATTERN.ACTIVATEBYINVOICEID, invoiceId);
     }
 }

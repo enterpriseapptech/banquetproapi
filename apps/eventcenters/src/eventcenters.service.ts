@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { $Enums, Prisma } from '../prisma/@prisma/eventcenters';
-import { CreateEventCenterDto, EventCenterDto, ManyEventCentersDto, ServiceStatus, UpdateEventCenterDto } from '@shared/contracts/eventcenters';
+import { CreateEventCenterDto, CreateServiceSubscriptionDto, EventCenterDto, ManyEventCentersDto, ServiceStatus, ServiceSubscriptionDto, SubscriptionStatus, UpdateEventCenterDto, UpdateServiceSubscriptionDto } from '@shared/contracts/eventcenters';
 import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
 import { UserDto, USERPATTERN } from '@shared/contracts/users';
 import { DatabaseService } from '../database/database.service';
@@ -216,7 +216,7 @@ export class EventcentersService {
         return eventCenter;
     }
     /**
-     * 
+     *
      * Maps a raw event center from the database to EventCenterDto.
      */
     private mapToEventCenterDto(eventCenter: any): EventCenterDto {
@@ -225,5 +225,68 @@ export class EventcentersService {
             rating: eventCenter.rating as unknown as number,
             status: eventCenter.status as unknown as ServiceStatus,
         };
+    }
+}
+
+@Injectable()
+export class EventCenterSubscriptionService {
+    constructor(private readonly databaseService: DatabaseService) {}
+
+    async create(dto: CreateServiceSubscriptionDto): Promise<ServiceSubscriptionDto> {
+        const record = await this.databaseService.serviceSubscription.create({
+            data: {
+                serviceId: dto.serviceId,
+                subscriptionPlanId: dto.subscriptionPlanId,
+                invoiceId: dto.invoiceId,
+                status: (dto.status ?? SubscriptionStatus.ACTIVE) as any,
+                expiryDate: dto.expiryDate,
+            },
+        });
+        return { ...record, status: record.status as unknown as SubscriptionStatus };
+    }
+
+    async findAll(limit: number, offset: number, serviceId?: string): Promise<{ count: number; docs: ServiceSubscriptionDto[] }> {
+        const where: any = { deletedAt: null };
+        if (serviceId) where.serviceId = serviceId;
+        const [count, docs] = await Promise.all([
+            this.databaseService.serviceSubscription.count({ where }),
+            this.databaseService.serviceSubscription.findMany({ where, take: Number(limit), skip: Number(offset) }),
+        ]);
+        return { count, docs: docs.map(r => ({ ...r, status: r.status as unknown as SubscriptionStatus })) };
+    }
+
+    async findOne(id: string): Promise<ServiceSubscriptionDto> {
+        const record = await this.databaseService.serviceSubscription.findUnique({ where: { id } });
+        if (!record) throw new NotFoundException('Service subscription not found');
+        return { ...record, status: record.status as unknown as SubscriptionStatus };
+    }
+
+    async update(id: string, dto: UpdateServiceSubscriptionDto): Promise<ServiceSubscriptionDto> {
+        const record = await this.databaseService.serviceSubscription.update({
+            where: { id },
+            data: {
+                ...(dto.status && { status: dto.status as any }),
+                ...(dto.expiryDate && { expiryDate: dto.expiryDate }),
+                ...(dto.deletedAt && { deletedAt: dto.deletedAt }),
+                ...(dto.deletedBy && { deletedBy: dto.deletedBy }),
+            },
+        });
+        return { ...record, status: record.status as unknown as SubscriptionStatus };
+    }
+
+    async activateByInvoiceId(invoiceId: string): Promise<ServiceSubscriptionDto> {
+        const record = await this.databaseService.serviceSubscription.update({
+            where: { invoiceId },
+            data: { status: SubscriptionStatus.ACTIVE as any },
+        });
+        return { ...record, status: record.status as unknown as SubscriptionStatus };
+    }
+
+    async remove(id: string, deletedBy: string): Promise<ServiceSubscriptionDto> {
+        const record = await this.databaseService.serviceSubscription.update({
+            where: { id },
+            data: { deletedAt: new Date(), deletedBy },
+        });
+        return { ...record, status: record.status as unknown as SubscriptionStatus };
     }
 }

@@ -8,6 +8,7 @@ import { DatabaseService } from '../database/database.service';
 import { NOTIFICATION_CLIENT } from './constants';
 import { ClientProxy } from '@nestjs/microservices';
 import { JwtService } from '@nestjs/jwt';
+import { PrismaErrorHandler } from '@shared/contracts/prisma.error.handler';
 
 
 @Injectable()
@@ -134,7 +135,7 @@ export class UsersService {
             return userAccount;
 
         } catch (error) {
-
+            PrismaErrorHandler.handle(error, Prisma);
             throw new ConflictException('sever error could not create user', {
                 cause: new Error(),
                 description: 'User account creation failed, please try again'
@@ -234,7 +235,7 @@ export class UsersService {
             };
             
         } catch (error) {
-           console.log(error) 
+            PrismaErrorHandler.handle(error, Prisma);
            throw new NotFoundException(error.message, {
                     cause: new Error(),
                     description: error.message
@@ -295,7 +296,7 @@ export class UsersService {
     }
 
     async findAll(limit: number, offset: number, search?: string, filter?: UserFilterDto): Promise<{ count: number; docs: UserDto[] }> {
-        console.log({ UserType })
+        
         const whereClause: any = {
             deletedAt: null,
             ...(filter?.userType && { userType: filter.userType }),

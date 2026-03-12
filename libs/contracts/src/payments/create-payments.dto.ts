@@ -386,6 +386,97 @@ export class CreateInvoiceDtoForSubscriptions {
     deletedBy?: string;
 }
 
+export enum ServiceType {
+    EVENTCENTER = 'EVENTCENTER',
+    CATERING = 'CATERING',
+}
+
+export class CreateServiceSubscriptionInvoiceDto {
+    @ApiProperty({ description: 'ID of the user', example: 'user_123' })
+    @IsNotEmpty()
+    @IsUUID()
+    userId: string;
+
+    @ApiProperty({ enum: ServiceType, description: 'Which service type this subscription is for' })
+    @IsEnum(ServiceType)
+    serviceType: ServiceType;
+
+    @ApiProperty({ description: 'ID of the event center or catering service', example: 'svc_123' })
+    @IsNotEmpty()
+    @IsUUID()
+    serviceId: string;
+
+    @ApiProperty({ description: 'ID of the subscription plan being purchased', example: 'plan_123' })
+    @IsNotEmpty()
+    @IsUUID()
+    subscriptionPlanId: string;
+
+    @ApiProperty({ description: 'Amount due', example: 10000 })
+    @IsNumber({ maxDecimalPlaces: 2 })
+    amountDue: number;
+
+    @ApiProperty({ enum: Currency, required: false })
+    @IsOptional()
+    @IsEnum(Currency)
+    currency?: Currency;
+
+    @ApiProperty({ description: 'Billing address' })
+    @IsNotEmpty()
+    @IsJSON()
+    billingAddress: BillingAddress;
+
+    @ApiProperty({ description: 'Due date for payment', example: '2025-09-01T00:00:00.000Z' })
+    @IsNotEmpty()
+    @IsDateString()
+    dueDate: Date;
+
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsString()
+    note?: string;
+}
+
+export class InitiateServiceSubscriptionDto {
+    @ApiProperty({ description: 'ID of the authenticated user', example: 'user_123' })
+    @IsNotEmpty()
+    @IsUUID()
+    userId: string;
+
+    @ApiProperty({ enum: ServiceType })
+    @IsEnum(ServiceType)
+    serviceType: ServiceType;
+
+    @ApiProperty({ description: 'ID of the event center or catering service', example: 'svc_123' })
+    @IsNotEmpty()
+    @IsUUID()
+    serviceId: string;
+
+    @ApiProperty({ description: 'ID of the subscription plan to purchase', example: 'plan_123' })
+    @IsNotEmpty()
+    @IsUUID()
+    subscriptionPlanId: string;
+
+    @ApiProperty({ description: 'Billing address' })
+    @IsNotEmpty()
+    @IsJSON()
+    billingAddress: BillingAddress;
+
+    @ApiProperty({ description: 'Due date for payment', example: '2025-09-01T00:00:00.000Z' })
+    @IsNotEmpty()
+    @IsDateString()
+    dueDate: Date;
+
+    @ApiProperty({ enum: Currency, required: false })
+    @IsOptional()
+    @IsEnum(Currency)
+    currency?: Currency;
+
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsString()
+    note?: string;
+}
+
 export enum PaymentGateWay{
     stripe='stripe',
     paystack='paystack'
@@ -568,9 +659,9 @@ export class CreateFeeDto {
 }
 
 export class CreateSubscriptionPlanDto {
-    @ApiProperty({ example: 'test@gmail.com', description: 'email of the user' })
+    @ApiProperty({ example: 'starter', description: 'plan name' })
     @IsString()
-    @Length(6, 100)
+    @Length(3, 100)
     plan: string;
 
     @ApiProperty({ type: 'number', required: true })
@@ -589,6 +680,89 @@ export class CreateSubscriptionPlanDto {
     status?: Status
 }
 
+
+export enum PaymentType {
+    KYC = 'KYC',
+    CERTIFICATION = 'CERTIFICATION',
+    FEATUREDPLANS = 'FEATUREDPLANS',
+    SUBSCRIPTIONPLANS = 'SUBSCRIPTIONPLANS',
+}
+
+export class CreateSubscriptionDto {
+    // sent internally
+    @ApiProperty({ example: 'uuid' })
+    @IsString()
+    @IsOptional()
+    serviceProviderId?: string;
+
+    @ApiProperty({ example: 'uuid' })
+    @IsString()
+    @IsNotEmpty()
+    serviceId: string;
+
+    @ApiProperty({ enum: ServiceType, required: false })
+    @IsEnum(ServiceType)
+    @IsOptional()
+    serviceType?: ServiceType;
+
+    @ApiProperty({ enum: PaymentType })
+    @IsEnum(PaymentType)
+    type: PaymentType;
+
+    @ApiProperty({ example: 'fee_123' })
+    @IsString()
+    @IsNotEmpty()
+    feesId: string;
+
+    @ApiProperty({ example: 'plan_123' })
+    @IsString()
+    @IsNotEmpty()
+    subscriptionplanId: string;
+
+    @ApiProperty({ example: 'fp_123' })
+    @IsString()
+    @IsNotEmpty()
+    featuredPlanId: string;
+
+    // @ApiProperty({ enum: Status, required: false })
+    // @IsEnum(Status)
+    // @IsOptional()
+    // status?: Status;
+
+    // @ApiProperty({ example: '2026-01-01T00:00:00.000Z' })
+    // @IsDateString()
+    // expiryDate: Date;
+
+    // Invoice fields
+    // @ApiProperty({ example: 'user_123', description: 'ID of the user initiating the subscription' })
+    // @IsNotEmpty()
+    // @IsUUID()
+    // userId: string;
+
+    // @ApiProperty({ description: 'Amount due for this subscription', example: 5000 })
+    // @IsNumber({ maxDecimalPlaces: 2 })
+    // amountDue: number;
+
+    @ApiProperty({ description: 'Billing address' })
+    @IsNotEmpty()
+    @IsJSON()
+    billingAddress: BillingAddress;
+
+    @ApiProperty({ description: 'Due date for payment', example: '2025-09-01T00:00:00.000Z' })
+    @IsNotEmpty()
+    @IsDateString()
+    dueDate: Date;
+
+    @ApiProperty({ enum: Currency, required: false })
+    @IsOptional()
+    @IsEnum(Currency)
+    currency?: Currency;
+
+    // @ApiProperty({ required: false })
+    // @IsOptional()
+    // @IsString()
+    // note?: string;
+}
 
 export class CreateFeaturedPlanDto {
     @ApiProperty({ example: 'test@gmail.com', description: 'email of the user' })

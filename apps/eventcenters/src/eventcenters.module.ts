@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { EventcentersController } from './eventcenters.controller';
-import { EventcentersService } from './eventcenters.service';
+import { EventcentersController, EventCenterSubscriptionController } from './eventcenters.controller';
+import { EventcentersService, EventCenterSubscriptionService } from './eventcenters.service';
 import { DatabaseService } from '../database/database.service';
 import { ConfigModule } from '@nestjs/config';
 import { ClientProxyFactory } from '@nestjs/microservices';
@@ -18,9 +18,10 @@ dotenv.config({ path: './apps/apigateway/.env' });
         }),
         ClientConfigModule,
     ],
-    controllers: [EventcentersController],
+    controllers: [EventcentersController, EventCenterSubscriptionController],
     providers: [
         EventcentersService,
+        EventCenterSubscriptionService,
         DatabaseService,
         ClientConfigService,
         {

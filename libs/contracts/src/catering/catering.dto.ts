@@ -3,6 +3,41 @@ export enum ServiceStatus {
   INACTIVE ="INACTIVE"
 }
 
+export enum SubscriptionStatus {
+    PENDING = 'PENDING',
+    ACTIVE = 'ACTIVE',
+    INACTIVE = 'INACTIVE',
+    EXPIRED = 'EXPIRED',
+}
+
+export class CreateServiceSubscriptionDto {
+    serviceId: string;
+    subscriptionPlanId: string;
+    invoiceId: string;
+    status?: SubscriptionStatus;
+    expiryDate: Date;
+}
+
+export class UpdateServiceSubscriptionDto {
+    status?: SubscriptionStatus;
+    expiryDate?: Date;
+    deletedAt?: Date;
+    deletedBy?: string;
+}
+
+export class ServiceSubscriptionDto {
+    id: string;
+    serviceId: string;
+    subscriptionPlanId: string;
+    invoiceId: string;
+    status: SubscriptionStatus;
+    expiryDate: Date;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt?: Date;
+    deletedBy?: string;
+}
+
 export class CateringDto {
     id: string;
     serviceProviderId: string; // Owner of the service

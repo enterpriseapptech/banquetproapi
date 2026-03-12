@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
-import { CateringService } from './catering.service';
+import { CateringService, CateringSubscriptionService } from './catering.service';
 import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
-import { CATERINGPATTERN, CreateCateringDto, UpdateCateringDto } from '@shared/contracts/catering';
+import { CATERINGPATTERN, CATERINGSUBSCRIPTIONPATTERN, CreateCateringDto, CreateServiceSubscriptionDto, UpdateCateringDto, UpdateServiceSubscriptionDto } from '@shared/contracts/catering';
 import { catchError, from, throwError } from 'rxjs';
 
 
@@ -107,5 +107,76 @@ export class CateringController {
             })
         );
 
+    }
+}
+
+@Controller()
+export class CateringSubscriptionController {
+    constructor(private readonly subscriptionService: CateringSubscriptionService) {}
+
+    @MessagePattern(CATERINGSUBSCRIPTIONPATTERN.CREATE)
+    create(@Payload() dto: CreateServiceSubscriptionDto) {
+        return from(this.subscriptionService.create(dto)).pipe(
+            catchError((err) => throwError(() => new RpcException({
+                statusCode: err.response?.statusCode || 500,
+                message: err.message || 'Internal Server Error',
+                error: err.response?.error || 'Server error',
+            })))
+        );
+    }
+
+    @MessagePattern(CATERINGSUBSCRIPTIONPATTERN.FINDALL)
+    findAll(@Payload() data: { limit: number; offset: number; serviceId?: string }) {
+        return from(this.subscriptionService.findAll(data.limit, data.offset, data.serviceId)).pipe(
+            catchError((err) => throwError(() => new RpcException({
+                statusCode: err.response?.statusCode || 500,
+                message: err.message || 'Internal Server Error',
+                error: err.response?.error || 'Server error',
+            })))
+        );
+    }
+
+    @MessagePattern(CATERINGSUBSCRIPTIONPATTERN.FINDBYID)
+    findOne(@Payload() id: string) {
+        return from(this.subscriptionService.findOne(id)).pipe(
+            catchError((err) => throwError(() => new RpcException({
+                statusCode: err.response?.statusCode || 500,
+                message: err.message || 'Internal Server Error',
+                error: err.response?.error || 'Server error',
+            })))
+        );
+    }
+
+    @MessagePattern(CATERINGSUBSCRIPTIONPATTERN.UPDATE)
+    update(@Payload() data: { id: string; updateServiceSubscriptionDto: UpdateServiceSubscriptionDto }) {
+        return from(this.subscriptionService.update(data.id, data.updateServiceSubscriptionDto)).pipe(
+            catchError((err) => throwError(() => new RpcException({
+                statusCode: err.response?.statusCode || 500,
+                message: err.message || 'Internal Server Error',
+                error: err.response?.error || 'Server error',
+            })))
+        );
+    }
+
+    @MessagePattern(CATERINGSUBSCRIPTIONPATTERN.DELETE)
+    remove(@Payload() data: { id: string; updaterId: string }) {
+        return from(this.subscriptionService.remove(data.id, data.updaterId)).pipe(
+            catchError((err) => throwError(() => new RpcException({
+                statusCode: err.response?.statusCode || 500,
+                message: err.message || 'Internal Server Error',
+                error: err.response?.error || 'Server error',
+            })))
+        );
+    }
+
+    @MessagePattern(CATERINGSUBSCRIPTIONPATTERN.ACTIVATEBYINVOICEID)
+    activateByInvoiceId(@Payload() invoiceId: string) {
+        return from(this.subscriptionService.activateByInvoiceId(invoiceId)).pipe(
+            catchError((err) => throwError(() => new RpcException({
+                statusCode: err.response?.statusCode || 500,
+                message: err.message || 'Internal Server Error',
+                error: err.response?.error || 'Server error',
+            })))
+        );
     }
 }

@@ -29,6 +29,7 @@ export const INVOICEPATTERN = {
     FINDBYID: 'invoice.findOneById',
     CREATE: 'invoice.create',
     CREATESECONDINVOICE: 'invoice.createSecondInvoice',
+    CREATESERVICESUBSCRIPTIONINVOICE: 'invoice.createServiceSubscriptionInvoice',
     BOOKINGGENERATE: 'invoice.bookingGenerate',
     UPDATE: 'invoice.update',
     DELETE: 'invoice.delete',
@@ -54,17 +55,25 @@ export const FEESPATTERN = {
 
 
 export const FEATUREDPLANSPATTERN = {
-    FINDALL: 'fees.findAll',
-    FINDBYID: 'fees.findOneById',
-    CREATE: 'fees.create',
-    UPDATE: 'fees.update',
-    DELETE: 'fees.delete',
+    FINDALL: 'featuredplan.findAll',
+    FINDBYID: 'featuredplan.findOneById',
+    CREATE: 'featuredplan.create',
+    UPDATE: 'featuredplan.update',
+    DELETE: 'featuredplan.delete',
 }
 
 export const SUBSCRIPTIONPLANSPATTERN = {
-    FINDALL: 'fees.findAll',
-    FINDBYID: 'fees.findOneById',
-    CREATE: 'fees.create',
-    UPDATE: 'fees.update',
-    DELETE: 'fees.delete',
+    FINDALL: 'subscriptionplan.findAll',
+    FINDBYID: 'subscriptionplan.findOneById',
+    CREATE: 'subscriptionplan.create',
+    UPDATE: 'subscriptionplan.update',
+    DELETE: 'subscriptionplan.delete',
+}
+
+export const SUBSCRIPTIONPATTERN = {
+    FINDALL: 'subscription.findAll',
+    FINDBYID: 'subscription.findOneById',
+    CREATE: 'subscription.create',
+    UPDATE: 'subscription.update',
+    DELETE: 'subscription.delete',
 }

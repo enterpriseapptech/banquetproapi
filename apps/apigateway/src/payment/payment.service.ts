@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { PAYMENT_CLIENT } from '@shared/contracts';
-import { CreateInvoiceDto, CreatePaymentDto, CreatePaymentMethodDto, CreateSecondInvoiceDto, GeneratePaymentDto, InvoiceDto, INVOICEPATTERN, PaymentDto, PaymentMethodDto, PAYMENTMETHODPATTERN, PAYMENTPATTERN, UpdateInvoiceDto, UpdatePaymentDto, UpdatePaymentMethodDto } from '@shared/contracts/payments';
+import { CreateDisputeDto, CreateFeaturedPlanDto, CreateFeeDto, CreateInvoiceDto, CreatePaymentDto, CreatePaymentMethodDto, CreateRefundDto, CreateSecondInvoiceDto, CreateServiceSubscriptionInvoiceDto, CreateSubscriptionDto, CreateSubscriptionPlanDto, DisputeDto, FeaturedPlanDto, FeesDto, GeneratePaymentDto, InvoiceDto, INVOICEPATTERN, PaymentDto, PaymentMethodDto, PAYMENTMETHODPATTERN, PAYMENTPATTERN, RefundDto, SubscriptionDto, SubscriptionPlanDto, UpdateDisputeDto, UpdateFeaturedPlanDto, UpdateFeeDto, UpdateInvoiceDto, UpdatePaymentDto, UpdatePaymentMethodDto, UpdateRefundDto, UpdateSubscriptionDto, UpdateSubscriptionPlanDto, FEATUREDPLANSPATTERN, FEESPATTERN, SUBSCRIPTIONPLANSPATTERN, SUBSCRIPTIONPATTERN, REFUNDPATTERN, DISPUTEPATTERN } from '@shared/contracts/payments';
 
 @Injectable()
 export class PaymentService {
@@ -94,8 +94,12 @@ export class InvoiceService {
     }
 
     createSecondInvoice(createInvoiceDto: CreateSecondInvoiceDto) {
-        
+
         return this.invoiceClient.send<InvoiceDto, CreateSecondInvoiceDto>(INVOICEPATTERN.CREATESECONDINVOICE, createInvoiceDto)
+    }
+
+    createServiceSubscriptionInvoice(dto: CreateServiceSubscriptionInvoiceDto) {
+        return this.invoiceClient.send<InvoiceDto, CreateServiceSubscriptionInvoiceDto>(INVOICEPATTERN.CREATESERVICESUBSCRIPTIONINVOICE, dto);
     }
 
     findAll(limit: number, offset: number, subscriptionId?: string, bookingId?: string, userId?: string, status?: string, currency?: string, deleted?: boolean) {
@@ -128,5 +132,155 @@ export class InvoiceService {
     permanentDelete(id: string) {
         return this.invoiceClient.send<PaymentDto, { id: string}>(INVOICEPATTERN.DELETE, { id})
     }
- 
+
+}
+
+@Injectable()
+export class SubscriptionPlanService {
+    constructor(@Inject(PAYMENT_CLIENT) private readonly client: ClientProxy) {}
+
+    create(dto: CreateSubscriptionPlanDto) {
+        return this.client.send<SubscriptionPlanDto, CreateSubscriptionPlanDto>(SUBSCRIPTIONPLANSPATTERN.CREATE, dto);
+    }
+
+    findAll(limit: number, offset: number) {
+        return this.client.send<{ count: number; docs: SubscriptionPlanDto[] }, { limit: number; offset: number }>(SUBSCRIPTIONPLANSPATTERN.FINDALL, { limit, offset });
+    }
+
+    findOne(id: string) {
+        return this.client.send<SubscriptionPlanDto, string>(SUBSCRIPTIONPLANSPATTERN.FINDBYID, id);
+    }
+
+    update(id: string, dto: UpdateSubscriptionPlanDto) {
+        return this.client.send<SubscriptionPlanDto, { id: string; updateSubscriptionPlanDto: UpdateSubscriptionPlanDto }>(SUBSCRIPTIONPLANSPATTERN.UPDATE, { id, updateSubscriptionPlanDto: dto });
+    }
+
+    remove(id: string, updaterId: string) {
+        return this.client.send<SubscriptionPlanDto, { id: string; updaterId: string }>(SUBSCRIPTIONPLANSPATTERN.DELETE, { id, updaterId });
+    }
+}
+
+@Injectable()
+export class FeaturedPlanService {
+    constructor(@Inject(PAYMENT_CLIENT) private readonly client: ClientProxy) {}
+
+    create(dto: CreateFeaturedPlanDto) {
+        return this.client.send<FeaturedPlanDto, CreateFeaturedPlanDto>(FEATUREDPLANSPATTERN.CREATE, dto);
+    }
+
+    findAll(limit: number, offset: number) {
+        return this.client.send<{ count: number; docs: FeaturedPlanDto[] }, { limit: number; offset: number }>(FEATUREDPLANSPATTERN.FINDALL, { limit, offset });
+    }
+
+    findOne(id: string) {
+        return this.client.send<FeaturedPlanDto, string>(FEATUREDPLANSPATTERN.FINDBYID, id);
+    }
+
+    update(id: string, dto: UpdateFeaturedPlanDto) {
+        return this.client.send<FeaturedPlanDto, { id: string; updateFeaturedPlanDto: UpdateFeaturedPlanDto }>(FEATUREDPLANSPATTERN.UPDATE, { id, updateFeaturedPlanDto: dto });
+    }
+
+    remove(id: string, updaterId: string) {
+        return this.client.send<FeaturedPlanDto, { id: string; updaterId: string }>(FEATUREDPLANSPATTERN.DELETE, { id, updaterId });
+    }
+}
+
+@Injectable()
+export class FeesService {
+    constructor(@Inject(PAYMENT_CLIENT) private readonly client: ClientProxy) {}
+
+    create(dto: CreateFeeDto) {
+        return this.client.send<FeesDto, CreateFeeDto>(FEESPATTERN.CREATE, dto);
+    }
+
+    findAll(limit: number, offset: number) {
+        return this.client.send<{ count: number; docs: FeesDto[] }, { limit: number; offset: number }>(FEESPATTERN.FINDALL, { limit, offset });
+    }
+
+    findOne(id: string) {
+        return this.client.send<FeesDto, string>(FEESPATTERN.FINDBYID, id);
+    }
+
+    update(id: string, dto: UpdateFeeDto) {
+        return this.client.send<FeesDto, { id: string; updateFeeDto: UpdateFeeDto }>(FEESPATTERN.UPDATE, { id, updateFeeDto: dto });
+    }
+
+    remove(id: string, updaterId: string) {
+        return this.client.send<FeesDto, { id: string; updaterId: string }>(FEESPATTERN.DELETE, { id, updaterId });
+    }
+}
+
+@Injectable()
+export class RefundService {
+    constructor(@Inject(PAYMENT_CLIENT) private readonly client: ClientProxy) {}
+
+    create(dto: CreateRefundDto) {
+        return this.client.send<RefundDto, CreateRefundDto>(REFUNDPATTERN.CREATE, dto);
+    }
+
+    findAll(limit: number, offset: number, paymentId?: string) {
+        return this.client.send<{ count: number; docs: RefundDto[] }, { limit: number; offset: number; paymentId?: string }>(REFUNDPATTERN.FINDALL, { limit, offset, paymentId });
+    }
+
+    findOne(id: string) {
+        return this.client.send<RefundDto, string>(REFUNDPATTERN.FINDBYID, id);
+    }
+
+    update(id: string, dto: UpdateRefundDto) {
+        return this.client.send<RefundDto, { id: string; updateRefundDto: UpdateRefundDto }>(REFUNDPATTERN.UPDATE, { id, updateRefundDto: dto });
+    }
+
+    remove(id: string, updaterId: string) {
+        return this.client.send<RefundDto, { id: string; updaterId: string }>(REFUNDPATTERN.DELETE, { id, updaterId });
+    }
+}
+
+@Injectable()
+export class DisputeService {
+    constructor(@Inject(PAYMENT_CLIENT) private readonly client: ClientProxy) {}
+
+    create(dto: CreateDisputeDto) {
+        return this.client.send<DisputeDto, CreateDisputeDto>(DISPUTEPATTERN.CREATE, dto);
+    }
+
+    findAll(limit: number, offset: number, userId?: string, paymentId?: string) {
+        return this.client.send<{ count: number; docs: DisputeDto[] }, { limit: number; offset: number; userId?: string; paymentId?: string }>(DISPUTEPATTERN.FINDALL, { limit, offset, userId, paymentId });
+    }
+
+    findOne(id: string) {
+        return this.client.send<DisputeDto, string>(DISPUTEPATTERN.FINDBYID, id);
+    }
+
+    update(id: string, dto: UpdateDisputeDto) {
+        return this.client.send<DisputeDto, { id: string; updateDisputeDto: UpdateDisputeDto }>(DISPUTEPATTERN.UPDATE, { id, updateDisputeDto: dto });
+    }
+
+    remove(id: string, updaterId: string) {
+        return this.client.send<DisputeDto, { id: string; updaterId: string }>(DISPUTEPATTERN.DELETE, { id, updaterId });
+    }
+}
+
+@Injectable()
+export class SubscriptionService {
+    constructor(@Inject(PAYMENT_CLIENT) private readonly client: ClientProxy) {}
+
+    create(dto: CreateSubscriptionDto) {
+        return this.client.send<SubscriptionDto, CreateSubscriptionDto>(SUBSCRIPTIONPATTERN.CREATE, dto);
+    }
+
+    findAll(limit: number, offset: number, serviceProviderId?: string, status?: string) {
+        return this.client.send<{ count: number; docs: SubscriptionDto[] }, { limit: number; offset: number; serviceProviderId?: string; status?: string }>(SUBSCRIPTIONPATTERN.FINDALL, { limit, offset, serviceProviderId, status });
+    }
+
+    findOne(id: string) {
+        return this.client.send<SubscriptionDto, string>(SUBSCRIPTIONPATTERN.FINDBYID, id);
+    }
+
+    update(id: string, dto: UpdateSubscriptionDto) {
+        return this.client.send<SubscriptionDto, { id: string; updateSubscriptionDto: UpdateSubscriptionDto }>(SUBSCRIPTIONPATTERN.UPDATE, { id, updateSubscriptionDto: dto });
+    }
+
+    remove(id: string, updaterId: string) {
+        return this.client.send<SubscriptionDto, { id: string; updaterId: string }>(SUBSCRIPTIONPATTERN.DELETE, { id, updaterId });
+    }
 }
