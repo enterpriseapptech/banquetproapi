@@ -2,6 +2,10 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, IsDateString, Min } from 'class-validator';
 import { BillingAddress } from './create-booking.dto';
+import { ServiceType } from '../shared';
+
+
+export { ServiceType } from '../shared';
 
 export enum LocationStatus {
     ACTIVE = "ACTIVE",
@@ -21,10 +25,7 @@ export enum Currency {
   XOF='XOF',
 }
 
-export enum ServiceType {
-    CATERING = "CATERING",
-    EVENTCENTER = "EVENTCENTER"
-}
+
 
 export enum BookingStatus {
     PENDING = "PENDING",

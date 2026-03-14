@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from 'apps/payments/database/database.service';
 import { $Enums, Prisma } from 'apps/payments/prisma/@prisma/payments';
-import { SubscriptionDto, UpdateSubscriptionDto, CreateSubscriptionDto, PaymentType, Status } from '@shared/contracts/payments';
+import { SubscriptionDto, UpdateSubscriptionDto, CreateSubscriptionDto, PaymentType, Status, CreateInvoiceDtoForSubscriptions } from '@shared/contracts/payments';
 import { PrismaErrorHandler } from '@shared/contracts/prisma.error.handler';
 import { InvoiceService } from './invoice.service';
 
@@ -12,10 +12,7 @@ export class SubscriptionService {
         private readonly invoiceService: InvoiceService,
     ) {}
 
-    static generateDueDate(): Date {
-        const days = Number(process.env.INVOICE_VALID_NO_OF_DAYS ?? 7);
-        return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-    }
+
 
     async create(createSubscriptionDto: CreateSubscriptionDto): Promise<SubscriptionDto> {
         try {
@@ -49,9 +46,7 @@ export class SubscriptionService {
                         serviceProviderId: createSubscriptionDto.serviceProviderId,
                         serviceId: createSubscriptionDto.serviceId,
                         type: createSubscriptionDto.type as $Enums.PaymentType,
-                        feesId: createSubscriptionDto.feesId,
                         subscriptionplanId: createSubscriptionDto.subscriptionplanId,
-                        featuredPlanId: createSubscriptionDto.featuredPlanId,
                         status: $Enums.Status.INACTIVE,
                         expiryDate,
                     },
@@ -61,24 +56,29 @@ export class SubscriptionService {
             });
 
             const planAmount = Number(amountDue);
-            const invoice = await this.invoiceService.createInvoiceForSubscriptions({
+            const invoiceDto: CreateInvoiceDtoForSubscriptions = {
                 userId: createSubscriptionDto.serviceProviderId,
                 subscriptionId: subscription.id,
+                serviceType: createSubscriptionDto.serviceType,
+                serviceId: createSubscriptionDto.serviceId,
+                subscriptionPlanId: createSubscriptionDto.subscriptionplanId,
                 items: [{ item: plan.plan, amount: planAmount }],
                 subTotal: planAmount,
                 discount: 0,
                 total: planAmount,
                 amountDue: planAmount,
                 currency: createSubscriptionDto.currency,
-                dueDate: SubscriptionService.generateDueDate(),
+                dueDate: InvoiceService.generateDueDate(),
                 billingAddress: createSubscriptionDto.billingAddress,
-            });
+            }
+            const invoice = await this.invoiceService.createInvoiceForSubscriptions(invoiceDto);
 
             return {
                 ...this.mapToSubscriptionDto(subscription),
                 invoice,
             };
         } catch (error) {
+            console.log({error})
             PrismaErrorHandler.handle(error, Prisma);
             throw new InternalServerErrorException('sever error could not create subscription', {
                 cause: new Error(),
@@ -88,42 +88,84 @@ export class SubscriptionService {
     }
 
     async findAll(limit: number, offset: number, serviceProviderId?: string, status?: string): Promise<{ count: number; docs: SubscriptionDto[] }> {
-        const where: any = { deletedAt: null };
-        if (serviceProviderId) where.serviceProviderId = serviceProviderId;
-        if (status) where.status = status as $Enums.Status;
-        const [subscriptions, count] = await this.databaseService.$transaction([
-            this.databaseService.subscriptions.findMany({ take: limit, skip: offset, where, orderBy: { createdAt: 'desc' } }),
-            this.databaseService.subscriptions.count({ where }),
-        ]);
-        return { count, docs: subscriptions.map(s => this.mapToSubscriptionDto(s)) };
+        try {
+            const where: any = { deletedAt: null };
+            if (serviceProviderId) where.serviceProviderId = serviceProviderId;
+            if (status) where.status = status as $Enums.Status;
+            const [subscriptions, count] = await this.databaseService.$transaction([
+                this.databaseService.subscriptions.findMany({ take: limit, skip: offset, where, orderBy: { createdAt: 'desc' } }),
+                this.databaseService.subscriptions.count({ where }),
+            ]);
+            return { count, docs: subscriptions.map(s => this.mapToSubscriptionDto(s)) };
+        } catch (error) {
+            console.log({ error });
+            PrismaErrorHandler.handle(error, Prisma);
+            throw new InternalServerErrorException('Server error could not fetch subscriptions', {
+                cause: new Error(),
+                description: 'Fetching subscriptions failed, please try again',
+            });
+        }
     }
 
     async findOne(id: string): Promise<SubscriptionDto> {
-        const subscription = await this.databaseService.subscriptions.findUnique({
-            where: { id, deletedAt: null },
-        });
-        if (!subscription) throw new NotFoundException({ statusCode: 404, message: 'Subscription not found', error: 'Not found' });
-        return this.mapToSubscriptionDto(subscription);
+        try {
+            const subscription = await this.databaseService.subscriptions.findUnique({
+                where: { id, deletedAt: null },
+                include: {
+                    invoice: {
+                        include: { payments: true },
+                        orderBy: { createdAt: 'desc' },
+                    },
+                },
+            });
+            if (!subscription) throw new NotFoundException({ statusCode: 404, message: 'Subscription not found', error: 'Not found' });
+            return this.mapToSubscriptionDto(subscription);
+        } catch (error) {
+            console.log({ error });
+            PrismaErrorHandler.handle(error, Prisma);
+            throw new InternalServerErrorException('Server error could not fetch subscription', {
+                cause: new Error(),
+                description: 'Fetching subscription failed, please try again',
+            });
+        }
     }
 
     async update(id: string, updateSubscriptionDto: UpdateSubscriptionDto): Promise<SubscriptionDto> {
-        const subscription = await this.databaseService.subscriptions.update({
-            where: { id },
-            data: {
-                ...updateSubscriptionDto,
-                type: updateSubscriptionDto.type as $Enums.PaymentType,
-                status: updateSubscriptionDto.status as $Enums.Status,
-            },
-        });
-        return this.mapToSubscriptionDto(subscription);
+        try {
+            const subscription = await this.databaseService.subscriptions.update({
+                where: { id },
+                data: {
+                    ...updateSubscriptionDto,
+                    type: updateSubscriptionDto.type as $Enums.PaymentType,
+                    status: updateSubscriptionDto.status as $Enums.Status,
+                },
+            });
+            return this.mapToSubscriptionDto(subscription);
+        } catch (error) {
+            console.log({ error });
+            PrismaErrorHandler.handle(error, Prisma);
+            throw new InternalServerErrorException('Server error could not update subscription', {
+                cause: new Error(),
+                description: 'Updating subscription failed, please try again',
+            });
+        }
     }
 
     async remove(id: string, updaterId: string): Promise<SubscriptionDto> {
-        const subscription = await this.databaseService.subscriptions.update({
-            where: { id },
-            data: { deletedAt: new Date(), deletedBy: updaterId },
-        });
-        return this.mapToSubscriptionDto(subscription);
+        try {
+            const subscription = await this.databaseService.subscriptions.update({
+                where: { id },
+                data: { deletedAt: new Date(), deletedBy: updaterId },
+            });
+            return this.mapToSubscriptionDto(subscription);
+        } catch (error) {
+            console.log({ error });
+            PrismaErrorHandler.handle(error, Prisma);
+            throw new InternalServerErrorException('Server error could not delete subscription', {
+                cause: new Error(),
+                description: 'Deleting subscription failed, please try again',
+            });
+        }
     }
 
     private mapToSubscriptionDto(subscription: any): SubscriptionDto {

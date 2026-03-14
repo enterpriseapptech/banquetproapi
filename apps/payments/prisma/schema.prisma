@@ -127,14 +127,10 @@ model Subscriptions {
   serviceProviderId       String
   serviceId               String
   type                    PaymentType
-  feesId                  String
   subscriptionplanId      String
-  featuredPlanId          String
   status                  Status  // keeps track of active and inactive subscriptions. payment activates
   expiryDate              DateTime
-  fees                    Fees @relation(fields: [feesId], references: [id], onDelete: Cascade)
   subscriptionplan        SubscriptionPlans @relation(fields: [subscriptionplanId], references: [id], onDelete: Cascade)
-  featuredPlan            FeaturedPlans @relation(fields: [featuredPlanId], references: [id], onDelete: Cascade)
   invoice                 Invoice[]
 
   createdAt               DateTime  @default(now())
@@ -142,9 +138,8 @@ model Subscriptions {
   updatedBy               String?
   deletedAt               DateTime?
   deletedBy               String?         
-  @@unique([serviceProviderId, feesId])
-  @@unique([serviceProviderId, subscriptionplanId])
-  @@unique([serviceProviderId, featuredPlanId])
+  @@index([serviceId])
+  @@index([serviceProviderId])
   @@index([status])
   @@index([expiryDate])
 }
@@ -161,7 +156,7 @@ model Fees {
   deletedAt             DateTime?
   deletedBy             String?
 
-  subscriptions         Subscriptions[]
+
   
   @@unique([name, amount])
 }
@@ -194,7 +189,6 @@ model FeaturedPlans {
   deletedAt     DateTime?
   deletedBy     String?
 
-  subscriptions         Subscriptions[]
 }
 
 /* ENUMS */

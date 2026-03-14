@@ -10,6 +10,10 @@ export class InvoiceService {
         private readonly databaseService: DatabaseService
     ) { }
 
+    static generateDueDate(): Date {
+        const days = Number(process.env.INVOICE_VALID_NO_OF_DAYS ?? 7);
+        return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+    }
     // used by created booking to make a first invoice for the booking
     async generate(createInvoiceDto: CreateInvoiceDto): Promise<InvoiceDto> {
         const newInvoiceInput: Prisma.InvoiceCreateInput = {
@@ -187,6 +191,9 @@ export class InvoiceService {
             userId: createInvoiceDto.userId,
             reference: Math.random().toString(16).substring(2, 8),
             subscription: { connect: { id: createInvoiceDto.subscriptionId } },
+            serviceType: createInvoiceDto.serviceType as unknown as $Enums.ServiceType,
+            serviceId: createInvoiceDto.serviceId,
+            subscriptionPlanId: createInvoiceDto.subscriptionPlanId,
             items: instanceToPlain(createInvoiceDto.items) as Prisma.JsonArray,
             amountDue: createInvoiceDto.amountDue,
             currency: createInvoiceDto.currency,

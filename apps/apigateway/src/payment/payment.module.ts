@@ -9,9 +9,10 @@ import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { BookingModule } from '../booking/booking.module';
 import { EventcentersModule } from '../eventcenters/eventcenters.module';
 import { CateringModule } from '../catering/catering.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
-    imports: [ClientConfigModule, BookingModule, EventcentersModule, CateringModule],
+    imports: [ClientConfigModule, BookingModule, EventcentersModule, CateringModule, UsersModule],
     controllers: [
         PaymentController,
         InvoiceController,

@@ -1,8 +1,11 @@
-import { IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsNumber, IsInt, IsDateString, IsJSON, IsUrl, IsUUID, IsArray, IsObject } from 'class-validator';
+import { IsEnum, IsNotEmpty, Length, IsOptional, IsString, IsNumber, IsInt, IsDateString, IsJSON, IsUrl, IsUUID, IsArray, IsObject, ValidateNested } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsImageFile } from '../media/images';
 import { BillingAddress, InvoiceItem } from './payments.dto';
 import { BookingDto } from '../booking';
+import { Type } from 'class-transformer';
+import { ServiceType } from '../shared';
+export { ServiceType } from '../shared';
 
 export enum FeesType {
     CERTIFICATION = 'CERTIFICATION',
@@ -297,6 +300,21 @@ export class CreateInvoiceDtoForSubscriptions {
     @IsUUID()
     subscriptionId: string;
 
+    @ApiProperty({ enum: ServiceType, required: false })
+    @IsOptional()
+    @IsEnum(ServiceType)
+    serviceType?: ServiceType;
+
+    @ApiProperty({ description: 'ID of the event center or catering service', example: 'svc_123', required: false })
+    @IsOptional()
+    @IsUUID()
+    serviceId?: string;
+
+    @ApiProperty({ description: 'ID of the subscription plan', example: 'plan_123', required: false })
+    @IsOptional()
+    @IsUUID()
+    subscriptionPlanId?: string;
+
     @ApiProperty({
         description: 'ID of the payment associated with the invoice (optional)',
         example: 'a6b0c9d3-1e29-4f9d-8466-f82ad9f2d6cb',
@@ -384,11 +402,6 @@ export class CreateInvoiceDtoForSubscriptions {
     @IsOptional()
     @IsUUID()
     deletedBy?: string;
-}
-
-export enum ServiceType {
-    EVENTCENTER = 'EVENTCENTER',
-    CATERING = 'CATERING',
 }
 
 export class CreateServiceSubscriptionInvoiceDto {
@@ -711,18 +724,18 @@ export class CreateSubscriptionDto {
 
     @ApiProperty({ example: 'fee_123' })
     @IsString()
-    @IsNotEmpty()
-    feesId: string;
+    @IsOptional()
+    feesId?: string;
 
     @ApiProperty({ example: 'plan_123' })
     @IsString()
-    @IsNotEmpty()
-    subscriptionplanId: string;
+    @IsOptional()
+    subscriptionplanId?: string;
 
     @ApiProperty({ example: 'fp_123' })
     @IsString()
-    @IsNotEmpty()
-    featuredPlanId: string;
+    @IsOptional()
+    featuredPlanId?: string;
 
     // @ApiProperty({ enum: Status, required: false })
     // @IsEnum(Status)
@@ -743,15 +756,12 @@ export class CreateSubscriptionDto {
     // @IsNumber({ maxDecimalPlaces: 2 })
     // amountDue: number;
 
-    @ApiProperty({ description: 'Billing address' })
-    @IsNotEmpty()
-    @IsJSON()
-    billingAddress: BillingAddress;
+  @ApiProperty({ type: () => BillingAddress, description: 'Billing address' })
+  @IsNotEmpty()
+  @ValidateNested()
+  @Type(() => BillingAddress)
+  billingAddress: BillingAddress;
 
-    @ApiProperty({ description: 'Due date for payment', example: '2025-09-01T00:00:00.000Z' })
-    @IsNotEmpty()
-    @IsDateString()
-    dueDate: Date;
 
     @ApiProperty({ enum: Currency, required: false })
     @IsOptional()

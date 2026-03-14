@@ -12,3 +12,9 @@ export class DataWithCountDto<T> {
   data: T[];
 
 }
+
+
+export enum ServiceType {
+    CATERING = "CATERING",
+    EVENTCENTER = "EVENTCENTER"
+}

@@ -19,7 +19,6 @@ import {
     IPaymentStatus,
     PaymentMethod,
     PaymentReason,
-    ServiceType,
     UpdateDisputeDto,
     UpdateFeaturedPlanDto,
     UpdateFeeDto,
@@ -28,6 +27,7 @@ import {
     UpdateRefundDto,
     UpdateSubscriptionDto,
     UpdateSubscriptionPlanDto,
+    ServiceType,
 } from '@shared/contracts/payments';
 import { firstValueFrom } from 'rxjs';
 import { UserDto } from '@shared/contracts/users';
@@ -37,6 +37,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { BookingService } from '../booking/booking.service';
 import { EventcentersService } from '../eventcenters/eventcenters.service';
 import { CateringService } from '../catering/catering.service';
+import { UsersService } from '../users/users.service';
 
 
 interface AuthenticatedRequest extends Request {
@@ -371,6 +372,7 @@ export class SubscriptionController {
         private readonly subscriptionService: SubscriptionService,
         private readonly eventcentersService: EventcentersService,
         private readonly cateringService: CateringService,
+        private readonly usersService: UsersService,
     ) {}
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
@@ -391,19 +393,59 @@ export class SubscriptionController {
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Get()
-    findAll(
+    async findAll(
         @Query('limit') limit: number,
         @Query('offset') offset: number,
         @Query('serviceProviderId') serviceProviderId?: string,
         @Query('status') status?: string,
     ) {
-        return this.subscriptionService.findAll(limit, offset, serviceProviderId, status);
+        const subscriptions = await firstValueFrom(this.subscriptionService.findAll(limit, offset, serviceProviderId, status));
+        if (!subscriptions.docs.length) return subscriptions;
+
+        const serviceIds = subscriptions.docs.map(s => s.serviceId);
+        const [eventCenters, caterings] = await Promise.allSettled([
+            firstValueFrom(this.eventcentersService.findAllWithUnique(serviceIds)),
+            firstValueFrom(this.cateringService.findAllWithUnique(serviceIds)),
+        ]);
+
+        const nameMap = new Map<string, string>();
+        if (eventCenters.status === 'fulfilled') eventCenters.value.forEach(ec => nameMap.set(ec.id, ec.name));
+        if (caterings.status === 'fulfilled') caterings.value.forEach(c => nameMap.set(c.id, c.name));
+
+        return {
+            ...subscriptions,
+            docs: subscriptions.docs.map(s => ({ ...s, serviceName: nameMap.get(s.serviceId) ?? null })),
+        };
     }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.subscriptionService.findOne(id);
+    async findOne(@Param('id') id: string) {
+        const subscription = await firstValueFrom(this.subscriptionService.findOne(id));
+
+        const serviceType = (subscription as any).invoice?.[0]?.serviceType as ServiceType | undefined;
+
+        const [serviceResult, serviceProviderResult] = await Promise.allSettled([
+            serviceType === ServiceType.EVENTCENTER
+                ? firstValueFrom(this.eventcentersService.findOne(subscription.serviceId))
+                : serviceType === ServiceType.CATERING
+                    ? firstValueFrom(this.cateringService.findOne(subscription.serviceId))
+                    : Promise.allSettled([
+                        firstValueFrom(this.eventcentersService.findAllWithUnique([subscription.serviceId])),
+                        firstValueFrom(this.cateringService.findAllWithUnique([subscription.serviceId])),
+                    ]).then(([ec, cat]) =>
+                        (ec.status === 'fulfilled' && ec.value[0]) ||
+                        (cat.status === 'fulfilled' && cat.value[0]) ||
+                        null
+                    ),
+            firstValueFrom(this.usersService.findOne(subscription.serviceProviderId)),
+        ]);
+
+        return {
+            ...subscription,
+            service: serviceResult.status === 'fulfilled' ? serviceResult.value : null,
+            serviceProvider: serviceProviderResult.status === 'fulfilled' ? serviceProviderResult.value : null,
+        };
     }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
