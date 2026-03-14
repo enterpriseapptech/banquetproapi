@@ -15,10 +15,8 @@ import {
     CreateSubscriptionDto,
     CreateSubscriptionPlanDto,
     GeneratePaymentDto,
-    InitiateServiceSubscriptionDto,
     IPaymentStatus,
     PaymentMethod,
-    PaymentReason,
     UpdateDisputeDto,
     UpdateFeaturedPlanDto,
     UpdateFeeDto,
@@ -28,6 +26,7 @@ import {
     UpdateSubscriptionDto,
     UpdateSubscriptionPlanDto,
     ServiceType,
+    UpdateInvoiceDto,
 } from '@shared/contracts/payments';
 import { firstValueFrom } from 'rxjs';
 import { UserDto } from '@shared/contracts/users';
@@ -89,8 +88,8 @@ export class InvoiceController {
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Patch(':id')
-    update(@Param('id') id: string, @Body() updatePaymentDto: UpdatePaymentDto) {
-        return this.invoiceService.update(id, updatePaymentDto);
+    update(@Param('id') id: string, @Body() updateInvoiceDto: UpdateInvoiceDto) {
+        return this.invoiceService.update(id, updateInvoiceDto);
     }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
@@ -157,13 +156,7 @@ export class PaymentController {
                 };
             }
             const payment = await firstValueFrom(this.paymentService.create(paymentData))
-            if (payment.paymentReason === PaymentReason.SUBSCRIPTION && payment.serviceType && payment.invoiceId) {
-                if (payment.serviceType === ServiceType.EVENTCENTER) {
-                    await firstValueFrom(this.eventcentersService.activateSubscriptionByInvoiceId(payment.invoiceId));
-                } else if (payment.serviceType === ServiceType.CATERING) {
-                    await firstValueFrom(this.cateringService.activateSubscriptionByInvoiceId(payment.invoiceId));
-                }
-            } else if (payment.bookingId) {
+            if (payment.bookingId) {
                 await this.bookingService.updatePayment(payment.bookingId, payment.totalPaymentPaid);
             }
 
@@ -545,66 +538,3 @@ export class DisputeController {
     }
 }
 
-@ApiTags('service-subscriptions')
-@Controller('service-subscriptions')
-export class ServiceSubscriptionController {
-    constructor(
-        private readonly invoiceService: InvoiceService,
-        private readonly subscriptionPlanService: SubscriptionPlanService,
-        private readonly eventcentersService: EventcentersService,
-        private readonly cateringService: CateringService,
-    ) {}
-
-    @UseGuards(JwtAuthGuard, VerificationGuard)
-    @Post('initiate')
-    async initiate(@Body() dto: InitiateServiceSubscriptionDto) {
-        const plan = await firstValueFrom(this.subscriptionPlanService.findOne(dto.subscriptionPlanId));
-        const invoice = await firstValueFrom(
-            this.invoiceService.createServiceSubscriptionInvoice({
-                userId: dto.userId,
-                serviceType: dto.serviceType,
-                serviceId: dto.serviceId,
-                subscriptionPlanId: dto.subscriptionPlanId,
-                amountDue: Number(plan.amount),
-                currency: dto.currency,
-                billingAddress: dto.billingAddress,
-                dueDate: dto.dueDate,
-                note: dto.note,
-            })
-        );
-        const expiryDate = new Date(Date.now() + plan.timeFrame * 24 * 60 * 60 * 1000);
-        const subscriptionDto = { serviceId: dto.serviceId, subscriptionPlanId: dto.subscriptionPlanId, invoiceId: invoice.id, expiryDate };
-        const subscription = await firstValueFrom(
-            dto.serviceType === ServiceType.EVENTCENTER
-                ? this.eventcentersService.createSubscription(subscriptionDto)
-                : this.cateringService.createSubscription(subscriptionDto)
-        );
-        return { subscription, invoice, plan };
-    }
-
-    @UseGuards(JwtAuthGuard, VerificationGuard)
-    @Get()
-    findAll(
-        @Query('serviceType') serviceType: ServiceType,
-        @Query('serviceId') serviceId: string,
-        @Query('limit') limit: number,
-        @Query('offset') offset: number,
-    ) {
-        if (serviceType === ServiceType.EVENTCENTER) {
-            return this.eventcentersService.findAllSubscriptions(limit, offset, serviceId);
-        }
-        return this.cateringService.findAllSubscriptions(limit, offset, serviceId);
-    }
-
-    @UseGuards(JwtAuthGuard, VerificationGuard)
-    @Get(':id')
-    findOne(
-        @Param('id') id: string,
-        @Query('serviceType') serviceType: ServiceType,
-    ) {
-        if (serviceType === ServiceType.EVENTCENTER) {
-            return this.eventcentersService.findOneSubscription(id);
-        }
-        return this.cateringService.findOneSubscription(id);
-    }
-}

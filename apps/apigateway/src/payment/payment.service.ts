@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { PAYMENT_CLIENT } from '@shared/contracts';
-import { CreateDisputeDto, CreateFeaturedPlanDto, CreateFeeDto, CreateInvoiceDto, CreatePaymentDto, CreatePaymentMethodDto, CreateRefundDto, CreateSecondInvoiceDto, CreateServiceSubscriptionInvoiceDto, CreateSubscriptionDto, CreateSubscriptionPlanDto, DisputeDto, FeaturedPlanDto, FeesDto, GeneratePaymentDto, InvoiceDto, INVOICEPATTERN, PaymentDto, PaymentMethodDto, PAYMENTMETHODPATTERN, PAYMENTPATTERN, RefundDto, SubscriptionDto, SubscriptionPlanDto, UpdateDisputeDto, UpdateFeaturedPlanDto, UpdateFeeDto, UpdateInvoiceDto, UpdatePaymentDto, UpdatePaymentMethodDto, UpdateRefundDto, UpdateSubscriptionDto, UpdateSubscriptionPlanDto, FEATUREDPLANSPATTERN, FEESPATTERN, SUBSCRIPTIONPLANSPATTERN, SUBSCRIPTIONPATTERN, REFUNDPATTERN, DISPUTEPATTERN } from '@shared/contracts/payments';
+import { CreateDisputeDto, CreateFeaturedPlanDto, CreateFeeDto, CreateInvoiceDto, CreatePaymentDto, CreatePaymentMethodDto, CreateRefundDto, CreateSecondInvoiceDto, CreateSubscriptionDto, CreateSubscriptionPlanDto, DisputeDto, FeaturedPlanDto, FeesDto, GeneratePaymentDto, InvoiceDto, INVOICEPATTERN, PaymentDto, PaymentMethodDto, PAYMENTMETHODPATTERN, PAYMENTPATTERN, RefundDto, SubscriptionDto, SubscriptionPlanDto, UpdateDisputeDto, UpdateFeaturedPlanDto, UpdateFeeDto, UpdateInvoiceDto, UpdatePaymentDto, UpdatePaymentMethodDto, UpdateRefundDto, UpdateSubscriptionDto, UpdateSubscriptionPlanDto, FEATUREDPLANSPATTERN, FEESPATTERN, SUBSCRIPTIONPLANSPATTERN, SUBSCRIPTIONPATTERN, REFUNDPATTERN, DISPUTEPATTERN } from '@shared/contracts/payments';
 
 @Injectable()
 export class PaymentService {
@@ -96,10 +96,6 @@ export class InvoiceService {
     createSecondInvoice(createInvoiceDto: CreateSecondInvoiceDto) {
 
         return this.invoiceClient.send<InvoiceDto, CreateSecondInvoiceDto>(INVOICEPATTERN.CREATESECONDINVOICE, createInvoiceDto)
-    }
-
-    createServiceSubscriptionInvoice(dto: CreateServiceSubscriptionInvoiceDto) {
-        return this.invoiceClient.send<InvoiceDto, CreateServiceSubscriptionInvoiceDto>(INVOICEPATTERN.CREATESERVICESUBSCRIPTIONINVOICE, dto);
     }
 
     findAll(limit: number, offset: number, subscriptionId?: string, bookingId?: string, userId?: string, status?: string, currency?: string, deleted?: boolean) {

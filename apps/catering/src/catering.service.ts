@@ -1,6 +1,6 @@
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { $Enums, Prisma } from '../prisma/@prisma/catering';
-import { CreateCateringDto, CateringDto, ManyCateringDto, UpdateCateringDto, ServiceStatus, CreateServiceSubscriptionDto, ServiceSubscriptionDto, SubscriptionStatus, UpdateServiceSubscriptionDto } from '@shared/contracts/catering';
+import { CreateCateringDto, CateringDto, ManyCateringDto, UpdateCateringDto, ServiceStatus } from '@shared/contracts/catering';
 import { DatabaseService } from '../database/database.service';
 import { ClientProxy } from '@nestjs/microservices';
 import { NOTIFICATION_CLIENT, USER_CLIENT } from '@shared/contracts';
@@ -221,65 +221,3 @@ export class CateringService {
     }
 }
 
-@Injectable()
-export class CateringSubscriptionService {
-    constructor(private readonly databaseService: DatabaseService) {}
-
-    async create(dto: CreateServiceSubscriptionDto): Promise<ServiceSubscriptionDto> {
-        const record = await this.databaseService.serviceSubscription.create({
-            data: {
-                serviceId: dto.serviceId,
-                subscriptionPlanId: dto.subscriptionPlanId,
-                invoiceId: dto.invoiceId,
-                status: (dto.status ?? SubscriptionStatus.ACTIVE) as any,
-                expiryDate: dto.expiryDate,
-            },
-        });
-        return { ...record, status: record.status as unknown as SubscriptionStatus };
-    }
-
-    async findAll(limit: number, offset: number, serviceId?: string): Promise<{ count: number; docs: ServiceSubscriptionDto[] }> {
-        const where: any = { deletedAt: null };
-        if (serviceId) where.serviceId = serviceId;
-        const [count, docs] = await Promise.all([
-            this.databaseService.serviceSubscription.count({ where }),
-            this.databaseService.serviceSubscription.findMany({ where, take: Number(limit), skip: Number(offset) }),
-        ]);
-        return { count, docs: docs.map(r => ({ ...r, status: r.status as unknown as SubscriptionStatus })) };
-    }
-
-    async findOne(id: string): Promise<ServiceSubscriptionDto> {
-        const record = await this.databaseService.serviceSubscription.findUnique({ where: { id } });
-        if (!record) throw new NotFoundException('Catering subscription not found');
-        return { ...record, status: record.status as unknown as SubscriptionStatus };
-    }
-
-    async update(id: string, dto: UpdateServiceSubscriptionDto): Promise<ServiceSubscriptionDto> {
-        const record = await this.databaseService.serviceSubscription.update({
-            where: { id },
-            data: {
-                ...(dto.status && { status: dto.status as any }),
-                ...(dto.expiryDate && { expiryDate: dto.expiryDate }),
-                ...(dto.deletedAt && { deletedAt: dto.deletedAt }),
-                ...(dto.deletedBy && { deletedBy: dto.deletedBy }),
-            },
-        });
-        return { ...record, status: record.status as unknown as SubscriptionStatus };
-    }
-
-    async activateByInvoiceId(invoiceId: string): Promise<ServiceSubscriptionDto> {
-        const record = await this.databaseService.serviceSubscription.update({
-            where: { invoiceId },
-            data: { status: SubscriptionStatus.ACTIVE as any },
-        });
-        return { ...record, status: record.status as unknown as SubscriptionStatus };
-    }
-
-    async remove(id: string, deletedBy: string): Promise<ServiceSubscriptionDto> {
-        const record = await this.databaseService.serviceSubscription.update({
-            where: { id },
-            data: { deletedAt: new Date(), deletedBy },
-        });
-        return { ...record, status: record.status as unknown as SubscriptionStatus };
-    }
-}

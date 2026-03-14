@@ -45,7 +45,8 @@ export enum InvoiceStatus {
     PENDING = 'PENDING',
     PAID = 'PAID',
     OVERDUE = 'OVERDUE',
-    PARTIALLY_PAID = 'PARTIALLY_PAID'
+    PARTIALLY_PAID = 'PARTIALLY_PAID',
+    OVER_PAID = 'OVER_PAID'
 }
 
 

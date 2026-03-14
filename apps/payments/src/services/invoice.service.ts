@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from 'apps/payments/database/database.service';
 import { $Enums, Prisma } from 'apps/payments/prisma/@prisma/payments';
-import { InvoiceDto, InvoiceStatus, UpdateInvoiceDto, CreateInvoiceDto, InvoiceItem, BillingAddress, CreateInvoiceDtoForSubscriptions, CreateSecondInvoiceDto, CreateServiceSubscriptionInvoiceDto, ServiceType } from '@shared/contracts/payments';
+import { InvoiceDto, InvoiceStatus, UpdateInvoiceDto, CreateInvoiceDto, InvoiceItem, BillingAddress, CreateInvoiceDtoForSubscriptions, CreateSecondInvoiceDto, ServiceType } from '@shared/contracts/payments';
 import { instanceToPlain } from 'class-transformer';
 
 @Injectable()
@@ -345,35 +345,19 @@ export class InvoiceService {
         };
     }
 
-    async createServiceSubscriptionInvoice(dto: CreateServiceSubscriptionInvoiceDto): Promise<InvoiceDto> {
-        const newInvoiceInput: Prisma.InvoiceCreateInput = {
-            userId: dto.userId,
-            reference: Math.random().toString(16).substring(2, 8),
-            serviceType: dto.serviceType as unknown as $Enums.ServiceType,
-            serviceId: dto.serviceId,
-            subscriptionPlanId: dto.subscriptionPlanId,
-            items: [],
-            amountDue: dto.amountDue,
-            currency: dto.currency as unknown as $Enums.Currency,
-            dueDate: dto.dueDate,
-            note: dto.note,
-            billingAddress: instanceToPlain(dto.billingAddress) as Prisma.JsonObject,
-            status: $Enums.InvoiceStatus.PENDING,
-        };
-
-        try {
-            const invoice = await this.databaseService.invoice.create({ data: newInvoiceInput });
-            return {
-                ...invoice,
-                items: instanceToPlain(invoice.items) as InvoiceItem[],
-                billingAddress: instanceToPlain(invoice.billingAddress) as BillingAddress,
-                amountDue: Number(invoice.amountDue),
-                serviceType: invoice.serviceType as unknown as ServiceType,
-                status: invoice.status as unknown as InvoiceStatus,
-            };
-        } catch (error: any) {
-            throw error;
+    async calculateTotals(bookingId?: string, subscriptionId?: string): Promise<{ totalDue: number; totalPaid: number }> {
+        const where = subscriptionId ? { subscriptionId } : { bookingId };
+        const invoices = await this.databaseService.invoice.findMany({
+            where,
+            include: { payments: true },
+        });
+        let totalDue = 0;
+        let totalPaid = 0;
+        for (const inv of invoices) {
+            totalDue += Number(inv.amountDue);
+            totalPaid += (inv.payments || []).reduce((sum, p) => sum + Number(p.amount), 0);
         }
+        return { totalDue, totalPaid };
     }
 
     private mapToInvoiceDto(invoice: any): InvoiceDto {

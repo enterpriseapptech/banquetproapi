@@ -50,7 +50,6 @@ model Catering {
   contact            String?
   // relations
   menu              Menu[]
-  subscriptions     ServiceSubscription[]
 
   @@index([serviceProviderId])
   @@index([status])
@@ -80,33 +79,10 @@ model Menu {
 
 
 
-model ServiceSubscription {
-  id                 String             @id @default(uuid())
-  serviceId          String
-  subscriptionPlanId String
-  invoiceId          String             @unique
-  status             SubscriptionStatus @default(PENDING)
-  expiryDate         DateTime
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-  deletedAt          DateTime?
-  deletedBy          String?
 
-  catering           Catering           @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-
-  @@index([serviceId])
-  @@index([status])
-  @@index([expiryDate])
-}
 
 enum ServiceStatus {
   ACTIVE
   INACTIVE
 }
 
-enum SubscriptionStatus {
-  PENDING
-  ACTIVE
-  INACTIVE
-  EXPIRED
-}

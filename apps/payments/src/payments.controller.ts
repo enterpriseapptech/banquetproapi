@@ -6,7 +6,7 @@ import { catchError } from 'rxjs/operators';
 import { from, throwError } from 'rxjs';
 import { DisputeService, FeaturedPlanService, FeesService, InvoiceService, PaymentsService, RefundService, SubscriptionPlansService, SubscriptionService } from './payments.service';
 import { DISPUTEPATTERN, FEATUREDPLANSPATTERN, FEESPATTERN, INVOICEPATTERN, PAYMENTPATTERN, REFUNDPATTERN, SUBSCRIPTIONPATTERN, SUBSCRIPTIONPLANSPATTERN } from '@shared/contracts/payments/payments.pattern';
-import { CreateDisputeDto, CreateFeaturedPlanDto, CreateFeeDto, CreateInvoiceDto, CreatePaymentDto,  CreateRefundDto, CreateServiceSubscriptionInvoiceDto, CreateSubscriptionDto, CreateSubscriptionPlanDto, GeneratePaymentDto } from '@shared/contracts/payments/create-payments.dto';
+import { CreateDisputeDto, CreateFeaturedPlanDto, CreateFeeDto, CreateInvoiceDto, CreatePaymentDto,  CreateRefundDto, CreateSubscriptionDto, CreateSubscriptionPlanDto, GeneratePaymentDto } from '@shared/contracts/payments/create-payments.dto';
 import { UpdateDisputeDto, UpdateFeaturedPlanDto, UpdateFeeDto, UpdateInvoiceDto, UpdatePaymentDto, UpdateRefundDto, UpdateSubscriptionDto, UpdateSubscriptionPlanDto } from '@shared/contracts/payments/update-payments.dto';
 
 @Controller()
@@ -537,20 +537,6 @@ export class InvoiceController {
           error: err.response.error || "Sever error",
         }));
 
-      })
-    );
-  }
-
-  @MessagePattern(INVOICEPATTERN.CREATESERVICESUBSCRIPTIONINVOICE)
-  createServiceSubscriptionInvoice(@Payload() dto: CreateServiceSubscriptionInvoiceDto) {
-    return from(this.invoiceService.createServiceSubscriptionInvoice(dto)).pipe(
-      catchError((err) => {
-        console.error("Error in InvoiceService:", err);
-        return throwError(() => new RpcException({
-          statusCode: err.response?.statusCode || 500,
-          message: err.message || 'Internal Server Error',
-          error: err.response?.error || 'Server error',
-        }));
       })
     );
   }

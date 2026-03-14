@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { DisputeService, FeaturedPlanService, FeesService, InvoiceService, PaymentMethodService, PaymentService, RefundService, SubscriptionService, SubscriptionPlanService } from './payment.service';
-import { DisputeController, FeaturedPlanController, FeesController, InvoiceController, PaymentController, PaymentMethodController, RefundController, ServiceSubscriptionController, SubscriptionController, SubscriptionPlanController } from './payment.controller';
+import { DisputeController, FeaturedPlanController, FeesController, InvoiceController, PaymentController, PaymentMethodController, RefundController, SubscriptionController, SubscriptionPlanController } from './payment.controller';
 import { ClientConfigService } from '../client-config/client-config.service';
 import { PAYMENT_CLIENT } from '@shared/contracts';
 import { ClientProxyFactory } from '@nestjs/microservices';
@@ -23,7 +23,6 @@ import { UsersModule } from '../users/users.module';
         SubscriptionController,
         RefundController,
         DisputeController,
-        ServiceSubscriptionController,
     ],
     providers: [
         PaymentService,

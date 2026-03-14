@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
-import { EventcentersService, EventCenterSubscriptionService } from './eventcenters.service';
-import { CreateEventCenterDto, CreateServiceSubscriptionDto, EVENTCENTERPATTERN, EVENTCENTERSUBSCRIPTIONPATTERN, UpdateEventCenterDto, UpdateServiceSubscriptionDto } from '@shared/contracts/eventcenters';
+import { EventcentersService } from './eventcenters.service';
+import { CreateEventCenterDto, EVENTCENTERPATTERN, UpdateEventCenterDto } from '@shared/contracts/eventcenters';
 import { MessagePattern, Payload, RpcException, RmqContext, Ctx } from '@nestjs/microservices';
 import { catchError, from, throwError } from 'rxjs';
 
@@ -118,73 +118,3 @@ export class EventcentersController {
 
 }
 
-@Controller()
-export class EventCenterSubscriptionController {
-    constructor(private readonly subscriptionService: EventCenterSubscriptionService) {}
-
-    @MessagePattern(EVENTCENTERSUBSCRIPTIONPATTERN.CREATE)
-    create(@Payload() dto: CreateServiceSubscriptionDto) {
-        return from(this.subscriptionService.create(dto)).pipe(
-            catchError((err) => throwError(() => new RpcException({
-                statusCode: err.response?.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-                error: err.response?.error || 'Server error',
-            })))
-        );
-    }
-
-    @MessagePattern(EVENTCENTERSUBSCRIPTIONPATTERN.FINDALL)
-    findAll(@Payload() data: { limit: number; offset: number; serviceId?: string }) {
-        return from(this.subscriptionService.findAll(data.limit, data.offset, data.serviceId)).pipe(
-            catchError((err) => throwError(() => new RpcException({
-                statusCode: err.response?.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-                error: err.response?.error || 'Server error',
-            })))
-        );
-    }
-
-    @MessagePattern(EVENTCENTERSUBSCRIPTIONPATTERN.FINDBYID)
-    findOne(@Payload() id: string) {
-        return from(this.subscriptionService.findOne(id)).pipe(
-            catchError((err) => throwError(() => new RpcException({
-                statusCode: err.response?.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-                error: err.response?.error || 'Server error',
-            })))
-        );
-    }
-
-    @MessagePattern(EVENTCENTERSUBSCRIPTIONPATTERN.UPDATE)
-    update(@Payload() data: { id: string; updateServiceSubscriptionDto: UpdateServiceSubscriptionDto }) {
-        return from(this.subscriptionService.update(data.id, data.updateServiceSubscriptionDto)).pipe(
-            catchError((err) => throwError(() => new RpcException({
-                statusCode: err.response?.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-                error: err.response?.error || 'Server error',
-            })))
-        );
-    }
-
-    @MessagePattern(EVENTCENTERSUBSCRIPTIONPATTERN.DELETE)
-    remove(@Payload() data: { id: string; updaterId: string }) {
-        return from(this.subscriptionService.remove(data.id, data.updaterId)).pipe(
-            catchError((err) => throwError(() => new RpcException({
-                statusCode: err.response?.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-                error: err.response?.error || 'Server error',
-            })))
-        );
-    }
-
-    @MessagePattern(EVENTCENTERSUBSCRIPTIONPATTERN.ACTIVATEBYINVOICEID)
-    activateByInvoiceId(@Payload() invoiceId: string) {
-        return from(this.subscriptionService.activateByInvoiceId(invoiceId)).pipe(
-            catchError((err) => throwError(() => new RpcException({
-                statusCode: err.response?.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-                error: err.response?.error || 'Server error',
-            })))
-        );
-    }
-}

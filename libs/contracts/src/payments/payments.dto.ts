@@ -93,7 +93,7 @@ export class PaymentDto {
   bookingId?: string;
 
   @ApiPropertyOptional({ example: "sub_123" })
-  subscritpionId?: string;
+  subscriptionId?: string;
 
   @ApiPropertyOptional({ enum: ServiceType })
   serviceType?: ServiceType;
@@ -173,6 +173,9 @@ export class InvoiceDto {
 
   @ApiPropertyOptional({ example: "svc_123" })
   serviceId?: string;
+
+  @ApiPropertyOptional({ example: "plan_123" })
+  subscriptionId?: string;
 
   @ApiPropertyOptional({ example: "plan_123" })
   subscriptionPlanId?: string;

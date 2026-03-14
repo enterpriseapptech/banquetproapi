@@ -1,17 +1,23 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from 'apps/payments/database/database.service';
 import { $Enums, Prisma } from 'apps/payments/prisma/@prisma/payments';
-import { PaymentDto, PaymentReason, IPaymentStatus, UpdatePaymentDto, CreatePaymentDto, GeneratePaymentDto, PaymentGateWay, ServiceType } from '@shared/contracts/payments';
+import { PaymentDto, PaymentReason, IPaymentStatus, UpdatePaymentDto, CreatePaymentDto, GeneratePaymentDto, PaymentGateWay, ServiceType, InvoiceStatus, Status } from '@shared/contracts/payments';
 import { Decimal } from '@prisma/client/runtime/library';
 import { StripePaymentService } from '../stripe.payment';
 import { PaystackPaymentService } from '../paystack.payment';
+import { InvoiceService } from './invoice.service';
+import { SubscriptionService } from './subscription.service';
+import { SubscriptionPlansService } from './subscription_plans.service';
 
 @Injectable()
 export class PaymentsService {
     constructor(
         private readonly databaseService: DatabaseService,
         private readonly stripePaymentService: StripePaymentService,
-        private readonly paystackPaymentService: PaystackPaymentService
+        private readonly paystackPaymentService: PaystackPaymentService,
+        private readonly invoiceService: InvoiceService,
+        private readonly subscriptionService: SubscriptionService,
+        private readonly subscriptionPlansService: SubscriptionPlansService,
     ) { }
 
     async initiate(generatePaymentDto: GeneratePaymentDto): Promise<string> {
@@ -73,31 +79,26 @@ export class PaymentsService {
 
     async create(createPaymentDto: CreatePaymentDto): Promise<PaymentDto> {
         try {
+            // fetch invoice via service
+            const invoice = await this.invoiceService.findOne(createPaymentDto.invoiceId);
+
+            // create payment record (payment table is owned by this service)
             const payment = await this.databaseService.$transaction(async (prisma) => {
-                // find invoice
-                const invoice = await prisma.invoice.findUnique({ where: { id: createPaymentDto.invoiceId } });
-                if (!invoice) {
-                    throw new NotFoundException({
-                        statusCode: 404,
-                        message: "Invoice not found",
-                        error: "Invoice not found",
-                    });
-                }
-                const existingPayment = await prisma.payment.findUnique(
-                    {
-                        where: {
-                            invoiceId: invoice.id,
-                            paymentReference: createPaymentDto.paymentReference,
-                            reference: createPaymentDto.reference,
-                            transactionId: createPaymentDto.transactionId
-                        }
-                    });
+                const existingPayment = await prisma.payment.findUnique({
+                    where: {
+                        invoiceId: invoice.id,
+                        paymentReference: createPaymentDto.paymentReference,
+                        reference: createPaymentDto.reference,
+                        transactionId: createPaymentDto.transactionId,
+                    },
+                });
+
                 if (existingPayment) {
                     console.log('Existing payment found, skipping creation.');
-                    return null
+                    return null;
                 }
+
                 const paymentAmount = new Decimal(createPaymentDto.amount);
-                const amountDue = new Decimal(invoice.amountDue);
                 const newPaymentInput: Prisma.PaymentCreateInput = {
                     userId: invoice.userId,
                     paymentMethod: createPaymentDto.paymentMethod,
@@ -111,43 +112,48 @@ export class PaymentsService {
                     paymentReason: createPaymentDto.paymentReason,
                     status: createPaymentDto.status,
                     transactionId: createPaymentDto.transactionId,
-                    invoice: { connect: { id: createPaymentDto.invoiceId } }
-                }
-                const payment = await prisma.payment.create({ data: newPaymentInput });
-
-                // update invoice
-                let status: $Enums.InvoiceStatus;
-
-                if (paymentAmount.gt(amountDue)) {
-                    status = $Enums.InvoiceStatus.OVER_PAID;
-                } else if (paymentAmount.equals(amountDue)) {
-                    status = $Enums.InvoiceStatus.PAID;
-                } else {
-                    status = $Enums.InvoiceStatus.PARTIALLY_PAID;
-                }
-
-                await prisma.invoice.update({ where: { id: createPaymentDto.invoiceId }, data: { status } });
-
-                // check the total payments made now for this booking or subscription
-                const invoices = await prisma.invoice.findMany({
-                    where: { bookingId: invoice.bookingId },
-                    include: { payments: true },
-                });
-                let totalDue = 0;
-                let totalPaid = 0;
-
-                for (const inv of invoices) {
-                    totalDue += Number(inv.amountDue);
-                    const totalInvoicePaid = (inv.payments || []).reduce(
-                        (sum, p) => sum + Number(p.amount),
-                        0,
-                    );
-
-                    totalPaid += totalInvoicePaid;
-                }
-
-                return { ...payment, totalPaymentDue: totalDue, totalPaymentPaid: totalPaid, bookingId: invoice.bookingId, subscriptionId: invoice.subscriptionId, serviceType: invoice.serviceType, serviceId: invoice.serviceId, subscriptionPlanId: invoice.subscriptionPlanId };
+                    invoice: { connect: { id: createPaymentDto.invoiceId } },
+                };
+                return prisma.payment.create({ data: newPaymentInput });
             });
+
+            if (!payment) return null;
+
+            // determine new invoice status
+            const paymentAmount = new Decimal(createPaymentDto.amount);
+            const amountDue = new Decimal(invoice.amountDue);
+            let invoiceStatus: InvoiceStatus;
+            
+            if (paymentAmount.gt(amountDue)) {
+                invoiceStatus = InvoiceStatus.OVER_PAID;
+            } else if (paymentAmount.equals(amountDue)) {
+
+                invoiceStatus = InvoiceStatus.PAID;
+            } else {
+
+                invoiceStatus = InvoiceStatus.PARTIALLY_PAID;
+            }
+
+            // update invoice status via service
+            await this.invoiceService.update(invoice.id, { status: invoiceStatus });
+
+            // activate subscription via service if fully paid
+            if (
+                createPaymentDto.paymentReason === PaymentReason.SUBSCRIPTION && invoice.subscriptionId &&
+                invoiceStatus === InvoiceStatus.PAID
+            ) {
+                const subscription = await this.subscriptionService.findOne(invoice.subscriptionId);
+                const plan = await this.subscriptionPlansService.findOne(subscription.subscriptionplanId);
+                const paidAt = new Date(createPaymentDto.paidAt);
+                const expiryDate = new Date(paidAt.getTime() + plan.timeFrame * 24 * 60 * 60 * 1000);
+                await this.subscriptionService.update(invoice.subscriptionId, { status: Status.ACTIVE, expiryDate });
+            }
+
+            // calculate totals via invoice service
+            const { totalDue, totalPaid } = await this.invoiceService.calculateTotals(
+                invoice.bookingId,
+                invoice.subscriptionId,
+            );
 
             return {
                 ...payment,
@@ -157,14 +163,20 @@ export class PaymentsService {
                 paymentAuthorization: payment.paymentAuthorization as Record<string, any>,
                 status: payment.status as unknown as IPaymentStatus,
                 paymentMethod: payment.paymentMethod,
-                serviceType: (payment as any).serviceType as unknown as ServiceType,
+                serviceType: invoice.serviceType,
+                totalPaymentDue: totalDue,
+                totalPaymentPaid: totalPaid,
+                bookingId: invoice.bookingId,
+                subscriptionId: invoice.subscriptionId,
+                serviceId: invoice.serviceId,
+                subscriptionPlanId: invoice.subscriptionPlanId,
             };
 
         } catch (error) {
-            console.log(error)
-            throw new InternalServerErrorException('sever error could not create payment', {
+            console.log(error);
+            throw new InternalServerErrorException('server error could not create payment', {
                 cause: new Error(),
-                description: 'payment creation failed, please try again'
+                description: 'payment creation failed, please try again',
             });
         }
     }

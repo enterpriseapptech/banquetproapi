@@ -1,7 +1,8 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { IsDateString, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsUUID, } from 'class-validator';
+import { IsDateString, IsEnum, IsOptional, IsUUID, } from 'class-validator';
 import { ApiProperty} from '@nestjs/swagger';
 import { CreateDisputeDto, CreateFeaturedPlanDto, CreateFeeDto, CreateInvoiceDto, CreatePaymentDto, CreatePaymentMethodDto, CreateRefundDto, CreateSubscriptionDto, CreateSubscriptionPlanDto, Status } from './create-payments.dto';
+import { InvoiceStatus } from './create-payments.dto';
 
 
 
@@ -14,23 +15,20 @@ export class UpdateSubscriptionDto extends PartialType(CreateSubscriptionDto) {
 
     @ApiProperty({ example: '2026-01-01T00:00:00.000Z' })
     @IsDateString()
-    expiryDate: Date;
+    @IsOptional()
+    expiryDate?: Date;
 
-
-    @ApiProperty({ example: 'user_123', description: 'ID of the user initiating the subscription' })
-    @IsNotEmpty()
-    @IsUUID()
-    userId: string;
-
-    @ApiProperty({ description: 'Amount due for this subscription', example: 5000.00 })
-    @IsNumber({ maxDecimalPlaces: 2 })
-    amountDue: number;
 
 }
 export class UpdateRefundDto extends PartialType(CreateRefundDto) {}
 export class UpdatePaymentDto extends PartialType(CreatePaymentDto) {}
 export class UpdatePaymentMethodDto extends PartialType(CreatePaymentMethodDto) {}
-export class UpdateInvoiceDto extends PartialType(CreateInvoiceDto) {}
+export class UpdateInvoiceDto extends PartialType(CreateInvoiceDto) {
+    @ApiProperty({ enum: InvoiceStatus, required: false })
+    @IsEnum(InvoiceStatus)
+    @IsOptional()
+    status?: InvoiceStatus;
+}
 
 export class UpdateFeeDto extends PartialType(CreateFeeDto) {
 
