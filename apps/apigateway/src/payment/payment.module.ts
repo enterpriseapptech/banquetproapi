@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { DisputeService, FeaturedPlanService, FeesService, InvoiceService, PaymentMethodService, PaymentService, RefundService, SubscriptionService, SubscriptionPlanService } from './payment.service';
 import { DisputeController, FeaturedPlanController, FeesController, InvoiceController, PaymentController, PaymentMethodController, RefundController, SubscriptionController, SubscriptionPlanController } from './payment.controller';
 import { ClientConfigService } from '../client-config/client-config.service';
-import { PAYMENT_CLIENT } from '@shared/contracts';
+import { NOTIFICATION_CLIENT, PAYMENT_CLIENT } from '@shared/contracts';
 import { ClientProxyFactory } from '@nestjs/microservices';
 import { ClientConfigModule } from '../client-config/client-config.module';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
@@ -41,6 +41,13 @@ import { UsersModule } from '../users/users.module';
             useFactory: (configService: ClientConfigService) => {
                 const paymentClientOptions = configService.PaymentClientOptions;
                 return ClientProxyFactory.create(paymentClientOptions);
+            },
+            inject: [ClientConfigService],
+        },
+        {
+            provide: NOTIFICATION_CLIENT,
+            useFactory: (configService: ClientConfigService) => {
+                return ClientProxyFactory.create(configService.NotificationsClientOptions);
             },
             inject: [ClientConfigService],
         }

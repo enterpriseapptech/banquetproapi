@@ -46,4 +46,8 @@ export class CateringService {
         return this.cateringClient.send<CateringDto, { id: string, updaterId: string }>(CATERINGPATTERN.DELETE, { id, updaterId })
     }
 
+    updateSubscription(serviceId: string, status: string) {
+        return this.cateringClient.emit(CATERINGPATTERN.UPDATESUBSCRIPTION, { serviceId, status });
+    }
+
 }

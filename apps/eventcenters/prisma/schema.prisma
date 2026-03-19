@@ -46,6 +46,10 @@ model EventCenter {
   deletedBy          String?
 
 
+  subscriptionStatus SubscriptionStatus?
+  subscriptionExpiry DateTime?
+  subscriptionPlanId String?
+
   @@index([serviceProviderId])
   @@index([status])
   @@index([name])
@@ -62,6 +66,12 @@ enum ServiceStatus {
   INACTIVE
 }
 
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+  EXPIRED
+}
 
 enum Amenities {
   WIFI

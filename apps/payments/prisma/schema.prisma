@@ -22,33 +22,34 @@ datasource db {
 /* PAYMENTS */
 model Payment {
   id                      String    @id @default(uuid())
-  invoiceId               String    @unique
+  invoiceId               String
   paymentMethod           PaymentMethod
   userId                  String
   amount                  Decimal @db.Decimal(10, 2)
   amountCharged           Decimal @db.Decimal(10, 2)
-  reference               String   @unique // reference to track this payment on the payment provider Id
-  paymentReference        String  @unique
+  reference               String   // reference to track this payment on the payment provider Id
+  paymentReference        String
   paymentAuthorization    Json?
   paidAt                  String
   currency                Currency    @default(NGN)
   paymentReason           PaymentReason
   status                  PaymentStatus
-  transactionId           String    @unique
+  transactionId           String
   createdAt               DateTime  @default(now())
   updatedAt               DateTime      @updatedAt
-  updatedBy               String?     
+  updatedBy               String?
   deletedAt               DateTime?
   deletedBy               String?
   // relations
-  refund                  Refund? 
+  refund                  Refund?
   dispute                 Dispute?
-  invoice                 Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade) 
+  invoice                 Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@index([paymentMethod])
   @@index([userId])
   @@index([reference])
   @@index([paymentReference])
+  @@unique([invoiceId, reference, paymentReference, transactionId])
 
 }
 

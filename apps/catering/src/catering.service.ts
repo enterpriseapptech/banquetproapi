@@ -208,6 +208,13 @@ export class CateringService {
     }
 
 
+    async updateSubscriptionStatus(serviceId: string, subscriptionStatus: string): Promise<void> {
+        await this.databaseService.catering.update({
+            where: { id: serviceId },
+            data: { subscriptionStatus: subscriptionStatus as $Enums.SubscriptionStatus },
+        });
+    }
+
     /**
      *
      * Maps a raw event center from the database to EventCenterDto.

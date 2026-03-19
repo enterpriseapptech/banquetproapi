@@ -215,6 +215,14 @@ export class EventcentersService {
        
         return eventCenter;
     }
+    
+    async updateSubscriptionStatus(serviceId: string, subscriptionStatus: string): Promise<void> {
+        await this.databaseService.eventCenter.update({
+            where: { id: serviceId },
+            data: { subscriptionStatus: subscriptionStatus as $Enums.SubscriptionStatus },
+        });
+    }
+
     /**
      *
      * Maps a raw event center from the database to EventCenterDto.

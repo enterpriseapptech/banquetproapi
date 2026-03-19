@@ -5,5 +5,6 @@ export const CATERINGPATTERN = {
     CREATE: 'catering.create',
     UPDATE: 'catering.update',
     DELETE: 'catering.delete',
+    UPDATESUBSCRIPTION: 'catering.updateSubscription',
 }
 

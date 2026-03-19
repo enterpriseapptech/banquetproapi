@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, UseInterceptors, UploadedFile, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, UseInterceptors, UploadedFile, HttpCode, HttpStatus, Inject } from '@nestjs/common';
 import { DisputeService, FeaturedPlanService, FeesService, InvoiceService, PaymentMethodService, PaymentService, RefundService, SubscriptionService, SubscriptionPlanService } from './payment.service';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
@@ -37,6 +37,9 @@ import { BookingService } from '../booking/booking.service';
 import { EventcentersService } from '../eventcenters/eventcenters.service';
 import { CateringService } from '../catering/catering.service';
 import { UsersService } from '../users/users.service';
+import { NOTIFICATION_CLIENT } from '@shared/contracts';
+import { NOTIFICATIONPATTERN, NotificationType } from '@shared/contracts/notifications';
+import { ClientProxy } from '@nestjs/microservices';
 
 
 interface AuthenticatedRequest extends Request {
@@ -104,10 +107,12 @@ export class InvoiceController {
 @ApiTags('payment')
 @Controller('payment')
 export class PaymentController {
-    constructor(private readonly paymentService: PaymentService,
+    constructor(
+        private readonly paymentService: PaymentService,
         private readonly bookingService: BookingService,
         private readonly eventcentersService: EventcentersService,
         private readonly cateringService: CateringService,
+        @Inject(NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
     ) { }
 
 
@@ -123,50 +128,103 @@ export class PaymentController {
     @HttpCode(HttpStatus.OK)
     async create(@Body() payload: any) {
         try {
-             let paymentData: CreatePaymentDto 
-            if(payload.event && payload.event === 'charge.success') {
+            console.log({ppaymentPayload: payload})
+            let paymentData: CreatePaymentDto;
+            if (payload.event && payload.event === 'charge.success') {
                 // paystack payment succeeded
                 paymentData = {
-                invoiceId: payload.data.metadata.invoiceId, 
-                reference: payload.data.metadata.reference,
-                paymentReference: payload.data.reference,
-                amountCharged: payload.data.metadata.amountCharged,
-                amount: payload.data.amount/100,
-                paymentMethod: PaymentMethod.PAYSTACK,
-                currency: payload.data.currency,
-                paidAt: payload.data.paid_at,
-                status: payload.data.status === 'success' ? IPaymentStatus.COMPLETED :  IPaymentStatus.FAILED,
-                paymentReason: payload.data.metadata.paymentReason,
-                transactionId: String(payload.data.id),
+                    invoiceId: payload.data.metadata.invoiceId,
+                    reference: payload.data.metadata.reference,
+                    paymentReference: payload.data.reference,
+                    amountCharged: payload.data.metadata.amountCharged,
+                    amount: payload.data.amount / 100,
+                    paymentMethod: PaymentMethod.PAYSTACK,
+                    currency: payload.data.currency,
+                    paidAt: payload.data.paid_at,
+                    status: payload.data.status === 'success' ? IPaymentStatus.COMPLETED : IPaymentStatus.FAILED,
+                    paymentReason: payload.data.metadata.paymentReason,
+                    transactionId: String(payload.data.id),
                 };
-            }else if(payload.type === 'payment_intent.succeeded') {
+            } else if (payload.type === 'payment_intent.succeeded') {
                 // stripe payment succeeded
                 paymentData = {
-                paymentReason: payload.data.object.metadata.paymentReason,
-                transactionId: payload.data.object.id,
-                invoiceId: payload.data.object.metadata.invoiceId, 
-                reference: payload.data.object.metadata.reference,
-                paymentReference: payload.request.idempotency_key,
-                amountCharged: payload.data.object.metadata.amountCharged/100,
-                amount: payload.data.object.amount_received/100,
-                paymentMethod: PaymentMethod.STRIPE,
-                currency: payload.data.object.currency.toUpperCase(),
-                paidAt: new Date(payload.data.object.created * 1000).toISOString(),
-                status: payload.data.object.status === 'succeeded' ? IPaymentStatus.COMPLETED :  IPaymentStatus.FAILED,
+                    paymentReason: payload.data.object.metadata.paymentReason,
+                    transactionId: payload.data.object.id,
+                    invoiceId: payload.data.object.metadata.invoiceId,
+                    reference: payload.data.object.metadata.reference,
+                    paymentReference: payload.request.idempotency_key,
+                    amountCharged: payload.data.object.metadata.amountCharged / 100,
+                    amount: payload.data.object.amount_received / 100,
+                    paymentMethod: PaymentMethod.STRIPE,
+                    currency: payload.data.object.currency.toUpperCase(),
+                    paidAt: new Date(payload.data.object.created * 1000).toISOString(),
+                    status: payload.data.object.status === 'succeeded' ? IPaymentStatus.COMPLETED : IPaymentStatus.FAILED,
+                };
+            } else if (payload.event === 'charge.failed') {
+                // paystack payment failed
+                paymentData = {
+                    invoiceId: payload.data.metadata.invoiceId,
+                    reference: payload.data.metadata.reference,
+                    paymentReference: payload.data.reference,
+                    amountCharged: payload.data.metadata.amountCharged,
+                    amount: payload.data.amount / 100,
+                    paymentMethod: PaymentMethod.PAYSTACK,
+                    currency: payload.data.currency,
+                    paidAt: payload.data.paid_at ?? new Date().toISOString(),
+                    status: IPaymentStatus.FAILED,
+                    paymentReason: payload.data.metadata.paymentReason,
+                    transactionId: String(payload.data.id),
+                };
+            } else if (payload.type === 'payment_intent.payment_failed') {
+                // stripe payment failed
+                paymentData = {
+                    paymentReason: payload.data.object.metadata.paymentReason,
+                    transactionId: payload.data.object.id,
+                    invoiceId: payload.data.object.metadata.invoiceId,
+                    reference: payload.data.object.metadata.reference,
+                    paymentReference: payload.request.idempotency_key,
+                    amountCharged: payload.data.object.metadata.amountCharged / 100,
+                    amount: (payload.data.object.amount ?? 0) / 100,
+                    paymentMethod: PaymentMethod.STRIPE,
+                    currency: payload.data.object.currency?.toUpperCase(),
+                    paidAt: new Date(payload.data.object.created * 1000).toISOString(),
+                    status: IPaymentStatus.FAILED,
                 };
             }
-            const payment = await firstValueFrom(this.paymentService.create(paymentData))
-            if (payment.bookingId) {
-                await this.bookingService.updatePayment(payment.bookingId, payment.totalPaymentPaid);
+
+            const payment = await firstValueFrom(this.paymentService.create(paymentData));
+
+            if (payment?.status === IPaymentStatus.FAILED) {
+                this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
+                    userId: payment.userId,
+                    internalId: 'system_notification',
+                    message: `Your payment of ${payment.amount} ${payment.currency} failed. Please try again.`,
+                    type: NotificationType.ERROR,
+                });
+            }
+
+            if (payment?.status === IPaymentStatus.COMPLETED) {
+                console.log({paymentStatus: payment?.status === IPaymentStatus.COMPLETED })
+
+                if (payment?.bookingId) {
+                    await this.bookingService.updatePayment(payment.bookingId, payment.totalPaymentPaid);
+                }
+
+                if (payment?.serviceId && payment?.serviceType) {
+                    console.log({payment})
+                    if (payment.serviceType === ServiceType.EVENTCENTER) {
+                        this.eventcentersService.updateSubscription(payment.serviceId, 'ACTIVE');
+                    } else if (payment.serviceType === ServiceType.CATERING) {
+                        this.cateringService.updateSubscription(payment.serviceId, 'ACTIVE');
+                    }
+                }
             }
 
             return { received: true };
         } catch (error) {
-            console.log({error})
-            // console.log({payload})
+            console.log({ error });
             return { received: true };
         }
-       
     }
 
     @Get(':id')

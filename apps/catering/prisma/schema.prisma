@@ -50,6 +50,9 @@ model Catering {
   contact            String?
   // relations
   menu              Menu[]
+  subscriptionStatus SubscriptionStatus?
+  subscriptionExpiry DateTime?
+  subscriptionPlanId String?
 
   @@index([serviceProviderId])
   @@index([status])
@@ -86,3 +89,9 @@ enum ServiceStatus {
   INACTIVE
 }
 
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+  EXPIRED
+}

@@ -7,6 +7,7 @@ export const EVENTCENTERPATTERN = {
     CREATEEVENTCENTER: 'event.center.create',
     UPDATEEVENTCENTER: 'event.center.update',
     DELETEEVENTCENTER: 'event.center.delete',
+    UPDATESUBSCRIPTION: 'event.center.updateSubscription',
 }
 
 

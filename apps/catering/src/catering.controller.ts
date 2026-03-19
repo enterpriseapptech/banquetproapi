@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { CateringService } from './catering.service';
-import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
+import { EventPattern, MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import { CATERINGPATTERN, CreateCateringDto, UpdateCateringDto } from '@shared/contracts/catering';
 import { catchError, from, throwError } from 'rxjs';
 
@@ -107,6 +107,11 @@ export class CateringController {
             })
         );
 
+    }
+
+    @EventPattern(CATERINGPATTERN.UPDATESUBSCRIPTION)
+    updateSubscription(@Payload() data: { serviceId: string; subscriptionStatus: string }) {
+        return from(this.cateringService.updateSubscriptionStatus(data.serviceId, data.subscriptionStatus));
     }
 }
 

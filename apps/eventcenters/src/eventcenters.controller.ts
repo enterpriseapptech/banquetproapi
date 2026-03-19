@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { EventcentersService } from './eventcenters.service';
 import { CreateEventCenterDto, EVENTCENTERPATTERN, UpdateEventCenterDto } from '@shared/contracts/eventcenters';
-import { MessagePattern, Payload, RpcException, RmqContext, Ctx } from '@nestjs/microservices';
+import { EventPattern, MessagePattern, Payload, RpcException, RmqContext, Ctx } from '@nestjs/microservices';
 import { catchError, from, throwError } from 'rxjs';
 
 @Controller()
@@ -114,6 +114,10 @@ export class EventcentersController {
 
     }
 
+    @EventPattern(EVENTCENTERPATTERN.UPDATESUBSCRIPTION)
+    updateSubscription(@Payload() data: { serviceId: string; subscriptionStatus: string }) {
+        return from(this.eventcentersService.updateSubscriptionStatus(data.serviceId, data.subscriptionStatus));
+    }
 
 
 }

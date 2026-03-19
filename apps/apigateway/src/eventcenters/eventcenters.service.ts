@@ -48,4 +48,8 @@ export class EventcentersService {
         return this.eventClient.send<EventCenterDto, { id: string, updaterId: string }>(EVENTCENTERPATTERN.DELETEEVENTCENTER, { id, updaterId })
     }
 
+    updateSubscription(serviceId: string, status: string) {
+        return this.eventClient.emit(EVENTCENTERPATTERN.UPDATESUBSCRIPTION, { serviceId, status });
+    }
+
 }

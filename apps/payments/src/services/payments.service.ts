@@ -86,10 +86,12 @@ export class PaymentsService {
             const payment = await this.databaseService.$transaction(async (prisma) => {
                 const existingPayment = await prisma.payment.findUnique({
                     where: {
-                        invoiceId: invoice.id,
-                        paymentReference: createPaymentDto.paymentReference,
-                        reference: createPaymentDto.reference,
-                        transactionId: createPaymentDto.transactionId,
+                        invoiceId_reference_paymentReference_transactionId: {
+                            invoiceId: invoice.id,
+                            reference: createPaymentDto.reference,
+                            paymentReference: createPaymentDto.paymentReference,
+                            transactionId: createPaymentDto.transactionId,
+                        },
                     },
                 });
 
@@ -118,6 +120,20 @@ export class PaymentsService {
             });
 
             if (!payment) return null;
+
+            // Do NOT update invoice or subscription for failed payments
+            if (createPaymentDto.status === IPaymentStatus.FAILED) {
+                return {
+                    ...payment,
+                    amount: Number(payment.amount),
+                    amountCharged: Number(payment.amountCharged),
+                    paymentReason: payment.paymentReason as unknown as PaymentReason,
+                    paymentAuthorization: payment.paymentAuthorization as Record<string, any>,
+                    status: payment.status as unknown as IPaymentStatus,
+                    paymentMethod: payment.paymentMethod,
+                    serviceType: invoice.serviceType,
+                };
+            }
 
             // determine new invoice status
             const paymentAmount = new Decimal(createPaymentDto.amount);

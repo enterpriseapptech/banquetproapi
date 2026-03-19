@@ -21,15 +21,33 @@ export class ClientConfigService {
         return {
             transport: Transport.RMQ,
             options: {
-                urls: [process.env.NOTIFICATIONURL],  // RabbitMQ URL for the Notification Microservice
-                queue: `${process.env.NOTIFICATIONQUEUE}_${process.env.NODE_ENV}`, // The queue name
-                queueOptions: {
-                    durable: false,
-                }
+                urls: [process.env.NOTIFICATIONURL],
+                queue: `${process.env.NOTIFICATIONQUEUE}_${process.env.NODE_ENV}`,
+                queueOptions: { durable: false },
             }
         }
     }
 
+    get EventCenterClientOptions(): ClientOptions {
+        return {
+            transport: Transport.RMQ,
+            options: {
+                urls: [process.env.EVENTSURL],
+                queue: `${process.env.EVENTSQUEUE}_${process.env.NODE_ENV}`,
+                queueOptions: { durable: false },
+            }
+        }
+    }
 
+    get CateringClientOptions(): ClientOptions {
+        return {
+            transport: Transport.RMQ,
+            options: {
+                urls: [process.env.CATERINGURL],
+                queue: `${process.env.CATERINGQUEUE}_${process.env.NODE_ENV}`,
+                queueOptions: { durable: false },
+            }
+        }
+    }
 
 }
