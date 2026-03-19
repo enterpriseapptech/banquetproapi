@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from 'apps/payments/database/database.service';
 import { $Enums, Prisma } from 'apps/payments/prisma/@prisma/payments';
 import { SubscriptionDto, UpdateSubscriptionDto, CreateSubscriptionDto, PaymentType, Status, CreateInvoiceDtoForSubscriptions } from '@shared/contracts/payments';
@@ -7,6 +7,8 @@ import { InvoiceService } from './invoice.service';
 
 @Injectable()
 export class SubscriptionService {
+    private readonly logger = new Logger(SubscriptionService.name);
+
     constructor(
         private readonly databaseService: DatabaseService,
         private readonly invoiceService: InvoiceService,
@@ -78,7 +80,7 @@ export class SubscriptionService {
                 invoice,
             };
         } catch (error) {
-            console.log({error})
+            this.logger.error(`Failed to create subscription | serviceProviderId=${createSubscriptionDto?.serviceProviderId} planId=${createSubscriptionDto?.subscriptionplanId} | ${error?.message}`);
             PrismaErrorHandler.handle(error, Prisma);
             throw new InternalServerErrorException('sever error could not create subscription', {
                 cause: new Error(),
@@ -98,7 +100,7 @@ export class SubscriptionService {
             ]);
             return { count, docs: subscriptions.map(s => this.mapToSubscriptionDto(s)) };
         } catch (error) {
-            console.log({ error });
+            this.logger.error(`Failed to fetch subscriptions | ${error?.message}`);
             PrismaErrorHandler.handle(error, Prisma);
             throw new InternalServerErrorException('Server error could not fetch subscriptions', {
                 cause: new Error(),
@@ -121,7 +123,7 @@ export class SubscriptionService {
             if (!subscription) throw new NotFoundException({ statusCode: 404, message: 'Subscription not found', error: 'Not found' });
             return this.mapToSubscriptionDto(subscription);
         } catch (error) {
-            console.log({ error });
+            this.logger.error(`Failed to fetch subscription | id=${id} | ${error?.message}`);
             PrismaErrorHandler.handle(error, Prisma);
             throw new InternalServerErrorException('Server error could not fetch subscription', {
                 cause: new Error(),
@@ -142,7 +144,7 @@ export class SubscriptionService {
             });
             return this.mapToSubscriptionDto(subscription);
         } catch (error) {
-            console.log({ error });
+            this.logger.error(`Failed to update subscription | id=${id} | ${error?.message}`);
             PrismaErrorHandler.handle(error, Prisma);
             throw new InternalServerErrorException('Server error could not update subscription', {
                 cause: new Error(),
@@ -159,7 +161,7 @@ export class SubscriptionService {
             });
             return this.mapToSubscriptionDto(subscription);
         } catch (error) {
-            console.log({ error });
+            this.logger.error(`Failed to delete subscription | id=${id} | ${error?.message}`);
             PrismaErrorHandler.handle(error, Prisma);
             throw new InternalServerErrorException('Server error could not delete subscription', {
                 cause: new Error(),

@@ -104,6 +104,9 @@ export class PaymentDto {
   @ApiPropertyOptional({ example: "plan_123" })
   subscriptionPlanId?: string;
 
+  @ApiPropertyOptional({ example: 30 })
+  timeframe?: number;
+
   @ApiProperty({ example: "user_123" })
   userId: string;
 

@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { CreateCateringDto, UpdateCateringDto, CateringDto, CATERINGPATTERN, ManyCateringDto, ManyRequestCateringDto } from '@shared/contracts/catering';
 import { CATERING_CLIENT } from '@shared/contracts';
+import { UpdateServiceSubscriptionDto } from '@shared/contracts/shared';
 
 @Injectable()
 export class CateringService {
@@ -46,8 +47,16 @@ export class CateringService {
         return this.cateringClient.send<CateringDto, { id: string, updaterId: string }>(CATERINGPATTERN.DELETE, { id, updaterId })
     }
 
-    updateSubscription(serviceId: string, status: string) {
-        return this.cateringClient.emit(CATERINGPATTERN.UPDATESUBSCRIPTION, { serviceId, status });
+
+    updateSubscription(updateServiceSubscriptionDto: UpdateServiceSubscriptionDto) {
+        const { serviceId, subscriptionStatus, subscriptionPlanId, timeframe } = updateServiceSubscriptionDto;
+        return this.cateringClient.emit<void, UpdateServiceSubscriptionDto>(CATERINGPATTERN.UPDATESUBSCRIPTION,
+            {   serviceId, 
+                subscriptionStatus,
+                subscriptionPlanId,
+                timeframe,
+            }
+        );
     }
 
 }

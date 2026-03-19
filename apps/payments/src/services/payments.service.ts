@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from 'apps/payments/database/database.service';
 import { $Enums, Prisma } from 'apps/payments/prisma/@prisma/payments';
 import { PaymentDto, PaymentReason, IPaymentStatus, UpdatePaymentDto, CreatePaymentDto, GeneratePaymentDto, PaymentGateWay, ServiceType, InvoiceStatus, Status } from '@shared/contracts/payments';
@@ -11,6 +11,8 @@ import { SubscriptionPlansService } from './subscription_plans.service';
 
 @Injectable()
 export class PaymentsService {
+    private readonly logger = new Logger(PaymentsService.name);
+
     constructor(
         private readonly databaseService: DatabaseService,
         private readonly stripePaymentService: StripePaymentService,
@@ -33,7 +35,7 @@ export class PaymentsService {
             let paymentUrl: string;
             switch (generatePaymentDto.paymentGateWay) {
                 case PaymentGateWay.stripe:
-                    console.log({ invoice })
+                    this.logger.log(`Initiating Stripe payment | invoiceId=${invoice.id} ref=${invoice.reference} amount=${invoice.amountDue} ${invoice.currency}`);
                     paymentUrl = await this.stripePaymentService.generatePaymentUrl(
                         invoice.id,
                         invoice.reference,
@@ -41,7 +43,7 @@ export class PaymentsService {
                         Number(invoice.amountDue),
                         generatePaymentDto.paymentReason
                     );
-                    console.log({ invoice })
+                    this.logger.log(`Stripe payment URL generated | invoiceId=${invoice.id}`);
                     break;
 
                 case PaymentGateWay.paystack:
@@ -60,7 +62,7 @@ export class PaymentsService {
 
             return paymentUrl;
         } catch (err: any) {
-            console.error({ err });
+            this.logger.error(`Payment initiation failed | invoiceId=${generatePaymentDto?.invoiceId} gateway=${generatePaymentDto?.paymentGateWay} | ${err?.message}`);
             if (err.type && err.type === 'StripeInvalidRequestError') {
                 throw new InternalServerErrorException({
                     statusCode: err.raw.statusCode || 500,
@@ -96,7 +98,7 @@ export class PaymentsService {
                 });
 
                 if (existingPayment) {
-                    console.log('Existing payment found, skipping creation.');
+                    this.logger.warn(`Duplicate payment skipped | invoiceId=${createPaymentDto.invoiceId} ref=${createPaymentDto.reference} txId=${createPaymentDto.transactionId}`);
                     return null;
                 }
 
@@ -121,8 +123,11 @@ export class PaymentsService {
 
             if (!payment) return null;
 
+            this.logger.log(`Payment recorded | paymentId=${payment.id} invoiceId=${createPaymentDto.invoiceId} status=${createPaymentDto.status} amount=${createPaymentDto.amount} ${createPaymentDto.currency} method=${createPaymentDto.paymentMethod}`);
+
             // Do NOT update invoice or subscription for failed payments
             if (createPaymentDto.status === IPaymentStatus.FAILED) {
+                this.logger.warn(`Payment failed | paymentId=${payment.id} invoiceId=${createPaymentDto.invoiceId} ref=${createPaymentDto.reference}`);
                 return {
                     ...payment,
                     amount: Number(payment.amount),
@@ -139,7 +144,7 @@ export class PaymentsService {
             const paymentAmount = new Decimal(createPaymentDto.amount);
             const amountDue = new Decimal(invoice.amountDue);
             let invoiceStatus: InvoiceStatus;
-            
+            let planTimeFrame: number | undefined;
             if (paymentAmount.gt(amountDue)) {
                 invoiceStatus = InvoiceStatus.OVER_PAID;
             } else if (paymentAmount.equals(amountDue)) {
@@ -153,15 +158,19 @@ export class PaymentsService {
             // update invoice status via service
             await this.invoiceService.update(invoice.id, { status: invoiceStatus });
 
+            this.logger.log(`Invoice status updated | invoiceId=${invoice.id} newStatus=${invoiceStatus}`);
+
             // activate subscription via service if fully paid
             if (
                 createPaymentDto.paymentReason === PaymentReason.SUBSCRIPTION && invoice.subscriptionId &&
                 invoiceStatus === InvoiceStatus.PAID
             ) {
+                this.logger.log(`Activating subscription | subscriptionId=${invoice.subscriptionId} invoiceId=${invoice.id}`);
                 const subscription = await this.subscriptionService.findOne(invoice.subscriptionId);
                 const plan = await this.subscriptionPlansService.findOne(subscription.subscriptionplanId);
                 const paidAt = new Date(createPaymentDto.paidAt);
-                const expiryDate = new Date(paidAt.getTime() + plan.timeFrame * 24 * 60 * 60 * 1000);
+                planTimeFrame = plan.timeFrame;
+                const expiryDate = new Date(paidAt.getTime() + planTimeFrame * 24 * 60 * 60 * 1000);
                 await this.subscriptionService.update(invoice.subscriptionId, { status: Status.ACTIVE, expiryDate });
             }
 
@@ -186,10 +195,11 @@ export class PaymentsService {
                 subscriptionId: invoice.subscriptionId,
                 serviceId: invoice.serviceId,
                 subscriptionPlanId: invoice.subscriptionPlanId,
+                timeframe: planTimeFrame,
             };
 
         } catch (error) {
-            console.log(error);
+            this.logger.error(`Payment creation failed | invoiceId=${createPaymentDto?.invoiceId} ref=${createPaymentDto?.reference} | ${error?.message}`);
             throw new InternalServerErrorException('server error could not create payment', {
                 cause: new Error(),
                 description: 'payment creation failed, please try again',

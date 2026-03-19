@@ -1,19 +1,18 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UseInterceptors } from '@nestjs/common';
 import { $Enums, Prisma } from '../prisma/@prisma/eventcenters';
 import { CreateEventCenterDto, EventCenterDto, ManyEventCentersDto, ServiceStatus, UpdateEventCenterDto } from '@shared/contracts/eventcenters';
 import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
-import { UserDto, USERPATTERN } from '@shared/contracts/users';
 import { DatabaseService } from '../database/database.service';
-import { NOTIFICATION_CLIENT, USER_CLIENT } from '@shared/contracts';
+import { NOTIFICATION_CLIENT } from '@shared/contracts';
 import { ClientProxy } from '@nestjs/microservices';
-import {firstValueFrom } from 'rxjs';
-
+import { UpdateServiceSubscriptionDto } from '@shared/contracts/shared';
+import { CACHE_MANAGER, CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager'; 
 @Injectable()
 export class EventcentersService {
     constructor(
         @Inject(NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
-        @Inject(USER_CLIENT) private readonly userClient: ClientProxy,
         private readonly databaseService: DatabaseService
     ) { }
 
@@ -215,12 +214,33 @@ export class EventcentersService {
        
         return eventCenter;
     }
-    
-    async updateSubscriptionStatus(serviceId: string, subscriptionStatus: string): Promise<void> {
+
+    async updateSubscriptionStatus(updateServiceSubscriptionDto:UpdateServiceSubscriptionDto): Promise<void> {
+        const { serviceId, subscriptionStatus, subscriptionPlanId, timeframe } = updateServiceSubscriptionDto;
+        let subscriptionExpiry: Date | undefined
+        if(subscriptionPlanId){
+            const eventCenter = await this.databaseService.eventCenter.findUnique({
+                where: { id: serviceId },
+            });
+
+            const currentSubscriptionExpiry = eventCenter.subscriptionExpiry.getTime() // miliseconds
+            // time frame is in days convert to timestamp in milliseconds
+            const timeStampForTimeFrame = timeframe * 24 * 60 *60 * 1000
+            subscriptionExpiry = new Date(currentSubscriptionExpiry + timeStampForTimeFrame);
+        }
+        
+
+        const data: Prisma.EventCenterUpdateInput = {
+            subscriptionStatus: subscriptionStatus as $Enums.SubscriptionStatus,
+            subscriptionPlanId: subscriptionPlanId,
+            subscriptionExpiry
+        }
+
         await this.databaseService.eventCenter.update({
             where: { id: serviceId },
-            data: { subscriptionStatus: subscriptionStatus as $Enums.SubscriptionStatus },
+            data
         });
+       
     }
 
     /**

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from 'apps/payments/database/database.service';
 import { $Enums, Prisma } from 'apps/payments/prisma/@prisma/payments';
 import { InvoiceDto, InvoiceStatus, UpdateInvoiceDto, CreateInvoiceDto, InvoiceItem, BillingAddress, CreateInvoiceDtoForSubscriptions, CreateSecondInvoiceDto, ServiceType } from '@shared/contracts/payments';
@@ -6,6 +6,8 @@ import { instanceToPlain } from 'class-transformer';
 
 @Injectable()
 export class InvoiceService {
+    private readonly logger = new Logger(InvoiceService.name);
+
     constructor(
         private readonly databaseService: DatabaseService
     ) { }
@@ -156,7 +158,7 @@ export class InvoiceService {
 
         try {
             const invoice = await this.databaseService.invoice.create({ data: newInvoiceInput });
-            console.log({ invoice })
+            this.logger.log(`Invoice created | invoiceId=${invoice.id} ref=${invoice.reference} bookingId=${invoice.bookingId} amount=${invoice.amountDue}`);
             return {
                 ...invoice,
                 items: instanceToPlain(invoice.items) as InvoiceItem[],

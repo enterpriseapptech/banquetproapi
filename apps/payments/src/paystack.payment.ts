@@ -1,9 +1,11 @@
 import axios from "axios";
 import { PaymentServiceInterface } from "./payment.interface";
-import { InternalServerErrorException } from "@nestjs/common";
+import { InternalServerErrorException, Logger } from "@nestjs/common";
 import { PaymentReason } from "@shared/contracts/payments";
 
 export class PaystackPaymentService implements PaymentServiceInterface{
+    private readonly logger = new Logger(PaystackPaymentService.name);
+
     async generatePaymentUrl(
         invoiceId: string,
         reference: string,
@@ -32,10 +34,10 @@ export class PaystackPaymentService implements PaymentServiceInterface{
                 }
             }
             const initilizePaystackPayment =  await axios.post('https://api.paystack.co/transaction/initialize', body, {headers})
-            console.log({initilizePaystackPayment: initilizePaystackPayment.data.data.authorization_url})
+            this.logger.log(`Paystack payment URL generated | invoiceId=${invoiceId} ref=${reference} amount=${amount} ${currency}`);
             return initilizePaystackPayment.data.data.authorization_url ;
         } catch (err) {
-            console.log({err})
+            this.logger.error(`Paystack payment initiation failed | invoiceId=${invoiceId} ref=${reference} | ${err?.message}`);
             throw new InternalServerErrorException({
                 statusCode: err.response.status || 500,
                 message: `${err.response.statusText}: ${err.message }`|| "Internal Server Error from Paystack",

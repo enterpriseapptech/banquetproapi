@@ -3,6 +3,7 @@ import { EventcentersService } from './eventcenters.service';
 import { CreateEventCenterDto, EVENTCENTERPATTERN, UpdateEventCenterDto } from '@shared/contracts/eventcenters';
 import { EventPattern, MessagePattern, Payload, RpcException, RmqContext, Ctx } from '@nestjs/microservices';
 import { catchError, from, throwError } from 'rxjs';
+import { UpdateServiceSubscriptionDto } from '@shared/contracts/shared';
 
 @Controller()
 export class EventcentersController {
@@ -29,6 +30,7 @@ export class EventcentersController {
             );
     }
 
+    
     @MessagePattern(EVENTCENTERPATTERN.FINDALLEVENTCENTER)
     findAll(@Payload() data: { limit?: number, offset?: number, serviceProvider?: string, city?: string, location?: string, search?: string }) {
         const { limit, offset, serviceProvider, city, location, search} = data
@@ -115,8 +117,8 @@ export class EventcentersController {
     }
 
     @EventPattern(EVENTCENTERPATTERN.UPDATESUBSCRIPTION)
-    updateSubscription(@Payload() data: { serviceId: string; subscriptionStatus: string }) {
-        return from(this.eventcentersService.updateSubscriptionStatus(data.serviceId, data.subscriptionStatus));
+    updateSubscription(@Payload() data: UpdateServiceSubscriptionDto) {
+        return from(this.eventcentersService.updateSubscriptionStatus(data));
     }
 
 

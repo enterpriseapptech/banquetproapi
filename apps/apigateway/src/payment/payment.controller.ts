@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, UseInterceptors, UploadedFile, HttpCode, HttpStatus, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, UseInterceptors, UploadedFile, HttpCode, HttpStatus, Inject, Logger } from '@nestjs/common';
 import { DisputeService, FeaturedPlanService, FeesService, InvoiceService, PaymentMethodService, PaymentService, RefundService, SubscriptionService, SubscriptionPlanService } from './payment.service';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
@@ -40,6 +40,7 @@ import { UsersService } from '../users/users.service';
 import { NOTIFICATION_CLIENT } from '@shared/contracts';
 import { NOTIFICATIONPATTERN, NotificationType } from '@shared/contracts/notifications';
 import { ClientProxy } from '@nestjs/microservices';
+import { SubscriptionStatus, UpdateServiceSubscriptionDto } from '@shared/contracts/shared';
 
 
 interface AuthenticatedRequest extends Request {
@@ -112,6 +113,7 @@ export class PaymentController {
         private readonly bookingService: BookingService,
         private readonly eventcentersService: EventcentersService,
         private readonly cateringService: CateringService,
+        private readonly logger = new Logger(PaymentController.name),
         @Inject(NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
     ) { }
 
@@ -128,7 +130,10 @@ export class PaymentController {
     @HttpCode(HttpStatus.OK)
     async create(@Body() payload: any) {
         try {
-            console.log({ppaymentPayload: payload})
+            this.logger.log({
+                message: "Payment webhook called",
+                ...payload
+            });
             let paymentData: CreatePaymentDto;
             if (payload.event && payload.event === 'charge.success') {
                 // paystack payment succeeded
@@ -195,6 +200,10 @@ export class PaymentController {
             const payment = await firstValueFrom(this.paymentService.create(paymentData));
 
             if (payment?.status === IPaymentStatus.FAILED) {
+                this.logger.warn({
+                    message: "Payment webhook called with failed payment",
+                    ...payload
+                });
                 this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
                     userId: payment.userId,
                     internalId: 'system_notification',
@@ -204,18 +213,28 @@ export class PaymentController {
             }
 
             if (payment?.status === IPaymentStatus.COMPLETED) {
-                console.log({paymentStatus: payment?.status === IPaymentStatus.COMPLETED })
-
+                this.logger.log({
+                    message: "Payment created by webhook",
+                    ...payment
+                });
                 if (payment?.bookingId) {
                     await this.bookingService.updatePayment(payment.bookingId, payment.totalPaymentPaid);
                 }
 
                 if (payment?.serviceId && payment?.serviceType) {
-                    console.log({payment})
+                    
+                    const updateServiceSubscriptionDto: UpdateServiceSubscriptionDto = {
+                        serviceId: payment.serviceId,
+                        subscriptionStatus: SubscriptionStatus.ACTIVE,
+                        timeframe: payment.timeframe,
+                        subscriptionPlanId: payment.subscriptionPlanId,
+                    };
+                    console.log({updateServiceSubscriptionDto})
                     if (payment.serviceType === ServiceType.EVENTCENTER) {
-                        this.eventcentersService.updateSubscription(payment.serviceId, 'ACTIVE');
+                        this.eventcentersService.updateSubscription(updateServiceSubscriptionDto);
+
                     } else if (payment.serviceType === ServiceType.CATERING) {
-                        this.cateringService.updateSubscription(payment.serviceId, 'ACTIVE');
+                        this.cateringService.updateSubscription(updateServiceSubscriptionDto);
                     }
                 }
             }
@@ -450,6 +469,7 @@ export class SubscriptionController {
         @Query('serviceProviderId') serviceProviderId?: string,
         @Query('status') status?: string,
     ) {
+        
         const subscriptions = await firstValueFrom(this.subscriptionService.findAll(limit, offset, serviceProviderId, status));
         if (!subscriptions.docs.length) return subscriptions;
 
