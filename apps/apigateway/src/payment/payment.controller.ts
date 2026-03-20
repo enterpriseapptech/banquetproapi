@@ -108,12 +108,13 @@ export class InvoiceController {
 @ApiTags('payment')
 @Controller('payment')
 export class PaymentController {
+    private readonly logger = new Logger(PaymentController.name);
+
     constructor(
         private readonly paymentService: PaymentService,
         private readonly bookingService: BookingService,
         private readonly eventcentersService: EventcentersService,
         private readonly cateringService: CateringService,
-        private readonly logger = new Logger(PaymentController.name),
         @Inject(NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
     ) { }
 
@@ -475,7 +476,7 @@ export class SubscriptionController {
 
         const serviceIds = subscriptions.docs.map(s => s.serviceId);
         const [eventCenters, caterings] = await Promise.allSettled([
-            firstValueFrom(this.eventcentersService.findAllWithUnique(serviceIds)),
+            firstValueFrom(await this.eventcentersService.findAllWithUnique(serviceIds)),
             firstValueFrom(this.cateringService.findAllWithUnique(serviceIds)),
         ]);
 
@@ -502,7 +503,7 @@ export class SubscriptionController {
                 : serviceType === ServiceType.CATERING
                     ? firstValueFrom(this.cateringService.findOne(subscription.serviceId))
                     : Promise.allSettled([
-                        firstValueFrom(this.eventcentersService.findAllWithUnique([subscription.serviceId])),
+                        firstValueFrom(await this.eventcentersService.findAllWithUnique([subscription.serviceId])),
                         firstValueFrom(this.cateringService.findAllWithUnique([subscription.serviceId])),
                     ]).then(([ec, cat]) =>
                         (ec.status === 'fulfilled' && ec.value[0]) ||

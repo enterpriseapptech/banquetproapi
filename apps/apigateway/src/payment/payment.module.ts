@@ -12,8 +12,9 @@ import { CateringModule } from '../catering/catering.module';
 import { UsersModule } from '../users/users.module';
 
 @Module({
-    imports: [ClientConfigModule, BookingModule, EventcentersModule, CateringModule, UsersModule],
+    imports: [ClientConfigModule, BookingModule, EventcentersModule, CateringModule,  UsersModule],
     controllers: [
+        
         PaymentController,
         InvoiceController,
         PaymentMethodController,

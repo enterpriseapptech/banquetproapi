@@ -10,7 +10,7 @@ export class BookingService {
 
     constructor(
         @Inject(BOOKING_CLIENT) private readonly bookingClient: ClientProxy
-    ) { }
+    ) {}
 
     create(createBookingDto: CreateBookingDto) {
        

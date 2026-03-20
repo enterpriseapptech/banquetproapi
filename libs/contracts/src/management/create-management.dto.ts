@@ -1,4 +1,4 @@
-import {IsBoolean, IsNumber, IsOptional, IsString} from 'class-validator';
+import {IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 
@@ -30,6 +30,17 @@ export class CreateAppSettingDto {
     @ApiProperty({ type: 'boolean', required: true })
     @IsBoolean()
     visibleToCertifiedOnly: boolean;
+
+
+    @ApiProperty({
+    description: 'UUID of the user making this request',
+    example: '1fdb9609-6e8a-45f0-9733-99c4d2ea0bd4',
+    format: 'uuid',
+    type: String,
+    })
+    @IsNotEmpty()
+    @IsString()
+    updatedBy: string;
 }
 
 

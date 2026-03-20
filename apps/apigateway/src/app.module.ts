@@ -13,6 +13,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { ManagementModule } from './management/management.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
+import { CacheStore } from './common/cache/cache.store';
 
 @Module({
   imports: [
@@ -31,7 +32,7 @@ import { CorrelationIdMiddleware } from './common/middleware/correlation-id.midd
     NotificationsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, CacheStore],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

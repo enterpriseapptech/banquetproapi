@@ -245,6 +245,12 @@ export class CreateBookingDto {
 
 export class CreateRequestQuoteDto {
     @ApiProperty({ type: 'string', required: true })
+    @IsOptional()
+    @IsNumber()
+    serviceCharge: number; // platform fee, cached and added from gateway
+
+
+    @ApiProperty({ type: 'string', required: true })
     @IsUUID()
     @IsNotEmpty()
     customerId: string;

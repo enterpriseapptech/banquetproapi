@@ -4,7 +4,7 @@ import { Prisma } from "../prisma/@prisma/management";
 import { DatabaseService } from '../database/database.service';
 import { CreateCountryDto, CreateStateDto,  CreateAppSettingDto } from '@shared/contracts/management/create-management.dto';
 import { AppSettingDto, CountryDto,  StateDto } from '@shared/contracts/management/management.dto';
-import { UpdateAppSettingDto, UpdateCountryDto, UpdateStateDto } from '@shared/contracts/management/update-management.dto';
+import { UpdateCountryDto, UpdateStateDto } from '@shared/contracts/management/update-management.dto';
 import { PrismaErrorHandler } from '@shared/contracts/prisma.error.handler';
 
 @Injectable()
@@ -13,52 +13,54 @@ export class AppSettingService {
         private readonly databaseService: DatabaseService
     ) { }
 
-    async create(createAppSettingDto: CreateAppSettingDto): Promise<AppSettingDto> {
-        const newAppSettingInput: Prisma.AppSettingsCreateInput = {
+    async createOrUpdate(createAppSettingDto: CreateAppSettingDto): Promise<AppSettingDto> {
+        const newAppSettingInput = {
             serviceCharge: createAppSettingDto.serviceCharge,
             notifyCertifiedOnly: createAppSettingDto.notifyCertifiedOnly,
             notifyOnRequest: createAppSettingDto.notifyOnRequest,
-            visibleToCertifiedOnly: createAppSettingDto.visibleToCertifiedOnly
+            visibleToCertifiedOnly: createAppSettingDto.visibleToCertifiedOnly,
+            updatedBy: createAppSettingDto.updatedBy,
+            updatedAt: new Date(),
         }
 
         try {
-            const appSettings = await this.databaseService.appSettings.create({ data: newAppSettingInput });
+            const appSettings = await this.databaseService.appSettings.upsert({
+                where: { id: "singleton"}, // static key from schema to ensure only one app settings is ever created
+                 update: newAppSettingInput,
+                create: {
+                    id: "singleton",
+                    createdBy: createAppSettingDto.updatedBy,
+                    ...newAppSettingInput
+                }
+                    });
               
             return {...appSettings, serviceCharge: appSettings.serviceCharge.toNumber() }
 
         } catch (error) {
-            throw new InternalServerErrorException('sever error could not create service category', {
+            PrismaErrorHandler.handle(error, Prisma)
+            throw new InternalServerErrorException('An error occurred, Create ot update app settings failed', {
                 cause: new Error(),
-                description: 'Service category creation failed, please try again'
+                description: 'An error occurred, Create ot update app settings failed'
             });
         }
     }
 
     async find(): Promise<AppSettingDto> {
-        const appSetting = await this.databaseService.appSettings.findFirst();
-        return {...appSetting, serviceCharge: appSetting.serviceCharge.toNumber() }
-
-    }
-
-    async update(id: string, updateAppSettingDto: UpdateAppSettingDto): Promise<AppSettingDto> {
         try {
-            const updateAppSettingInput: Prisma.AppSettingsUpdateInput = {
-                ...updateAppSettingDto,
-            };
-
-            const appSetting = await this.databaseService.appSettings.update({
-                where: { id },
-                data: updateAppSettingInput
-            });
-
-
-            return {...appSetting, serviceCharge: appSetting.serviceCharge.toNumber() };
-
+            const appSetting = await this.databaseService.appSettings.findFirst();
+            return {...appSetting, serviceCharge: appSetting.serviceCharge.toNumber() }
         } catch (error) {
-            throw new ConflictException(error);
+            PrismaErrorHandler.handle(error, Prisma)
+            throw new InternalServerErrorException('An error occurred Could not find app settings', {
+                cause: new Error(),
+                description: 'An error occurred Could not find app settings'
+            });
         }
+
+
     }
 
+    // No delete method as it cant be deleted
 }
 
 

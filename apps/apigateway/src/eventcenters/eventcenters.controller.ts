@@ -94,7 +94,7 @@ export class EventcentersController {
         @Query('limit') limit: number,
         @Query('offset') offset: number,
         @Query('serviceProvider') serviceProvider: string,
-        @Query('city') city: string,  
+        @Query('city') city: string,
         @Query('location') location: string,
         @Query('search') search: string,
     ) {

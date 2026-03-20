@@ -6,7 +6,7 @@ import { from, throwError } from 'rxjs';
 import { CountryService, StateService, AppSettingService } from './management.service';
 import { CreateAppSettingDto, CreateCountryDto,  CreateStateDto } from '@shared/contracts/management/create-management.dto';
 import { APPSETTINGPATTERN, COUNTRYPATTERN, STATEPATTERN } from '@shared/contracts/management/management.pattern';
-import { UpdateAppSettingDto, UpdateCountryDto, UpdateStateDto } from '@shared/contracts/management/update-management.dto';
+import { UpdateCountryDto, UpdateStateDto } from '@shared/contracts/management/update-management.dto';
 
 
 
@@ -14,9 +14,9 @@ import { UpdateAppSettingDto, UpdateCountryDto, UpdateStateDto } from '@shared/c
 export class AppSettingController {
 	constructor(private readonly appSettingService: AppSettingService) { }
 
-	@MessagePattern(APPSETTINGPATTERN.CREATE)
+	@MessagePattern(APPSETTINGPATTERN.CREATEORUPDATE)
 	create(@Payload() createAppSettingDto: CreateAppSettingDto) {
-		return from(this.appSettingService.create(createAppSettingDto)).pipe(
+		return from(this.appSettingService.createOrUpdate(createAppSettingDto)).pipe(
 			catchError((err) => {
 				console.error("Error in appSettingService:", err);
 				return throwError(() => new RpcException({
@@ -33,23 +33,7 @@ export class AppSettingController {
 	find() {
 		return from(this.appSettingService.find()).pipe(
 			catchError((err) => {
-				console.error("Error in UsersService:", err);
-				return throwError(() => new RpcException({
-					statusCode: err.response.statusCode || 500,
-					message: err.message || "Internal Server Error",
-					error: err.response.error || "Sever error",
-				}));
-
-			})
-		);
-	}
-
-
-	@MessagePattern(APPSETTINGPATTERN.UPDATE)
-	update(@Payload() id: string, @Payload() updateAppSettingDto: UpdateAppSettingDto) {
-		return from(this.appSettingService.update(id, updateAppSettingDto)).pipe(
-			catchError((err) => {
-				console.error("Error in updateAppSettingDto:", err);
+				console.error("Error in appSettingService:", err);
 				return throwError(() => new RpcException({
 					statusCode: err.response.statusCode || 500,
 					message: err.message || "Internal Server Error",

@@ -1,12 +1,36 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Inject, Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
+import { Inject, Injectable, UseInterceptors } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import {  MANAGMENT_CLIENT } from '@shared/contracts';
-import { CreateCountryDto, CreateStateDto } from '@shared/contracts/management/create-management.dto';
-import { CountryDto, StateDto } from '@shared/contracts/management/management.dto';
-import { COUNTRYPATTERN,STATEPATTERN } from '@shared/contracts/management/management.pattern';
+import {  CACHE_KEYS, MANAGMENT_CLIENT } from '@shared/contracts';
+import { CreateAppSettingDto, CreateCountryDto, CreateStateDto } from '@shared/contracts/management/create-management.dto';
+import { AppSettingDto, CountryDto, StateDto } from '@shared/contracts/management/management.dto';
+import { APPSETTINGPATTERN, COUNTRYPATTERN,STATEPATTERN } from '@shared/contracts/management/management.pattern';
 import { UpdateCountryDto, UpdateStateDto } from '@shared/contracts/management/update-management.dto';
+import { Cache } from 'cache-manager';
 
+@Injectable()
+export class AppSettingService {
+	constructor(
+		@Inject(MANAGMENT_CLIENT) private readonly appSettingClient: ClientProxy,
+		@Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+	) { }
+
+	
+	async create(createCountryDto: CreateAppSettingDto) {
+		await this.cacheManager.del(CACHE_KEYS.INVOICES_ALL)
+		return this.appSettingClient.send(APPSETTINGPATTERN.CREATEORUPDATE, createCountryDto)
+	}
+
+
+	@UseInterceptors(CacheInterceptor)
+	@CacheTTL(300) // 5 minutes
+	find() {
+		return this.appSettingClient.send<AppSettingDto[], null>(APPSETTINGPATTERN.FIND, null)
+	
+	}
+
+}
 
 
 @Injectable()

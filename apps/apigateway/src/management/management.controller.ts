@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query, UnauthorizedException } from '@nestjs/common';
-import { CountryService,  StateService } from './management.service';
+import { AppSettingService, CountryService,  StateService } from './management.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CreateCountryDto, CreateStateDto } from '@shared/contracts/management/create-management.dto';
+import { CreateAppSettingDto, CreateCountryDto, CreateStateDto } from '@shared/contracts/management/create-management.dto';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
 import { AdminRoleGuard } from '../jwt/admin.guard';
@@ -13,6 +13,41 @@ import { UserDto } from '@shared/contracts/users';
 interface AuthenticatedRequest extends Request {
     user?: any; // Change `any` to your actual user type if known
 }
+
+@ApiTags('app-settings')
+@Controller('admin/app-settings')
+export class AppSettingController {
+    constructor(private readonly appSetting: AppSettingService) { }
+
+    @ApiOperation({ summary: 'Create or update app-settings' })
+    @ApiResponse({ status: 200, description: 'Success' })
+    @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
+    @Post()
+    async createOrUpdate(@Body() createAppSettingDto: CreateAppSettingDto, @Req() req: AuthenticatedRequest) {
+        const authuser = req.user;
+        if (!authuser) {
+            throw new UnauthorizedException('Access token has expired');
+        }
+        const user: UserDto = await firstValueFrom(authuser)
+        if(user.userType !== 'ADMIN') {
+            throw new UnauthorizedException('Only Admins can create Country');
+        }
+        createAppSettingDto.updatedBy = user.id
+        return this.appSetting.create(createAppSettingDto);
+    }
+
+    @ApiOperation({ summary: 'Get app setting' })
+    @ApiResponse({ status: 200, description: 'Success' })
+    @Get()
+    find() {
+
+        return this.appSetting.find()
+       
+    }
+
+
+}
+
 
 @ApiTags('country')
 @Controller('admin/country')

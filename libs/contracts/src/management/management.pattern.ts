@@ -1,8 +1,7 @@
 
 export const APPSETTINGPATTERN = {
     FIND: 'appsetting.find',
-    CREATE: 'appsetting.create',
-    UPDATE: 'appsetting.update',
+    CREATEORUPDATE: 'appsetting.create.or.update',
 
 }
 

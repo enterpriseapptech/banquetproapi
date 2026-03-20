@@ -98,6 +98,7 @@ export class InvoiceService {
         return this.invoiceClient.send<InvoiceDto, CreateSecondInvoiceDto>(INVOICEPATTERN.CREATESECONDINVOICE, createInvoiceDto)
     }
 
+    
     findAll(limit: number, offset: number, subscriptionId?: string, bookingId?: string, userId?: string, status?: string, currency?: string, deleted?: boolean) {
         return this.invoiceClient.send<{ count: number; docs: InvoiceDto[] }, {limit: number, offset: number, subscriptionId?: string, bookingId?: string, userId?: string, status?: string, currency?: string, deleted?: boolean}>(INVOICEPATTERN.FINDALL, {limit, offset, subscriptionId, bookingId, userId, status, currency, deleted})
     }

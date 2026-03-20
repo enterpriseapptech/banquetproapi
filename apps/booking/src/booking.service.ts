@@ -31,7 +31,6 @@ export class BookingService {
 
 	async create(createBookingDto: CreateBookingDto): Promise<InvoiceDto> {
 		try {
-			console.log({createBookingDto})
 			let notificationSubject: string;
 			const bookingId = uuidv4();
 			const newBookingInput: Prisma.BookingCreateInput = {
