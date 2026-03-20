@@ -8,6 +8,7 @@ import { AppSettingDto, CountryDto, StateDto } from '@shared/contracts/managemen
 import { APPSETTINGPATTERN, COUNTRYPATTERN,STATEPATTERN } from '@shared/contracts/management/management.pattern';
 import { UpdateCountryDto, UpdateStateDto } from '@shared/contracts/management/update-management.dto';
 import { Cache } from 'cache-manager';
+import { Cacheable, CacheEvict } from '../common/cache/cache.decorators';
 
 @Injectable()
 export class AppSettingService {
@@ -16,17 +17,18 @@ export class AppSettingService {
 		@Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
 	) { }
 
-	
+	@CacheEvict(
+		`${CACHE_KEYS.APP_SETTING}:*`
+	)
 	async create(createCountryDto: CreateAppSettingDto) {
 		await this.cacheManager.del(CACHE_KEYS.INVOICES_ALL)
 		return this.appSettingClient.send(APPSETTINGPATTERN.CREATEORUPDATE, createCountryDto)
 	}
 
 
-	@UseInterceptors(CacheInterceptor)
-	@CacheTTL(300) // 5 minutes
+	@Cacheable((...args) => `${CACHE_KEYS.APP_SETTING}:${args.join(':')}`)
 	find() {
-		return this.appSettingClient.send<AppSettingDto[], null>(APPSETTINGPATTERN.FIND, null)
+		return this.appSettingClient.send<AppSettingDto >(APPSETTINGPATTERN.FIND, {})
 	
 	}
 

@@ -33,6 +33,6 @@ import { AppSettingController } from './management.controller';
         },
           
     ],
-    exports: [StateService]
+    exports: [StateService, AppSettingService]
 })
 export class ManagementModule { }

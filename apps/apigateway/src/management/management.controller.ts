@@ -30,12 +30,14 @@ export class AppSettingController {
         }
         const user: UserDto = await firstValueFrom(authuser)
         if(user.userType !== 'ADMIN') {
-            throw new UnauthorizedException('Only Admins can create Country');
+            throw new UnauthorizedException('Only Admins can update app settings');
         }
         createAppSettingDto.updatedBy = user.id
         return this.appSetting.create(createAppSettingDto);
     }
 
+
+    
     @ApiOperation({ summary: 'Get app setting' })
     @ApiResponse({ status: 200, description: 'Success' })
     @Get()

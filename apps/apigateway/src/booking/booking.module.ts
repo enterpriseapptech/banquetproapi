@@ -8,9 +8,10 @@ import { ClientConfigModule } from '../client-config/client-config.module';
 import { UsersModule } from '../users/users.module';
 import { CateringModule } from '../catering/catering.module';
 import { EventcentersModule } from '../eventcenters/eventcenters.module';
+import { ManagementModule } from '../management/management.module';
 
 @Module({
-    imports:[ClientConfigModule, UsersModule, CateringModule, EventcentersModule],
+    imports:[ClientConfigModule, UsersModule, CateringModule, EventcentersModule, ManagementModule],
     controllers: [BookingController, TimeSlotController, RequestQuoteController],
     providers: [
         BookingService,

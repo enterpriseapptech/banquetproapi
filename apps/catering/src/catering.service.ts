@@ -159,7 +159,7 @@ export class CateringService {
             }
         });
         if (!catering) {
-            throw new NotFoundException(" Catering Service not found or has been deleted")
+            throw new NotFoundException("Catering Service not found or has been deleted")
         }
         const cateringDto: CateringDto = {
             ...catering,

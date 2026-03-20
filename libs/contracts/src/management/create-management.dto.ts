@@ -1,4 +1,4 @@
-import {IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString} from 'class-validator';
+import {IsBoolean, IsNumber, IsOptional, IsString} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 
@@ -38,9 +38,9 @@ export class CreateAppSettingDto {
     format: 'uuid',
     type: String,
     })
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
-    updatedBy: string;
+    updatedBy?: string;  // added in the gateway
 }
 
 

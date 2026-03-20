@@ -12,6 +12,7 @@ import { EventCenterDto } from '@shared/contracts/eventcenters';
 import { CateringDto } from '@shared/contracts/catering';
 import { CateringService } from '../catering/catering.service';
 import { EventcentersService } from '../eventcenters/eventcenters.service';
+import { AppSettingService } from '../management/management.service';
 
 
 export interface AuthenticatedRequest extends Request {
@@ -24,13 +25,17 @@ export class BookingController {
     constructor(private readonly bookingService: BookingService,
         private readonly cateringService: CateringService,
         private readonly eventcentersService: EventcentersService,
-        private readonly userService: UsersService
+        private readonly userService: UsersService,
+        private readonly appSettingService: AppSettingService,
     ) { }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post()
     async create(@Body() createBookingDto: CreateBookingDto, @Req() req: AuthenticatedRequest) {
         try {
+            const appSetting = await firstValueFrom(this.appSettingService.find());
+            console.log({appSetting})
+            const serviceCharge = appSetting.serviceCharge
             let itemsTotal = 0;
             let Service: EventCenterDto | CateringDto;
             let actualAmountDue: number;
@@ -124,7 +129,10 @@ export class BookingController {
                 default:
                     throw new NotFoundException('Invalid service been booked');
             }
-
+            itemsTotal = itemsTotal + serviceCharge
+            actualAmountDue = actualAmountDue + serviceCharge
+            console.log(actualAmountDue)
+            
             if ((itemsTotal - createBookingDto.discount) !== (createBookingDto.total)) {
                 throw new BadRequestException(`We could not generate invoice, total amount is incorrect for the items. 
                     Should be ${itemsTotal - createBookingDto.discount}, a discount of ${createBookingDto.discount} was applied`, {
@@ -172,7 +180,7 @@ export class BookingController {
                 });
             }
 
-            return this.bookingService.create({ ...createBookingDto, customer, serviceProvider });
+            return this.bookingService.create({ ...createBookingDto, serviceCharge, customer, serviceProvider });
         } catch (error) {
             console.log({ error })
             throw error

@@ -83,7 +83,7 @@ export const CACHE_KEYS = {
     STATE_ONE:   (id: string) => `states:one:${id}`,
 
     // ─── Management: App Settings ─────────────────────────────────────────────
-    APP_SETTINGS_ALL: 'app-settings:all',
-    APP_SETTING_ONE:  (id: string) => `app-settings:one:${id}`,
+    APP_SETTING: 'app-settings',
+    APP_SETTING_LOG: `app-settings-log`,
 
 } as const;
