@@ -63,7 +63,7 @@ export class CreateBookingDto {
     @ApiProperty({ type: 'string', required: true })
     @IsOptional()
     @IsNumber()
-    serviceCharge?: number; // platform fee, cached and added from gateway
+    serviceCharge: number; // platform fee, cached and added from gateway
 
 
     @ApiProperty({ type: 'string', required: true })

@@ -40,6 +40,7 @@ export class AppSettingController {
     
     @ApiOperation({ summary: 'Get app setting' })
     @ApiResponse({ status: 200, description: 'Success' })
+    @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
     @Get()
     find() {
 

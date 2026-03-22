@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { BookingService, RequestQuoteService, TimeSlotService } from './booking.service';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { BookingStatus, CreateBookingDto, CreateManyTimeSlotDto, CreateRequestQuoteDto, ManyRequestTimeSlotDto, ServiceType, UpdateBookingDto, UpdateRequestQuoteDto, UpdateTimeslotDto, } from '@shared/contracts/booking';
@@ -22,6 +22,7 @@ export interface AuthenticatedRequest extends Request {
 @ApiTags('booking')
 @Controller('booking')
 export class BookingController {
+    private readonly logger = new Logger(BookingController.name);
     constructor(private readonly bookingService: BookingService,
         private readonly cateringService: CateringService,
         private readonly eventcentersService: EventcentersService,
@@ -34,7 +35,6 @@ export class BookingController {
     async create(@Body() createBookingDto: CreateBookingDto, @Req() req: AuthenticatedRequest) {
         try {
             const appSetting = await firstValueFrom(this.appSettingService.find());
-            console.log({appSetting})
             const serviceCharge = appSetting.serviceCharge
             let itemsTotal = 0;
             let Service: EventCenterDto | CateringDto;
@@ -42,17 +42,24 @@ export class BookingController {
             const requestuser: UserDto = await firstValueFrom(req.user)
             createBookingDto.createdBy = requestuser.id
             createBookingDto.items.map((item) => { itemsTotal += item.amount })
-            if (!createBookingDto.items) {
+            if (serviceCharge !== createBookingDto.serviceCharge) {
+                throw new BadRequestException(`Error: Service charge is ${serviceCharge} not ${createBookingDto.serviceCharge}`, {
+                    cause: new Error(),
+                    description: 'Incorrect service charge amount applied'
+                });
+            } else if (!createBookingDto.items) {
                 throw new BadRequestException('We could not validate your booking', {
                     cause: new Error(),
                     description: 'We could not validate your booking, as the items been paid for are not listed'
                 });
             } else if (itemsTotal !== createBookingDto.subTotal) {
-                throw new BadRequestException(`We could not generate invoice, sub-total amount is incorrect for the items. Should be ${itemsTotal}`, {
+                throw new BadRequestException(`We could not generate invoice, sub-total amount is incorrect for the items. Should be ${itemsTotal}. 
+                   `, {
                     cause: new Error(),
                     description: 'We could not generate invoice, sub-total amount is incorrect for the items'
                 });
             }
+
             switch (createBookingDto.serviceType) {
                 case ServiceType.EVENTCENTER:
                     Service = await firstValueFrom(this.eventcentersService.findOne(createBookingDto.serviceId));
@@ -66,21 +73,33 @@ export class BookingController {
                         });
 
                     } else if (createBookingDto.noOfGuest > Service.sittingCapacity) {
-                        throw new BadRequestException(`Sitting capacity error`, {
+                        throw new BadRequestException(`Your number of guest exceed the sitting capacity of this event center`, {
                             cause: new Error(),
                             description: `Your number of guest exceed the sitting capacity of this event center`
                         });
 
+                    }else if (createBookingDto.createdBy !== Service.serviceProviderId) {
+
+                        // use existing service discounted and preexisint pricing per slot
+                        createBookingDto.discount = (
+                                (Service.depositPercentage ?? 0) / 100
+                            ) * (Service.pricingPerSlot * createBookingDto.timeslotId.length)
+                        const totalBeforeServiceCharge =  (Service.pricingPerSlot * createBookingDto.timeslotId.length) - createBookingDto.discount;   
+                        createBookingDto.total = totalBeforeServiceCharge + serviceCharge;
+                        actualAmountDue = (totalBeforeServiceCharge * (Service.depositPercentage / 100)) + serviceCharge;
+
+                    } else if (createBookingDto.createdBy === Service.serviceProviderId) {
+                        if(createBookingDto.discount === undefined){
+                            createBookingDto.discount = createBookingDto.subTotal * (Service.discountPercentage / 100)
+                        }
+                        actualAmountDue = createBookingDto.amountDue + serviceCharge
+                        
+                        createBookingDto.total = (createBookingDto.subTotal - createBookingDto.discount) + serviceCharge;
+
                     }
-                    else if (createBookingDto.createdBy !== Service.serviceProviderId) {
-                        createBookingDto.discount = ((Service.depositPercentage ?? 0) / 100) * (Service.pricingPerSlot * createBookingDto.timeslotId.length)
-                        createBookingDto.total = (Service.pricingPerSlot * createBookingDto.timeslotId.length) - createBookingDto.discount;
-                        actualAmountDue = createBookingDto.total * (Service.depositPercentage / 100)
-                    } else if (createBookingDto.createdBy === Service.serviceProviderId && createBookingDto.discount === undefined) {
-                        createBookingDto.discount = createBookingDto.subTotal * (Service.discountPercentage / 100)
-                        actualAmountDue = createBookingDto.amountDue
-                        createBookingDto.total = createBookingDto.subTotal - createBookingDto.discount;
-                    }
+                
+
+                    // ensure invoice amount due isnt greater than required mout or more than total
                     if (createBookingDto.amountDue > createBookingDto.total) {
                         throw new BadRequestException(`Amount due can not be more than total amount for service. A discount of ${createBookingDto.discount} was applied and total is ${createBookingDto.total}`, {
                             cause: new Error(),
@@ -92,7 +111,7 @@ export class BookingController {
                     break;
                 case ServiceType.CATERING:
                     Service = await firstValueFrom(this.cateringService.findOne(createBookingDto.serviceId))
-                    actualAmountDue = createBookingDto.amountDue
+                    actualAmountDue = createBookingDto.amountDue + serviceCharge // service charge paid on the very first installment
 
                     if (!Service) {
                         throw new NotFoundException('Catering service not found for booking');
@@ -104,18 +123,22 @@ export class BookingController {
                         });
 
                     } else if (createBookingDto.createdBy !== Service.serviceProviderId) {
-                        throw new BadRequestException(`Bookign error`, {
+                        throw new BadRequestException(`Bookign error, Only requests for quotes are allowed for catering service`, {
                             cause: new Error(),
                             description: `Only requests for quotes are allowed for catering service`
                         });
 
                     } else if (createBookingDto.createdBy === Service.serviceProviderId) {
+
                         if (createBookingDto.discount === undefined) {
-                            createBookingDto.discount = createBookingDto.subTotal * (Service.discountPercentage / 100)
-                        } else {
-                            createBookingDto.total = createBookingDto.subTotal - (createBookingDto.discount);
-                        }
-                        createBookingDto.total = createBookingDto.subTotal - createBookingDto.discount;
+                            // apply existing service discount if service provider has not set up another type of discount
+                            createBookingDto.discount = createBookingDto.subTotal * (Service.discountPercentage / 100) // converted to amount
+                        } 
+
+                        // discount from booking is in amount not percentage
+                        createBookingDto.total = (createBookingDto.subTotal + serviceCharge) - (createBookingDto.discount);
+                        
+                    
                         if (createBookingDto.amountDue > createBookingDto.total) {
                             throw new BadRequestException(`Amount due can not be more than total amount for service. A discount of ${createBookingDto.discount} was applied and total is ${createBookingDto.total}`, {
                                 cause: new Error(),
@@ -129,18 +152,17 @@ export class BookingController {
                 default:
                     throw new NotFoundException('Invalid service been booked');
             }
+
             itemsTotal = itemsTotal + serviceCharge
-            actualAmountDue = actualAmountDue + serviceCharge
-            console.log(actualAmountDue)
-            
-            if ((itemsTotal - createBookingDto.discount) !== (createBookingDto.total)) {
+            if ((itemsTotal - createBookingDto.discount) !== (createBookingDto.total )) {
                 throw new BadRequestException(`We could not generate invoice, total amount is incorrect for the items. 
-                    Should be ${itemsTotal - createBookingDto.discount}, a discount of ${createBookingDto.discount} was applied`, {
+                    Should be ${itemsTotal - createBookingDto.discount}, a discount of ${createBookingDto.discount} and 
+                    service charge of ${serviceCharge} was applied`, {
                     cause: new Error(),
                     description: 'We could not generate invoice, total amount is incorrect for the items'
                 });
 
-            } else if (createBookingDto.amountDue < actualAmountDue || createBookingDto.amountDue > createBookingDto.total) {
+            } else if (createBookingDto.amountDue + serviceCharge < actualAmountDue || createBookingDto.amountDue + serviceCharge > createBookingDto.total) {
                 throw new BadRequestException(`You can't pay less then ${actualAmountDue} or more than ${createBookingDto.total}. A discount of ${createBookingDto.discount} was applied and your total is ${createBookingDto.total}`, {
                     cause: new Error(),
                     description: 'We could not generate invoice, your booking amount is not okay'
@@ -179,10 +201,14 @@ export class BookingController {
                     description: 'User account is restricted or deacitvated!'
                 });
             }
-
+            createBookingDto.amountDue = actualAmountDue
+            createBookingDto.items.push({item: "service charge", amount: serviceCharge})
             return this.bookingService.create({ ...createBookingDto, serviceCharge, customer, serviceProvider });
         } catch (error) {
-            console.log({ error })
+            this.logger.log({
+                    message: `Failed to Create booking in gateway service at ${new Date().toLocaleString()}`,
+                    ...error
+                })
             throw error
         }
     }
