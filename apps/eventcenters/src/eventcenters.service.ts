@@ -121,11 +121,17 @@ export class EventcentersService {
                 { city: { contains: search, mode: "insensitive" } },
             ].filter(Boolean)
         }
+
         if (Object.keys(whereClause).length > 0) {
             const eventCenters = await this.databaseService.eventCenter.findMany({
                 where: whereClause,
                 take: limit,
                 skip: offset,
+                orderBy:  [
+                    { subscriptionStatus: 'desc' }, // subscribed first
+                    { subscriptionExpiry: 'desc' }, // newest active subs first
+                    { createdAt: 'desc' } // fallback
+                ]
             });
 
             const count = await this.databaseService.eventCenter.count({ where: whereClause });
@@ -139,6 +145,11 @@ export class EventcentersService {
         const eventCenters = await this.databaseService.eventCenter.findMany({
             take: limit,
             skip: offset,
+            orderBy: [
+                { subscriptionStatus: 'desc' }, // subscribed first
+                { subscriptionExpiry: 'desc' }, // newest active subs first
+                { createdAt: 'desc' } // fallback
+            ]
         });
 
         const count = await this.databaseService.eventCenter.count();

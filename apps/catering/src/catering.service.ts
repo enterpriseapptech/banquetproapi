@@ -128,6 +128,11 @@ export class CateringService {
                 where: whereClause,
                 take: limit,
                 skip: offset,
+                orderBy: [
+                    { subscriptionStatus: 'desc' }, // subscribed first
+                    { subscriptionExpiry: 'desc' }, // newest active subs first
+                    { createdAt: 'desc' } // fallback
+                ]
             });
 
             const count = await this.databaseService.catering.count({ where: whereClause });
@@ -138,6 +143,11 @@ export class CateringService {
         const caterings = await this.databaseService.catering.findMany({
             take: limit,
             skip: offset,
+            orderBy: [
+                { subscriptionStatus: 'desc' }, // subscribed first
+                { subscriptionExpiry: 'desc' }, // newest active subs first
+                { createdAt: 'desc' } // fallback
+            ]
         })
         const count = await this.databaseService.catering.count()
         return {
