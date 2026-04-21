@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "@prisma/payments"
@@ -14,72 +11,71 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-
-
 // to do: payments from proseeker to the application for things like kyc, featured, certification e.t.c
 
 /* PAYMENTS */
 model Payment {
-  id                      String    @id @default(uuid())
-  invoiceId               String
+  id                      String           @id @default(uuid())
+  invoiceId               String?
   paymentMethod           PaymentMethod
   userId                  String
-  amount                  Decimal @db.Decimal(10, 2)
-  amountCharged           Decimal @db.Decimal(10, 2)
-  reference               String   // reference to track this payment on the payment provider Id
+  amount                  Decimal          @db.Decimal(10, 2)
+  amountCharged           Decimal          @db.Decimal(10, 2)
+  reference               String           // reference to track this payment on the payment provider
   paymentReference        String
   paymentAuthorization    Json?
   paidAt                  String
-  currency                Currency    @default(NGN)
+  currency                Currency         @default(NGN)
   paymentReason           PaymentReason
   status                  PaymentStatus
   transactionId           String
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime      @updatedAt
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
   updatedBy               String?
   deletedAt               DateTime?
   deletedBy               String?
-  // relations
-  refund                  Refund?
-  dispute                 Dispute?
-  invoice                 Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  refund     Refund?
+  dispute    Dispute?
+  invoice    Invoice?  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@index([paymentMethod])
   @@index([userId])
   @@index([reference])
   @@index([paymentReference])
-  @@unique([invoiceId, reference, paymentReference, transactionId])
-
+  @@unique([reference, paymentReference, transactionId])
 }
 
 
 /* INVOICES */
 model Invoice {
-  id                String      @id @default(uuid())
-  reference         String      @unique
-  userId            String
-  bookingId         String?
-  subscriptionId    String?     // invoice is either for booking or subscription
-  serviceType       ServiceType?  // which microservice to notify on payment (for subscriptions)
-  serviceId         String?     // the service's ID in the respective DB
-  subscriptionPlanId String?    // which subscription plan was purchased
-  items             Json[]
-  amountDue         Decimal @db.Decimal(10, 2) // this is the actual amount to be paid 
-  currency          Currency? @default(NGN)
-  note              String?
-  billingAddress    Json
-  status            InvoiceStatus
-  dueDate           DateTime
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime      @updatedAt
-  deletedAt         DateTime?
-  deletedBy         String?
+  id                  String        @id @default(uuid())
+  reference           String        @unique
+  userId              String        // customer who owns this invoice
+  serviceProviderId   String?       // SP who receives payment (set for booking/service invoices)
+  bookingId           String?
+  subscriptionId      String?       // invoice is either for booking or subscription
+  serviceType         ServiceType?  // which microservice to notify on payment (for subscriptions)
+  serviceId           String?       // the service's ID in the respective DB
+  subscriptionPlanId  String?       // which subscription plan was purchased
+  items               Json[]
+  amountDue           Decimal       @db.Decimal(10, 2) // total amount to be paid
+  serviceChargeAmount Decimal?      @db.Decimal(10, 2) // platform service charge portion
+  currency            Currency?     @default(NGN)
+  note                String?
+  billingAddress      Json
+  status              InvoiceStatus
+  dueDate             DateTime
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  deletedAt           DateTime?
+  deletedBy           String?
 
-  payments          Payment[] // an invoice can be paid twice in the case of payment errors
-  subscription     Subscriptions? @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  payments      Payment[]
+  subscription  Subscriptions? @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([serviceProviderId])
   @@index([bookingId])
   @@index([subscriptionId])
   @@index([status])
@@ -89,107 +85,173 @@ model Invoice {
 
 /* REFUNDS */
 model Refund {
-  id             String    @id @default(uuid())
-  paymentId      String     @unique
-  amount         Float
-  reason         String
-  status         RefundStatus
-  createdAt      DateTime  @default(now())
-  updatedAt               DateTime      @updatedAt
+  id                    String    @id @default(uuid())
+  paymentId             String    @unique  // original wallet payment record
+  invoiceId             String             // invoice being refunded
+  customerId            String             // who requested the refund
+  serviceProviderId     String             // who must approve the refund
+  bookingId             String?
+  refundReason          String             // customer's stated reason
+  policySnapshot        Json?              // snapshot of RefundPolicy at time of request
+  deductionPercentage   Decimal?  @db.Decimal(5, 2)
+  deductionAmount       Decimal?  @db.Decimal(10, 2)
+  refundAmount          Decimal   @db.Decimal(10, 2)  // amount customer gets back
+  processAt             DateTime?          // set on SP approval: approvedAt + REFUND_PROCESSING_DAYS
+  walletTransactionId   String?            // set once wallet movement completes
+  status                RefundStatus
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
   updatedBy             String?
   deletedAt             DateTime?
   deletedBy             String?
 
-  // relations
-  payment        Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  payment  Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  dispute  Dispute?
 }
 
 /* DISPUTES */
 model Dispute {
-  id                    String    @id @default(uuid())
-  userId                String
-  paymentId             String    @unique
-  serviceRequestId      String
-  reason                String
-  status                DisputeStatus
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime?
-  updatedBy             String?
-  deletedAt             DateTime?
-  deletedBy             String?
+  id                String        @id @default(uuid())
+  userId            String
+  paymentId         String?       @unique  // optional: direct payment dispute
+  refundId          String?       @unique  // optional: dispute about a declined refund
+  serviceRequestId  String?
+  reason            String
+  adminNote         String?       // admin resolution note
+  status            DisputeStatus
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime?
+  updatedBy         String?
+  deletedAt         DateTime?
+  deletedBy         String?
 
- // relations
-  payment     Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  payment  Payment?  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  refund   Refund?   @relation(fields: [refundId], references: [id])
+}
+
+/* WALLET */
+model Wallet {
+  id         String    @id @default(uuid())
+  userId     String?   @unique  // null for PLATFORM wallet
+  type       WalletType
+  balance    Decimal   @db.Decimal(12, 2) @default(0)
+  currency   Currency  @default(NGN)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  transactions  WalletTransaction[]
+  withdrawals   Withdrawal[]
+
+  @@index([type])
+}
+
+/* WALLET TRANSACTIONS */
+model WalletTransaction {
+  id            String         @id @default(uuid())
+  walletId      String
+  type          WalletTxType
+  reason        WalletTxReason
+  amount        Decimal        @db.Decimal(10, 2)
+  balanceBefore Decimal        @db.Decimal(12, 2)
+  balanceAfter  Decimal        @db.Decimal(12, 2)
+  description   String?
+  invoiceId     String?
+  paymentId     String?
+  refundId      String?
+  withdrawalId  String?
+  createdAt     DateTime       @default(now())
+
+  wallet  Wallet  @relation(fields: [walletId], references: [id])
+
+  @@index([walletId])
+  @@index([reason])
+  @@index([invoiceId])
+  @@index([paymentId])
+}
+
+/* WITHDRAWALS */
+model Withdrawal {
+  id          String           @id @default(uuid())
+  walletId    String
+  userId      String
+  amount      Decimal          @db.Decimal(10, 2)
+  currency    Currency         @default(NGN)
+  bankDetails Json
+  status      WithdrawalStatus @default(PENDING)
+  reference   String           @unique
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  wallet  Wallet  @relation(fields: [walletId], references: [id])
+
+  @@index([userId])
+  @@index([status])
 }
 
 model Subscriptions {
-  // this model contains all service provider payments for fees, subscriptions, FeaturedPlans
-  id                      String @id @default(uuid())
-  serviceProviderId       String
-  serviceId               String
-  type                    PaymentType
-  subscriptionplanId      String
-  status                  Status  // keeps track of active and inactive subscriptions. payment activates
-  expiryDate              DateTime
-  subscriptionplan        SubscriptionPlans @relation(fields: [subscriptionplanId], references: [id], onDelete: Cascade)
-  invoice                 Invoice[]
+  id                String            @id @default(uuid())
+  serviceProviderId String
+  serviceId         String
+  type              PaymentType
+  subscriptionplanId String
+  status            Status
+  expiryDate        DateTime
+  subscriptionplan  SubscriptionPlans @relation(fields: [subscriptionplanId], references: [id], onDelete: Cascade)
+  invoice           Invoice[]
 
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime?
-  updatedBy               String?
-  deletedAt               DateTime?
-  deletedBy               String?         
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime?
+  updatedBy  String?
+  deletedAt  DateTime?
+  deletedBy  String?
+
   @@index([serviceId])
   @@index([serviceProviderId])
   @@index([status])
   @@index([expiryDate])
 }
 
-
 model Fees {
-  id                    String   @id @default(uuid())
-  name                  FeesType @unique
-  amount                Decimal
-  status                Status 
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  updatedBy             String?
-  deletedAt             DateTime?
-  deletedBy             String?
+  id        String   @id @default(uuid())
+  name      FeesType @unique
+  amount    Decimal
+  status    Status
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
 
-
-  
   @@unique([name, amount])
 }
 
 model SubscriptionPlans {
-  id                    String   @id @default(uuid())
-  plan                  String 
-  amount                Decimal
-  timeFrame             Int  // number of days this subscription covers
-  status                Status  
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  updatedBy             String?
-  deletedAt             DateTime?
-  deletedBy             String?
+  id          String   @id @default(uuid())
+  plan        String
+  amount      Decimal
+  timeFrame   Int      // number of days this subscription covers
+  status      Status
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?
+  deletedAt   DateTime?
+  deletedBy   String?
 
-  subscriptions         Subscriptions[]
-  // indexes are mananged manually via migration raw sql
+  subscriptions  Subscriptions[]
 }
 
 model FeaturedPlans {
-  id                    String   @id @default(uuid())
-  plan                  String
-  amount                Decimal
-  timeFrame             Int  // number of days this subscription covers
-  status                Status  
-  createdAt     DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  updatedBy     String?
-  deletedAt     DateTime?
-  deletedBy     String?
-
+  id        String   @id @default(uuid())
+  plan      String
+  amount    Decimal
+  timeFrame Int      // number of days this subscription covers
+  status    Status
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
 }
 
 /* ENUMS */
@@ -213,7 +275,6 @@ enum PaymentType {
   FEATUREDPLANS
   SUBSCRIPTIONPLANS
 }
-
 
 enum Status {
   ACTIVE
@@ -250,6 +311,8 @@ enum RefundStatus {
   APPROVED
   DECLINED
   PROCESSING
+  COMPLETED
+  FAILED
 }
 
 enum DisputeStatus {
@@ -268,7 +331,35 @@ enum PaymentOption {
   CARD
   TRANSFER
 }
-enum PaymentMethod{
+
+enum PaymentMethod {
   STRIPE
   PAYSTACK
+}
+
+enum WalletType {
+  USER
+  PLATFORM
+}
+
+enum WalletTxType {
+  CREDIT
+  DEBIT
+}
+
+enum WalletTxReason {
+  TOPUP
+  INVOICE_PAYMENT
+  SERVICE_CHARGE
+  ESCROW_HOLD
+  ESCROW_RELEASE
+  REFUND
+  WITHDRAWAL
+}
+
+enum WithdrawalStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
 }

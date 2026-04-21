@@ -7,6 +7,7 @@ import { ClientProxyFactory } from '@nestjs/microservices';
 import { ClientConfigModule } from '../client-config/client-config.module';
 import { ClientConfigService } from '../client-config/client-config.service';
 import { NOTIFICATION_CLIENT } from './constants';
+import { PAYMENT_CLIENT } from '@shared/contracts';
 import { JwtModule } from '@nestjs/jwt';
 
 
@@ -35,12 +36,16 @@ import { JwtModule } from '@nestjs/jwt';
             provide: NOTIFICATION_CLIENT,
             useFactory: (configService: ClientConfigService) => {
                 const NotificationsClientOptions = configService.NotificationsClientOptions;
-                // console.log('Creating ClientProxy with options:', usersClientOptions);
                 return ClientProxyFactory.create(NotificationsClientOptions);
             },
             inject: [ClientConfigService],
         },
-        
+        {
+            provide: PAYMENT_CLIENT,
+            useFactory: (configService: ClientConfigService) =>
+                ClientProxyFactory.create(configService.PaymentsClientOptions),
+            inject: [ClientConfigService],
+        },
     ],
 })
 export class UsersModule { }

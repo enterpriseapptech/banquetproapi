@@ -29,7 +29,7 @@ export enum PaymentReason {
 
 export enum PaymentMethod{
   STRIPE = 'STRIPE',
-  PAYSTACK = 'PAYSTACK'
+  PAYSTACK = 'PAYSTACK',
 }
 
 
@@ -56,6 +56,35 @@ export enum RefundStatus {
     APPROVED = 'APPROVED',
     DECLINED = 'DECLINED',
     PROCESSING = 'PROCESSING',
+    COMPLETED = 'COMPLETED',
+    FAILED = 'FAILED',
+}
+
+export enum WalletType {
+    USER = 'USER',
+    PLATFORM = 'PLATFORM',
+}
+
+export enum WalletTxType {
+    CREDIT = 'CREDIT',
+    DEBIT = 'DEBIT',
+}
+
+export enum WalletTxReason {
+    TOPUP = 'TOPUP',
+    INVOICE_PAYMENT = 'INVOICE_PAYMENT',
+    SERVICE_CHARGE = 'SERVICE_CHARGE',
+    ESCROW_HOLD = 'ESCROW_HOLD',
+    ESCROW_RELEASE = 'ESCROW_RELEASE',
+    REFUND = 'REFUND',
+    WITHDRAWAL = 'WITHDRAWAL',
+}
+
+export enum WithdrawalStatus {
+    PENDING = 'PENDING',
+    PROCESSING = 'PROCESSING',
+    COMPLETED = 'COMPLETED',
+    FAILED = 'FAILED',
 }
 
 export enum DisputeStatus {
@@ -499,15 +528,31 @@ export enum PaymentGateWay{
 
 export class GeneratePaymentDto {
 
-    @ApiProperty()
+    @ApiProperty({ required: false })
+    @IsOptional()
     @IsString()
-    invoiceId: string;
+    invoiceId?: string;
+
+    @ApiProperty({ required: false, description: 'Required when no invoiceId (e.g. wallet funding)' })
+    @IsOptional()
+    @IsNumber()
+    amount?: number;
+
+    @ApiProperty({ required: false, enum: Currency })
+    @IsOptional()
+    @IsEnum(Currency)
+    currency?: Currency;
+
+    @ApiProperty()
+    @IsOptional()
+    @IsString()
+    userId?: string; // Populated from gateway
 
     @ApiProperty()
     @IsEnum(PaymentGateWay)
     paymentGateWay: PaymentGateWay;
 
-    @ApiProperty()
+    @ApiProperty({ required: false })
     @IsString()
     @IsOptional()
     callback_url?: string
@@ -527,13 +572,15 @@ export class CreatePaymentDto {
     @IsString()
     userId?: string;
 
+
     @ApiProperty()
     @IsString()
     paidAt: string;
 
-    @ApiProperty()
+    @ApiProperty({ required: false })
+    @IsOptional()
     @IsString()
-    invoiceId: string;
+    invoiceId?: string;
 
     @ApiProperty({ enum: PaymentMethod })
     @IsEnum(PaymentMethod)
@@ -594,19 +641,55 @@ export class CreatePaymentDto {
 
 
 export class CreateRefundDto {
-    @ApiProperty()
+    @ApiProperty({ description: 'ID of the payment record (wallet payment) for this invoice' })
     @IsString()
+    @IsUUID()
     paymentId: string;
 
-    @ApiProperty()
-    @IsNumber()
-    amount: number;
-
-    @ApiProperty()
+    @ApiProperty({ description: 'Invoice being refunded' })
     @IsString()
-    reason: string;
+    @IsUUID()
+    invoiceId: string;
 
-    @ApiProperty({ enum: RefundStatus })
+    @ApiProperty({ description: 'Customer who requested the refund' })
+    @IsString()
+    @IsUUID()
+    customerId: string;
+
+    @ApiProperty({ description: 'Service provider who must approve' })
+    @IsString()
+    @IsUUID()
+    serviceProviderId: string;
+
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsString()
+    @IsUUID()
+    bookingId?: string;
+
+    @ApiProperty({ description: 'Customer stated reason for refund' })
+    @IsString()
+    refundReason: string;
+
+    @ApiProperty({ required: false, description: 'Snapshot of refund policy at time of request' })
+    @IsOptional()
+    policySnapshot?: Record<string, any>;
+
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsNumber({ maxDecimalPlaces: 2 })
+    deductionPercentage?: number;
+
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsNumber({ maxDecimalPlaces: 2 })
+    deductionAmount?: number;
+
+    @ApiProperty({ description: 'Amount the customer will receive back after deductions' })
+    @IsNumber({ maxDecimalPlaces: 2 })
+    refundAmount: number;
+
+    @ApiProperty({ enum: RefundStatus, default: RefundStatus.REQUESTED })
     @IsEnum(RefundStatus)
     status: RefundStatus;
 
@@ -621,23 +704,156 @@ export class CreateRefundDto {
     deletedBy?: string;
 }
 
+export class CreateWalletDto {
+    @ApiProperty({ description: 'User ID to create wallet for (omit for platform wallet)' })
+    @IsOptional()
+    @IsString()
+    @IsUUID()
+    userId?: string;
+
+    @ApiProperty({ enum: WalletType, default: WalletType.USER })
+    @IsEnum(WalletType)
+    @IsOptional()
+    type?: WalletType;
+
+    @ApiProperty({ enum: Currency, default: Currency.NGN })
+    @IsOptional()
+    @IsEnum(Currency)
+    currency?: Currency;
+}
+
+export class TopupWalletDto {
+    @ApiProperty({ description: 'User ID topping up (set by gateway from JWT)' })
+    @IsUUID()
+    userId: string;
+
+    @ApiProperty({ example: 5000 })
+    @IsNumber({ maxDecimalPlaces: 2 })
+    amount: number;
+
+    @ApiProperty({ enum: PaymentGateWay })
+    @IsEnum(PaymentGateWay)
+    paymentGateway: PaymentGateWay;
+
+    @ApiProperty({ example: 'user@example.com' })
+    @IsString()
+    email: string;
+
+    @ApiProperty({ enum: Currency, required: false })
+    @IsOptional()
+    @IsEnum(Currency)
+    currency?: Currency;
+
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsString()
+    callback_url?: string;
+}
+
+export class PayInvoiceDto {
+    @ApiProperty({ description: 'Invoice to pay' })
+    @IsUUID()
+    invoiceId: string;
+
+    @ApiProperty({ description: 'User ID (set by gateway from JWT)' })
+    @IsUUID()
+    userId: string;
+}
+
+export class ReleaseEscrowDto {
+    @ApiProperty({ description: 'Invoice whose escrow funds to release' })
+    @IsUUID()
+    invoiceId: string;
+
+    @ApiProperty({ description: 'SP user ID to credit' })
+    @IsUUID()
+    serviceProviderId: string;
+}
+
+export class CreateWithdrawalDto {
+    @ApiProperty({ description: 'User ID (set by gateway from JWT)' })
+    @IsUUID()
+    userId: string;
+
+    @ApiProperty({ example: 2000 })
+    @IsNumber({ maxDecimalPlaces: 2 })
+    amount: number;
+
+    @ApiProperty({ enum: Currency, default: Currency.NGN })
+    @IsOptional()
+    @IsEnum(Currency)
+    currency?: Currency;
+
+    @ApiProperty({
+        description: 'Bank account details for payout',
+        example: { accountNumber: '0123456789', bankName: 'First Bank', accountName: 'John Doe' },
+    })
+    @IsNotEmpty()
+    bankDetails: Record<string, any>;
+}
+
+export class RefundPolicyTierDto {
+    @ApiProperty({ description: 'Applies when days until event >= this value', example: 14 })
+    @IsInt()
+    minDaysBeforeEvent: number;
+
+    @ApiProperty({ description: 'Percentage deducted from refund (0 = full refund)', example: 25 })
+    @IsNumber({ maxDecimalPlaces: 2 })
+    deductionPercentage: number;
+
+    @ApiProperty({ required: false, example: '14-30 days: 25% deduction' })
+    @IsOptional()
+    @IsString()
+    description?: string;
+}
+
+export class UpsertRefundPolicyDto {
+    @ApiProperty({ description: 'Whether refunds are allowed at all', default: true })
+    @IsOptional()
+    allowRefunds?: boolean;
+
+    @ApiProperty({ description: 'Minimum days before event to be eligible for a refund', default: 3 })
+    @IsOptional()
+    @IsInt()
+    refundWindowDays?: number;
+
+    @ApiProperty({ type: [RefundPolicyTierDto] })
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => RefundPolicyTierDto)
+    tiers?: RefundPolicyTierDto[];
+}
+
 
 export class CreateDisputeDto {
     @ApiProperty()
     @IsString()
     userId: string;
 
-    @ApiProperty()
+    @ApiProperty({ required: false })
+    @IsOptional()
     @IsString()
-    paymentId: string;
+    paymentId?: string;
 
-    @ApiProperty()
+    @ApiProperty({ required: false })
+    @IsOptional()
     @IsString()
-    serviceRequestId: string;
+    refundId?: string;
+
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsString()
+    serviceRequestId?: string;
 
     @ApiProperty()
     @IsString()
     reason: string;
+
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsString()
+    adminNote?: string;
 
     @ApiProperty({ enum: DisputeStatus })
     @IsEnum(DisputeStatus)

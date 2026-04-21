@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { EventcentersService } from './eventcenters.service';
-import { CreateEventCenterDto, EVENTCENTERPATTERN, UpdateEventCenterDto } from '@shared/contracts/eventcenters';
+import { CreateEventCenterDto, EVENTCENTERPATTERN, EVENTCENTERREFUNDPOLICYPATTERN, UpdateEventCenterDto } from '@shared/contracts/eventcenters';
 import { EventPattern, MessagePattern, Payload, RpcException, RmqContext, Ctx } from '@nestjs/microservices';
 import { catchError, from, throwError } from 'rxjs';
 import { UpdateServiceSubscriptionDto } from '@shared/contracts/shared';
@@ -121,6 +121,27 @@ export class EventcentersController {
         return from(this.eventcentersService.updateSubscriptionStatus(data));
     }
 
+    @MessagePattern(EVENTCENTERREFUNDPOLICYPATTERN.UPSERT)
+    upsertRefundPolicy(@Payload() data: { eventCenterId: string; allowRefunds?: boolean; refundWindowDays?: number; tiers?: any[] }) {
+        const { eventCenterId, ...dto } = data;
+        return from(this.eventcentersService.upsertRefundPolicy(eventCenterId, dto)).pipe(
+            catchError((err) => throwError(() => new RpcException({
+                statusCode: err.response?.statusCode || 500,
+                message: err.message || 'Internal Server Error',
+                error: err.response?.error || 'Server error',
+            }))),
+        );
+    }
 
+    @MessagePattern(EVENTCENTERREFUNDPOLICYPATTERN.FINDBYSERVICEID)
+    getRefundPolicy(@Payload() eventCenterId: string) {
+        return from(this.eventcentersService.getRefundPolicy(eventCenterId)).pipe(
+            catchError((err) => throwError(() => new RpcException({
+                statusCode: err.response?.statusCode || 500,
+                message: err.message || 'Internal Server Error',
+                error: err.response?.error || 'Server error',
+            }))),
+        );
+    }
 }
 

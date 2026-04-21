@@ -1,6 +1,7 @@
 import { IsNumber, IsOptional, IsString } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
+  Currency,
   FeesType,
   InvoiceStatus,
   IPaymentStatus,
@@ -9,6 +10,10 @@ import {
   RefundStatus,
   ServiceType,
   Status,
+  WalletTxReason,
+  WalletTxType,
+  WalletType,
+  WithdrawalStatus,
 } from "./create-payments.dto";
 import { UserDto } from "../users";
 
@@ -182,6 +187,9 @@ export class InvoiceDto {
 
   @ApiPropertyOptional({ example: "plan_123" })
   subscriptionPlanId?: string;
+
+  @ApiPropertyOptional({ example: "sp_123" })
+  serviceProviderId?: string;
 
   @ApiProperty({ type: [InvoiceItem] })
   items: InvoiceItem[];
@@ -425,5 +433,143 @@ export class FeesDto {
 
   @ApiPropertyOptional({ example: "user_123" })
   deletedBy?: string;
+}
 
+export class WalletTransactionDto {
+  @ApiProperty({ example: "wtx_123" })
+  id: string;
+
+  @ApiProperty({ example: "wallet_123" })
+  walletId: string;
+
+  @ApiProperty({ enum: WalletTxType })
+  type: WalletTxType;
+
+  @ApiProperty({ enum: WalletTxReason })
+  reason: WalletTxReason;
+
+  @ApiProperty({ example: 5000 })
+  amount: number;
+
+  @ApiProperty({ example: 10000 })
+  balanceBefore: number;
+
+  @ApiProperty({ example: 15000 })
+  balanceAfter: number;
+
+  @ApiPropertyOptional({ example: "Wallet top-up" })
+  description?: string;
+
+  @ApiPropertyOptional({ example: "inv_123" })
+  invoiceId?: string;
+
+  @ApiPropertyOptional({ example: "pay_123" })
+  paymentId?: string;
+
+  @ApiPropertyOptional({ example: "ref_123" })
+  refundId?: string;
+
+  @ApiPropertyOptional({ example: "wdr_123" })
+  withdrawalId?: string;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  createdAt: Date;
+}
+
+export class WalletDto {
+  @ApiProperty({ example: "wallet_123" })
+  id: string;
+
+  @ApiPropertyOptional({ example: "user_123" })
+  userId?: string;
+
+  @ApiProperty({ enum: WalletType })
+  type: WalletType;
+
+  @ApiProperty({ example: 15000 })
+  balance: number;
+
+  @ApiProperty({ enum: Currency })
+  currency: Currency;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  createdAt: Date;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  updatedAt: Date;
+
+  @ApiPropertyOptional({ type: [WalletTransactionDto] })
+  transactions?: WalletTransactionDto[];
+}
+
+export class WithdrawalDto {
+  @ApiProperty({ example: "wdr_123" })
+  id: string;
+
+  @ApiProperty({ example: "wallet_123" })
+  walletId: string;
+
+  @ApiProperty({ example: "user_123" })
+  userId: string;
+
+  @ApiProperty({ example: 2000 })
+  amount: number;
+
+  @ApiProperty({ enum: Currency })
+  currency: Currency;
+
+  @ApiProperty({ type: Object, example: { accountNumber: '0123456789', bankName: 'First Bank' } })
+  bankDetails: Record<string, any>;
+
+  @ApiProperty({ enum: WithdrawalStatus })
+  status: WithdrawalStatus;
+
+  @ApiProperty({ example: "wdr_ref_123" })
+  reference: string;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  createdAt: Date;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  updatedAt: Date;
+}
+
+export class RefundPolicyTierResponseDto {
+  @ApiProperty({ example: "tier_123" })
+  id: string;
+
+  @ApiProperty({ example: 14 })
+  minDaysBeforeEvent: number;
+
+  @ApiProperty({ example: 25 })
+  deductionPercentage: number;
+
+  @ApiPropertyOptional({ example: "14-30 days: 25% deduction" })
+  description?: string;
+}
+
+export class RefundPolicyDto {
+  @ApiProperty({ example: "policy_123" })
+  id: string;
+
+  @ApiPropertyOptional({ example: "ec_123" })
+  eventCenterId?: string;
+
+  @ApiPropertyOptional({ example: "cat_123" })
+  cateringId?: string;
+
+  @ApiProperty({ example: true })
+  allowRefunds: boolean;
+
+  @ApiProperty({ example: 3 })
+  refundWindowDays: number;
+
+  @ApiProperty({ type: [RefundPolicyTierResponseDto] })
+  tiers: RefundPolicyTierResponseDto[];
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  createdAt: Date;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  updatedAt: Date;
 }

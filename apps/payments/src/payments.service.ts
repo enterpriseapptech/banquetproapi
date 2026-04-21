@@ -6,3 +6,5 @@ export { RefundService } from './services/refund.service';
 export { DisputeService } from './services/dispute.service';
 export { SubscriptionService } from './services/subscription.service';
 export { SubscriptionPlansService } from './services/subscription_plans.service';
+export { WalletService } from './services/wallet.service';
+export { WithdrawalService } from './services/withdrawal.service';

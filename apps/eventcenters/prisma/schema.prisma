@@ -50,6 +50,8 @@ model EventCenter {
   subscriptionExpiry DateTime?
   subscriptionPlanId String?
 
+  refundPolicy  RefundPolicy?
+
   @@index([serviceProviderId])
   @@index([status])
   @@index([name])
@@ -96,5 +98,30 @@ enum PaymentStatus {
   SCHEDULED
   POSTPONED
   CANCELED
+}
+
+/* REFUND POLICY */
+model RefundPolicy {
+  id               String             @id @default(uuid())
+  eventCenterId    String             @unique
+  allowRefunds     Boolean            @default(true)
+  refundWindowDays Int                @default(3) // must request refund at least X days before event
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  eventCenter  EventCenter        @relation(fields: [eventCenterId], references: [id], onDelete: Cascade)
+  tiers        RefundPolicyTier[]
+}
+
+model RefundPolicyTier {
+  id                  String       @id @default(uuid())
+  refundPolicyId      String
+  minDaysBeforeEvent  Int          // tier applies when daysUntilEvent >= this value
+  deductionPercentage Decimal      @banquestproeventsdb.Decimal(5, 2) // 0=full refund, 100=no refund
+  description         String?
+
+  refundPolicy  RefundPolicy  @relation(fields: [refundPolicyId], references: [id], onDelete: Cascade)
+
+  @@index([refundPolicyId])
 }
 

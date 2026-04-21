@@ -1,9 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, UseInterceptors, UploadedFile, HttpCode, HttpStatus, Inject, Logger } from '@nestjs/common';
-import { DisputeService, FeaturedPlanService, FeesService, InvoiceService, PaymentMethodService, PaymentService, RefundService, SubscriptionService, SubscriptionPlanService } from './payment.service';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, UseInterceptors, UploadedFile, HttpCode, HttpStatus, Inject, Logger, BadRequestException } from '@nestjs/common';
+import {
+    DisputeGatewayService, FeaturedPlanService, FeesService, InvoiceService,
+    PaymentMethodService, PaymentService, RefundGatewayService, SubscriptionService,
+    SubscriptionPlanService, WalletService, WithdrawalGatewayService,
+} from './payment.service';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
 import { AdminRoleGuard } from '../jwt/admin.guard';
 import {
+    ApproveRefundDto,
     CreateDisputeDto,
     CreateFeaturedPlanDto,
     CreateFeeDto,
@@ -14,9 +20,15 @@ import {
     CreateSecondInvoiceDto,
     CreateSubscriptionDto,
     CreateSubscriptionPlanDto,
+    CreateWithdrawalDto,
+    DeclineRefundDto,
     GeneratePaymentDto,
     IPaymentStatus,
+    PayInvoiceDto,
     PaymentMethod,
+    RefundStatus,
+    ResolveDisputeDto,
+    TopupWalletDto,
     UpdateDisputeDto,
     UpdateFeaturedPlanDto,
     UpdateFeeDto,
@@ -25,6 +37,7 @@ import {
     UpdateRefundDto,
     UpdateSubscriptionDto,
     UpdateSubscriptionPlanDto,
+    UpdateWithdrawalDto,
     ServiceType,
     UpdateInvoiceDto,
 } from '@shared/contracts/payments';
@@ -122,7 +135,9 @@ export class PaymentController {
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post('initiate')
-    initiate(@Body() generatePaymentDto: GeneratePaymentDto) {
+    async initiate(@Body() generatePaymentDto: GeneratePaymentDto, @Req() req: AuthenticatedRequest) {
+        const user: UserDto = await firstValueFrom(req.user);
+        generatePaymentDto.userId = user.id;
         return this.paymentService.initiate(generatePaymentDto);
     }
 
@@ -139,7 +154,8 @@ export class PaymentController {
             if (payload.event && payload.event === 'charge.success') {
                 // paystack payment succeeded
                 paymentData = {
-                    invoiceId: payload.data.metadata.invoiceId,
+                    userId: payload.data.metadata.userId,
+                    invoiceId: payload.data.metadata.invoiceId || undefined,
                     reference: payload.data.metadata.reference,
                     paymentReference: payload.data.reference,
                     amountCharged: payload.data.metadata.amountCharged,
@@ -154,9 +170,10 @@ export class PaymentController {
             } else if (payload.type === 'payment_intent.succeeded') {
                 // stripe payment succeeded
                 paymentData = {
+                    userId: payload.data.object.metadata.userId,
                     paymentReason: payload.data.object.metadata.paymentReason,
                     transactionId: payload.data.object.id,
-                    invoiceId: payload.data.object.metadata.invoiceId,
+                    invoiceId: payload.data.object.metadata.invoiceId || undefined,
                     reference: payload.data.object.metadata.reference,
                     paymentReference: payload.request.idempotency_key,
                     amountCharged: payload.data.object.metadata.amountCharged / 100,
@@ -167,9 +184,10 @@ export class PaymentController {
                     status: payload.data.object.status === 'succeeded' ? IPaymentStatus.COMPLETED : IPaymentStatus.FAILED,
                 };
             } else if (payload.event === 'charge.failed') {
-                // paystack payment failed
+                // paystack payment failed — record only, no wallet credit
                 paymentData = {
-                    invoiceId: payload.data.metadata.invoiceId,
+                    userId: payload.data.metadata.userId,
+                    invoiceId: payload.data.metadata.invoiceId || undefined,
                     reference: payload.data.metadata.reference,
                     paymentReference: payload.data.reference,
                     amountCharged: payload.data.metadata.amountCharged,
@@ -182,11 +200,12 @@ export class PaymentController {
                     transactionId: String(payload.data.id),
                 };
             } else if (payload.type === 'payment_intent.payment_failed') {
-                // stripe payment failed
+                // stripe payment failed — record only, no wallet credit
                 paymentData = {
+                    userId: payload.data.object.metadata.userId,
                     paymentReason: payload.data.object.metadata.paymentReason,
                     transactionId: payload.data.object.id,
-                    invoiceId: payload.data.object.metadata.invoiceId,
+                    invoiceId: payload.data.object.metadata.invoiceId || undefined,
                     reference: payload.data.object.metadata.reference,
                     paymentReference: payload.request.idempotency_key,
                     amountCharged: payload.data.object.metadata.amountCharged / 100,
@@ -218,8 +237,11 @@ export class PaymentController {
                     message: "Payment created by webhook",
                     ...payment
                 });
+                
+                // if payment is for booking, send the payment details to booking microservice
                 if (payment?.bookingId) {
                     await this.bookingService.updatePayment(payment.bookingId, payment.totalPaymentPaid);
+                    // TO DO: refund process if booking fails to update
                 }
 
                 if (payment?.serviceId && payment?.serviceType) {
@@ -230,7 +252,6 @@ export class PaymentController {
                         timeframe: payment.timeframe,
                         subscriptionPlanId: payment.subscriptionPlanId,
                     };
-                    console.log({updateServiceSubscriptionDto})
                     if (payment.serviceType === ServiceType.EVENTCENTER) {
                         this.eventcentersService.updateSubscription(updateServiceSubscriptionDto);
 
@@ -537,12 +558,114 @@ export class SubscriptionController {
 @ApiTags('refunds')
 @Controller('refunds')
 export class RefundController {
-    constructor(private readonly refundService: RefundService) {}
+    constructor(
+        private readonly refundGatewayService: RefundGatewayService,
+        private readonly paymentService: PaymentService,
+        private readonly invoiceService: InvoiceService,
+        private readonly bookingService: BookingService,
+        private readonly eventcentersService: EventcentersService,
+        private readonly cateringService: CateringService,
+    ) {}
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post()
-    create(@Body() dto: CreateRefundDto) {
-        return this.refundService.create(dto);
+    async create(
+        @Body() body: { paymentId: string; refundReason: string },
+        @Req() req: AuthenticatedRequest,
+    ) {
+        const user: UserDto = await firstValueFrom(req.user);
+        const customerId = user.id;
+
+        const payment = await firstValueFrom(this.paymentService.findOne(body.paymentId));
+        if (!payment) throw new BadRequestException('Payment not found');
+
+        const invoice = await firstValueFrom(this.invoiceService.findOne(payment.invoiceId));
+        if (!invoice) throw new BadRequestException('Invoice not found');
+
+        const { serviceId, serviceType, serviceProviderId } = invoice as any;
+        const invoiceAmount = invoice.amountDue;
+        const bookingId = payment.bookingId;
+
+        let deductionPercentage = 0;
+        let policySnapshot: Record<string, any> | undefined;
+
+        if (bookingId && serviceId && serviceType) {
+            try {
+                const booking = await firstValueFrom(this.bookingService.findOne(bookingId));
+                const eventDate = booking?.confirmedTimeSlots?.[0]?.startTime
+                    ?? booking?.requestedTimeSlots?.[0]?.startTime;
+
+                let policy = null;
+                if (serviceType === ServiceType.EVENTCENTER) {
+                    policy = await firstValueFrom(this.eventcentersService.getRefundPolicy(serviceId));
+                } else if (serviceType === ServiceType.CATERING) {
+                    policy = await firstValueFrom(this.cateringService.getRefundPolicy(serviceId));
+                }
+
+                if (policy) {
+                    policySnapshot = { ...policy };
+                    if (!policy.allowRefunds) {
+                        throw new BadRequestException('This service does not allow refunds');
+                    }
+                    if (eventDate) {
+                        const daysUntilEvent = Math.floor(
+                            (new Date(eventDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+                        );
+                        if (daysUntilEvent < policy.refundWindowDays) {
+                            throw new BadRequestException(
+                                `Refunds must be requested at least ${policy.refundWindowDays} days before the event`,
+                            );
+                        }
+                        const applicableTier = [...(policy.tiers ?? [])]
+                            .filter(t => daysUntilEvent >= t.minDaysBeforeEvent)
+                            .sort((a, b) => a.minDaysBeforeEvent - b.minDaysBeforeEvent)
+                            .pop();
+                        deductionPercentage = applicableTier?.deductionPercentage ?? 0;
+                    }
+                }
+            } catch (err) {
+                if (err?.status === 400) throw err;
+            }
+        }
+
+        const deductionAmount = Number((invoiceAmount * deductionPercentage / 100).toFixed(2));
+        const refundAmount = Number((invoiceAmount - deductionAmount).toFixed(2));
+
+        const dto: CreateRefundDto = {
+            paymentId: body.paymentId,
+            invoiceId: payment.invoiceId,
+            customerId,
+            serviceProviderId: serviceProviderId ?? payment.userId,
+            bookingId,
+            refundReason: body.refundReason,
+            policySnapshot,
+            deductionPercentage,
+            deductionAmount,
+            refundAmount,
+            status: RefundStatus.REQUESTED,
+        };
+
+        return this.refundGatewayService.create(dto);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Post(':id/approve')
+    async approve(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+        const user: UserDto = await firstValueFrom(req.user);
+        const dto: ApproveRefundDto = { id, serviceProviderId: user.id };
+        return this.refundGatewayService.approve(dto);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Post(':id/decline')
+    async decline(
+        @Param('id') id: string,
+        @Body() body: { reason: string },
+        @Req() req: AuthenticatedRequest,
+    ) {
+        const user: UserDto = await firstValueFrom(req.user);
+        const dto: DeclineRefundDto = { id, serviceProviderId: user.id, reason: body.reason };
+        return this.refundGatewayService.decline(dto);
     }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
@@ -550,40 +673,49 @@ export class RefundController {
     findAll(
         @Query('limit') limit: number,
         @Query('offset') offset: number,
-        @Query('paymentId') paymentId?: string,
+        @Query('customerId') customerId?: string,
+        @Query('serviceProviderId') serviceProviderId?: string,
     ) {
-        return this.refundService.findAll(limit, offset, paymentId);
+        return this.refundGatewayService.findAll(limit, offset, customerId, serviceProviderId);
     }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Get(':id')
     findOne(@Param('id') id: string) {
-        return this.refundService.findOne(id);
+        return this.refundGatewayService.findOne(id);
     }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Patch(':id')
     update(@Param('id') id: string, @Body() dto: UpdateRefundDto) {
-        return this.refundService.update(id, dto);
-    }
-
-    @UseGuards(JwtAuthGuard, VerificationGuard)
-    @Delete(':id')
-    async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
-        const user: UserDto = await firstValueFrom(req.user);
-        return this.refundService.remove(id, user.id);
+        return this.refundGatewayService.update(id, dto);
     }
 }
 
 @ApiTags('disputes')
 @Controller('disputes')
 export class DisputeController {
-    constructor(private readonly disputeService: DisputeService) {}
+    constructor(
+        private readonly disputeGatewayService: DisputeGatewayService,
+    ) {}
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post()
-    create(@Body() dto: CreateDisputeDto) {
-        return this.disputeService.create(dto);
+    async create(@Body() dto: CreateDisputeDto, @Req() req: AuthenticatedRequest) {
+        const user: UserDto = await firstValueFrom(req.user);
+        dto.userId = user.id;
+        return this.disputeGatewayService.create(dto);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @UseGuards(AdminRoleGuard)
+    @Post(':id/resolve')
+    async resolve(
+        @Param('id') id: string,
+        @Body() body: { adminNote: string; refundAmount: number },
+    ) {
+        const dto: ResolveDisputeDto = { id, adminNote: body.adminNote, refundAmount: body.refundAmount };
+        return this.disputeGatewayService.resolve(dto);
     }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
@@ -594,26 +726,107 @@ export class DisputeController {
         @Query('userId') userId?: string,
         @Query('paymentId') paymentId?: string,
     ) {
-        return this.disputeService.findAll(limit, offset, userId, paymentId);
+        return this.disputeGatewayService.findAll(limit, offset, userId, paymentId);
     }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Get(':id')
     findOne(@Param('id') id: string) {
-        return this.disputeService.findOne(id);
+        return this.disputeGatewayService.findOne(id);
     }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Patch(':id')
     update(@Param('id') id: string, @Body() dto: UpdateDisputeDto) {
-        return this.disputeService.update(id, dto);
+        return this.disputeGatewayService.update(id, dto);
+    }
+}
+
+@ApiTags('wallet')
+@Controller('wallet')
+export class WalletController {
+    constructor(
+        private readonly walletService: WalletService,
+        // private readonly invoiceService: InvoiceService,
+        // private readonly paymentService: PaymentService,
+    ) {}
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Get()
+    async getWallet(@Req() req: AuthenticatedRequest) {
+        const user: UserDto = await firstValueFrom(req.user);
+        return this.walletService.findByUserId(user.id, user.userType);
     }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
-    @Delete(':id')
-    async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+    @Get('transactions')
+    async getTransactions(
+        @Req() req: AuthenticatedRequest,
+        @Query('limit') limit: number,
+        @Query('offset') offset: number,
+    ) {
         const user: UserDto = await firstValueFrom(req.user);
-        return this.disputeService.remove(id, user.id);
+        return this.walletService.getTransactions(user.id, limit ?? 10, offset ?? 0);
+    }
+
+    // @UseGuards(JwtAuthGuard, VerificationGuard)
+    // @Post('topup')
+    // async topup(@Body() dto: TopupWalletDto, @Req() req: AuthenticatedRequest) {
+    //     const user: UserDto = await firstValueFrom(req.user);
+    //     return this.paymentService.initiate({
+    //         userId: user.id,
+    //         amount: dto.amount,
+    //         currency: dto.currency,
+    //         paymentGateWay: dto.paymentGateway,
+    //         email: dto.email ?? (user as any).email,
+    //         callback_url: dto.callback_url,
+    //         paymentReason: 'WALLETFUNDING' as any,
+    //     });
+    // }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Post('pay-invoice')
+    async payInvoice(@Body() dto: PayInvoiceDto, @Req() req: AuthenticatedRequest) {
+        const user: UserDto = await firstValueFrom(req.user);
+        dto.userId = user.id;
+        return this.walletService.payInvoice(dto);
+    }
+}
+
+@ApiTags('withdrawals')
+@Controller('withdrawals')
+export class WithdrawalController {
+    constructor(private readonly withdrawalService: WithdrawalGatewayService) {}
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Post()
+    async create(@Body() dto: CreateWithdrawalDto, @Req() req: AuthenticatedRequest) {
+        const user: UserDto = await firstValueFrom(req.user);
+        dto.userId = user.id;
+        return this.withdrawalService.create(dto);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Get()
+    async findAll(
+        @Req() req: AuthenticatedRequest,
+        @Query('limit') limit: number,
+        @Query('offset') offset: number,
+    ) {
+        const user: UserDto = await firstValueFrom(req.user);
+        return this.withdrawalService.findAll(limit, offset, user.id);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Get(':id')
+    findOne(@Param('id') id: string) {
+        return this.withdrawalService.findOne(id);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
+    @Patch(':id')
+    update(@Param('id') id: string, @Body() dto: UpdateWithdrawalDto) {
+        return this.withdrawalService.update(id, dto);
     }
 }
 

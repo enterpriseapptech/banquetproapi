@@ -13,7 +13,8 @@ export class PaystackPaymentService implements PaymentServiceInterface{
         amount: number,
         paymentReason: PaymentReason,
         email?: string,
-        callback_url?: string
+        callback_url?: string,
+        userId?: string,
     ): Promise<string> {
         try {
             const headers = {
@@ -30,7 +31,8 @@ export class PaystackPaymentService implements PaymentServiceInterface{
                     invoiceId,
                     reference,
                     amountCharged: amount,
-                    paymentReason
+                    paymentReason,
+                    userId,
                 }
             }
             const initilizePaystackPayment =  await axios.post('https://api.paystack.co/transaction/initialize', body, {headers})

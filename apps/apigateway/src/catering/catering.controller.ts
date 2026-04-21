@@ -2,6 +2,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, UseInterceptors, UploadedFiles, BadRequestException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CateringService } from './catering.service';
 import { CreateCateringDto, UpdateCateringDto } from '@shared/contracts/catering';
+import { UpsertRefundPolicyDto } from '@shared/contracts/payments';
 import { UserDto } from '@shared/contracts/users';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
@@ -137,5 +138,16 @@ export class CateringController {
   async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
     const user: UserDto = await firstValueFrom(req.user)
     return this.cateringService.remove(id, user.id);
+  }
+
+  @UseGuards(JwtAuthGuard, VerificationGuard)
+  @Post(':id/refund-policy')
+  upsertRefundPolicy(@Param('id') id: string, @Body() dto: UpsertRefundPolicyDto) {
+    return this.cateringService.upsertRefundPolicy(id, dto);
+  }
+
+  @Get(':id/refund-policy')
+  getRefundPolicy(@Param('id') id: string) {
+    return this.cateringService.getRefundPolicy(id);
   }
 }

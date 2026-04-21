@@ -8,3 +8,8 @@ export const CATERINGPATTERN = {
     UPDATESUBSCRIPTION: 'catering.updateSubscription',
 }
 
+export const CATERINGREFUNDPOLICYPATTERN = {
+    UPSERT: 'catering.refundPolicy.upsert',
+    FINDBYSERVICEID: 'catering.refundPolicy.findByServiceId',
+}
+

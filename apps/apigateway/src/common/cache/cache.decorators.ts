@@ -26,7 +26,7 @@ export function Cacheable(key: CacheKeyInput, ttl = DEFAULT_TTL) {
             const cacheKey = typeof key === 'function' ? key(...args) : key;
             const raw = original.apply(this, args);
             const returnsObservable = isObservable(raw);
-
+            console.log({cacheKey})
             const doWork = async () => {
                 const cached = await CacheStore.manager.get(cacheKey);
                 if (cached !== undefined && cached !== null) return cached;

@@ -9,6 +9,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from '../jwt/jwt.strategy';
 import { ConfigModule } from '@nestjs/config';
 import * as dotenv from 'dotenv';
+import { WalletModule } from '../payment/wallet.module';
 
 dotenv.config({ path: './apps/apigateway/.env' });
 @Module({
@@ -18,6 +19,7 @@ dotenv.config({ path: './apps/apigateway/.env' });
             envFilePath: './apps/apigateway/.env',
         }),
         ClientConfigModule,
+        WalletModule,
         JwtModule.register({
             secret: process.env.JWT_ACCESS_TOKEN_SECRET,
             signOptions: {

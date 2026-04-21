@@ -14,6 +14,7 @@ import { ManagementModule } from './management/management.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
 import { CacheStore } from './common/cache/cache.store';
+import { WalletModule } from './payment/wallet.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { CacheStore } from './common/cache/cache.store';
     PaymentModule,
     CloudinaryModule,
     NotificationsModule,
+    WalletModule
   ],
   controllers: [AppController],
   providers: [AppService, CacheStore],

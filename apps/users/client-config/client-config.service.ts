@@ -21,8 +21,8 @@ export class ClientConfigService {
         return {
             transport: Transport.RMQ,
             options: {
-                urls: [process.env.NOTIFICATIONURL],  // RabbitMQ URL for the Notification Microservice
-                queue: `${process.env.NOTIFICATIONQUEUE}_${process.env.NODE_ENV}`, // The queue name
+                urls: [process.env.NOTIFICATIONURL],
+                queue: `${process.env.NOTIFICATIONQUEUE}_${process.env.NODE_ENV}`,
                 queueOptions: {
                     durable: false,
                 }
@@ -30,6 +30,18 @@ export class ClientConfigService {
         }
     }
 
+    get PaymentsClientOptions(): ClientOptions {
+        return {
+            transport: Transport.RMQ,
+            options: {
+                urls: [process.env.PAYMENTURL],
+                queue: `${process.env.PAYMENTQUEUE}_${process.env.NODE_ENV}`,
+                queueOptions: {
+                    durable: false,
+                }
+            }
+        }
+    }
 
 
 }

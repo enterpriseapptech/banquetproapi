@@ -1,20 +1,26 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { BadRequestException, ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { $Enums, Prisma } from '../prisma/@prisma/users';
 import { CreateUserDto, UpdateUserDto, UserDto, LoginUserDto, UserType, UserStatus, ServiceType, UserFilterDto, UpdateUserPasswordDto, UniqueIdentifierDto, BookMarkType } from '@shared/contracts/users';
 import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
+import { WALLETPATTERN } from '@shared/contracts/payments';
 import { DatabaseService } from '../database/database.service';
 import { NOTIFICATION_CLIENT } from './constants';
+import { PAYMENT_CLIENT } from '@shared/contracts';
 import { ClientProxy } from '@nestjs/microservices';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaErrorHandler } from '@shared/contracts/prisma.error.handler';
+import { firstValueFrom } from 'rxjs';
 
 
 @Injectable()
 export class UsersService {
+    private readonly logger = new Logger(UsersService.name);
+
     constructor(
         @Inject(NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
+        @Inject(PAYMENT_CLIENT) private readonly paymentClient: ClientProxy,
         private readonly jwtService: JwtService,
         private readonly databaseService: DatabaseService
     ) { }
@@ -127,6 +133,15 @@ export class UsersService {
                 },
             });
 
+            // emit wallet creation for CUSTOMER and SERVICE_PROVIDER accounts
+            if (
+                account.user.userType === $Enums.UserType.CUSTOMER ||
+                account.user.userType === $Enums.UserType.SERVICE_PROVIDER
+            ) {
+                this.paymentClient.emit(WALLETPATTERN.CREATE, { userId: account.user.id });
+                this.logger.log(`Wallet create event emitted | userId=${account.user.id} type=${account.user.userType}`);
+            }
+
             const userAccount: UserDto = {
                 ...account.user,
                 userType: account.user.userType as unknown as UserType,
@@ -141,9 +156,6 @@ export class UsersService {
                 description: 'User account creation failed, please try again'
             });
         }
-
-
-
     }
 
     async login(loginUserDto: LoginUserDto) {
@@ -215,6 +227,7 @@ export class UsersService {
                 expiresIn: '7d',
             });
 
+            
             // reset login attempts to 0 once successful login
             await this.databaseService.user.update({
                 where: { email: email },
@@ -225,8 +238,16 @@ export class UsersService {
                 }
             });
 
+            // Ensure wallet exists for customer/SP accounts (handles pre-existing users)
+            if (
+                user.userType === $Enums.UserType.CUSTOMER ||
+                user.userType === $Enums.UserType.SERVICE_PROVIDER
+            ) {
+                this.paymentClient.emit(WALLETPATTERN.CREATE, { userId: user.id });
+            }
+            
             return {
-                user: { ...user, refreshToken: undefined, password: undefined, },
+                user: { ...user, refreshToken: undefined, password: undefined},
                 access_token: this.jwtService.sign({ sub: user.id, type: user.userType, isEmailVerified: user.isEmailVerified }, {
                     secret: process.env.JWT_ACCESS_TOKEN_SECRET,
                     expiresIn: '59m',

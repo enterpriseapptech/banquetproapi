@@ -47,4 +47,10 @@ export enum ServiceType {
     EVENTCENTER = "EVENTCENTER"
 }
 
+export enum UserType {
+    ADMIN = 'ADMIN',
+    SERVICE_PROVIDER = 'SERVICE_PROVIDER',
+    CUSTOMER = 'CUSTOMER',
+    STAFF = 'STAFF'
+}
 

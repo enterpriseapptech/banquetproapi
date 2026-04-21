@@ -18,7 +18,6 @@ export class SubscriptionService {
 
     async create(createSubscriptionDto: CreateSubscriptionDto): Promise<SubscriptionDto> {
         try {
-            
 
             const [plan, subscription, amountDue] = await this.databaseService.$transaction(async (tx) => {
 

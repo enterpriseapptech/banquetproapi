@@ -28,6 +28,11 @@ export const CACHE_KEYS = {
     PAYMENTS_ALL: 'payments:all',
     PAYMENT_ONE:  (id: string) => `payments:one:${id}`,
 
+
+    // ─── Wallet ─────────────────────────────────────────────────────────────
+    WALLET_ONE: (id: string) => `wallet:one:${id}`,
+    TRANSACTIONS_ONE_ALL:  (userId: string, limit: number, offset: number) => `transactions:all:one:${userId}:limit:${limit}:offset:${offset}`,
+
     // ─── Payment Methods ──────────────────────────────────────────────────────
     PAYMENT_METHODS_ALL: 'payment-methods:all',
     PAYMENT_METHOD_ONE:  (id: string) => `payment-methods:one:${id}`,

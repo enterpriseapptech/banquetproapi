@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { CreateCateringDto, UpdateCateringDto, CateringDto, CATERINGPATTERN, ManyCateringDto, ManyRequestCateringDto } from '@shared/contracts/catering';
+import { CreateCateringDto, UpdateCateringDto, CateringDto, CATERINGPATTERN, CATERINGREFUNDPOLICYPATTERN, ManyCateringDto, ManyRequestCateringDto } from '@shared/contracts/catering';
+import { RefundPolicyDto, UpsertRefundPolicyDto } from '@shared/contracts/payments';
 import { CATERING_CLIENT } from '@shared/contracts';
 import { UpdateServiceSubscriptionDto } from '@shared/contracts/shared';
 
@@ -51,7 +52,7 @@ export class CateringService {
     updateSubscription(updateServiceSubscriptionDto: UpdateServiceSubscriptionDto) {
         const { serviceId, subscriptionStatus, subscriptionPlanId, timeframe } = updateServiceSubscriptionDto;
         return this.cateringClient.emit<void, UpdateServiceSubscriptionDto>(CATERINGPATTERN.UPDATESUBSCRIPTION,
-            {   serviceId, 
+            {   serviceId,
                 subscriptionStatus,
                 subscriptionPlanId,
                 timeframe,
@@ -59,4 +60,15 @@ export class CateringService {
         );
     }
 
+    upsertRefundPolicy(cateringId: string, dto: UpsertRefundPolicyDto) {
+        return this.cateringClient.send<RefundPolicyDto, { cateringId: string } & UpsertRefundPolicyDto>(
+            CATERINGREFUNDPOLICYPATTERN.UPSERT, { cateringId, ...dto },
+        );
+    }
+
+    getRefundPolicy(cateringId: string) {
+        return this.cateringClient.send<RefundPolicyDto | null, string>(
+            CATERINGREFUNDPOLICYPATTERN.FINDBYSERVICEID, cateringId,
+        );
+    }
 }

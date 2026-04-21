@@ -21,6 +21,7 @@ export const DISPUTEPATTERN = {
     FINDBYID: 'dispute.findOneById',
     CREATE: 'dispute.create',
     UPDATE: 'dispute.update',
+    RESOLVE: 'dispute.resolve',
     DELETE: 'dispute.delete',
 }
 
@@ -39,11 +40,27 @@ export const REFUNDPATTERN = {
     FINDALL: 'refund.findAll',
     FINDBYID: 'refund.findOneById',
     CREATE: 'refund.create',
+    APPROVE: 'refund.approve',
+    DECLINE: 'refund.decline',
     UPDATE: 'refund.update',
     DELETE: 'refund.delete',
 }
 
+export const WALLETPATTERN = {
+    CREATE: 'wallet.create',              // internal: create wallet on user creation
+    FINDBYUSERID: 'wallet.findByUserId',
+    TOPUP: 'wallet.topup',               // create wallet-funding invoice + initiate payment
+    PAYINVOICE: 'wallet.payInvoice',     // pay invoice from wallet balance
+    TRANSACTIONS: 'wallet.transactions', // list wallet transactions
+    RELEASEESCROW: 'wallet.releaseEscrow', // release held funds to SP on booking complete
+}
 
+export const WITHDRAWALPATTERN = {
+    CREATE: 'withdrawal.create',
+    FINDALL: 'withdrawal.findAll',
+    FINDBYID: 'withdrawal.findOneById',
+    UPDATE: 'withdrawal.update',
+}
 
 export const FEESPATTERN = {
     FINDALL: 'fees.findAll',
@@ -52,7 +69,6 @@ export const FEESPATTERN = {
     UPDATE: 'fees.update',
     DELETE: 'fees.delete',
 }
-
 
 export const FEATUREDPLANSPATTERN = {
     FINDALL: 'featuredplan.findAll',

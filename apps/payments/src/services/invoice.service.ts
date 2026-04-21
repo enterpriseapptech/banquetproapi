@@ -3,6 +3,7 @@ import { DatabaseService } from 'apps/payments/database/database.service';
 import { $Enums, Prisma } from 'apps/payments/prisma/@prisma/payments';
 import { InvoiceDto, InvoiceStatus, UpdateInvoiceDto, CreateInvoiceDto, InvoiceItem, BillingAddress, CreateInvoiceDtoForSubscriptions, CreateSecondInvoiceDto, ServiceType } from '@shared/contracts/payments';
 import { instanceToPlain } from 'class-transformer';
+import { Decimal } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class InvoiceService {
@@ -16,6 +17,7 @@ export class InvoiceService {
         const days = Number(process.env.INVOICE_VALID_NO_OF_DAYS ?? 7);
         return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
     }
+    
     // used by created booking to make a first invoice for the booking
     async generate(createInvoiceDto: CreateInvoiceDto): Promise<InvoiceDto> {
         const newInvoiceInput: Prisma.InvoiceCreateInput = {
@@ -59,7 +61,6 @@ export class InvoiceService {
                         items: true,
                         currency: true,
                         billingAddress: true,
-                        payments: { select: { amount: true } },
                     },
                 });
 
@@ -71,13 +72,12 @@ export class InvoiceService {
                     });
                 }
 
-                const totalPaid = invoices.reduce((acc, invoice) => {
-                    const invoiceTotal = invoice.payments.reduce(
-                        (sum, payment) => sum + Number(payment.amount),
-                        0
-                    );
-                    return acc + invoiceTotal;
-                }, 0);
+                const invoiceIds = invoices.map(i => i.id);
+                const walletTxs = await prisma.walletTransaction.findMany({
+                    where: { invoiceId: { in: invoiceIds }, reason: 'INVOICE_PAYMENT', type: 'DEBIT' },
+                    select: { amount: true },
+                });
+                const totalPaid = walletTxs.reduce((sum, tx) => sum + Number(tx.amount), 0);
                 const amountDue = createInvoiceDto.booking.total - totalPaid
                 const newInvoiceInput: Prisma.InvoiceCreateInput = {
                     userId: invoices[0].userId,
@@ -347,19 +347,39 @@ export class InvoiceService {
         };
     }
 
+
     async calculateTotals(bookingId?: string, subscriptionId?: string): Promise<{ totalDue: number; totalPaid: number }> {
         const where = subscriptionId ? { subscriptionId } : { bookingId };
-        const invoices = await this.databaseService.invoice.findMany({
-            where,
-            include: { payments: true },
+        const invoices = await this.databaseService.invoice.findMany({ where });
+        const invoiceIds = invoices.map(inv => inv.id);
+
+        const walletTxs = await this.databaseService.walletTransaction.findMany({
+            where: { invoiceId: { in: invoiceIds }, reason: 'INVOICE_PAYMENT' as any, type: 'DEBIT' as any },
+            select: { amount: true },
         });
-        let totalDue = 0;
-        let totalPaid = 0;
-        for (const inv of invoices) {
-            totalDue += Number(inv.amountDue);
-            totalPaid += (inv.payments || []).reduce((sum, p) => sum + Number(p.amount), 0);
-        }
+
+        const totalDue = invoices.reduce((sum, inv) => sum + Number(inv.amountDue), 0);
+        const totalPaid = walletTxs.reduce((sum, tx) => sum + Number(tx.amount), 0);
         return { totalDue, totalPaid };
+    }
+
+    /** Returns how much of the invoice amount is still unpaid, based on INVOICE_PAYMENT wallet debit transactions */
+    async calculateRemainingAmount(invoiceId: string, prisma?: any): Promise<Decimal> {
+        const db = prisma ?? this.databaseService;
+        const invoice = await db.invoice.findUnique({ where: { id: invoiceId } });
+        if (!invoice) throw new NotFoundException('Invoice not found');
+
+        const walletTxs = await db.walletTransaction.findMany({
+            where: { invoiceId, reason: 'INVOICE_PAYMENT', type: 'DEBIT'},
+            select: { amount: true },
+        });
+
+        const totalApplied = (walletTxs as any[]).reduce(
+            (sum: Decimal, tx: any) => sum.plus(new Decimal(tx.amount)),
+            new Decimal(0),
+        );
+        const remaining = new Decimal(invoice.amountDue).minus(totalApplied);
+        return remaining.lt(0) ? new Decimal(0) : remaining;
     }
 
     private mapToInvoiceDto(invoice: any): InvoiceDto {

@@ -1,7 +1,21 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { PAYMENT_CLIENT } from '@shared/contracts';
-import { CreateDisputeDto, CreateFeaturedPlanDto, CreateFeeDto, CreateInvoiceDto, CreatePaymentDto, CreatePaymentMethodDto, CreateRefundDto, CreateSecondInvoiceDto, CreateSubscriptionDto, CreateSubscriptionPlanDto, DisputeDto, FeaturedPlanDto, FeesDto, GeneratePaymentDto, InvoiceDto, INVOICEPATTERN, PaymentDto, PaymentMethodDto, PAYMENTMETHODPATTERN, PAYMENTPATTERN, RefundDto, SubscriptionDto, SubscriptionPlanDto, UpdateDisputeDto, UpdateFeaturedPlanDto, UpdateFeeDto, UpdateInvoiceDto, UpdatePaymentDto, UpdatePaymentMethodDto, UpdateRefundDto, UpdateSubscriptionDto, UpdateSubscriptionPlanDto, FEATUREDPLANSPATTERN, FEESPATTERN, SUBSCRIPTIONPLANSPATTERN, SUBSCRIPTIONPATTERN, REFUNDPATTERN, DISPUTEPATTERN } from '@shared/contracts/payments';
+import { CACHE_KEYS, PAYMENT_CLIENT } from '@shared/contracts';
+import {
+  ApproveRefundDto, CreateDisputeDto, CreateFeaturedPlanDto, CreateFeeDto, CreateInvoiceDto,
+  CreatePaymentDto, CreatePaymentMethodDto, CreateRefundDto, CreateSecondInvoiceDto,
+  CreateSubscriptionDto, CreateSubscriptionPlanDto, CreateWithdrawalDto, DeclineRefundDto,
+  DisputeDto, FeaturedPlanDto, FeesDto, GeneratePaymentDto, InvoiceDto, INVOICEPATTERN,
+  PayInvoiceDto, PaymentDto, PaymentMethodDto, PAYMENTMETHODPATTERN, PAYMENTPATTERN,
+  ReleaseEscrowDto, ResolveDisputeDto, RefundDto, SubscriptionDto, SubscriptionPlanDto,
+  UpdateDisputeDto, UpdateFeaturedPlanDto, UpdateFeeDto, UpdateInvoiceDto,
+  UpdatePaymentDto, UpdatePaymentMethodDto, UpdateRefundDto, UpdateSubscriptionDto,
+  UpdateSubscriptionPlanDto, UpdateWithdrawalDto, WalletDto, WalletTransactionDto, WithdrawalDto,
+  FEATUREDPLANSPATTERN, FEESPATTERN, SUBSCRIPTIONPLANSPATTERN, SUBSCRIPTIONPATTERN,
+  REFUNDPATTERN, DISPUTEPATTERN, WALLETPATTERN, WITHDRAWALPATTERN,
+} from '@shared/contracts/payments';
+import { DataWithCountDto, UserType } from '@shared/contracts/shared';
+import { Cacheable, } from '../common/cache/cache.decorators';
 
 @Injectable()
 export class PaymentService {
@@ -13,6 +27,10 @@ export class PaymentService {
         return this.paymentClient.send<string, GeneratePaymentDto>(PAYMENTPATTERN.INITIATE, generatePaymentDto)
     }
 
+    // @CacheEvict(
+    //         ((...args) => `${CACHE_KEYS.WALLET_ONE}:${userId}`)
+    // )
+    // @Cacheable((...args) => `${CACHE_KEYS.WALLET_ONE}:${args.join(':')}`)
     create(createPaymentDto: CreatePaymentDto) {
         return this.paymentClient.send<PaymentDto, CreatePaymentDto>(PAYMENTPATTERN.CREATE, createPaymentDto)
     }
@@ -279,5 +297,114 @@ export class SubscriptionService {
 
     remove(id: string, updaterId: string) {
         return this.client.send<SubscriptionDto, { id: string; updaterId: string }>(SUBSCRIPTIONPATTERN.DELETE, { id, updaterId });
+    }
+}
+
+@Injectable()
+export class WalletService {
+    constructor(@Inject(PAYMENT_CLIENT) private readonly client: ClientProxy) {}
+
+    // @CacheEvict(
+    //         `${CACHE_KEYS.APP_SETTING}:*`
+    // )
+    @Cacheable((...args) => `${CACHE_KEYS.WALLET_ONE}:${args.join(':')}`)
+    findByUserId(userId: string, userType: UserType) {
+        return this.client.send<WalletDto, {userId: string, userType: UserType}>(WALLETPATTERN.FINDBYUSERID, {userId, userType});
+    }
+
+    payInvoice(dto: PayInvoiceDto) {
+        return this.client.send<{ paymentId: string; invoiceId: string }, PayInvoiceDto>(WALLETPATTERN.PAYINVOICE, dto);
+    }
+
+    releaseEscrow(dto: ReleaseEscrowDto) {
+        return this.client.send<WalletTransactionDto, ReleaseEscrowDto>(WALLETPATTERN.RELEASEESCROW, dto);
+    }
+
+    @Cacheable((...args) => `${CACHE_KEYS.APP_SETTING}:${args.join(':')}`)
+    getTransactions(userId: string, limit: number, offset: number) {
+        return this.client.send<DataWithCountDto<WalletTransactionDto>, { userId: string; limit: number; offset: number }>(
+            WALLETPATTERN.TRANSACTIONS, { userId, limit, offset },
+        );
+    }
+}
+
+@Injectable()
+export class WithdrawalGatewayService {
+    constructor(@Inject(PAYMENT_CLIENT) private readonly client: ClientProxy) {}
+
+    create(dto: CreateWithdrawalDto) {
+        return this.client.send<WithdrawalDto, CreateWithdrawalDto>(WITHDRAWALPATTERN.CREATE, dto);
+    }
+
+    findAll(limit: number, offset: number, userId?: string) {
+        return this.client.send<{ count: number; docs: WithdrawalDto[] }, { limit: number; offset: number; userId?: string }>(
+            WITHDRAWALPATTERN.FINDALL, { limit, offset, userId },
+        );
+    }
+
+    findOne(id: string) {
+        return this.client.send<WithdrawalDto, string>(WITHDRAWALPATTERN.FINDBYID, id);
+    }
+
+    update(id: string, dto: UpdateWithdrawalDto) {
+        return this.client.send<WithdrawalDto, { id: string; dto: UpdateWithdrawalDto }>(WITHDRAWALPATTERN.UPDATE, { id, dto });
+    }
+}
+
+@Injectable()
+export class RefundGatewayService {
+    constructor(@Inject(PAYMENT_CLIENT) private readonly client: ClientProxy) {}
+
+    create(dto: CreateRefundDto) {
+        return this.client.send<RefundDto, CreateRefundDto>(REFUNDPATTERN.CREATE, dto);
+    }
+
+    approve(dto: ApproveRefundDto) {
+        return this.client.send<RefundDto, ApproveRefundDto>(REFUNDPATTERN.APPROVE, dto);
+    }
+
+    decline(dto: DeclineRefundDto) {
+        return this.client.send<RefundDto, DeclineRefundDto>(REFUNDPATTERN.DECLINE, dto);
+    }
+
+    findAll(limit: number, offset: number, customerId?: string, serviceProviderId?: string) {
+        return this.client.send<{ count: number; docs: RefundDto[] }, { limit: number; offset: number; customerId?: string; serviceProviderId?: string }>(
+            REFUNDPATTERN.FINDALL, { limit, offset, customerId, serviceProviderId },
+        );
+    }
+
+    findOne(id: string) {
+        return this.client.send<RefundDto, string>(REFUNDPATTERN.FINDBYID, id);
+    }
+
+    update(id: string, dto: UpdateRefundDto) {
+        return this.client.send<RefundDto, { id: string; updateRefundDto: UpdateRefundDto }>(REFUNDPATTERN.UPDATE, { id, updateRefundDto: dto });
+    }
+}
+
+@Injectable()
+export class DisputeGatewayService {
+    constructor(@Inject(PAYMENT_CLIENT) private readonly client: ClientProxy) {}
+
+    create(dto: CreateDisputeDto) {
+        return this.client.send<DisputeDto, CreateDisputeDto>(DISPUTEPATTERN.CREATE, dto);
+    }
+
+    resolve(dto: ResolveDisputeDto) {
+        return this.client.send<DisputeDto, ResolveDisputeDto>(DISPUTEPATTERN.RESOLVE, dto);
+    }
+
+    findAll(limit: number, offset: number, userId?: string, paymentId?: string) {
+        return this.client.send<{ count: number; docs: DisputeDto[] }, { limit: number; offset: number; userId?: string; paymentId?: string }>(
+            DISPUTEPATTERN.FINDALL, { limit, offset, userId, paymentId },
+        );
+    }
+
+    findOne(id: string) {
+        return this.client.send<DisputeDto, string>(DISPUTEPATTERN.FINDBYID, id);
+    }
+
+    update(id: string, dto: UpdateDisputeDto) {
+        return this.client.send<DisputeDto, { id: string; updateDisputeDto: UpdateDisputeDto }>(DISPUTEPATTERN.UPDATE, { id, updateDisputeDto: dto });
     }
 }

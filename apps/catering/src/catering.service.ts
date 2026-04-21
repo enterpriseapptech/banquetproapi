@@ -225,6 +225,42 @@ export class CateringService {
         });
     }
 
+    async upsertRefundPolicy(cateringId: string, dto: {
+        allowRefunds?: boolean;
+        refundWindowDays?: number;
+        tiers?: { minDaysBeforeEvent: number; deductionPercentage: number; description?: string }[];
+    }): Promise<any> {
+        const { allowRefunds, refundWindowDays, tiers } = dto;
+        const policy = await this.databaseService.refundPolicy.upsert({
+            where: { cateringId },
+            create: {
+                cateringId,
+                allowRefunds: allowRefunds ?? true,
+                refundWindowDays: refundWindowDays ?? 3,
+                tiers: tiers ? { create: tiers.map(t => ({ ...t, deductionPercentage: t.deductionPercentage })) } : undefined,
+            },
+            update: {
+                allowRefunds: allowRefunds ?? undefined,
+                refundWindowDays: refundWindowDays ?? undefined,
+                tiers: tiers ? {
+                    deleteMany: {},
+                    create: tiers.map(t => ({ ...t, deductionPercentage: t.deductionPercentage })),
+                } : undefined,
+            },
+            include: { tiers: true },
+        });
+        return { ...policy, tiers: policy.tiers.map(t => ({ ...t, deductionPercentage: Number(t.deductionPercentage) })) };
+    }
+
+    async getRefundPolicy(cateringId: string): Promise<any | null> {
+        const policy = await this.databaseService.refundPolicy.findUnique({
+            where: { cateringId },
+            include: { tiers: true },
+        });
+        if (!policy) return null;
+        return { ...policy, tiers: policy.tiers.map(t => ({ ...t, deductionPercentage: Number(t.deductionPercentage) })) };
+    }
+
     /**
      *
      * Maps a raw event center from the database to EventCenterDto.

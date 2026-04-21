@@ -3,32 +3,37 @@ import { HttpException, Inject, Injectable, InternalServerErrorException, NotFou
 import { ClientProxy } from '@nestjs/microservices';
 import { UpdateUserDto, CreateUserDto, USERPATTERN, UserDto, LoginUserDto, UserFilterDto, UpdateUserPasswordDto, UniqueIdentifierDto, BookMarkType, } from '@shared/contracts/users';
 import { USER_CLIENT } from '@shared/contracts';
+import { firstValueFrom } from 'rxjs';
+import { WALLETPATTERN } from '@shared/contracts/payments';
+import { WalletService } from '../payment/payment.service';
 
 
 @Injectable()
 export class UsersService {
     constructor(
-        @Inject(USER_CLIENT) private readonly userClient: ClientProxy
+        @Inject(USER_CLIENT) private readonly userClient: ClientProxy,
+        private readonly walletService: WalletService
     ) { }
 
     create(createUserDto: CreateUserDto) {
-        console.log('Gateway sending create User message...');
         return this.userClient.send(USERPATTERN.CREATEUSER, createUserDto) 
     }
 
-    login(loginUserDto: LoginUserDto) {
+    async login(loginUserDto: LoginUserDto) {
         // return this.userClient.send<UserDto, CreateUserDto>({ cmd: USERPATTERN.CREATEUSER }, createUserDto)
-        console.log('Gateway sending login message...');
-        return this.userClient.send<{ user: UserDto, refresh_token: string, access_token: string }, LoginUserDto>(USERPATTERN.LOGINUSER, loginUserDto)
-        // .subscribe({
-        //   next: (response) => console.log('Response received:', response),
-        //   error: (err) => console.error('Error:', err),
-        // });
-
+        const {user, access_token, refresh_token} = await firstValueFrom(this.userClient.send<{ user: UserDto, refresh_token: string, access_token: string }, LoginUserDto>(USERPATTERN.LOGINUSER, loginUserDto))
+        const userwallet = await firstValueFrom( this.walletService.findByUserId(user.id, user.userType));
+        return{
+            user: {
+                ...user,
+                wallet: userwallet
+            },
+            access_token,
+            refresh_token
+        }
     }
 
     refreshlogin(token: string) {
-        console.log('Gateway sending login message...');
         return this.userClient.send<string>(USERPATTERN.REFRESHLOGIN, token)
     }
 

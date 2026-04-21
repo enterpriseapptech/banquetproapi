@@ -1,5 +1,9 @@
 import { Module } from '@nestjs/common';
-import { DisputeController, FeesController, FeaturedPlanController, InvoiceController, PaymentsController, RefundController, SubscriptionController, SubscriptionPlansController } from './payments.controller';
+import {
+  DisputeController, FeesController, FeaturedPlanController, InvoiceController,
+  PaymentsController, RefundController, SubscriptionController, SubscriptionPlansController,
+  WalletController, WithdrawalController,
+} from './payments.controller';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { DatabaseService } from '../database/database.service';
@@ -17,6 +21,9 @@ import { DisputeService } from './services/dispute.service';
 import { SubscriptionService } from './services/subscription.service';
 import { SubscriptionPlansService } from './services/subscription_plans.service';
 import { SubscriptionExpiryService } from './services/subscription-expiry.service';
+import { WalletService } from './services/wallet.service';
+import { WithdrawalService } from './services/withdrawal.service';
+import { RefundProcessingService } from './services/refund-processing.service';
 import { EVENT_CENTER_CLIENT, CATERING_CLIENT, NOTIFICATION_CLIENT } from '@shared/contracts';
 
 @Module({
@@ -28,10 +35,18 @@ import { EVENT_CENTER_CLIENT, CATERING_CLIENT, NOTIFICATION_CLIENT } from '@shar
     ClientConfigModule,
     ScheduleModule.forRoot(),
   ],
-  controllers: [PaymentsController, SubscriptionPlansController,
-    FeaturedPlanController, FeesController, InvoiceController,
-    RefundController, DisputeController,
-    SubscriptionController],
+  controllers: [
+    PaymentsController,
+    SubscriptionPlansController,
+    FeaturedPlanController,
+    FeesController,
+    InvoiceController,
+    RefundController,
+    DisputeController,
+    SubscriptionController,
+    WalletController,
+    WithdrawalController,
+  ],
   providers: [
     DatabaseService,
     PaymentsService,
@@ -46,6 +61,9 @@ import { EVENT_CENTER_CLIENT, CATERING_CLIENT, NOTIFICATION_CLIENT } from '@shar
     PaystackPaymentService,
     ClientConfigService,
     SubscriptionExpiryService,
+    WalletService,
+    WithdrawalService,
+    RefundProcessingService,
     {
       provide: EVENT_CENTER_CLIENT,
       useFactory: (configService: ClientConfigService) =>

@@ -1,6 +1,14 @@
 import { Module } from '@nestjs/common';
-import { DisputeService, FeaturedPlanService, FeesService, InvoiceService, PaymentMethodService, PaymentService, RefundService, SubscriptionService, SubscriptionPlanService } from './payment.service';
-import { DisputeController, FeaturedPlanController, FeesController, InvoiceController, PaymentController, PaymentMethodController, RefundController, SubscriptionController, SubscriptionPlanController } from './payment.controller';
+import {
+    DisputeGatewayService, DisputeService, FeaturedPlanService, FeesService, InvoiceService,
+    PaymentMethodService, PaymentService, RefundGatewayService, RefundService, SubscriptionService,
+    SubscriptionPlanService, WithdrawalGatewayService,
+} from './payment.service';
+import {
+    DisputeController, FeaturedPlanController, FeesController, InvoiceController,
+    PaymentController, PaymentMethodController, RefundController, SubscriptionController,
+    SubscriptionPlanController, WithdrawalController,
+} from './payment.controller';
 import { ClientConfigService } from '../client-config/client-config.service';
 import { NOTIFICATION_CLIENT, PAYMENT_CLIENT } from '@shared/contracts';
 import { ClientProxyFactory } from '@nestjs/microservices';
@@ -12,9 +20,8 @@ import { CateringModule } from '../catering/catering.module';
 import { UsersModule } from '../users/users.module';
 
 @Module({
-    imports: [ClientConfigModule, BookingModule, EventcentersModule, CateringModule,  UsersModule],
+    imports: [ClientConfigModule, BookingModule, EventcentersModule, CateringModule, UsersModule],
     controllers: [
-        
         PaymentController,
         InvoiceController,
         PaymentMethodController,
@@ -24,6 +31,7 @@ import { UsersModule } from '../users/users.module';
         SubscriptionController,
         RefundController,
         DisputeController,
+        WithdrawalController,
     ],
     providers: [
         PaymentService,
@@ -35,6 +43,9 @@ import { UsersModule } from '../users/users.module';
         SubscriptionService,
         RefundService,
         DisputeService,
+        WithdrawalGatewayService,
+        RefundGatewayService,
+        DisputeGatewayService,
         CloudinaryService,
         ClientConfigService,
         {
@@ -53,5 +64,6 @@ import { UsersModule } from '../users/users.module';
             inject: [ClientConfigService],
         }
     ],
+    exports: []
 })
 export class PaymentModule { }

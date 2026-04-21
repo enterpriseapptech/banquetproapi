@@ -2,6 +2,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, UseInterceptors, BadRequestException, UploadedFiles, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { EventcentersService } from './eventcenters.service';
 import { CreateEventCenterDto, UpdateEventCenterDto, } from '@shared/contracts/eventcenters';
+import { UpsertRefundPolicyDto } from '@shared/contracts/payments';
 import { UserDto } from '@shared/contracts/users';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
@@ -124,5 +125,16 @@ export class EventcentersController {
     async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
         const user: UserDto = await firstValueFrom(req.user)
         return this.eventcentersService.remove(id, user.id);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @Post(':id/refund-policy')
+    upsertRefundPolicy(@Param('id') id: string, @Body() dto: UpsertRefundPolicyDto) {
+        return this.eventcentersService.upsertRefundPolicy(id, dto);
+    }
+
+    @Get(':id/refund-policy')
+    getRefundPolicy(@Param('id') id: string) {
+        return this.eventcentersService.getRefundPolicy(id);
     }
 }

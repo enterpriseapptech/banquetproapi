@@ -10,6 +10,11 @@ export const EVENTCENTERPATTERN = {
     UPDATESUBSCRIPTION: 'event.center.updateSubscription',
 }
 
+export const EVENTCENTERREFUNDPOLICYPATTERN = {
+    UPSERT: 'event.center.refundPolicy.upsert',
+    FINDBYSERVICEID: 'event.center.refundPolicy.findByServiceId',
+}
+
 
 export const EVENTCENTERBOOKINGPATTERN = {
     FINDALL: 'event.center.booking.findAll',

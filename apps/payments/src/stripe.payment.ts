@@ -19,11 +19,12 @@ export class StripePaymentService implements PaymentServiceInterface{
         amount: number,
         paymentReason: PaymentReason,
         email?: string,
+        userId?: string,
     ): Promise<string> {
         const stripe = new Stripe(this.#stripeSecret, {})
 
         const paymentIntent = await stripe.paymentIntents.create({
-        amount: amount * 100 , // ₦50 (in kobo)
+        amount: amount * 100,
         currency: currency.toLowerCase(),
         automatic_payment_methods: { enabled: true },
         receipt_email: email,
@@ -31,7 +32,8 @@ export class StripePaymentService implements PaymentServiceInterface{
             invoiceId,
             reference,
             amountCharged: amount,
-            paymentReason
+            paymentReason,
+            userId,
         }
         });
 

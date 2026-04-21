@@ -4,10 +4,11 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 import { RpcException } from '@nestjs/microservices';
 import { catchError } from 'rxjs/operators';
 import { from, throwError } from 'rxjs';
-import { DisputeService, FeaturedPlanService, FeesService, InvoiceService, PaymentsService, RefundService, SubscriptionPlansService, SubscriptionService } from './payments.service';
-import { DISPUTEPATTERN, FEATUREDPLANSPATTERN, FEESPATTERN, INVOICEPATTERN, PAYMENTPATTERN, REFUNDPATTERN, SUBSCRIPTIONPATTERN, SUBSCRIPTIONPLANSPATTERN } from '@shared/contracts/payments/payments.pattern';
-import { CreateDisputeDto, CreateFeaturedPlanDto, CreateFeeDto, CreateInvoiceDto, CreatePaymentDto,  CreateRefundDto, CreateSubscriptionDto, CreateSubscriptionPlanDto, GeneratePaymentDto } from '@shared/contracts/payments/create-payments.dto';
-import { UpdateDisputeDto, UpdateFeaturedPlanDto, UpdateFeeDto, UpdateInvoiceDto, UpdatePaymentDto, UpdateRefundDto, UpdateSubscriptionDto, UpdateSubscriptionPlanDto } from '@shared/contracts/payments/update-payments.dto';
+import { DisputeService, FeaturedPlanService, FeesService, InvoiceService, PaymentsService, RefundService, SubscriptionPlansService, SubscriptionService, WalletService, WithdrawalService } from './payments.service';
+import { DISPUTEPATTERN, FEATUREDPLANSPATTERN, FEESPATTERN, INVOICEPATTERN, PAYMENTPATTERN, REFUNDPATTERN, SUBSCRIPTIONPATTERN, SUBSCRIPTIONPLANSPATTERN, WALLETPATTERN, WITHDRAWALPATTERN } from '@shared/contracts/payments/payments.pattern';
+import { CreateDisputeDto, CreateFeaturedPlanDto, CreateFeeDto, CreateInvoiceDto, CreatePaymentDto, CreateRefundDto, CreateSubscriptionDto, CreateSubscriptionPlanDto, CreateWalletDto, CreateWithdrawalDto, GeneratePaymentDto, PayInvoiceDto, ReleaseEscrowDto, TopupWalletDto } from '@shared/contracts/payments/create-payments.dto';
+import { UpdateDisputeDto, UpdateFeaturedPlanDto, UpdateFeeDto, UpdateInvoiceDto, UpdatePaymentDto, UpdateRefundDto, UpdateSubscriptionDto, UpdateSubscriptionPlanDto, UpdateWithdrawalDto, ApproveRefundDto, DeclineRefundDto, ResolveDisputeDto } from '@shared/contracts/payments/update-payments.dto';
+import { UserType } from '@shared/contracts/shared';
 
 @Controller()
 export class SubscriptionPlansController {
@@ -338,21 +339,21 @@ export class PaymentsController {
   }
 
 
-  @MessagePattern(PAYMENTPATTERN.CREATE)
-  create(@Payload() createPaymentDto: CreatePaymentDto) {
+  // @MessagePattern(PAYMENTPATTERN.CREATE)
+  // create(@Payload() createPaymentDto: CreatePaymentDto) {
 
-    return from(this.paymentService.create(createPaymentDto)).pipe(
-      catchError((err) => {
-        console.error("Error in paymentService:", err);
-        return throwError(() => new RpcException({
-          statusCode: err.response.statusCode || 500,
-          message: err.message || "Internal Server Error",
-          error: err.response.error || "Sever error",
-        }));
+  //   return from(this.paymentService.create(createPaymentDto)).pipe(
+  //     catchError((err) => {
+  //       console.error("Error in paymentService:", err);
+  //       return throwError(() => new RpcException({
+  //         statusCode: err.response.statusCode || 500,
+  //         message: err.message || "Internal Server Error",
+  //         error: err.response.error || "Sever error",
+  //       }));
 
-      })
-    )
-  }
+  //     })
+  //   )
+  // }
 
   @MessagePattern(PAYMENTPATTERN.FINDALL)
   findAll(@Payload() data: { limit: number, offset: number, search?: string}) {
@@ -547,60 +548,82 @@ export class InvoiceController {
 export class RefundController {
   constructor(private readonly refundService: RefundService) {}
 
-  @MessagePattern(REFUNDPATTERN.CREATE)
-  create(@Payload() createRefundDto: CreateRefundDto) {
-    return from(this.refundService.create(createRefundDto)).pipe(
-      catchError((err) => throwError(() => new RpcException({
-        statusCode: err.response?.statusCode || 500,
-        message: err.message || 'Internal Server Error',
-        error: err.response?.error || 'Server error',
-      })))
-    );
-  }
+  // @MessagePattern(REFUNDPATTERN.CREATE)
+  // create(@Payload() createRefundDto: CreateRefundDto) {
+  //   return from(this.refundService.create(createRefundDto)).pipe(
+  //     catchError((err) => throwError(() => new RpcException({
+  //       statusCode: err.response?.statusCode || 500,
+  //       message: err.message || 'Internal Server Error',
+  //       error: err.response?.error || 'Server error',
+  //     })))
+  //   );
+  // }
 
-  @MessagePattern(REFUNDPATTERN.FINDALL)
-  findAll(@Payload() data: { limit: number; offset: number; paymentId?: string }) {
-    return from(this.refundService.findAll(data.limit, data.offset, data.paymentId)).pipe(
-      catchError((err) => throwError(() => new RpcException({
-        statusCode: err.response?.statusCode || 500,
-        message: err.message || 'Internal Server Error',
-        error: err.response?.error || 'Server error',
-      })))
-    );
-  }
+  // @MessagePattern(REFUNDPATTERN.APPROVE)
+  // approve(@Payload() data: ApproveRefundDto) {
+  //   return from(this.refundService.approve(data.id, data.serviceProviderId)).pipe(
+  //     catchError((err) => throwError(() => new RpcException({
+  //       statusCode: err.response?.statusCode || 500,
+  //       message: err.message || 'Internal Server Error',
+  //       error: err.response?.error || 'Server error',
+  //     })))
+  //   );
+  // }
 
-  @MessagePattern(REFUNDPATTERN.FINDBYID)
-  findOne(@Payload() id: string) {
-    return from(this.refundService.findOne(id)).pipe(
-      catchError((err) => throwError(() => new RpcException({
-        statusCode: err.response?.statusCode || 500,
-        message: err.message || 'Internal Server Error',
-        error: err.response?.error || 'Server error',
-      })))
-    );
-  }
+  // @MessagePattern(REFUNDPATTERN.DECLINE)
+  // decline(@Payload() data: DeclineRefundDto) {
+  //   return from(this.refundService.decline(data.id, data.serviceProviderId, data.reason)).pipe(
+  //     catchError((err) => throwError(() => new RpcException({
+  //       statusCode: err.response?.statusCode || 500,
+  //       message: err.message || 'Internal Server Error',
+  //       error: err.response?.error || 'Server error',
+  //     })))
+  //   );
+  // }
 
-  @MessagePattern(REFUNDPATTERN.UPDATE)
-  update(@Payload() data: { id: string; updateRefundDto: UpdateRefundDto }) {
-    return from(this.refundService.update(data.id, data.updateRefundDto)).pipe(
-      catchError((err) => throwError(() => new RpcException({
-        statusCode: err.response?.statusCode || 500,
-        message: err.message || 'Internal Server Error',
-        error: err.response?.error || 'Server error',
-      })))
-    );
-  }
+  // @MessagePattern(REFUNDPATTERN.FINDALL)
+  // findAll(@Payload() data: { limit: number; offset: number; paymentId?: string }) {
+  //   return from(this.refundService.findAll(data.limit, data.offset, data.paymentId)).pipe(
+  //     catchError((err) => throwError(() => new RpcException({
+  //       statusCode: err.response?.statusCode || 500,
+  //       message: err.message || 'Internal Server Error',
+  //       error: err.response?.error || 'Server error',
+  //     })))
+  //   );
+  // }
 
-  @MessagePattern(REFUNDPATTERN.DELETE)
-  remove(@Payload() data: { id: string; updaterId: string }) {
-    return from(this.refundService.remove(data.id, data.updaterId)).pipe(
-      catchError((err) => throwError(() => new RpcException({
-        statusCode: err.response?.statusCode || 500,
-        message: err.message || 'Internal Server Error',
-        error: err.response?.error || 'Server error',
-      })))
-    );
-  }
+  // @MessagePattern(REFUNDPATTERN.FINDBYID)
+  // findOne(@Payload() id: string) {
+  //   return from(this.refundService.findOne(id)).pipe(
+  //     catchError((err) => throwError(() => new RpcException({
+  //       statusCode: err.response?.statusCode || 500,
+  //       message: err.message || 'Internal Server Error',
+  //       error: err.response?.error || 'Server error',
+  //     })))
+  //   );
+  // }
+
+  // @MessagePattern(REFUNDPATTERN.UPDATE)
+  // update(@Payload() data: { id: string; updateRefundDto: UpdateRefundDto }) {
+  //   return from(this.refundService.update(data.id, data.updateRefundDto)).pipe(
+  //     catchError((err) => throwError(() => new RpcException({
+  //       statusCode: err.response?.statusCode || 500,
+  //       message: err.message || 'Internal Server Error',
+  //       error: err.response?.error || 'Server error',
+  //     })))
+  //   );
+  // }
+
+  // @MessagePattern(REFUNDPATTERN.DELETE)
+  // remove(@Payload() data: { id: string; updaterId: string }) {
+  //   return from(this.refundService.remove(data.id, data.updaterId)).pipe(
+  //     catchError((err) => throwError(() => new RpcException({
+  //       statusCode: err.response?.statusCode || 500,
+  //       message: err.message || 'Internal Server Error',
+  //       error: err.response?.error || 'Server error',
+  //     })))
+  //   );
+  // }
 }
 
 @Controller()
@@ -610,6 +633,17 @@ export class DisputeController {
   @MessagePattern(DISPUTEPATTERN.CREATE)
   create(@Payload() createDisputeDto: CreateDisputeDto) {
     return from(this.disputeService.create(createDisputeDto)).pipe(
+      catchError((err) => throwError(() => new RpcException({
+        statusCode: err.response?.statusCode || 500,
+        message: err.message || 'Internal Server Error',
+        error: err.response?.error || 'Server error',
+      })))
+    );
+  }
+
+  @MessagePattern(DISPUTEPATTERN.RESOLVE)
+  resolve(@Payload() dto: ResolveDisputeDto) {
+    return from(this.disputeService.resolve(dto)).pipe(
       catchError((err) => throwError(() => new RpcException({
         statusCode: err.response?.statusCode || 500,
         message: err.message || 'Internal Server Error',
@@ -663,6 +697,177 @@ export class DisputeController {
   }
 }
 
+@Controller()
+export class WalletController {
+  constructor(private readonly walletService: WalletService) { }
+
+  @MessagePattern(WALLETPATTERN.CREATE)
+  create(@Payload() dto: CreateWalletDto) {
+    console.log({dto})
+    return from(this.walletService.create(dto)).pipe(
+      catchError((err) => throwError(() => new RpcException({
+        statusCode: err.response?.statusCode || 500,
+        message: err.message || 'Internal Server Error',
+        error: err.response?.error || 'Server error',
+      })))
+    );
+  }
+
+  @MessagePattern(WALLETPATTERN.FINDBYUSERID)
+  findorCreateWalletByUserId(@Payload() data: {userId: string, userType: UserType}) {
+    console.log({data})
+    const {userId, userType} = data
+    return from(this.walletService.findorCreateWalletByUserId(userId, userType)).pipe(
+      catchError((err) => throwError(() => new RpcException({
+        statusCode: err.response?.statusCode || 500,
+        message: err.message || 'Internal Server Error',
+        error: err.response?.error || 'Server error',
+      })))
+    );
+  }
+
+  @MessagePattern(WALLETPATTERN.PAYINVOICE)
+  payInvoice(@Payload() dto: PayInvoiceDto) {
+    return from(this.walletService.payInvoice(dto)).pipe(
+      catchError((err) => throwError(() => new RpcException({
+        statusCode: err.response?.statusCode || 500,
+        message: err.message || 'Internal Server Error',
+        error: err.response?.error || 'Server error',
+      })))
+    );
+  }
+
+  // @MessagePattern(WALLETPATTERN.RELEASEESCROW)
+  // releaseEscrow(@Payload() dto: ReleaseEscrowDto) {
+  //   return from(this.walletService.releaseEscrow(dto)).pipe(
+  //     catchError((err) => throwError(() => new RpcException({
+  //       statusCode: err.response?.statusCode || 500,
+  //       message: err.message || 'Internal Server Error',
+  //       error: err.response?.error || 'Server error',
+  //     })))
+  //   );
+  // }
+
+  @MessagePattern(WALLETPATTERN.TRANSACTIONS)
+  getTransactions(@Payload() data: { userId: string; limit: number; offset: number }) {
+    return from(this.walletService.getTransactionsByUserId(data.userId, data.limit, data.offset)).pipe(
+      catchError((err) => throwError(() => new RpcException({
+        statusCode: err.response?.statusCode || 500,
+        message: err.message || 'Internal Server Error',
+        error: err.response?.error || 'Server error',
+      })))
+    );
+  }
+}
+
+@Controller()
+export class WithdrawalController {
+  constructor(private readonly withdrawalService: WithdrawalService) { }
+
+//   @MessagePattern(WITHDRAWALPATTERN.CREATE)
+//   create(@Payload() dto: CreateWithdrawalDto) {
+//     return from(this.withdrawalService.create(dto)).pipe(
+//       catchError((err) => throwError(() => new RpcException({
+//         statusCode: err.response?.statusCode || 500,
+//         message: err.message || 'Internal Server Error',
+//         error: err.response?.error || 'Server error',
+//       })))
+//     );
+//   }
+
+//   @MessagePattern(WITHDRAWALPATTERN.FINDALL)
+//   findAll(@Payload() data: { limit: number; offset: number; userId?: string }) {
+//     return from(this.withdrawalService.findAll(data.limit, data.offset, data.userId)).pipe(
+//       catchError((err) => throwError(() => new RpcException({
+//         statusCode: err.response?.statusCode || 500,
+//         message: err.message || 'Internal Server Error',
+//         error: err.response?.error || 'Server error',
+//       })))
+//     );
+//   }
+
+//   @MessagePattern(WITHDRAWALPATTERN.FINDBYID)
+//   findOne(@Payload() id: string) {
+//     return from(this.withdrawalService.findOne(id)).pipe(
+//       catchError((err) => throwError(() => new RpcException({
+//         statusCode: err.response?.statusCode || 500,
+//         message: err.message || 'Internal Server Error',
+//         error: err.response?.error || 'Server error',
+//       })))
+//     );
+//   }
+
+//   @MessagePattern(WITHDRAWALPATTERN.UPDATE)
+//   update(@Payload() data: { id: string; dto: UpdateWithdrawalDto }) {
+//     return from(this.withdrawalService.update(data.id, data.dto)).pipe(
+//       catchError((err) => throwError(() => new RpcException({
+//         statusCode: err.response?.statusCode || 500,
+//         message: err.message || 'Internal Server Error',
+//         error: err.response?.error || 'Server error',
+//       })))
+//     );
+//   }
+// }
+
+// @Controller()
+// export class SubscriptionController {
+//   constructor(private readonly subscriptionService: SubscriptionService) {}
+
+//   @MessagePattern(SUBSCRIPTIONPATTERN.CREATE)
+//   create(@Payload() createSubscriptionDto: CreateSubscriptionDto) {
+//     return from(this.subscriptionService.create(createSubscriptionDto)).pipe(
+//       catchError((err) => throwError(() => new RpcException({
+//         statusCode: err.response?.statusCode || 500,
+//         message: err.message || 'Internal Server Error',
+//         error: err.response?.error || 'Server error',
+//       })))
+//     );
+//   }
+
+//   @MessagePattern(SUBSCRIPTIONPATTERN.FINDALL)
+//   findAll(@Payload() data: { limit: number; offset: number; serviceProviderId?: string; status?: string }) {
+//     return from(this.subscriptionService.findAll(data.limit, data.offset, data.serviceProviderId, data.status)).pipe(
+//       catchError((err) => throwError(() => new RpcException({
+//         statusCode: err.response?.statusCode || 500,
+//         message: err.message || 'Internal Server Error',
+//         error: err.response?.error || 'Server error',
+//       })))
+//     );
+//   }
+
+//   @MessagePattern(SUBSCRIPTIONPATTERN.FINDBYID)
+//   findOne(@Payload() id: string) {
+//     return from(this.subscriptionService.findOne(id)).pipe(
+//       catchError((err) => throwError(() => new RpcException({
+//         statusCode: err.response?.statusCode || 500,
+//         message: err.message || 'Internal Server Error',
+//         error: err.response?.error || 'Server error',
+//       })))
+//     );
+//   }
+
+//   @MessagePattern(SUBSCRIPTIONPATTERN.UPDATE)
+//   update(@Payload() data: { id: string; updateSubscriptionDto: UpdateSubscriptionDto }) {
+//     return from(this.subscriptionService.update(data.id, data.updateSubscriptionDto)).pipe(
+//       catchError((err) => throwError(() => new RpcException({
+//         statusCode: err.response?.statusCode || 500,
+//         message: err.message || 'Internal Server Error',
+//         error: err.response?.error || 'Server error',
+//       })))
+//     );
+//   }
+
+//   @MessagePattern(SUBSCRIPTIONPATTERN.DELETE)
+//   remove(@Payload() data: { id: string; updaterId: string }) {
+//     return from(this.subscriptionService.remove(data.id, data.updaterId)).pipe(
+//       catchError((err) => throwError(() => new RpcException({
+//         statusCode: err.response?.statusCode || 500,
+//         message: err.message || 'Internal Server Error',
+//         error: err.response?.error || 'Server error',
+//       })))
+//     );
+//   }
+}
 @Controller()
 export class SubscriptionController {
   constructor(private readonly subscriptionService: SubscriptionService) {}

@@ -254,6 +254,42 @@ export class EventcentersService {
        
     }
 
+    // async upsertRefundPolicy(eventCenterId: string, dto: {
+    //     allowRefunds?: boolean;
+    //     refundWindowDays?: number;
+    //     tiers?: { minDaysBeforeEvent: number; deductionPercentage: number; description?: string }[];
+    // }): Promise<any> {
+    //     const { allowRefunds, refundWindowDays, tiers } = dto;
+    //     const policy = await this.databaseService.refundPolicy.upsert({
+    //         where: { eventCenterId },
+    //         create: {
+    //             eventCenterId,
+    //             allowRefunds: allowRefunds ?? true,
+    //             refundWindowDays: refundWindowDays ?? 3,
+    //             tiers: tiers ? { create: tiers.map(t => ({ ...t, deductionPercentage: t.deductionPercentage })) } : undefined,
+    //         },
+    //         update: {
+    //             allowRefunds: allowRefunds ?? undefined,
+    //             refundWindowDays: refundWindowDays ?? undefined,
+    //             tiers: tiers ? {
+    //                 deleteMany: {},
+    //                 create: tiers.map(t => ({ ...t, deductionPercentage: t.deductionPercentage })),
+    //             } : undefined,
+    //         },
+    //         include: { tiers: true },
+    //     });
+    //     return { ...policy, tiers: policy.tiers.map(t => ({ ...t, deductionPercentage: Number(t.deductionPercentage) })) };
+    // }
+
+    // async getRefundPolicy(eventCenterId: string): Promise<any | null> {
+    //     const policy = await this.databaseService.refundPolicy.findUnique({
+    //         where: { eventCenterId },
+    //         include: { tiers: true },
+    //     });
+    //     if (!policy) return null;
+    //     return { ...policy, tiers: policy.tiers.map(t => ({ ...t, deductionPercentage: Number(t.deductionPercentage) })) };
+    // }
+
     /**
      *
      * Maps a raw event center from the database to EventCenterDto.

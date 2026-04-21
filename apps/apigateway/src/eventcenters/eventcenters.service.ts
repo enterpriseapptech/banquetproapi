@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { CreateEventCenterDto, UpdateEventCenterDto, EventCenterDto, EVENTCENTERPATTERN, ManyEventCentersDto, ManyRequestEventCenterDto } from '@shared/contracts/eventcenters';
+import { CreateEventCenterDto, UpdateEventCenterDto, EventCenterDto, EVENTCENTERPATTERN, ManyEventCentersDto, ManyRequestEventCenterDto, EVENTCENTERREFUNDPOLICYPATTERN } from '@shared/contracts/eventcenters';
+import { RefundPolicyDto, UpsertRefundPolicyDto } from '@shared/contracts/payments';
 import { CACHE_KEYS, EVENT_CENTER_CLIENT } from '@shared/contracts';
 import { UpdateServiceSubscriptionDto } from '@shared/contracts/shared';
 import { Cacheable, CacheEvict } from '../common/cache/cache.decorators';
@@ -65,6 +66,18 @@ export class EventcentersService {
         const { serviceId, subscriptionStatus, subscriptionPlanId, timeframe } = updateServiceSubscriptionDto;
         return this.eventClient.emit<void, UpdateServiceSubscriptionDto>(EVENTCENTERPATTERN.UPDATESUBSCRIPTION,
             { serviceId, subscriptionStatus, subscriptionPlanId, timeframe }
+        );
+    }
+
+    upsertRefundPolicy(eventCenterId: string, dto: UpsertRefundPolicyDto) {
+        return this.eventClient.send<RefundPolicyDto, { eventCenterId: string } & UpsertRefundPolicyDto>(
+            EVENTCENTERREFUNDPOLICYPATTERN.UPSERT, { eventCenterId, ...dto },
+        );
+    }
+
+    getRefundPolicy(eventCenterId: string) {
+        return this.eventClient.send<RefundPolicyDto | null, string>(
+            EVENTCENTERREFUNDPOLICYPATTERN.FINDBYSERVICEID, eventCenterId,
         );
     }
 }

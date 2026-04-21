@@ -1,13 +1,9 @@
 import { IsEmail, IsEnum, IsNotEmpty, Length, IsOptional, IsUUID, IsString, ValidateIf } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserStatus } from './user.dto';
+import { UserType } from '../shared';
 
-export enum UserType {
-    ADMIN = 'ADMIN',
-    SERVICE_PROVIDER = 'SERVICE_PROVIDER',
-    CUSTOMER = 'CUSTOMER',
-    STAFF = 'STAFF'
-}
+export {UserType};
 
 export enum ServiceType {
     EVENTCENTERS= 'EVENTCENTERS',
