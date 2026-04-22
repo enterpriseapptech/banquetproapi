@@ -35,6 +35,22 @@ export class PaymentService {
         return this.paymentClient.send<PaymentDto, CreatePaymentDto>(PAYMENTPATTERN.CREATE, createPaymentDto)
     }
 
+    processFailedPayment(createPaymentDto: CreatePaymentDto) {
+        return this.paymentClient.send<PaymentDto, CreatePaymentDto>(PAYMENTPATTERN.FAILED_PAYMENT, createPaymentDto)
+    }
+
+    processWalletFunding(dto: CreatePaymentDto) {
+        return this.paymentClient.send<PaymentDto, CreatePaymentDto>(PAYMENTPATTERN.WALLET_FUNDING, dto);
+    }
+
+    processServiceRequest(dto: CreatePaymentDto) {
+        return this.paymentClient.send<PaymentDto, CreatePaymentDto>(PAYMENTPATTERN.SERVICE_REQUEST, dto);
+    }
+
+    // processPlatformPayments(dto: CreatePaymentDto) {
+    //     return this.paymentClient.send<PaymentDto, CreatePaymentDto>(PAYMENTPATTERN.SERVICE_REQUEST, dto);
+    // }
+
     findAll(limit: number, offset: number, search?: string) {
         return this.paymentClient.send<{ count: number; docs: PaymentDto[] }, {limit: number, offset: number, search?: string}>(PAYMENTPATTERN.FINDALL, {limit, offset, search})
     }

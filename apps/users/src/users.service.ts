@@ -149,7 +149,7 @@ export class UsersService {
             };
             return userAccount;
 
-        } catch (error) {
+        } catch (error : any) {
             PrismaErrorHandler.handle(error, Prisma);
             throw new ConflictException('sever error could not create user', {
                 cause: new Error(),
@@ -255,7 +255,7 @@ export class UsersService {
                 refresh_token: refreshToken,
             };
             
-        } catch (error) {
+        } catch (error: any) {
             PrismaErrorHandler.handle(error, Prisma);
            throw new NotFoundException(error.message, {
                     cause: new Error(),
@@ -273,7 +273,7 @@ export class UsersService {
                 },
             });
             return true;
-        } catch (error) {
+        } catch (error : any) {
             throw new InternalServerErrorException('sever error could not logout user', {
                 cause: error,
                 description: 'sever error could not logout user',
@@ -719,7 +719,7 @@ export class UsersService {
 
             return "We sent you an email containing details to reset your password";
 
-        } catch (error) {
+        } catch (error : any) {
             throw new Error(error);
         }
 
@@ -746,7 +746,7 @@ export class UsersService {
                 isMatch: account.isMatch, userId: account.userId
             };
 
-        } catch (error) {
+        } catch (error : any) {
             throw new Error(error);
         }
     }
@@ -807,7 +807,7 @@ export class UsersService {
                 status: User.status as unknown as UserStatus,
             };
             return userAccount;
-        } catch (error) {
+        } catch (error : any) {
             throw new ConflictException(error);
         }
     }

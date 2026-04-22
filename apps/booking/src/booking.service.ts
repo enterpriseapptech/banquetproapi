@@ -247,72 +247,115 @@ export class BookingService {
 	 
 	
 	async updatePayment(id: string, amountPaid: Decimal): Promise<BookingDto> {
+		// Captured inside the transaction so the catch block can build a refund DTO
+		// even when the update step is what failed (not just the lookup).
+		let snapshot: any;
+		let updatedBooking: any
 		try {
-			
-			const booking = await this.databaseService.booking.findUnique({
-				where: { id },
+			updatedBooking = await this.databaseService.$transaction(async (prisma) => {
+				snapshot = await prisma.booking.findUnique({ where: { id } });
+
+				if (!snapshot) {
+					throw new NotFoundException('Booking not found', {
+						cause: new Error(),
+						description: "Booking Error: we couldn't find the booking been paid for!"
+					});
+				}
+
+				const paymentStatus: $Enums.InvoiceStatus = Number(amountPaid) >= Number(snapshot.total)
+					? $Enums.InvoiceStatus.PAID
+					: $Enums.InvoiceStatus.PARTIALLY_PAID;
+
+				return prisma.booking.update({ where: { id }, data: { paymentStatus } });
 			});
-			let paymentStatus: $Enums.InvoiceStatus
-			if(amountPaid > booking.total || amountPaid == booking.total){
-			   paymentStatus = $Enums.InvoiceStatus.PAID
 
-			}else{
-				paymentStatus = $Enums.InvoiceStatus.PARTIALLY_PAID
-			}
-			const updatedBooking = await this.databaseService.booking.update({
-				where: { id }, data: { paymentStatus }
-			});
-
-			const bookingDto: BookingDto = {
-				...updatedBooking,
-				subTotal: Number(booking.subTotal),
-				discount: Number(booking.discount),
-				total: Number(booking.total),
-				status: booking.status as unknown as BookingStatus,
-				paymentStatus: booking.paymentStatus as unknown as InvoiceStatus,
-				serviceType: booking.serviceType as unknown as ServiceType,
-				source: booking.source as unknown as BookingSource
-			};
-
-						// validate customer account
-			let accounts = await firstValueFrom(this.userClient.send<UserDto[], UniqueIdentifierDto[]>(USERPATTERN.FINDMANYBYUNIQUEIDENTIFIER, [{id: booking.customerId}, {id: booking.serviceProvider}]));
-			accounts = Array.isArray(accounts) ? accounts : Object.values(accounts)	
-			const customer = accounts.find((user) => user.id === booking.customerId)
-			const serviceProvider = accounts.find((user) => user.id !== booking.customerId)
-
-			if (!customer) {
-				// fail silently
-			}else{
-				// send notification to customer and service provider
-				this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
-					type: 'EMAIL',
-					recipientId: customer.id,
-					data: {
-						subject: "Payment Invoice",
-						message: `We received your payment`,
-						recipientEmail: customer.email,
-					},
-				});
-			}
-
-			if (!serviceProvider || serviceProvider.status !== "ACTIVE") {
-				// fail silently
-			}else {
-				// send notification to customer and service provider
-				this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
-					type: 'EMAIL',
-					recipientId: customer.id,
-					data: {
-						subject: "Payment Invoice",
-						message: `We received your payment`,
-						recipientEmail: customer.email,
-					},
-				});
-			}
-			return bookingDto;
 		} catch (error) {
-			throw new ConflictException(error);
+			// Transaction failed — money was received but the booking record could not be updated.
+			// Return shouldRefund: true so the payment service can initiate a refund.
+				if (snapshot) {
+					return {
+						...snapshot,
+						subTotal: Number(snapshot.subTotal),
+						discount: Number(snapshot.discount),
+						total: Number(snapshot.total),
+						status: snapshot.status as unknown as BookingStatus,
+						paymentStatus: snapshot.paymentStatus as unknown as InvoiceStatus,
+						serviceType: snapshot.serviceType as unknown as ServiceType,
+						source: snapshot.source as unknown as BookingSource,
+						shouldRefund: true,
+					};
+				}
+				return { id, shouldRefund: true } as BookingDto;
 		}
+
+		const bookingDto: BookingDto = {
+			...updatedBooking,
+			subTotal: Number(updatedBooking.subTotal),
+			discount: Number(updatedBooking.discount),
+			total: Number(updatedBooking.total),
+			status: updatedBooking.status as unknown as BookingStatus,
+			paymentStatus: updatedBooking.paymentStatus as unknown as InvoiceStatus,
+			serviceType: updatedBooking.serviceType as unknown as ServiceType,
+			source: updatedBooking.source as unknown as BookingSource
+		};
+
+		// validate customer account
+		let accounts = await firstValueFrom(this.userClient.send<UserDto[], UniqueIdentifierDto[]>(USERPATTERN.FINDMANYBYUNIQUEIDENTIFIER, [{id: updatedBooking.customerId}, {id: updatedBooking.serviceProvider}]));
+		accounts = Array.isArray(accounts) ? accounts : Object.values(accounts)
+		const customer = accounts.find((user) => user.id === updatedBooking.customerId)
+		const serviceProvider = accounts.find((user) => user.id !== updatedBooking.customerId)
+
+		if (!customer && serviceProvider) {
+			// send notification to customer and service provider
+			this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
+				type: 'EMAIL',
+				recipientId: customer.id,
+				data: {
+					subject: "Payment Notice",
+					message: `We received payment for a service from a customer we could not identify`,
+					recipientEmail: serviceProvider.email,
+				},
+			});
+		}else{
+			// send notification to customer and service provider
+			this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
+				type: 'EMAIL',
+				recipientId: customer.id,
+				data: {
+					subject: "Payment Invoice",
+					message: `We received your payment`,
+					recipientEmail: customer.email,
+				},
+			});
+		}
+
+		if (!serviceProvider || serviceProvider.status !== "ACTIVE") {
+			// send notification to customer and service provider
+			this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
+				type: 'EMAIL',
+				recipientId: customer.id,
+				data: {
+					subject: "Payment Invoice",
+					message: `We received your payment`,
+					recipientEmail: customer.email,
+				},
+			});
+
+		}else {
+			// send notification to customer and service provider
+			this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
+				type: 'EMAIL',
+				recipientId: customer.id,
+				data: {
+					subject: "Payment Invoice",
+					message: `We received your payment`,
+					recipientEmail: customer.email,
+				},
+			});
+		}
+		return bookingDto;
+
+		
 	}
 
 

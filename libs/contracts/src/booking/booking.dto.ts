@@ -50,6 +50,7 @@ export enum InvoiceStatus {
 
 
 export class BookingDto {
+    shouldRefund?: boolean
     id: string;
     customerId?: string;
     confirmedBy?: string;

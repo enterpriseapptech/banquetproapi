@@ -110,7 +110,6 @@ export class PaymentsService {
     async saveFailedPayment(createPaymentDto: CreatePaymentDto): Promise<PaymentDto> {
         try {
             const paymentAmount = new Decimal(createPaymentDto.amount);
-            let planTimeFrame: number | undefined;
             // 1. Record payment — deduplicate via unique constraint
             const payment = await this.databaseService.$transaction(async (prisma) => 
                 {
@@ -129,7 +128,6 @@ export class PaymentsService {
                         return null;
                     }
 
-                    
                     const newPaymentInput: Prisma.PaymentCreateInput = {
                         userId: createPaymentDto.userId,
                         paymentMethod: createPaymentDto.paymentMethod,
@@ -151,82 +149,22 @@ export class PaymentsService {
 
                 if (!payment) return null;
 
-                this.logger.log({ message: 'Payment recorded', paymentId: payment.id, invoiceId: createPaymentDto.invoiceId ?? 'none', status: createPaymentDto.status, amount: createPaymentDto.amount, reason: createPaymentDto.paymentReason });
+                this.logger.log({ message: 'Failed Payment recorded', 
+                    paymentId: payment.id, invoiceId: createPaymentDto.invoiceId ?? 'none',
+                     status: createPaymentDto.status, amount: createPaymentDto.amount, 
+                     reason: createPaymentDto.paymentReason });
 
-                // 2. Failed payment — record only, no wallet credit
-                if (createPaymentDto.status === IPaymentStatus.FAILED) {
-                    this.logger.warn({ message: 'Payment failed — no wallet credit', paymentId: payment.id, reference: createPaymentDto.reference });
-                    return this.mapToPaymentDto(payment);
-                }
+                this.logger.warn({ message: 'Payment failed — no wallet credit',
+                        userId: createPaymentDto.userId, 
+                        paymentId: payment.id, 
+                        reference: createPaymentDto.reference });
+                return this.mapToPaymentDto(payment);
+                
 
-
-
-                // 3. Credit customer wallet — always for every completed payment
-                try {
-                    const creditTx = await this.walletService.creditWallet(
-                        createPaymentDto.userId,
-                        Number(paymentAmount),
-                        $Enums.WalletTxReason.TOPUP,
-                        payment.id,
-                    );
-                    this.logger.log({ message: 'Wallet credited', walletTxId: creditTx.id, userId: createPaymentDto.userId, amount: Number(paymentAmount) });
-                } catch (err) {
-                    this.logger.error({ message: 'Failed to credit wallet', userId: createPaymentDto.userId, paymentId: payment.id, error: err.message });
-                }
-
-                // 4. No invoiceId — wallet funding complete
-                if (!createPaymentDto.invoiceId) {
-                    this.logger.log({ message: 'Wallet funding complete', paymentId: payment.id, userId: createPaymentDto.userId });
-                    return this.mapToPaymentDto(payment);
-                }
-
-            // 5. Invoice exists — debit wallet and distribute to platform/SP
-            let invoice: any
-            let invoiceStatus: string;
-            try {
-                const result = await this.databaseService.$transaction(async (prisma) => {
-                    invoice = await this.databaseService.invoice.findUnique({ where: { id: createPaymentDto.invoiceId } });
-                    return this.walletService.applyToInvoice(prisma, invoice, paymentAmount);
-                });
-                invoiceStatus = result.invoiceStatus;
-                this.logger.log({ message: 'Invoice payment applied', invoiceId: invoice.id, invoiceStatus });
-
-            } catch (err: any) {
-                this.logger.error({ message: 'Failed to apply payment to invoice', invoiceId: invoice.id, error: err.message });
-                invoiceStatus = InvoiceStatus.PENDING;
-            }
-
-            // 6. Activate subscription if fully paid
-            if (
-                createPaymentDto.paymentReason === PaymentReason.SUBSCRIPTION &&
-                invoice.subscriptionId &&
-                invoiceStatus === InvoiceStatus.PAID
-            ) {
-                this.logger.log({ message: 'Activating subscription', subscriptionId: invoice.subscriptionId, invoiceId: invoice.id });
-                const subscription = await this.subscriptionService.findOne(invoice.subscriptionId);
-                const plan = await this.subscriptionPlansService.findOne(subscription.subscriptionplanId);
-                const paidAt = new Date(createPaymentDto.paidAt);
-                planTimeFrame = plan.timeFrame;
-                const expiryDate = new Date(paidAt.getTime() + planTimeFrame * 24 * 60 * 60 * 1000);
-                await this.subscriptionService.update(invoice.subscriptionId, { status: Status.ACTIVE, expiryDate });
-            }
-
-            const { totalDue, totalPaid } = await this.invoiceService.calculateTotals(invoice.bookingId, invoice.subscriptionId);
-
-            return {
-                ...this.mapToPaymentDto(payment),
-                serviceType: invoice.serviceType as unknown as ServiceType,
-                totalPaymentDue: totalDue,
-                totalPaymentPaid: totalPaid,
-                bookingId: invoice.bookingId,
-                subscriptionId: invoice.subscriptionId,
-                serviceId: invoice.serviceId,
-                subscriptionPlanId: invoice.subscriptionPlanId,
-                timeframe: planTimeFrame,
-            };
-
-        } catch (error) {
-            this.logger.error({ message: 'Payment creation failed', invoiceId: createPaymentDto?.invoiceId ?? 'none', reference: createPaymentDto?.reference, error: error?.message });
+        } catch (error: any) {
+            this.logger.error({ message: 'Attempt to saved Failed Payment also failed', 
+                createPaymentDto: createPaymentDto, 
+                error: error?.message });
             throw new InternalServerErrorException('server error could not create payment', {
                 cause: new Error(),
                 description: 'payment creation failed, please try again',
@@ -378,12 +316,197 @@ export class PaymentsService {
                 timeframe: planTimeFrame,
             };
 
-        } catch (error) {
+        } catch (error : any) {
             this.logger.error({ message: 'Payment creation failed', invoiceId: createPaymentDto?.invoiceId ?? 'none', reference: createPaymentDto?.reference, error: error?.message });
             throw new InternalServerErrorException('server error could not create payment', {
                 cause: new Error(),
                 description: 'payment creation failed, please try again',
             });
+        }
+         } catch (error : any) {
+            this.logger.error({ message: 'Payment creation failed', invoiceId: createPaymentDto?.invoiceId ?? 'none', reference: createPaymentDto?.reference, error: error?.message });
+            throw new InternalServerErrorException('server error could not create payment', {
+                cause: new Error(),
+                description: 'payment creation failed, please try again',
+            });
+        }
+    }
+
+    /**
+     * WALLETFUNDING flow:
+     * 1. Deduplicate
+     * 2. Record payment
+     * 3. Credit customer wallet (TOPUP)
+     * No invoice — pure top-up.
+     */
+    async processWalletFunding(dto: CreatePaymentDto): Promise<PaymentDto> {
+        try {
+            const paymentAmount = new Decimal(dto.amount);
+
+            const payment = await this.databaseService.$transaction(async (prisma) => {
+                const existingPayment = await prisma.payment.findUnique({
+                    where: {
+                        reference_paymentReference_transactionId: {
+                            reference: dto.reference,
+                            paymentReference: dto.paymentReference,
+                            transactionId: dto.transactionId,
+                        },
+                    },
+                });
+
+                if (existingPayment) {
+                    this.logger.warn({ message: 'Duplicate wallet funding skipped', reference: dto.reference });
+                    return this.mapToPaymentDto(existingPayment);
+                }
+
+                const newPayment = await prisma.payment.create({
+                    data: {
+                        userId: dto.userId,
+                        paymentMethod: dto.paymentMethod,
+                        paymentReference: dto.paymentReference,
+                        paidAt: dto.paidAt,
+                        amount: paymentAmount,
+                        amountCharged: paymentAmount,
+                        reference: dto.reference,
+                        paymentAuthorization: dto.paymentAuthorization || 'unknown',
+                        currency: dto.currency,
+                        paymentReason: dto.paymentReason,
+                        status: dto.status,
+                        transactionId: dto.transactionId,
+                    },
+                });
+
+                this.logger.log({ message: 'Wallet funding payment recorded', paymentId: newPayment.id, userId: dto.userId, amount: dto.amount });
+
+                if (dto.status === IPaymentStatus.FAILED) {
+                    this.logger.warn({ message: 'Wallet funding failed — no wallet credit', paymentId: newPayment.id });
+                    return this.mapToPaymentDto(newPayment);
+                }
+
+                await this.walletService.creditWallet(dto.userId, Number(paymentAmount), $Enums.WalletTxReason.TOPUP, newPayment.id, prisma);
+                this.logger.log({ message: 'Wallet topped up', userId: dto.userId, amount: Number(paymentAmount) });
+
+                return this.mapToPaymentDto(newPayment);
+            });
+
+            return payment;
+        } catch (error: any) {
+            this.logger.error({ message: 'Wallet funding failed', reference: dto?.reference, error: error?.message });
+            throw new InternalServerErrorException('Wallet funding failed, please try again');
+        }
+    }
+
+    /**
+     * SERVICEREQUEST flow:
+     * 1. Deduplicate
+     * 2. Record payment
+     * 3. Credit customer wallet (TOPUP) — reflects the incoming external payment
+     * 4. Find the invoice for this service
+     * 5. Debit customer wallet (INVOICE_PAYMENT) — reduces wallet by what is owed
+     * 6. Credit platform with service charge portion (SERVICE_CHARGE)
+     * 7. Credit SP wallet or hold in platform escrow (ESCROW_HOLD / ESCROW_RELEASE)
+     * 8. Mark invoice PAID, PARTIALLY_PAID, or OVER_PAID
+     * Gateway then uses bookingId from the response to mark the booking as paid.
+     */
+    async processServiceRequest(dto: CreatePaymentDto): Promise<PaymentDto> {
+        try {
+            const paymentAmount = new Decimal(dto.amount);
+
+            // Step 1–3: Record payment and credit wallet atomically
+            const payment = await this.databaseService.$transaction(async (prisma) => {
+                const existingPayment = await prisma.payment.findUnique({
+                    where: {
+                        reference_paymentReference_transactionId: {
+                            reference: dto.reference,
+                            paymentReference: dto.paymentReference,
+                            transactionId: dto.transactionId,
+                        },
+                    },
+                });
+
+                if (existingPayment) {
+                    this.logger.warn({ message: 'Duplicate service request payment skipped', reference: dto.reference });
+                    return this.mapToPaymentDto(existingPayment);
+                }
+
+                const newPayment = await prisma.payment.create({
+                    data: {
+                        userId: dto.userId,
+                        paymentMethod: dto.paymentMethod,
+                        paymentReference: dto.paymentReference,
+                        paidAt: dto.paidAt,
+                        amount: paymentAmount,
+                        amountCharged: paymentAmount,
+                        reference: dto.reference,
+                        paymentAuthorization: dto.paymentAuthorization || 'unknown',
+                        currency: dto.currency,
+                        paymentReason: dto.paymentReason,
+                        status: dto.status,
+                        transactionId: dto.transactionId,
+                        ...(dto.invoiceId && { invoice: { connect: { id: dto.invoiceId } } }),
+                    },
+                });
+
+                this.logger.log({ message: 'Service request payment recorded', paymentId: newPayment.id, invoiceId: dto.invoiceId ?? 'none' });
+
+                if (dto.status === IPaymentStatus.FAILED) {
+                    this.logger.warn({ message: 'Service request payment failed — no wallet credit', paymentId: newPayment.id });
+                    return this.mapToPaymentDto(newPayment);
+                }
+
+                // Credit customer wallet with the full incoming amount
+                await this.walletService.creditWallet(
+                    dto.userId, Number(paymentAmount), 
+                    $Enums.WalletTxReason.TOPUP, 
+                    newPayment.id, 
+                    prisma
+                );
+                this.logger.log({ message: 'Customer wallet credited (TOPUP)', 
+                    userId: dto.userId, amount: Number(paymentAmount) });
+
+                return this.mapToPaymentDto(newPayment);
+            });
+
+            // Failed payment or no invoice — nothing more to do
+            if (!payment || payment.status === IPaymentStatus.FAILED || !dto.invoiceId) {
+                return payment;
+            }
+
+            // Step 4: Fetch the invoice
+            const invoice = await this.databaseService.invoice.findUnique({ where: { id: dto.invoiceId } });
+            if (!invoice) {
+                this.logger.error({ message: 'Invoice not found for service request payment', 
+                    invoiceId: dto.invoiceId, paymentId: payment.id });
+                return payment;
+            }
+
+            // Steps 5–8: Debit wallet, distribute funds, mark invoice — all in one transaction
+            let invoiceStatus: string = InvoiceStatus.PENDING;
+            try {
+                const result = await this.databaseService.$transaction(async (prisma) => {
+                    return this.walletService.applyServiceRequestPayment(prisma, invoice, paymentAmount);
+                });
+                invoiceStatus = result.invoiceStatus;
+                this.logger.log({ message: 'Service request invoice payment applied', invoiceId: invoice.id, invoiceStatus });
+            } catch (err: any) {
+                this.logger.error({ message: 'Failed to apply service request payment to invoice', invoiceId: invoice.id, error: err.message });
+            }
+
+            const { totalDue, totalPaid } = await this.invoiceService.calculateTotals(invoice.bookingId, invoice.subscriptionId);
+
+            return {
+                ...payment,
+                serviceType: invoice.serviceType as unknown as ServiceType,
+                totalPaymentDue: totalDue,
+                totalPaymentPaid: totalPaid,
+                bookingId: invoice.bookingId,
+                subscriptionId: invoice.subscriptionId,
+                serviceId: invoice.serviceId,
+                subscriptionPlanId: invoice.subscriptionPlanId,
+            };
+        } catch (error : any) {
+            this.logger.error({ message: 'Service request payment failed', invoiceId: dto?.invoiceId, reference: dto?.reference, error: error?.message });
+            throw new InternalServerErrorException('Service request payment failed, please try again');
         }
     }
 
@@ -443,7 +566,7 @@ export class PaymentsService {
                 paymentMethod: payment.paymentMethod,
                 serviceType: (payment as any).serviceType as unknown as ServiceType,
             };
-        } catch (error) {
+        } catch (error : any) {
             throw new NotFoundException({
                 statusCode: 404,
                 message: "Payment not found",
@@ -475,7 +598,7 @@ export class PaymentsService {
                 serviceType: (payment as any).serviceType as unknown as ServiceType,
             };
 
-        } catch (error) {
+        } catch (error : any) {
             throw new InternalServerErrorException(error);
         }
     }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Controller } from '@nestjs/common';
 import { CateringService } from './catering.service';
 import { EventPattern, MessagePattern, Payload, RpcException } from '@nestjs/microservices';
@@ -114,27 +115,27 @@ export class CateringController {
         return from(this.cateringService.updateSubscriptionStatus(data.serviceId, data.subscriptionStatus));
     }
 
-    @MessagePattern(CATERINGREFUNDPOLICYPATTERN.UPSERT)
-    upsertRefundPolicy(@Payload() data: { cateringId: string; allowRefunds?: boolean; refundWindowDays?: number; tiers?: any[] }) {
-        const { cateringId, ...dto } = data;
-        return from(this.cateringService.upsertRefundPolicy(cateringId, dto)).pipe(
-            catchError((err) => throwError(() => new RpcException({
-                statusCode: err.response?.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-                error: err.response?.error || 'Server error',
-            }))),
-        );
-    }
+    // @MessagePattern(CATERINGREFUNDPOLICYPATTERN.UPSERT)
+    // upsertRefundPolicy(@Payload() data: { cateringId: string; allowRefunds?: boolean; refundWindowDays?: number; tiers?: any[] }) {
+    //     const { cateringId, ...dto } = data;
+    //     return from(this.cateringService.upsertRefundPolicy(cateringId, dto)).pipe(
+    //         catchError((err) => throwError(() => new RpcException({
+    //             statusCode: err.response?.statusCode || 500,
+    //             message: err.message || 'Internal Server Error',
+    //             error: err.response?.error || 'Server error',
+    //         }))),
+    //     );
+    // }
 
-    @MessagePattern(CATERINGREFUNDPOLICYPATTERN.FINDBYSERVICEID)
-    getRefundPolicy(@Payload() cateringId: string) {
-        return from(this.cateringService.getRefundPolicy(cateringId)).pipe(
-            catchError((err) => throwError(() => new RpcException({
-                statusCode: err.response?.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-                error: err.response?.error || 'Server error',
-            }))),
-        );
-    }
+    // @MessagePattern(CATERINGREFUNDPOLICYPATTERN.FINDBYSERVICEID)
+    // getRefundPolicy(@Payload() cateringId: string) {
+    //     return from(this.cateringService.getRefundPolicy(cateringId)).pipe(
+    //         catchError((err) => throwError(() => new RpcException({
+    //             statusCode: err.response?.statusCode || 500,
+    //             message: err.message || 'Internal Server Error',
+    //             error: err.response?.error || 'Server error',
+    //         }))),
+    //     );
+    // }
 }
 

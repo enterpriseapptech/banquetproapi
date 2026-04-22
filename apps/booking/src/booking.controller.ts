@@ -76,7 +76,7 @@ export class BookingController {
             })
         );
     }
-    
+
     @EventPattern(BOOKINGPATTERN.UPDATEPAYMENT)
     updatePayment(@Payload() data: { id: string, amount: number }) {
         console.log({data})

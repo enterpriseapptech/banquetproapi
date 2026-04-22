@@ -26,6 +26,7 @@ import {
     IPaymentStatus,
     PayInvoiceDto,
     PaymentMethod,
+    PaymentReason,
     RefundStatus,
     ResolveDisputeDto,
     TopupWalletDto,
@@ -151,114 +152,102 @@ export class PaymentController {
                 ...payload
             });
             let paymentData: CreatePaymentDto;
-            if (payload.event && payload.event === 'charge.success') {
-                // paystack payment succeeded
-                paymentData = {
-                    userId: payload.data.metadata.userId,
-                    invoiceId: payload.data.metadata.invoiceId || undefined,
-                    reference: payload.data.metadata.reference,
-                    paymentReference: payload.data.reference,
-                    amountCharged: payload.data.metadata.amountCharged,
-                    amount: payload.data.amount / 100,
-                    paymentMethod: PaymentMethod.PAYSTACK,
-                    currency: payload.data.currency,
-                    paidAt: payload.data.paid_at,
-                    status: payload.data.status === 'success' ? IPaymentStatus.COMPLETED : IPaymentStatus.FAILED,
-                    paymentReason: payload.data.metadata.paymentReason,
-                    transactionId: String(payload.data.id),
-                };
-            } else if (payload.type === 'payment_intent.succeeded') {
-                // stripe payment succeeded
-                paymentData = {
-                    userId: payload.data.object.metadata.userId,
-                    paymentReason: payload.data.object.metadata.paymentReason,
-                    transactionId: payload.data.object.id,
-                    invoiceId: payload.data.object.metadata.invoiceId || undefined,
-                    reference: payload.data.object.metadata.reference,
-                    paymentReference: payload.request.idempotency_key,
-                    amountCharged: payload.data.object.metadata.amountCharged / 100,
-                    amount: payload.data.object.amount_received / 100,
-                    paymentMethod: PaymentMethod.STRIPE,
-                    currency: payload.data.object.currency.toUpperCase(),
-                    paidAt: new Date(payload.data.object.created * 1000).toISOString(),
-                    status: payload.data.object.status === 'succeeded' ? IPaymentStatus.COMPLETED : IPaymentStatus.FAILED,
-                };
-            } else if (payload.event === 'charge.failed') {
-                // paystack payment failed — record only, no wallet credit
-                paymentData = {
-                    userId: payload.data.metadata.userId,
-                    invoiceId: payload.data.metadata.invoiceId || undefined,
-                    reference: payload.data.metadata.reference,
-                    paymentReference: payload.data.reference,
-                    amountCharged: payload.data.metadata.amountCharged,
-                    amount: payload.data.amount / 100,
-                    paymentMethod: PaymentMethod.PAYSTACK,
-                    currency: payload.data.currency,
-                    paidAt: payload.data.paid_at ?? new Date().toISOString(),
-                    status: IPaymentStatus.FAILED,
-                    paymentReason: payload.data.metadata.paymentReason,
-                    transactionId: String(payload.data.id),
-                };
-            } else if (payload.type === 'payment_intent.payment_failed') {
-                // stripe payment failed — record only, no wallet credit
-                paymentData = {
-                    userId: payload.data.object.metadata.userId,
-                    paymentReason: payload.data.object.metadata.paymentReason,
-                    transactionId: payload.data.object.id,
-                    invoiceId: payload.data.object.metadata.invoiceId || undefined,
-                    reference: payload.data.object.metadata.reference,
-                    paymentReference: payload.request.idempotency_key,
-                    amountCharged: payload.data.object.metadata.amountCharged / 100,
-                    amount: (payload.data.object.amount ?? 0) / 100,
-                    paymentMethod: PaymentMethod.STRIPE,
-                    currency: payload.data.object.currency?.toUpperCase(),
-                    paidAt: new Date(payload.data.object.created * 1000).toISOString(),
-                    status: IPaymentStatus.FAILED,
-                };
-            }
-
-            const payment = await firstValueFrom(this.paymentService.create(paymentData));
-
-            if (payment?.status === IPaymentStatus.FAILED) {
-                this.logger.warn({
-                    message: "Payment webhook called with failed payment",
-                    ...payload
-                });
-                this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
-                    userId: payment.userId,
-                    internalId: 'system_notification',
-                    message: `Your payment of ${payment.amount} ${payment.currency} failed. Please try again.`,
-                    type: NotificationType.ERROR,
-                });
-            }
-
-            if (payment?.status === IPaymentStatus.COMPLETED) {
-                this.logger.log({
-                    message: "Payment created by webhook",
-                    ...payment
-                });
-                
-                // if payment is for booking, send the payment details to booking microservice
-                if (payment?.bookingId) {
-                    await this.bookingService.updatePayment(payment.bookingId, payment.totalPaymentPaid);
-                    // TO DO: refund process if booking fails to update
-                }
-
-                if (payment?.serviceId && payment?.serviceType) {
-                    
-                    const updateServiceSubscriptionDto: UpdateServiceSubscriptionDto = {
-                        serviceId: payment.serviceId,
-                        subscriptionStatus: SubscriptionStatus.ACTIVE,
-                        timeframe: payment.timeframe,
-                        subscriptionPlanId: payment.subscriptionPlanId,
+            const PaymentPayloadStatus = payload.event ? payload.event : payload.type
+            switch (PaymentPayloadStatus) {
+                case 'charge.success':
+                    // paystack payment succeeded
+                    paymentData = {
+                        userId: payload.data.metadata.userId,
+                        invoiceId: payload.data.metadata.invoiceId || undefined,
+                        reference: payload.data.metadata.reference,
+                        paymentReference: payload.data.reference,
+                        amountCharged: payload.data.metadata.amountCharged,
+                        amount: payload.data.amount / 100,
+                        paymentMethod: PaymentMethod.PAYSTACK,
+                        currency: payload.data.currency,
+                        paidAt: payload.data.paid_at,
+                        status: payload.data.status === 'success' ? IPaymentStatus.COMPLETED : IPaymentStatus.FAILED,
+                        paymentReason: payload.data.metadata.paymentReason,
+                        transactionId: String(payload.data.id),
                     };
-                    if (payment.serviceType === ServiceType.EVENTCENTER) {
-                        this.eventcentersService.updateSubscription(updateServiceSubscriptionDto);
+                    break;
+                case 'charge.failed':
+                    // paystack payment failed — record only, no wallet credit
+                    paymentData = {
+                        userId: payload.data.metadata.userId,
+                        invoiceId: payload.data.metadata.invoiceId || undefined,
+                        reference: payload.data.metadata.reference,
+                        paymentReference: payload.data.reference,
+                        amountCharged: payload.data.metadata.amountCharged,
+                        amount: payload.data.amount / 100,
+                        paymentMethod: PaymentMethod.PAYSTACK,
+                        currency: payload.data.currency,
+                        paidAt: payload.data.paid_at ?? new Date().toISOString(),
+                        status: IPaymentStatus.FAILED,
+                        paymentReason: payload.data.metadata.paymentReason,
+                        transactionId: String(payload.data.id),
+                    };
+                    await this.processFailedPayment(paymentData)
+                    return { received: true };
 
-                    } else if (payment.serviceType === ServiceType.CATERING) {
-                        this.cateringService.updateSubscription(updateServiceSubscriptionDto);
-                    }
-                }
+                case 'payment_intent.succeeded':
+                    // stripe payment succeeded
+                    paymentData = {
+                        userId: payload.data.object.metadata.userId,
+                        paymentReason: payload.data.object.metadata.paymentReason,
+                        transactionId: payload.data.object.id,
+                        invoiceId: payload.data.object.metadata.invoiceId || undefined,
+                        reference: payload.data.object.metadata.reference,
+                        paymentReference: payload.request.idempotency_key,
+                        amountCharged: payload.data.object.metadata.amountCharged / 100,
+                        amount: payload.data.object.amount_received / 100,
+                        paymentMethod: PaymentMethod.STRIPE,
+                        currency: payload.data.object.currency.toUpperCase(),
+                        paidAt: new Date(payload.data.object.created * 1000).toISOString(),
+                        status: payload.data.object.status === 'succeeded' ? IPaymentStatus.COMPLETED : IPaymentStatus.FAILED,
+                    };
+                    break;
+                case 'payment_intent.payment_failed':
+                    // stripe payment failed — record only, no wallet credit
+                    paymentData = {
+                        userId: payload.data.object.metadata.userId,
+                        paymentReason: payload.data.object.metadata.paymentReason,
+                        transactionId: payload.data.object.id,
+                        invoiceId: payload.data.object.metadata.invoiceId || undefined,
+                        reference: payload.data.object.metadata.reference,
+                        paymentReference: payload.request.idempotency_key,
+                        amountCharged: payload.data.object.metadata.amountCharged / 100,
+                        amount: (payload.data.object.amount ?? 0) / 100,
+                        paymentMethod: PaymentMethod.STRIPE,
+                        currency: payload.data.object.currency?.toUpperCase(),
+                        paidAt: new Date(payload.data.object.created * 1000).toISOString(),
+                        status: IPaymentStatus.FAILED,
+                    };
+                    await this.processFailedPayment(paymentData)
+                    return { received: true };
+                default:
+                    return;
+            }
+
+
+            // Route to the correct handler based on what the payment is for.
+            // WALLETFUNDING: record payment + credit wallet only — no invoice.
+            // SERVICEREQUEST: record payment + credit wallet + debit wallet + distribute to SP/platform + mark invoice.
+            // Everything else (SUBSCRIPTION, KYC, CERTIFICATION, FEATURED): existing path.
+            let payment: any;
+            const paymentReason = paymentData?.paymentReason ?? "UNKNOWN"
+            switch (paymentReason) {
+                case PaymentReason.WALLETFUNDING:
+                    payment = await firstValueFrom(this.paymentService.processWalletFunding(paymentData));
+                    break;
+                case PaymentReason.SERVICEREQUEST:
+                    await this.processSuccessfulPayment(paymentData)
+                    break;
+                case PaymentReason.WALLETFUNDING:
+                    
+                    break;
+                default:
+                    break;
             }
 
             return { received: true };
@@ -294,6 +283,102 @@ export class PaymentController {
     async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
         const user: UserDto = await firstValueFrom(req.user)
         return this.paymentService.remove(id, user.id);
+    }
+
+    private async processFailedPayment(paymentData: CreatePaymentDto){
+        await firstValueFrom(this.paymentService.processFailedPayment(paymentData));
+        this.logger.warn({
+            message: "Payment webhook called with failed payment",
+            ...paymentData
+        });
+        // send failed payment notification
+        this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
+            userId: paymentData.userId,
+            internalId: 'system_notification',
+            message: `Your payment of ${paymentData.amount} ${paymentData.currency} failed. Please try again.`,
+            type: NotificationType.ERROR,
+        });
+    
+    }
+
+
+    private async processSuccessfulPayment(paymentData: CreatePaymentDto){
+        // Route to the correct handler based on what the payment is for.
+        // WALLETFUNDING: record payment + credit wallet only — no invoice.
+        // SERVICEREQUEST: record payment + credit wallet + debit wallet + distribute to SP/platform + mark invoice.
+        // Everything else (SUBSCRIPTION, KYC, CERTIFICATION, FEATURED): existing path.
+        let payment: any;
+        const paymentReason = paymentData?.paymentReason ?? "UNKNOWN"
+
+        switch (paymentReason) {
+            case PaymentReason.WALLETFUNDING:
+                payment = await firstValueFrom(this.paymentService.processWalletFunding(paymentData));
+                break;
+            case PaymentReason.SERVICEREQUEST:
+                return await this.processBookingPayment(paymentData)
+                
+            case PaymentReason.SUBSCRIPTION:
+                
+                break;
+            default:
+                break;
+            }
+           
+
+
+
+            if (payment?.status === IPaymentStatus.COMPLETED) {
+                this.logger.log({
+                    message: "Payment created by webhook",
+                    ...payment
+                });
+                
+                
+
+                if (payment?.serviceId && payment?.serviceType) {
+                    
+                    const updateServiceSubscriptionDto: UpdateServiceSubscriptionDto = {
+                        serviceId: payment.serviceId,
+                        subscriptionStatus: SubscriptionStatus.ACTIVE,
+                        timeframe: payment.timeframe,
+                        subscriptionPlanId: payment.subscriptionPlanId,
+                    };
+                    if (payment.serviceType === ServiceType.EVENTCENTER) {
+                        this.eventcentersService.updateSubscription(updateServiceSubscriptionDto);
+
+                    } else if (payment.serviceType === ServiceType.CATERING) {
+                        this.cateringService.updateSubscription(updateServiceSubscriptionDto);
+                    }
+                }
+            }
+    }
+
+
+    private async processBookingPayment(paymentData: CreatePaymentDto){
+        const payment = await firstValueFrom(this.paymentService.processServiceRequest(paymentData));
+        if (payment?.status === IPaymentStatus.COMPLETED) {
+            this.logger.log({
+                message: "Successful Booking Payment created by webhook",
+                ...payment
+            });
+
+            if (payment?.bookingId) {
+                const booking = await firstValueFrom(this.bookingService.updatePayment(payment.bookingId, payment.totalPaymentPaid));
+                if(booking.shouldRefund) await this.processAutomaticRefund(paymentData)
+                
+            }else{
+                this.logger.warn({
+                    message: "Payment is for booking but has no bookingId starting automatic refund process",
+                    ...payment
+                })
+                await this.processAutomaticRefund(paymentData)
+            }
+
+        };
+    }
+
+    private async processAutomaticRefund(paymentData: CreatePaymentDto){
+        return "processing refund"
     }
 
 }
@@ -567,86 +652,86 @@ export class RefundController {
         private readonly cateringService: CateringService,
     ) {}
 
-    @UseGuards(JwtAuthGuard, VerificationGuard)
-    @Post()
-    async create(
-        @Body() body: { paymentId: string; refundReason: string },
-        @Req() req: AuthenticatedRequest,
-    ) {
-        const user: UserDto = await firstValueFrom(req.user);
-        const customerId = user.id;
+    // @UseGuards(JwtAuthGuard, VerificationGuard)
+    // @Post()
+    // async create(
+    //     @Body() body: { paymentId: string; refundReason: string },
+    //     @Req() req: AuthenticatedRequest,
+    // ) {
+    //     const user: UserDto = await firstValueFrom(req.user);
+    //     const customerId = user.id;
 
-        const payment = await firstValueFrom(this.paymentService.findOne(body.paymentId));
-        if (!payment) throw new BadRequestException('Payment not found');
+    //     const payment = await firstValueFrom(this.paymentService.findOne(body.paymentId));
+    //     if (!payment) throw new BadRequestException('Payment not found');
 
-        const invoice = await firstValueFrom(this.invoiceService.findOne(payment.invoiceId));
-        if (!invoice) throw new BadRequestException('Invoice not found');
+    //     const invoice = await firstValueFrom(this.invoiceService.findOne(payment.invoiceId));
+    //     if (!invoice) throw new BadRequestException('Invoice not found');
 
-        const { serviceId, serviceType, serviceProviderId } = invoice as any;
-        const invoiceAmount = invoice.amountDue;
-        const bookingId = payment.bookingId;
+    //     const { serviceId, serviceType, serviceProviderId } = invoice as any;
+    //     const invoiceAmount = invoice.amountDue;
+    //     const bookingId = payment.bookingId;
 
-        let deductionPercentage = 0;
-        let policySnapshot: Record<string, any> | undefined;
+    //     let deductionPercentage = 0;
+    //     let policySnapshot: Record<string, any> | undefined;
 
-        if (bookingId && serviceId && serviceType) {
-            try {
-                const booking = await firstValueFrom(this.bookingService.findOne(bookingId));
-                const eventDate = booking?.confirmedTimeSlots?.[0]?.startTime
-                    ?? booking?.requestedTimeSlots?.[0]?.startTime;
+    //     if (bookingId && serviceId && serviceType) {
+    //         try {
+    //             const booking = await firstValueFrom(this.bookingService.findOne(bookingId));
+    //             const eventDate = booking?.confirmedTimeSlots?.[0]?.startTime
+    //                 ?? booking?.requestedTimeSlots?.[0]?.startTime;
 
-                let policy = null;
-                if (serviceType === ServiceType.EVENTCENTER) {
-                    policy = await firstValueFrom(this.eventcentersService.getRefundPolicy(serviceId));
-                } else if (serviceType === ServiceType.CATERING) {
-                    policy = await firstValueFrom(this.cateringService.getRefundPolicy(serviceId));
-                }
+    //             let policy = null;
+    //             if (serviceType === ServiceType.EVENTCENTER) {
+    //                 policy = await firstValueFrom(this.eventcentersService.getRefundPolicy(serviceId));
+    //             } else if (serviceType === ServiceType.CATERING) {
+    //                 policy = await firstValueFrom(this.cateringService.getRefundPolicy(serviceId));
+    //             }
 
-                if (policy) {
-                    policySnapshot = { ...policy };
-                    if (!policy.allowRefunds) {
-                        throw new BadRequestException('This service does not allow refunds');
-                    }
-                    if (eventDate) {
-                        const daysUntilEvent = Math.floor(
-                            (new Date(eventDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-                        );
-                        if (daysUntilEvent < policy.refundWindowDays) {
-                            throw new BadRequestException(
-                                `Refunds must be requested at least ${policy.refundWindowDays} days before the event`,
-                            );
-                        }
-                        const applicableTier = [...(policy.tiers ?? [])]
-                            .filter(t => daysUntilEvent >= t.minDaysBeforeEvent)
-                            .sort((a, b) => a.minDaysBeforeEvent - b.minDaysBeforeEvent)
-                            .pop();
-                        deductionPercentage = applicableTier?.deductionPercentage ?? 0;
-                    }
-                }
-            } catch (err) {
-                if (err?.status === 400) throw err;
-            }
-        }
+    //             if (policy) {
+    //                 policySnapshot = { ...policy };
+    //                 if (!policy.allowRefunds) {
+    //                     throw new BadRequestException('This service does not allow refunds');
+    //                 }
+    //                 if (eventDate) {
+    //                     const daysUntilEvent = Math.floor(
+    //                         (new Date(eventDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+    //                     );
+    //                     if (daysUntilEvent < policy.refundWindowDays) {
+    //                         throw new BadRequestException(
+    //                             `Refunds must be requested at least ${policy.refundWindowDays} days before the event`,
+    //                         );
+    //                     }
+    //                     const applicableTier = [...(policy.tiers ?? [])]
+    //                         .filter(t => daysUntilEvent >= t.minDaysBeforeEvent)
+    //                         .sort((a, b) => a.minDaysBeforeEvent - b.minDaysBeforeEvent)
+    //                         .pop();
+    //                     deductionPercentage = applicableTier?.deductionPercentage ?? 0;
+    //                 }
+    //             }
+    //         } catch (err) {
+    //             if (err?.status === 400) throw err;
+    //         }
+    //     }
 
-        const deductionAmount = Number((invoiceAmount * deductionPercentage / 100).toFixed(2));
-        const refundAmount = Number((invoiceAmount - deductionAmount).toFixed(2));
+    //     const deductionAmount = Number((invoiceAmount * deductionPercentage / 100).toFixed(2));
+    //     const refundAmount = Number((invoiceAmount - deductionAmount).toFixed(2));
 
-        const dto: CreateRefundDto = {
-            paymentId: body.paymentId,
-            invoiceId: payment.invoiceId,
-            customerId,
-            serviceProviderId: serviceProviderId ?? payment.userId,
-            bookingId,
-            refundReason: body.refundReason,
-            policySnapshot,
-            deductionPercentage,
-            deductionAmount,
-            refundAmount,
-            status: RefundStatus.REQUESTED,
-        };
+    //     const dto: CreateRefundDto = {
+    //         paymentId: body.paymentId,
+    //         invoiceId: payment.invoiceId,
+    //         customerId,
+    //         serviceProviderId: serviceProviderId ?? payment.userId,
+    //         bookingId,
+    //         refundReason: body.refundReason,
+    //         policySnapshot,
+    //         deductionPercentage,
+    //         deductionAmount,
+    //         refundAmount,
+    //         status: RefundStatus.REQUESTED,
+    //     };
 
-        return this.refundGatewayService.create(dto);
-    }
+    //     return this.refundGatewayService.create(dto);
+    // }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post(':id/approve')

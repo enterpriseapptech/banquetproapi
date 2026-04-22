@@ -183,7 +183,7 @@ export class WalletService {
             ]);
 
             return { count, data: txs.map(t => this.mapToTxDto(t)) };
-       } catch (error) {
+       } catch (error: any) {
           PrismaErrorHandler.handle(error, Prisma)
           this.logger.log({
             message: `An error occurred while getting user ${userId} transactions with limit ${limit} and offset ${offset}`,
@@ -401,6 +401,141 @@ export class WalletService {
             this.logger.log(`Invoice paid via wallet | invoiceId=${dto.invoiceId} userId=${dto.userId}`);
             return { invoiceId: dto.invoiceId, invoiceStatus };
         });
+    }
+
+    /**
+     * SERVICEREQUEST invoice payment distribution.
+     *
+     * Called after the customer wallet has already been credited (TOPUP).
+     * Steps:
+     *   1. Debit customer wallet for the invoice amount (INVOICE_PAYMENT)
+     *   2. Credit platform with the service charge portion (SERVICE_CHARGE)
+     *   3. Credit Service Provider wallet with the remainder, or hold on platform if escrow is enabled
+     *      or SP wallet cannot be found (ESCROW_HOLD / ESCROW_RELEASE)
+     *   4. Update invoice status (PAID / PARTIALLY_PAID / OVER_PAID)
+     *
+     * Must be called inside an active Prisma transaction.
+     */
+    async applyServiceRequestPayment(
+        prisma: any,
+        invoice: any,
+        incomingAmount: Decimal,
+    ): Promise<{ invoiceStatus: string }> {
+        const invoiceRemaining = await this.invoiceService.calculateRemainingAmount(invoice.id, prisma);
+
+        if (invoiceRemaining.lte(0)) {
+            this.logger.log(`Service request invoice already fully paid | invoiceId=${invoice.id}`);
+            return { invoiceStatus: 'PAID' };
+        }
+
+        // Never apply more than what is still owed on the invoice
+        const amountToApply = incomingAmount.gt(invoiceRemaining) ? invoiceRemaining : incomingAmount;
+
+        // Fetch live customer wallet balance (reflects the TOPUP that just completed)
+        const customerWallet = await prisma.wallet.findUnique({ where: { userId: invoice.userId } });
+        if (!customerWallet) throw new NotFoundException('Customer wallet not found');
+        const customerBalance = new Decimal(customerWallet.balance);
+
+        // Cannot debit more than the customer currently holds
+        const effectiveDebit = customerBalance.lt(amountToApply) ? customerBalance : amountToApply;
+
+        if (effectiveDebit.lte(0)) {
+            this.logger.warn(`Insufficient balance for service request invoice | invoiceId=${invoice.id} userId=${invoice.userId}`);
+            return { invoiceStatus: invoice.status };
+        }
+
+        // Safe service charge extraction — zero when item is absent
+        const serviceChargeItem = (invoice.items as any[]).find((item: any) => item.item === 'service charge');
+        const serviceChargeAmount = serviceChargeItem ? new Decimal(serviceChargeItem.amount) : new Decimal(0);
+        const serviceProviderPortionAmount = effectiveDebit.minus(serviceChargeAmount);
+
+        // Step 1 — Debit customer wallet
+        await this.creditOrDebit(
+            prisma,
+            customerWallet.id,
+            customerBalance,
+            $Enums.WalletTxType.DEBIT,
+            effectiveDebit,
+            $Enums.WalletTxReason.INVOICE_PAYMENT,
+            { invoiceId: invoice.id },
+        );
+
+        const platformWallet = await this.getPlatformWallet(prisma);
+        let platformBalance = new Decimal(platformWallet.balance);
+
+        // Step 2 — Credit service charge to platform
+        if (serviceChargeAmount.gt(0)) {
+            await this.creditOrDebit(
+                prisma,
+                platformWallet.id,
+                platformBalance,
+                $Enums.WalletTxType.CREDIT,
+                serviceChargeAmount,
+                $Enums.WalletTxReason.SERVICE_CHARGE,
+                { invoiceId: invoice.id },
+            );
+            platformBalance = platformBalance.plus(serviceChargeAmount);
+        }
+
+        // Step 3 — Distribute SP portion
+        if (serviceProviderPortionAmount.gt(0)) {
+            const holdInEscrow = process.env.HOLD_PAYMENT_IN_ESCROW_WALLET === 'true';
+            const hasServiceProvider = !!invoice.serviceProviderId;
+
+            if (holdInEscrow || !hasServiceProvider) {
+                await this.creditOrDebit(
+                    prisma,
+                    platformWallet.id,
+                    platformBalance,
+                    $Enums.WalletTxType.CREDIT,
+                    serviceProviderPortionAmount,
+                    $Enums.WalletTxReason.ESCROW_HOLD,
+                    { invoiceId: invoice.id },
+                );
+            } else {
+                try {
+                    const spWallet = await this.findorCreateWalletByUserId(invoice.serviceProviderId, UserType.SERVICE_PROVIDER, prisma);
+                    await this.creditOrDebit(
+                        prisma,
+                        spWallet.id,
+                        new Decimal(spWallet.balance),
+                        $Enums.WalletTxType.CREDIT,
+                        serviceProviderPortionAmount,
+                        $Enums.WalletTxReason.ESCROW_RELEASE,
+                        { invoiceId: invoice.id },
+                    );
+                } catch {
+                    this.logger.warn(`SP wallet not found for serviceProviderId=${invoice.serviceProviderId} — holding in platform escrow`);
+                    await this.creditOrDebit(
+                        prisma,
+                        platformWallet.id,
+                        platformBalance,
+                        $Enums.WalletTxType.CREDIT,
+                        serviceProviderPortionAmount,
+                        $Enums.WalletTxReason.ESCROW_HOLD,
+                        { invoiceId: invoice.id },
+                    );
+                }
+            }
+        }
+
+        // Step 4 — Persist invoice status
+        const newRemaining = invoiceRemaining.minus(effectiveDebit);
+        let invoiceStatus: string;
+        if (effectiveDebit.gt(invoiceRemaining)) {
+            invoiceStatus = 'OVER_PAID';
+        } else if (newRemaining.lte(0)) {
+            invoiceStatus = 'PAID';
+        } else {
+            invoiceStatus = 'PARTIALLY_PAID';
+        }
+
+        await prisma.invoice.update({ where: { id: invoice.id }, data: { status: invoiceStatus as any } });
+        this.logger.log(`Service request payment applied |
+             invoiceId=${invoice.id} debit=${effectiveDebit}
+              serviceCharge=${serviceChargeAmount} 
+              spPortion=${serviceProviderPortionAmount} status=${invoiceStatus}`);
+        return { invoiceStatus };
     }
 
     /**

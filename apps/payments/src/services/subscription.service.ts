@@ -72,13 +72,13 @@ export class SubscriptionService {
                 dueDate: InvoiceService.generateDueDate(),
                 billingAddress: createSubscriptionDto.billingAddress,
             }
-            const invoice = await this.invoiceService.createInvoiceForSubscriptions(invoiceDto);
+            const invoice = await this.invoiceService.createInvoiceForPlatformPayments(invoiceDto);
 
             return {
                 ...this.mapToSubscriptionDto(subscription),
                 invoice,
             };
-        } catch (error) {
+        } catch (error : any)  {
             this.logger.error(`Failed to create subscription | serviceProviderId=${createSubscriptionDto?.serviceProviderId} planId=${createSubscriptionDto?.subscriptionplanId} | ${error?.message}`);
             PrismaErrorHandler.handle(error, Prisma);
             throw new InternalServerErrorException('sever error could not create subscription', {
@@ -98,7 +98,7 @@ export class SubscriptionService {
                 this.databaseService.subscriptions.count({ where }),
             ]);
             return { count, docs: subscriptions.map(s => this.mapToSubscriptionDto(s)) };
-        } catch (error) {
+        } catch (error : any)  {
             this.logger.error(`Failed to fetch subscriptions | ${error?.message}`);
             PrismaErrorHandler.handle(error, Prisma);
             throw new InternalServerErrorException('Server error could not fetch subscriptions', {
@@ -121,7 +121,7 @@ export class SubscriptionService {
             });
             if (!subscription) throw new NotFoundException({ statusCode: 404, message: 'Subscription not found', error: 'Not found' });
             return this.mapToSubscriptionDto(subscription);
-        } catch (error) {
+        } catch (error : any)  {
             this.logger.error(`Failed to fetch subscription | id=${id} | ${error?.message}`);
             PrismaErrorHandler.handle(error, Prisma);
             throw new InternalServerErrorException('Server error could not fetch subscription', {
@@ -142,7 +142,7 @@ export class SubscriptionService {
                 },
             });
             return this.mapToSubscriptionDto(subscription);
-        } catch (error) {
+        } catch (error : any)  {
             this.logger.error(`Failed to update subscription | id=${id} | ${error?.message}`);
             PrismaErrorHandler.handle(error, Prisma);
             throw new InternalServerErrorException('Server error could not update subscription', {
@@ -159,7 +159,7 @@ export class SubscriptionService {
                 data: { deletedAt: new Date(), deletedBy: updaterId },
             });
             return this.mapToSubscriptionDto(subscription);
-        } catch (error) {
+        } catch (error : any)  {
             this.logger.error(`Failed to delete subscription | id=${id} | ${error?.message}`);
             PrismaErrorHandler.handle(error, Prisma);
             throw new InternalServerErrorException('Server error could not delete subscription', {

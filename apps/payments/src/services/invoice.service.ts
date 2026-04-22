@@ -20,12 +20,30 @@ export class InvoiceService {
     
     // used by created booking to make a first invoice for the booking
     async generate(createInvoiceDto: CreateInvoiceDto): Promise<InvoiceDto> {
+        // Validate service charge: the booking controller fetches the live value from app settings
+        // and passes it here as serviceChargeAmount. Cross-check it against the items array so
+        // the stored invoice always reflects what was actually charged.
+        if (createInvoiceDto.serviceChargeAmount !== undefined) {
+            const serviceChargeItem = (createInvoiceDto.items as InvoiceItem[]).find(
+                (item) => item.item === 'service charge',
+            );
+            if (!serviceChargeItem) {
+                throw new BadRequestException('Invoice items must include a "service charge" entry');
+            }
+            if (serviceChargeItem.amount !== createInvoiceDto.serviceChargeAmount) {
+                throw new BadRequestException(
+                    `Service charge in items (${serviceChargeItem.amount}) does not match the current service charge (${createInvoiceDto.serviceChargeAmount})`,
+                );
+            }
+        }
+
         const newInvoiceInput: Prisma.InvoiceCreateInput = {
             userId: createInvoiceDto.userId,
             reference: Math.random().toString(16).substring(2, 8),
             bookingId: createInvoiceDto.bookingId,
             items: instanceToPlain(createInvoiceDto.items) as Prisma.JsonArray,
             amountDue: createInvoiceDto.amountDue,
+            serviceChargeAmount: createInvoiceDto.serviceChargeAmount,
             currency: createInvoiceDto.currency,
             dueDate: createInvoiceDto.dueDate,
             note: createInvoiceDto.note,
@@ -48,7 +66,7 @@ export class InvoiceService {
         }
     }
 
-    // this is used to create another invoice and the amount is to be determined by the service provider strictly
+    // this is used to create another invoice for booking
     async createSecondInvoice(createInvoiceDto: CreateSecondInvoiceDto): Promise<InvoiceDto> {
         try {
             const invoice = await this.databaseService.$transaction(async (prisma) => {
@@ -79,6 +97,9 @@ export class InvoiceService {
                 });
                 const totalPaid = walletTxs.reduce((sum, tx) => sum + Number(tx.amount), 0);
                 const amountDue = createInvoiceDto.booking.total - totalPaid
+
+                // TO DO: validate the amount entered by service provider and the amount left.
+                // doesn't match, throw error
                 const newInvoiceInput: Prisma.InvoiceCreateInput = {
                     userId: invoices[0].userId,
                     reference: Math.random().toString(16).substring(2, 8),
@@ -172,7 +193,7 @@ export class InvoiceService {
         }
     }
 
-    async createInvoiceForSubscriptions(createInvoiceDto: CreateInvoiceDtoForSubscriptions): Promise<InvoiceDto> {
+    async createInvoiceForPlatformPayments(createInvoiceDto: CreateInvoiceDtoForSubscriptions): Promise<InvoiceDto> {
         if (!createInvoiceDto.items) {
             throw new InternalServerErrorException('We could not generate invoice, as the items been paid for were not listed', {
                 cause: new Error(),
@@ -180,15 +201,36 @@ export class InvoiceService {
             });
         }
 
-        let itemsTotal = 0;
-        createInvoiceDto.items.map((item) => { itemsTotal += item.amount })
-        const discount = itemsTotal * (createInvoiceDto.discount / 100)
-        if ((itemsTotal - discount) !== (createInvoiceDto.total)) {
-            throw new InternalServerErrorException(`We could not generate invoice, total amount is incorrect for the items. Should be ${itemsTotal - discount}`, {
-                cause: new Error(),
-                description: 'We could not generate invoice, total amount is incorrect for the items'
-            });
+        // Validate the invoice amount against the actual price stored in the DB for this payment type.
+        const subscription = await this.databaseService.subscriptions.findUnique({
+            where: { id: createInvoiceDto.subscriptionId },
+            include: { subscriptionplan: true },
+        });
+        if (!subscription) {
+            throw new NotFoundException(`Subscription not found: ${createInvoiceDto.subscriptionId}`);
         }
+
+        switch (subscription.type) {
+            case $Enums.PaymentType.SUBSCRIPTIONPLANS: {
+                const expectedAmount = Number(subscription.subscriptionplan.amount);
+                if (createInvoiceDto.amountDue !== expectedAmount) {
+                    throw new BadRequestException(
+                        `Invoice amount (${createInvoiceDto.amountDue}) does not match subscription plan price (${expectedAmount})`,
+                    );
+                }
+                break;
+            }
+            case $Enums.PaymentType.KYC:
+                // TODO: look up Fees where name = KYC and verify createInvoiceDto.amountDue === fee.amount
+                break;
+            case $Enums.PaymentType.CERTIFICATION:
+                // TODO: look up Fees where name = CERTIFICATION and verify createInvoiceDto.amountDue === fee.amount
+                break;
+            case $Enums.PaymentType.FEATUREDPLANS:
+                // TODO: look up FeaturedPlans by subscription's featured plan id and verify createInvoiceDto.amountDue === plan.amount
+                break;
+        }
+
         const newInvoiceInput: Prisma.InvoiceCreateInput = {
             userId: createInvoiceDto.userId,
             reference: Math.random().toString(16).substring(2, 8),

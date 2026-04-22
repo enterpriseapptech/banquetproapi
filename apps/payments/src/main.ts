@@ -2,7 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { PaymentsModule } from './payments.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import * as dotenv from 'dotenv';
-import * as express from 'express';
 import { RpcLoggingInterceptor } from './common/interceptors/rpc-logging.interceptor';
 
 dotenv.config({ path: './apps/payments/.env' });
@@ -21,12 +20,8 @@ async function bootstrap() {
         }
     );
     app.useGlobalInterceptors(new RpcLoggingInterceptor());
+    app.enableShutdownHooks(); 
     await app.listen();
     console.log('payment Microservice is listening...');
-
-    // Dummy Express Server to satisfy Render
-    const dummyApp = express();
-    const port = process.env.PORT || 8006;
-    dummyApp.listen(port, () => console.log(`Payment Dummy server running on port ${port}`));
 }
 bootstrap();

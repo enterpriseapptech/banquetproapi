@@ -262,6 +262,14 @@ export class CreateInvoiceDto {
     @IsDateString()
     dueDate: Date;
 
+    @ApiProperty({
+        description: 'Service charge amount fetched from app settings — used to validate the "service charge" item in the invoice',
+        example: 500,
+        required: false,
+    })
+    @IsOptional()
+    @IsNumber({ maxDecimalPlaces: 2 })
+    serviceChargeAmount?: number;
 
     @ApiProperty({
         description: 'ID of the user who deleted the invoice',

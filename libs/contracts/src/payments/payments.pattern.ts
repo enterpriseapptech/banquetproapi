@@ -5,6 +5,11 @@ export const PAYMENTPATTERN = {
     CREATE: 'payment.create',
     UPDATE: 'payment.update',
     DELETE: 'payment.delete',
+    // webhook-dispatched flows
+    FAILED_PAYMENT: 'payment.failedPayment',
+    WALLET_FUNDING: 'payment.walletFunding',
+    SERVICE_REQUEST: 'payment.serviceRequest',
+    PLATFORM_PAYMENTS: 'payment.platformPayments',
 }
 
 export const PAYMENTMETHODPATTERN = {

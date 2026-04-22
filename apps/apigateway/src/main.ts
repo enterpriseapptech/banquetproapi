@@ -31,7 +31,7 @@ async function bootstrap() {
 
 	const document = SwaggerModule.createDocument(app, config);
 	SwaggerModule.setup('api/docs', app, document);
-
+    app.enableShutdownHooks(); 
 	app.useGlobalInterceptors(new HttpLoggingInterceptor());
 	await app.listen(8000);
 }

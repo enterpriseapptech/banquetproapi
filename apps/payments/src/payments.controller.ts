@@ -339,21 +339,42 @@ export class PaymentsController {
   }
 
 
-  // @MessagePattern(PAYMENTPATTERN.CREATE)
-  // create(@Payload() createPaymentDto: CreatePaymentDto) {
+  @MessagePattern(PAYMENTPATTERN.FAILED_PAYMENT)
+  saveFailedPayment(@Payload() createPaymentDto: CreatePaymentDto) {
+    return from(this.paymentService.saveFailedPayment(createPaymentDto)).pipe(
+      catchError((err) => {
+        console.error("Error in paymentService:", err);
+        return throwError(() => new RpcException({
+          statusCode: err.response.statusCode || 500,
+          message: err.message || "Internal Server Error",
+          error: err.response.error || "Sever error",
+        }));
 
-  //   return from(this.paymentService.create(createPaymentDto)).pipe(
-  //     catchError((err) => {
-  //       console.error("Error in paymentService:", err);
-  //       return throwError(() => new RpcException({
-  //         statusCode: err.response.statusCode || 500,
-  //         message: err.message || "Internal Server Error",
-  //         error: err.response.error || "Sever error",
-  //       }));
+      })
+    )
+  }
 
-  //     })
-  //   )
-  // }
+  @MessagePattern(PAYMENTPATTERN.WALLET_FUNDING)
+  processWalletFunding(@Payload() dto: CreatePaymentDto) {
+    return from(this.paymentService.processWalletFunding(dto)).pipe(
+      catchError((err) => throwError(() => new RpcException({
+        statusCode: err.response?.statusCode || 500,
+        message: err.message || 'Internal Server Error',
+        error: err.response?.error || 'Server error',
+      })))
+    );
+  }
+
+  @MessagePattern(PAYMENTPATTERN.SERVICE_REQUEST)
+  processServiceRequest(@Payload() dto: CreatePaymentDto) {
+    return from(this.paymentService.processServiceRequest(dto)).pipe(
+      catchError((err) => throwError(() => new RpcException({
+        statusCode: err.response?.statusCode || 500,
+        message: err.message || 'Internal Server Error',
+        error: err.response?.error || 'Server error',
+      })))
+    );
+  }
 
   @MessagePattern(PAYMENTPATTERN.FINDALL)
   findAll(@Payload() data: { limit: number, offset: number, search?: string}) {
