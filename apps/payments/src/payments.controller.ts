@@ -376,6 +376,17 @@ export class PaymentsController {
     );
   }
 
+  @MessagePattern(PAYMENTPATTERN.SERVICE_REQUEST)
+  processSubscription(@Payload() dto: CreatePaymentDto) {
+    return from(this.paymentService.processSubscription(dto)).pipe(
+      catchError((err) => throwError(() => new RpcException({
+        statusCode: err.response?.statusCode || 500,
+        message: err.message || 'Internal Server Error',
+        error: err.response?.error || 'Server error',
+      })))
+    );
+  }
+
   @MessagePattern(PAYMENTPATTERN.FINDALL)
   findAll(@Payload() data: { limit: number, offset: number, search?: string}) {
     return from(this.paymentService.findAll(data.limit, data.offset, data.search)).pipe(
@@ -772,6 +783,17 @@ export class WalletController {
   @MessagePattern(WALLETPATTERN.TRANSACTIONS)
   getTransactions(@Payload() data: { userId: string; limit: number; offset: number }) {
     return from(this.walletService.getTransactionsByUserId(data.userId, data.limit, data.offset)).pipe(
+      catchError((err) => throwError(() => new RpcException({
+        statusCode: err.response?.statusCode || 500,
+        message: err.message || 'Internal Server Error',
+        error: err.response?.error || 'Server error',
+      })))
+    );
+  }
+
+  @MessagePattern(WALLETPATTERN.PLATFORM_TRANSACTIONS)
+  getPlatformTransactions(@Payload() data: { limit: number; offset: number }) {
+    return from(this.walletService.getPlatformTransactions(data.limit, data.offset)).pipe(
       catchError((err) => throwError(() => new RpcException({
         statusCode: err.response?.statusCode || 500,
         message: err.message || 'Internal Server Error',

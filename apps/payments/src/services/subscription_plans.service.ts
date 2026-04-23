@@ -75,9 +75,9 @@ export class SubscriptionPlansService {
         
     }
 
-    async findOne(id: string): Promise<SubscriptionPlanDto> {
-
-        const subscriptionPlans = await this.databaseService.subscriptionPlans.findUnique({
+    async findOne(id: string, prisma?: any): Promise<SubscriptionPlanDto> {
+        const db = prisma ?? this.databaseService
+        const subscriptionPlans = await db.subscriptionPlans.findUnique({
             where: {
                 id: id,
                 deletedAt: null

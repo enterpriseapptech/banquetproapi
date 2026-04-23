@@ -132,8 +132,6 @@ export class PaymentController {
         @Inject(NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
     ) { }
 
-
-
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post('initiate')
     async initiate(@Body() generatePaymentDto: GeneratePaymentDto, @Req() req: AuthenticatedRequest) {
@@ -141,7 +139,6 @@ export class PaymentController {
         generatePaymentDto.userId = user.id;
         return this.paymentService.initiate(generatePaymentDto);
     }
-
 
     @Post('webhook')
     @HttpCode(HttpStatus.OK)
@@ -229,30 +226,14 @@ export class PaymentController {
                     return;
             }
 
-
-            // Route to the correct handler based on what the payment is for.
-            // WALLETFUNDING: record payment + credit wallet only — no invoice.
-            // SERVICEREQUEST: record payment + credit wallet + debit wallet + distribute to SP/platform + mark invoice.
-            // Everything else (SUBSCRIPTION, KYC, CERTIFICATION, FEATURED): existing path.
-            let payment: any;
-            const paymentReason = paymentData?.paymentReason ?? "UNKNOWN"
-            switch (paymentReason) {
-                case PaymentReason.WALLETFUNDING:
-                    payment = await firstValueFrom(this.paymentService.processWalletFunding(paymentData));
-                    break;
-                case PaymentReason.SERVICEREQUEST:
-                    await this.processSuccessfulPayment(paymentData)
-                    break;
-                case PaymentReason.WALLETFUNDING:
-                    
-                    break;
-                default:
-                    break;
-            }
+            await this.processSuccessfulPayment(paymentData)
 
             return { received: true };
-        } catch (error) {
-            console.log({ error });
+        } catch (error: any) {
+            this.logger.error({
+                message: "Payment webhook Error",
+                ...error
+            });
             return { received: true };
         }
     }
@@ -301,7 +282,6 @@ export class PaymentController {
     
     }
 
-
     private async processSuccessfulPayment(paymentData: CreatePaymentDto){
         // Route to the correct handler based on what the payment is for.
         // WALLETFUNDING: record payment + credit wallet only — no invoice.
@@ -312,69 +292,118 @@ export class PaymentController {
 
         switch (paymentReason) {
             case PaymentReason.WALLETFUNDING:
-                payment = await firstValueFrom(this.paymentService.processWalletFunding(paymentData));
-                break;
+                return await firstValueFrom(this.paymentService.processWalletFunding(paymentData));
+                
             case PaymentReason.SERVICEREQUEST:
                 return await this.processBookingPayment(paymentData)
                 
             case PaymentReason.SUBSCRIPTION:
-                
-                break;
+                return await this.processSubscriptionPayment(paymentData)
             default:
                 break;
-            }
+        }
            
-
-
-
-            if (payment?.status === IPaymentStatus.COMPLETED) {
-                this.logger.log({
-                    message: "Payment created by webhook",
-                    ...payment
-                });
-                
-                
-
-                if (payment?.serviceId && payment?.serviceType) {
-                    
-                    const updateServiceSubscriptionDto: UpdateServiceSubscriptionDto = {
-                        serviceId: payment.serviceId,
-                        subscriptionStatus: SubscriptionStatus.ACTIVE,
-                        timeframe: payment.timeframe,
-                        subscriptionPlanId: payment.subscriptionPlanId,
-                    };
-                    if (payment.serviceType === ServiceType.EVENTCENTER) {
-                        this.eventcentersService.updateSubscription(updateServiceSubscriptionDto);
-
-                    } else if (payment.serviceType === ServiceType.CATERING) {
-                        this.cateringService.updateSubscription(updateServiceSubscriptionDto);
-                    }
-                }
-            }
+        
     }
 
-
     private async processBookingPayment(paymentData: CreatePaymentDto){
-        const payment = await firstValueFrom(this.paymentService.processServiceRequest(paymentData));
-        if (payment?.status === IPaymentStatus.COMPLETED) {
+        try {
             this.logger.log({
-                message: "Successful Booking Payment created by webhook",
-                ...payment
+                message: "Starting processing of a booking payment",
+                ...paymentData
+            });
+            if(!paymentData.invoiceId) {
+                this.logger.log({
+                message: "Subscription payment has no invoice, treating as topup",
+                ...paymentData
+            });
+                return await firstValueFrom(this.paymentService.processWalletFunding(paymentData));
+            }
+            const payment = await firstValueFrom(this.paymentService.processServiceRequest(paymentData));
+            if (payment?.status === IPaymentStatus.COMPLETED) {
+                this.logger.log({
+                    message: "Successful Booking Payment created by webhook",
+                    ...payment
+                });
+
+                if (payment?.bookingId) {
+                    const booking = await firstValueFrom(this.bookingService.updatePayment(payment.bookingId, payment.totalPaymentPaid));
+                    if(booking.shouldRefund) await this.processAutomaticRefund(paymentData)
+                    
+                }else{
+                    this.logger.warn({
+                        message: "Payment is for booking but has no bookingId starting automatic refund process",
+                        ...payment
+                    })
+                    await this.processAutomaticRefund(paymentData)
+                }
+
+            };
+        } catch (error) {
+           this.logger.error({
+                message: "Failed to process a booking payment",
+                ...paymentData
+            });
+            throw error 
+        }
+        
+    }
+
+    private async processSubscriptionPayment(paymentData: CreatePaymentDto){
+        try {
+            this.logger.log({
+                message: "Starting processing of a subscription payment",
+                ...paymentData
             });
 
-            if (payment?.bookingId) {
-                const booking = await firstValueFrom(this.bookingService.updatePayment(payment.bookingId, payment.totalPaymentPaid));
-                if(booking.shouldRefund) await this.processAutomaticRefund(paymentData)
-                
-            }else{
-                this.logger.warn({
-                    message: "Payment is for booking but has no bookingId starting automatic refund process",
-                    ...payment
-                })
-                await this.processAutomaticRefund(paymentData)
+            if(!paymentData.invoiceId) {
+                this.logger.log({
+                message: "Subscription payment has no invoice, treating as topup",
+                ...paymentData
+            });
+                return await firstValueFrom(this.paymentService.processWalletFunding(paymentData));
             }
 
-        };
+            const payment = await firstValueFrom(this.paymentService.processServiceRequest(paymentData));
+            if (payment?.serviceId && payment?.serviceType) {   
+                const updateServiceSubscriptionDto: UpdateServiceSubscriptionDto = {
+                    serviceId: payment.serviceId,
+                    subscriptionStatus: SubscriptionStatus.ACTIVE,
+                    timeframe: payment.timeframe,
+                    subscriptionPlanId: payment.subscriptionPlanId,
+                };
+                let result
+                if (payment.serviceType === ServiceType.EVENTCENTER) {
+                    
+
+                } else if (payment.serviceType === ServiceType.CATERING) {
+                    this.cateringService.updateSubscription(updateServiceSubscriptionDto);
+                }
+
+                switch (payment.serviceType) {
+                    case ServiceType.EVENTCENTER:
+                        result = await firstValueFrom(
+                        this.eventcentersService.updateSubscription(updateServiceSubscriptionDto));
+                        break;
+
+                    case ServiceType.CATERING:
+                        result = await firstValueFrom(
+                        this.cateringService.updateSubscription(updateServiceSubscriptionDto));
+                        break;
+                    default:
+                        break;
+                }
+                
+                if (!result) await this.processAutomaticRefund(paymentData)
+            }
+        } catch (error) {
+           this.logger.error({
+                message: "Failed to process a subscription payment",
+                ...paymentData
+            });
+            throw error 
+        }
+        
     }
 
     private async processAutomaticRefund(paymentData: CreatePaymentDto){
@@ -852,6 +881,15 @@ export class WalletController {
     ) {
         const user: UserDto = await firstValueFrom(req.user);
         return this.walletService.getTransactions(user.id, limit ?? 10, offset ?? 0);
+    }
+
+    @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
+    @Get('platform-transactions')
+    getPlatformTransactions(
+        @Query('limit') limit: number,
+        @Query('offset') offset: number,
+    ) {
+        return this.walletService.getPlatformTransactions(limit ?? 10, offset ?? 0);
     }
 
     // @UseGuards(JwtAuthGuard, VerificationGuard)

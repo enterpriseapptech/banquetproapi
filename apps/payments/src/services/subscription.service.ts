@@ -79,7 +79,10 @@ export class SubscriptionService {
                 invoice,
             };
         } catch (error : any)  {
-            this.logger.error(`Failed to create subscription | serviceProviderId=${createSubscriptionDto?.serviceProviderId} planId=${createSubscriptionDto?.subscriptionplanId} | ${error?.message}`);
+            this.logger.error(`Failed to create subscription.
+                 serviceProviderId=${createSubscriptionDto?.serviceProviderId} 
+                 planId=${createSubscriptionDto?.subscriptionplanId} .
+                  ${error?.message}`);
             PrismaErrorHandler.handle(error, Prisma);
             throw new InternalServerErrorException('sever error could not create subscription', {
                 cause: new Error(),
@@ -108,9 +111,10 @@ export class SubscriptionService {
         }
     }
 
-    async findOne(id: string): Promise<SubscriptionDto> {
+    async findOne(id: string, prisma?: any): Promise<SubscriptionDto> {
         try {
-            const subscription = await this.databaseService.subscriptions.findUnique({
+            const db = prisma ?? this.databaseService
+            const subscription = await db.subscriptions.findUnique({
                 where: { id, deletedAt: null },
                 include: {
                     invoice: {
@@ -131,9 +135,10 @@ export class SubscriptionService {
         }
     }
 
-    async update(id: string, updateSubscriptionDto: UpdateSubscriptionDto): Promise<SubscriptionDto> {
+    async update(id: string, updateSubscriptionDto: UpdateSubscriptionDto, prisma?: any): Promise<SubscriptionDto> {
         try {
-            const subscription = await this.databaseService.subscriptions.update({
+            const db = prisma ?? this.databaseService
+            const subscription = await db.subscriptions.update({
                 where: { id },
                 data: {
                     ...updateSubscriptionDto,
@@ -154,6 +159,7 @@ export class SubscriptionService {
 
     async remove(id: string, updaterId: string): Promise<SubscriptionDto> {
         try {
+            
             const subscription = await this.databaseService.subscriptions.update({
                 where: { id },
                 data: { deletedAt: new Date(), deletedBy: updaterId },

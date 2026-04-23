@@ -73,7 +73,8 @@ model Invoice {
 
   payments      Payment[]
   subscription  Subscriptions? @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-
+  walletTransactions WalletTransaction[] @relation("InvoiceToWalletTx")
+  
   @@index([userId])
   @@index([serviceProviderId])
   @@index([bookingId])
@@ -163,6 +164,7 @@ model WalletTransaction {
   createdAt     DateTime       @default(now())
 
   wallet  Wallet  @relation(fields: [walletId], references: [id])
+  invoice   Invoice? @relation("InvoiceToWalletTx", fields: [invoiceId], references: [id])
 
   @@index([walletId])
   @@index([reason])

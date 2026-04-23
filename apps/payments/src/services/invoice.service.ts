@@ -389,39 +389,70 @@ export class InvoiceService {
         };
     }
 
+    async calculateTotals(
+        bookingId?: string,
+        subscriptionId?: string
+    ): Promise<{ totalDue: Decimal; totalPaid: Decimal }> {
 
-    async calculateTotals(bookingId?: string, subscriptionId?: string): Promise<{ totalDue: number; totalPaid: number }> {
+        if (!bookingId && !subscriptionId) {
+            throw new Error('Either bookingId or subscriptionId must be provided');
+        }
         const where = subscriptionId ? { subscriptionId } : { bookingId };
-        const invoices = await this.databaseService.invoice.findMany({ where });
-        const invoiceIds = invoices.map(inv => inv.id);
 
-        const walletTxs = await this.databaseService.walletTransaction.findMany({
-            where: { invoiceId: { in: invoiceIds }, reason: 'INVOICE_PAYMENT' as any, type: 'DEBIT' as any },
-            select: { amount: true },
+        // Aggregate totalDue directly
+        const invoiceAgg = await this.databaseService.invoice.aggregate({
+            where,
+            _sum: {
+                amountDue: true,
+            },
         });
 
-        const totalDue = invoices.reduce((sum, inv) => sum + Number(inv.amountDue), 0);
-        const totalPaid = walletTxs.reduce((sum, tx) => sum + Number(tx.amount), 0);
-        return { totalDue, totalPaid };
+        // Aggregate totalPaid using relation instead of IN clause
+        const paymentAgg = await this.databaseService.walletTransaction.aggregate({
+            where: {
+                reason: 'INVOICE_PAYMENT' as any,
+                type: 'DEBIT' as any,
+                invoice: where, 
+            },
+            _sum: {
+                amount: true,
+            },
+        });
+
+        return {
+            totalDue: new Decimal(invoiceAgg._sum.amountDue ?? 0),
+            totalPaid: new Decimal(paymentAgg._sum.amount ?? 0),
+        };
     }
 
     /** Returns how much of the invoice amount is still unpaid, based on INVOICE_PAYMENT wallet debit transactions */
-    async calculateRemainingAmount(invoiceId: string, prisma?: any): Promise<Decimal> {
-        const db = prisma ?? this.databaseService;
-        const invoice = await db.invoice.findUnique({ where: { id: invoiceId } });
-        if (!invoice) throw new NotFoundException('Invoice not found');
-
-        const walletTxs = await db.walletTransaction.findMany({
-            where: { invoiceId, reason: 'INVOICE_PAYMENT', type: 'DEBIT'},
-            select: { amount: true },
+    async calculateRemainingAmount(invoiceId: string, prisma: any): Promise<Decimal> {
+        const db = prisma
+        const invoice = await db.invoice.findUnique({
+            where: { id: invoiceId },
+            select: { amountDue: true },
         });
 
-        const totalApplied = (walletTxs as any[]).reduce(
-            (sum: Decimal, tx: any) => sum.plus(new Decimal(tx.amount)),
-            new Decimal(0),
-        );
+        if (!invoice) {
+            throw new NotFoundException('Invoice not found');
+        }
+
+        const result = await db.walletTransaction.aggregate({
+            where: {
+                invoiceId,
+                reason: 'INVOICE_PAYMENT',
+                type: 'DEBIT',
+            },
+            _sum: {
+                amount: true,
+            },
+        });
+
+        const totalApplied = new Decimal(result._sum.amount ?? 0);
+
         const remaining = new Decimal(invoice.amountDue).minus(totalApplied);
-        return remaining.lt(0) ? new Decimal(0) : remaining;
+
+        return remaining.lte(0) ? new Decimal(0) : remaining;
     }
 
     private mapToInvoiceDto(invoice: any): InvoiceDto {

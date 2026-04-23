@@ -580,7 +580,6 @@ export class CreatePaymentDto {
     @IsString()
     userId?: string;
 
-
     @ApiProperty()
     @IsString()
     paidAt: string;

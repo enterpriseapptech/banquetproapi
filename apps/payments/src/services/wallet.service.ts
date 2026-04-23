@@ -162,6 +162,30 @@ export class WalletService {
     }
 
 
+    /** List transactions for the platform wallet (admin use) */
+    async getPlatformTransactions(limit: number, offset: number): Promise<DataWithCountDto<WalletTransactionDto>> {
+        try {
+            const platformWallet = await this.getPlatformWallet();
+            const [txs, count] = await this.databaseService.$transaction([
+                this.databaseService.walletTransaction.findMany({
+                    where: { walletId: platformWallet.id },
+                    orderBy: { createdAt: 'desc' },
+                    take: limit,
+                    skip: offset,
+                }),
+                this.databaseService.walletTransaction.count({ where: { walletId: platformWallet.id } }),
+            ]);
+            return { count, data: txs.map(t => this.mapToTxDto(t)) };
+        } catch (error: any) {
+            PrismaErrorHandler.handle(error, Prisma);
+            this.logger.error({
+                message: `Failed to fetch platform transactions with limit=${limit} offset=${offset}`,
+                ...error,
+            });
+            return { count: 0, data: [] };
+        }
+    }
+
     /** List wallet transactions for a user */
     async getTransactionsByUserId(userId: string, limit: number, offset: number, prisma?: DatabaseService): Promise<DataWithCountDto<WalletTransactionDto>> {
         try {
@@ -201,7 +225,7 @@ export class WalletService {
      * Debits the customer wallet, credits service charge to platform, credits SP or holds in escrow.
      * Must be called inside an active Prisma transaction.
      */
-    async applyToInvoice(
+    async applyToBookingInvoice(
         prisma: any,
         invoice: any,
         creditedAmount: Decimal,
@@ -326,6 +350,78 @@ export class WalletService {
     }
 
 
+        /**
+     * Apply wallet funds to an invoice via wallet transactions only (no Payment record).
+     * Debits the customer wallet, credits service charge to platform, credits SP or holds in escrow.
+     * Must be called inside an active Prisma transaction.
+     */
+    async applyToSubscriptionInvoice(
+        prisma: any,
+        invoice: any,
+    ): Promise<{ invoiceStatus: string }> {
+
+        const remaining = await this.invoiceService.calculateRemainingAmount(invoice.id, prisma);
+
+        if (remaining.lte(0)) {
+            this.logger.log(`Invoice already fully paid | invoiceId=${invoice.id}`);
+            return { invoiceStatus: 'PAID' };
+        }
+
+        const serviceProviderWallet = await this.findWalletByUserId(invoice.userId, prisma);
+        const platformWallet = await this.getPlatformWallet(prisma);
+
+        const walletBalance = new Decimal(serviceProviderWallet.balance);
+
+        //Single clamp: what we can actually apply
+        const amountToApply = Decimal.min(remaining, walletBalance);
+
+        if (amountToApply.lte(0)) {
+            this.logger.warn(
+                `Nothing to apply in apply to subscription invoice| 
+                invoiceId=${invoice.id} userId=${invoice.userId}`
+            );
+            return { invoiceStatus: invoice.status };
+        }
+
+        // Move money
+        await this.creditOrDebit(
+            prisma,
+            serviceProviderWallet.id,
+            walletBalance,
+            $Enums.WalletTxType.DEBIT,
+            amountToApply,
+            $Enums.WalletTxReason.INVOICE_PAYMENT,
+            { invoiceId: invoice.id },
+        );
+
+        await this.creditOrDebit(
+            prisma,
+            platformWallet.id,
+            platformWallet.balance,
+            $Enums.WalletTxType.CREDIT,
+            amountToApply,
+            $Enums.WalletTxReason.INVOICE_PAYMENT,
+            { invoiceId: invoice.id },
+        );
+
+        // Determine status
+        const newRemaining = remaining.minus(amountToApply);
+
+        const invoiceStatus =
+            newRemaining.lte(0) ? 'PAID' : 'PARTIALLY_PAID';
+
+        await prisma.invoice.update({
+            where: { id: invoice.id },
+            data: { status: invoiceStatus as any },
+        });
+
+        this.logger.log(
+            `Invoice payment applied | invoiceId=${invoice.id} amount=${amountToApply} status=${invoiceStatus}`
+        );
+
+        return { invoiceStatus };
+    }
+
     /** Credit a wallet */
     async creditWallet(userId: string, amount: number, reason: $Enums.WalletTxReason,
          paymentId: string, prisma?: Prisma.TransactionClient): Promise<WalletTransactionDto> {
@@ -396,7 +492,7 @@ export class WalletService {
                 throw new BadRequestException('This invoice has already been paid');
             }
 
-            const { invoiceStatus } = await this.applyToInvoice(prisma, invoice, remaining);
+            const { invoiceStatus } = await this.applyToBookingInvoice(prisma, invoice, remaining);
 
             this.logger.log(`Invoice paid via wallet | invoiceId=${dto.invoiceId} userId=${dto.userId}`);
             return { invoiceId: dto.invoiceId, invoiceStatus };

@@ -43,6 +43,10 @@ export class PaymentService {
         return this.paymentClient.send<PaymentDto, CreatePaymentDto>(PAYMENTPATTERN.WALLET_FUNDING, dto);
     }
 
+    processSubscription(dto: CreatePaymentDto) {
+        return this.paymentClient.send<PaymentDto, CreatePaymentDto>(PAYMENTPATTERN.PLATFORM_PAYMENTS, dto);
+    }
+
     processServiceRequest(dto: CreatePaymentDto) {
         return this.paymentClient.send<PaymentDto, CreatePaymentDto>(PAYMENTPATTERN.SERVICE_REQUEST, dto);
     }
@@ -340,6 +344,12 @@ export class WalletService {
     getTransactions(userId: string, limit: number, offset: number) {
         return this.client.send<DataWithCountDto<WalletTransactionDto>, { userId: string; limit: number; offset: number }>(
             WALLETPATTERN.TRANSACTIONS, { userId, limit, offset },
+        );
+    }
+
+    getPlatformTransactions(limit: number, offset: number) {
+        return this.client.send<DataWithCountDto<WalletTransactionDto>, { limit: number; offset: number }>(
+            WALLETPATTERN.PLATFORM_TRANSACTIONS, { limit, offset },
         );
     }
 }

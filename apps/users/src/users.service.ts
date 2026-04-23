@@ -256,6 +256,7 @@ export class UsersService {
             };
             
         } catch (error: any) {
+            console.log({error})
             PrismaErrorHandler.handle(error, Prisma);
            throw new NotFoundException(error.message, {
                     cause: new Error(),
