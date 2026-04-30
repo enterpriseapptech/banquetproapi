@@ -1,22 +1,21 @@
-import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { $Enums, Prisma } from '../prisma/@prisma/catering';
 import { CreateCateringDto, CateringDto, ManyCateringDto, UpdateCateringDto, ServiceStatus } from '@shared/contracts/catering';
 import { DatabaseService } from '../database/database.service';
 import { ClientProxy } from '@nestjs/microservices';
-import { NOTIFICATION_CLIENT, USER_CLIENT } from '@shared/contracts';
+import { NOTIFICATION_CLIENT } from '@shared/contracts';
 import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
+import { UpdateServiceSubscriptionDto } from '@shared/contracts/shared';
 
 @Injectable()
 export class CateringService {
     constructor(
         @Inject(NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
-        @Inject(USER_CLIENT) private readonly userClient: ClientProxy,
-        private readonly databaseService: DatabaseService
+        private readonly databaseService: DatabaseService,
+        private readonly logger = new Logger(CateringService.name)
     ) { }
 
     async create(createCateringDto: CreateCateringDto): Promise<CateringDto> {
-
-
 
         try {
             // Start a transaction - for an all or fail process
@@ -106,7 +105,7 @@ export class CateringService {
             });
             return {
                 count,
-                data: caterings.map(eventCenter => this.mapToCateringDto(eventCenter))
+                data: caterings.map(catering => this.mapToCateringDto(catering))
             }
         }
 
@@ -179,15 +178,15 @@ export class CateringService {
         return cateringDto;
     }
 
-    async update(id: string, updateEventcenterDto: UpdateCateringDto): Promise<CateringDto> {
+    async update(id: string, updatecateringDto: UpdateCateringDto): Promise<CateringDto> {
         try {
-            const updateEventCenterInput: Prisma.CateringUpdateInput = {
-                ...updateEventcenterDto,
-                status: updateEventcenterDto.status ? updateEventcenterDto.status as $Enums.ServiceStatus : undefined
+            const updatecateringInput: Prisma.CateringUpdateInput = {
+                ...updatecateringDto,
+                status: updatecateringDto.status ? updatecateringDto.status as $Enums.ServiceStatus : undefined
             };
             const catering = await this.databaseService.catering.update({
                 where: { id },
-                data: updateEventCenterInput
+                data: updatecateringInput
             });
             const cateringDto: CateringDto = {
                 ...catering,
@@ -218,11 +217,47 @@ export class CateringService {
     }
 
 
-    async updateSubscriptionStatus(serviceId: string, subscriptionStatus: string): Promise<void> {
-        await this.databaseService.catering.update({
-            where: { id: serviceId },
-            data: { subscriptionStatus: subscriptionStatus as $Enums.SubscriptionStatus },
-        });
+    async updateSubscriptionStatus(dto: UpdateServiceSubscriptionDto): Promise<{shouldRefund: boolean}> {
+        const { serviceId, subscriptionStatus, subscriptionPlanId, timeframe } = dto;
+
+        let subscriptionExpiry: Date | undefined;
+
+        try {
+            if (subscriptionPlanId && timeframe) {
+                const catering = await this.databaseService.catering.findUnique({
+                    where: { id: serviceId },
+                    select: { subscriptionExpiry: true },
+            });
+
+            const now = Date.now();
+            const timeframeMs = timeframe * 24 * 60 * 60 * 1000;
+
+            const baseTime = catering?.subscriptionExpiry
+                ? Math.max(catering.subscriptionExpiry.getTime(), now)
+                : now;
+
+            subscriptionExpiry = new Date(baseTime + timeframeMs);
+            }
+
+            await this.databaseService.catering.update({
+                where: { id: serviceId },
+                data: {
+                    subscriptionStatus: subscriptionStatus as $Enums.SubscriptionStatus,
+                    subscriptionPlanId,
+                    ...(subscriptionExpiry && { subscriptionExpiry }),
+                },
+            });
+
+            this.logger.log(`Subscription updated successfully | serviceId=${serviceId}`);
+            return {shouldRefund: false}
+        } catch (error: any) {
+            this.logger.error({
+                message: 'Event center Subscription activation update failed',
+                serviceId,
+                error: error?.message,
+            });
+            return {shouldRefund: true}
+        }
     }
 
     // async upsertRefundPolicy(cateringId: string, dto: {
@@ -263,7 +298,7 @@ export class CateringService {
 
     /**
      *
-     * Maps a raw event center from the database to EventCenterDto.
+     * Maps a raw event center from the database to cateringDto.
      */
     private mapToCateringDto(catering: any): CateringDto {
         return {

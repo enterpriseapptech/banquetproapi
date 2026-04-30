@@ -189,7 +189,6 @@ export class WalletService {
     /** List wallet transactions for a user */
     async getTransactionsByUserId(userId: string, limit: number, offset: number, prisma?: DatabaseService): Promise<DataWithCountDto<WalletTransactionDto>> {
         try {
-            console.log({userId, limit, offset})
             const db = prisma ?? this.databaseService;
             const [txs, count] = await db.$transaction([
                 db.walletTransaction.findMany({
@@ -362,7 +361,7 @@ export class WalletService {
 
         const remaining = await this.invoiceService.calculateRemainingAmount(invoice.id, prisma);
 
-        if (remaining.lte(0)) {
+        if (remaining.lte(0) || Number(remaining) <= 0) {
             this.logger.log(`Invoice already fully paid | invoiceId=${invoice.id}`);
             return { invoiceStatus: 'PAID' };
         }
@@ -416,7 +415,10 @@ export class WalletService {
         });
 
         this.logger.log(
-            `Invoice payment applied | invoiceId=${invoice.id} amount=${amountToApply} status=${invoiceStatus}`
+            `Invoice payment applied in applyToSubscriptionInvoice |
+             invoiceId=${invoice.id} 
+             amount=${amountToApply} 
+             status=${invoiceStatus}`
         );
 
         return { invoiceStatus };

@@ -393,36 +393,48 @@ export class InvoiceService {
         bookingId?: string,
         subscriptionId?: string
     ): Promise<{ totalDue: Decimal; totalPaid: Decimal }> {
+        try {
+       
+            if (!bookingId && !subscriptionId) {
+                throw new Error('Either bookingId or subscriptionId must be provided');
+            }
+            const where = subscriptionId ? { subscriptionId } : { bookingId };
 
-        if (!bookingId && !subscriptionId) {
-            throw new Error('Either bookingId or subscriptionId must be provided');
+            // Aggregate totalDue directly
+            const invoiceAgg = await this.databaseService.invoice.aggregate({
+                where,
+                _sum: {
+                    amountDue: true,
+                },
+            });
+
+            // Aggregate totalPaid using relation instead of IN clause
+            const paymentAgg = await this.databaseService.walletTransaction.aggregate({
+                where: {
+                    reason: 'INVOICE_PAYMENT' as any,
+                    type: 'DEBIT' as any,
+                    invoice: where, 
+                },
+                _sum: {
+                    amount: true,
+                },
+            });
+            console.log({paymentAgg: paymentAgg._sum.amount})
+            return {
+                totalDue: new Decimal(invoiceAgg._sum.amountDue ?? 0),
+                totalPaid: new Decimal(paymentAgg._sum.amount ?? 0),
+            };
+             
+        } catch (error: any) {
+            this.logger.error({ message: 'Failed to calculate totals', 
+                bookingId: bookingId ?? 'none', 
+                reference: subscriptionId, 
+                error: error?.message });
+            throw new InternalServerErrorException('server error could not activate subscription in calculate totals', {
+                cause: new Error(),
+                description: 'server error',
+            });
         }
-        const where = subscriptionId ? { subscriptionId } : { bookingId };
-
-        // Aggregate totalDue directly
-        const invoiceAgg = await this.databaseService.invoice.aggregate({
-            where,
-            _sum: {
-                amountDue: true,
-            },
-        });
-
-        // Aggregate totalPaid using relation instead of IN clause
-        const paymentAgg = await this.databaseService.walletTransaction.aggregate({
-            where: {
-                reason: 'INVOICE_PAYMENT' as any,
-                type: 'DEBIT' as any,
-                invoice: where, 
-            },
-            _sum: {
-                amount: true,
-            },
-        });
-
-        return {
-            totalDue: new Decimal(invoiceAgg._sum.amountDue ?? 0),
-            totalPaid: new Decimal(paymentAgg._sum.amount ?? 0),
-        };
     }
 
     /** Returns how much of the invoice amount is still unpaid, based on INVOICE_PAYMENT wallet debit transactions */
@@ -451,7 +463,7 @@ export class InvoiceService {
         const totalApplied = new Decimal(result._sum.amount ?? 0);
 
         const remaining = new Decimal(invoice.amountDue).minus(totalApplied);
-
+        console.log({remaining})
         return remaining.lte(0) ? new Decimal(0) : remaining;
     }
 

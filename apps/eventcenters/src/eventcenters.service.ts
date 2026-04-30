@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UseInterceptors } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException, UseInterceptors } from '@nestjs/common';
 import { $Enums, Prisma } from '../prisma/@prisma/eventcenters';
 import { CreateEventCenterDto, EventCenterDto, ManyEventCentersDto, ServiceStatus, UpdateEventCenterDto } from '@shared/contracts/eventcenters';
 import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
@@ -13,7 +13,8 @@ import { Cache } from 'cache-manager';
 export class EventcentersService {
     constructor(
         @Inject(NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
-        private readonly databaseService: DatabaseService
+        private readonly databaseService: DatabaseService,
+        private readonly logger = new Logger(EventcentersService.name)
     ) { }
 
     async create(createEventCenterDto: CreateEventCenterDto): Promise<EventCenterDto> {
@@ -226,32 +227,50 @@ export class EventcentersService {
         return eventCenter;
     }
 
-    async updateSubscriptionStatus(updateServiceSubscriptionDto:UpdateServiceSubscriptionDto): Promise<void> {
-        const { serviceId, subscriptionStatus, subscriptionPlanId, timeframe } = updateServiceSubscriptionDto;
-        let subscriptionExpiry: Date | undefined
-        if(subscriptionPlanId){
-            const eventCenter = await this.databaseService.eventCenter.findUnique({
-                where: { id: serviceId },
+
+    async updateSubscriptionStatus(
+        dto: UpdateServiceSubscriptionDto
+        ): Promise<{shouldRefund: boolean}> {
+        const { serviceId, subscriptionStatus, subscriptionPlanId, timeframe } = dto;
+
+        let subscriptionExpiry: Date | undefined;
+
+        try {
+            if (subscriptionPlanId && timeframe) {
+                const eventCenter = await this.databaseService.eventCenter.findUnique({
+                    where: { id: serviceId },
+                    select: { subscriptionExpiry: true },
             });
 
-            const currentSubscriptionExpiry = eventCenter.subscriptionExpiry.getTime() // miliseconds
-            // time frame is in days convert to timestamp in milliseconds
-            const timeStampForTimeFrame = timeframe * 24 * 60 *60 * 1000
-            subscriptionExpiry = new Date(currentSubscriptionExpiry + timeStampForTimeFrame);
-        }
-        
+            const now = Date.now();
+            const timeframeMs = timeframe * 24 * 60 * 60 * 1000;
 
-        const data: Prisma.EventCenterUpdateInput = {
-            subscriptionStatus: subscriptionStatus as $Enums.SubscriptionStatus,
-            subscriptionPlanId: subscriptionPlanId,
-            subscriptionExpiry
-        }
+            const baseTime = eventCenter?.subscriptionExpiry
+                ? Math.max(eventCenter.subscriptionExpiry.getTime(), now)
+                : now;
 
-        await this.databaseService.eventCenter.update({
-            where: { id: serviceId },
-            data
-        });
-       
+            subscriptionExpiry = new Date(baseTime + timeframeMs);
+            }
+
+            await this.databaseService.eventCenter.update({
+                where: { id: serviceId },
+                data: {
+                    subscriptionStatus: subscriptionStatus as $Enums.SubscriptionStatus,
+                    subscriptionPlanId,
+                    ...(subscriptionExpiry && { subscriptionExpiry }),
+                },
+            });
+
+            this.logger.log(`Subscription updated successfully | serviceId=${serviceId}`);
+            return {shouldRefund: false}
+        } catch (error: any) {
+            this.logger.error({
+                message: 'Event center Subscription activation update failed',
+                serviceId,
+                error: error?.message,
+            });
+            return {shouldRefund: true}
+        }
     }
 
     // async upsertRefundPolicy(eventCenterId: string, dto: {

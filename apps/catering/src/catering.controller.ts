@@ -4,6 +4,7 @@ import { CateringService } from './catering.service';
 import { EventPattern, MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import { CATERINGPATTERN, CATERINGREFUNDPOLICYPATTERN, CreateCateringDto, UpdateCateringDto } from '@shared/contracts/catering';
 import { catchError, from, throwError } from 'rxjs';
+import { UpdateServiceSubscriptionDto } from '@shared/contracts/shared';
 
 
 @Controller()
@@ -111,8 +112,18 @@ export class CateringController {
     }
 
     @EventPattern(CATERINGPATTERN.UPDATESUBSCRIPTION)
-    updateSubscription(@Payload() data: { serviceId: string; subscriptionStatus: string }) {
-        return from(this.cateringService.updateSubscriptionStatus(data.serviceId, data.subscriptionStatus));
+    updateSubscription(@Payload() data: UpdateServiceSubscriptionDto) {
+        return from(this.cateringService.updateSubscriptionStatus(data)).pipe(
+            catchError((err) => {
+                console.error("Error in Catering Service:", err);
+                return throwError(() => new RpcException({
+                    statusCode: err.response.statusCode || 500,
+                    message: err.message || "Internal Server Error",
+                    error: err.response.error || "Sever error",
+                }));
+
+            })
+        );
     }
 
     // @MessagePattern(CATERINGREFUNDPOLICYPATTERN.UPSERT)

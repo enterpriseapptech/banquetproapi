@@ -184,7 +184,9 @@ export class PaymentsService {
         try {
 
             const payment = await this.createPaymentAndCreditWallet(dto)
-            return payment;
+            return {
+                ...this.mapToPaymentDto(payment)
+            };
         } catch (error: any) {
             this.logger.error({ message: 'Wallet funding failed', reference: dto?.reference, error: error?.message });
             throw new InternalServerErrorException('Wallet funding failed, please try again');
@@ -209,17 +211,15 @@ export class PaymentsService {
 
             // Step 1–3: Record payment and credit wallet atomically
             const payment = await this.createPaymentAndCreditWallet(dto)
-            // Failed payment or no invoice — nothing more to do
-            if (!payment || payment.status === IPaymentStatus.FAILED || !dto.invoiceId) {
-                return payment;
-            }
-
+            
             // Step 4: Fetch the invoice
             const invoice = await this.databaseService.invoice.findUnique({ where: { id: dto.invoiceId } });
             if (!invoice) {
                 this.logger.error({ message: 'Invoice not found for service request payment', 
                     invoiceId: dto.invoiceId, paymentId: payment.id });
-                return payment;
+                return {
+                    ...this.mapToPaymentDto(payment)
+                };
             }
 
             // Steps 5–8: Debit wallet, distribute funds, mark invoice — all in one transaction
@@ -237,6 +237,7 @@ export class PaymentsService {
             const { totalDue, totalPaid } = await this.invoiceService.calculateTotals(invoice.bookingId, invoice.subscriptionId);
 
             return {
+                ...this.mapToPaymentDto({
                 ...payment,
                 serviceType: invoice.serviceType as unknown as ServiceType,
                 totalPaymentDue: totalDue as unknown as number,
@@ -245,6 +246,7 @@ export class PaymentsService {
                 subscriptionId: invoice.subscriptionId,
                 serviceId: invoice.serviceId,
                 subscriptionPlanId: invoice.subscriptionPlanId,
+                })
             };
         } catch (error : any) {
             this.logger.error({ message: 'Service request payment failed', invoiceId: dto?.invoiceId, reference: dto?.reference, error: error?.message });
@@ -260,7 +262,7 @@ export class PaymentsService {
             // 1 - 3. Record payment — deduplicate via unique constraint
             // this block find duplicate payment, records payment and credits wallet
             const payment = await this.createPaymentAndCreditWallet(createPaymentDto)
-
+            console.log({payment})
             // 4-5. Invoice exists — debit user wallet and credit platform wallet 
             let invoice: any
             let invoiceStatus: string;
@@ -275,7 +277,7 @@ export class PaymentsService {
 
                 const result = await this.walletService.applyToSubscriptionInvoice(prisma, invoice);
                 invoiceStatus = result.invoiceStatus;
-                this.logger.log({ message: 'Invoice payment applied', 
+                this.logger.log({ message: 'Step Invoice payment applied', 
                     invoiceId: invoice.id, invoiceStatus });
             
                 // 5. Activate subscription if fully paid as subscription is in this microservice
@@ -301,10 +303,14 @@ export class PaymentsService {
                     const expiryDate = new Date(paidAt.getTime() + planTimeFrame * 24 * 60 * 60 * 1000);
                     await this.subscriptionService.update(invoice.subscriptionId, { status: Status.ACTIVE, expiryDate }, prisma);
                 }
-            });
+            },
+         {
+            timeout: 20000, // 20 seconds
+            maxWait: 10000, // optional: wait longer for a connection
+        });
    
             const { totalDue, totalPaid } = await this.invoiceService.calculateTotals(invoice.bookingId, invoice.subscriptionId);
-
+            console.log({totalDue, totalPaid})
             return {
                 ...this.mapToPaymentDto(payment),
                 serviceType: invoice.serviceType as unknown as ServiceType,
@@ -544,6 +550,7 @@ export class PaymentsService {
                     paymentId: payment.id, error: error.message });
                     PrismaErrorHandler.handle(error, Prisma);
                 }
+                return payment
             })
             return payment
         } catch (error: any) {

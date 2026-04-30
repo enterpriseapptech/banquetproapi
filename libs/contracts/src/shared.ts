@@ -23,13 +23,12 @@ export class UpdateServiceSubscriptionDto {
   @ApiProperty({ example: 'uuid'})
   @IsNotEmpty()
   @IsUUID()
-  serviceId?: string;
-
+  serviceId: string;
 
   @ApiProperty({ example: 'uuid' })
-  @IsOptional()
+  @IsNotEmpty()
   @IsUUID()
-  subscriptionPlanId?: string;
+  subscriptionPlanId: string;
 
   @ApiProperty({ example: 0 })
   @IsEnum(SubscriptionStatus)
