@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, UseInterceptors, UploadedFile, HttpCode, HttpStatus, Inject, Logger, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, 
+    UseGuards, Query, Req, UseInterceptors, UploadedFile, HttpCode, 
+    HttpStatus, Inject, Logger, BadRequestException } from '@nestjs/common';
 import {
     DisputeGatewayService, FeaturedPlanService, FeesService, InvoiceService,
     PaymentMethodService, PaymentService, RefundGatewayService, SubscriptionService,
@@ -52,9 +54,9 @@ import { EventcentersService } from '../eventcenters/eventcenters.service';
 import { CateringService } from '../catering/catering.service';
 import { UsersService } from '../users/users.service';
 import { NOTIFICATION_CLIENT } from '@shared/contracts';
-import { NOTIFICATIONPATTERN, NotificationType } from '@shared/contracts/notifications';
+import { NotificationType } from '@shared/contracts/notifications';
 import { ClientProxy } from '@nestjs/microservices';
-import { SubscriptionStatus, UpdateServiceSubscriptionDto } from '@shared/contracts/shared';
+import { SubscriptionStatus, NOTIFICATIONPATTERN, UpdateServiceSubscriptionDto } from '@shared/contracts/shared';
 
 
 interface AuthenticatedRequest extends Request {

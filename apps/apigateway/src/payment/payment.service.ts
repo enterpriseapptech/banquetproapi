@@ -12,9 +12,9 @@ import {
   UpdatePaymentDto, UpdatePaymentMethodDto, UpdateRefundDto, UpdateSubscriptionDto,
   UpdateSubscriptionPlanDto, UpdateWithdrawalDto, WalletDto, WalletTransactionDto, WithdrawalDto,
   FEATUREDPLANSPATTERN, FEESPATTERN, SUBSCRIPTIONPLANSPATTERN, SUBSCRIPTIONPATTERN,
-  REFUNDPATTERN, DISPUTEPATTERN, WALLETPATTERN, WITHDRAWALPATTERN,
+  REFUNDPATTERN, DISPUTEPATTERN, WITHDRAWALPATTERN,
 } from '@shared/contracts/payments';
-import { DataWithCountDto, UserType } from '@shared/contracts/shared';
+import { DataWithCountDto,  WALLETPATTERN, UserType } from '@shared/contracts/shared';
 import { Cacheable, } from '../common/cache/cache.decorators';
 
 @Injectable()

@@ -4,7 +4,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { UpdateUserDto, CreateUserDto, USERPATTERN, UserDto, LoginUserDto, UserFilterDto, UpdateUserPasswordDto, UniqueIdentifierDto, BookMarkType, } from '@shared/contracts/users';
 import { USER_CLIENT } from '@shared/contracts';
 import { firstValueFrom } from 'rxjs';
-import { WALLETPATTERN } from '@shared/contracts/payments';
+import { WALLETPATTERN } from '@shared/contracts/shared';
 import { WalletService } from '../payment/payment.service';
 
 
