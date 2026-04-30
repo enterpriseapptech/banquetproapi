@@ -2,7 +2,7 @@
 import { ConflictException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException, UseInterceptors } from '@nestjs/common';
 import { $Enums, Prisma } from '../prisma/@prisma/eventcenters';
 import { CreateEventCenterDto, EventCenterDto, ManyEventCentersDto, ServiceStatus, UpdateEventCenterDto } from '@shared/contracts/eventcenters';
-import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
+import { NOTIFICATIONPATTERN } from '@shared/contracts/shared';
 import { DatabaseService } from '../database/database.service';
 import { NOTIFICATION_CLIENT } from '@shared/contracts';
 import { ClientProxy } from '@nestjs/microservices';

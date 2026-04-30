@@ -3,8 +3,8 @@ import { BadRequestException, ConflictException, Inject, Injectable, InternalSer
 import * as bcrypt from 'bcrypt';
 import { $Enums, Prisma } from '../prisma/@prisma/users';
 import { CreateUserDto, UpdateUserDto, UserDto, LoginUserDto, UserType, UserStatus, ServiceType, UserFilterDto, UpdateUserPasswordDto, UniqueIdentifierDto, BookMarkType } from '@shared/contracts/users';
-import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
-import { WALLETPATTERN } from '@shared/contracts/payments';
+import { NOTIFICATIONPATTERN } from '@shared/contracts/shared';
+import { WALLETPATTERN } from '@shared/contracts/shared';
 import { DatabaseService } from '../database/database.service';
 import { NOTIFICATION_CLIENT } from './constants';
 import { PAYMENT_CLIENT } from '@shared/contracts';

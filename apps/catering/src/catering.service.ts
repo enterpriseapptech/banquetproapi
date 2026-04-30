@@ -4,8 +4,7 @@ import { CreateCateringDto, CateringDto, ManyCateringDto, UpdateCateringDto, Ser
 import { DatabaseService } from '../database/database.service';
 import { ClientProxy } from '@nestjs/microservices';
 import { NOTIFICATION_CLIENT } from '@shared/contracts';
-import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
-import { UpdateServiceSubscriptionDto } from '@shared/contracts/shared';
+import { UpdateServiceSubscriptionDto, NOTIFICATIONPATTERN } from '@shared/contracts/shared';
 
 @Injectable()
 export class CateringService {

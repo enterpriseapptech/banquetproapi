@@ -51,15 +51,7 @@ export const REFUNDPATTERN = {
     DELETE: 'refund.delete',
 }
 
-export const WALLETPATTERN = {
-    CREATE: 'wallet.create',              // internal: create wallet on user creation
-    FINDBYUSERID: 'wallet.findByUserId',
-    TOPUP: 'wallet.topup',               // create wallet-funding invoice + initiate payment
-    PAYINVOICE: 'wallet.payInvoice',     // pay invoice from wallet balance
-    TRANSACTIONS: 'wallet.transactions', // list wallet transactions
-    PLATFORM_TRANSACTIONS: 'wallet.platformTransactions', // list platform wallet transactions (admin)
-    RELEASEESCROW: 'wallet.releaseEscrow', // release held funds to SP on booking complete
-}
+
 
 export const WITHDRAWALPATTERN = {
     CREATE: 'withdrawal.create',

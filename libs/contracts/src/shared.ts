@@ -5,7 +5,29 @@ export enum SubscriptionStatus {
     ACTIVE = "ACTIVE",
     INACTIVE = "INACTIVE"
 }
+export const NOTIFICATIONPATTERN = {
+    FINDALL: 'notification.findAll',
+    FINDBYID: 'notification.findOneById',
+    FINDBYUSERID: 'notification.findAllByUserId',
+    CREATE: 'notification.create',
+    SEND: 'notification.send',
+    FINDANDSEND: 'notification.send',
+    UPDATE: 'notification.update',
+    DELETE: 'notification.delete',
+    PERMENENTDELETE: 'notification.permanentdelete',
+    MARKALLASREAD: 'notification.markAllAsRead',
+    MARKASREAD: 'notification.markAsRead',
+}
 
+export const WALLETPATTERN = {
+    CREATE: 'wallet.create',              // internal: create wallet on user creation
+    FINDBYUSERID: 'wallet.findByUserId',
+    TOPUP: 'wallet.topup',               // create wallet-funding invoice + initiate payment
+    PAYINVOICE: 'wallet.payInvoice',     // pay invoice from wallet balance
+    TRANSACTIONS: 'wallet.transactions', // list wallet transactions
+    PLATFORM_TRANSACTIONS: 'wallet.platformTransactions', // list platform wallet transactions (admin)
+    RELEASEESCROW: 'wallet.releaseEscrow', // release held funds to SP on booking complete
+}
 
 export class DataWithCountDto<T> {
   @ApiProperty({ example: 0 })
