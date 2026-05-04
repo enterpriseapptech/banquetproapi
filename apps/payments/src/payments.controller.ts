@@ -5,10 +5,10 @@ import { RpcException } from '@nestjs/microservices';
 import { catchError } from 'rxjs/operators';
 import { from, throwError } from 'rxjs';
 import { DisputeService, FeaturedPlanService, FeesService, InvoiceService, PaymentsService, RefundService, SubscriptionPlansService, SubscriptionService, WalletService, WithdrawalService } from './payments.service';
-import { DISPUTEPATTERN, FEATUREDPLANSPATTERN, FEESPATTERN, INVOICEPATTERN, PAYMENTPATTERN, REFUNDPATTERN, SUBSCRIPTIONPATTERN, SUBSCRIPTIONPLANSPATTERN, WALLETPATTERN, WITHDRAWALPATTERN } from '@shared/contracts/payments/payments.pattern';
+import { DISPUTEPATTERN, FEATUREDPLANSPATTERN, FEESPATTERN, INVOICEPATTERN, PAYMENTPATTERN, REFUNDPATTERN, SUBSCRIPTIONPATTERN, SUBSCRIPTIONPLANSPATTERN } from '@shared/contracts/payments/payments.pattern';
 import { CreateDisputeDto, CreateFeaturedPlanDto, CreateFeeDto, CreateInvoiceDto, CreatePaymentDto, CreateRefundDto, CreateSubscriptionDto, CreateSubscriptionPlanDto, CreateWalletDto, CreateWithdrawalDto, GeneratePaymentDto, PayInvoiceDto, ReleaseEscrowDto, TopupWalletDto } from '@shared/contracts/payments/create-payments.dto';
 import { UpdateDisputeDto, UpdateFeaturedPlanDto, UpdateFeeDto, UpdateInvoiceDto, UpdatePaymentDto, UpdateRefundDto, UpdateSubscriptionDto, UpdateSubscriptionPlanDto, UpdateWithdrawalDto, ApproveRefundDto, DeclineRefundDto, ResolveDisputeDto } from '@shared/contracts/payments/update-payments.dto';
-import { UserType } from '@shared/contracts/shared';
+import { UserType, WALLETPATTERN, } from '@shared/contracts/shared';
 
 @Controller()
 export class SubscriptionPlansController {

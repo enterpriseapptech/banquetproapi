@@ -28,6 +28,7 @@ export class UsersController {
 
 	@MessagePattern(USERPATTERN.LOGINUSER)
 	login(@Payload() loginUserDto: LoginUserDto) {
+		console.log({loginUserDto})
 		return from(this.userService.login(loginUserDto)).pipe(
 			catchError((err) => {
 				
