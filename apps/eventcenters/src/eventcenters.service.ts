@@ -11,10 +11,11 @@ import { CACHE_MANAGER, CacheInterceptor, CacheTTL } from '@nestjs/cache-manager
 import { Cache } from 'cache-manager'; 
 @Injectable()
 export class EventcentersService {
+    private readonly logger = new Logger(EventcentersService.name);
+
     constructor(
         @Inject(NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
         private readonly databaseService: DatabaseService,
-        private readonly logger = new Logger(EventcentersService.name)
     ) { }
 
     async create(createEventCenterDto: CreateEventCenterDto): Promise<EventCenterDto> {

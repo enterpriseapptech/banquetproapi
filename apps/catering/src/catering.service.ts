@@ -8,10 +8,10 @@ import { UpdateServiceSubscriptionDto, NOTIFICATIONPATTERN } from '@shared/contr
 
 @Injectable()
 export class CateringService {
+    private readonly logger = new Logger(CateringService.name);
     constructor(
         @Inject(NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
         private readonly databaseService: DatabaseService,
-        private readonly logger = new Logger(CateringService.name)
     ) { }
 
     async create(createCateringDto: CreateCateringDto): Promise<CateringDto> {
