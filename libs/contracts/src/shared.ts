@@ -5,6 +5,30 @@ export enum SubscriptionStatus {
     ACTIVE = "ACTIVE",
     INACTIVE = "INACTIVE"
 }
+
+export const CATERINGPATTERN = {
+    FINDALLBYUNIQUEEVENTCENTER:  'catering.findAllByUnique',
+    FINDALL: 'catering.findAll',
+    FINDONEBYID: 'catering.findOneById',
+    CREATE: 'catering.create',
+    UPDATE: 'catering.update',
+    DELETE: 'catering.delete',
+    UPDATESUBSCRIPTION: 'catering.updateSubscription',
+}
+
+export const EVENTCENTERPATTERN = {
+    FINDALLEVENTCENTER: 'event.center.findAll',
+    FINDALLBYUNIQUEEVENTCENTER: 'event.center.findAllByUnique',
+    FINDONEBYID: 'event.center.findOneById',
+    FINDALLBYLOCATION: 'event.center.findOneAllLocation',
+    FINDALLBYSERVICEPROVIDER: 'event.center.findOneAllServiceProvider',
+    CREATEEVENTCENTER: 'event.center.create',
+    UPDATEEVENTCENTER: 'event.center.update',
+    DELETEEVENTCENTER: 'event.center.delete',
+    UPDATESUBSCRIPTION: 'event.center.updateSubscription',
+}
+
+
 export const NOTIFICATIONPATTERN = {
     FINDALL: 'notification.findAll',
     FINDBYID: 'notification.findOneById',

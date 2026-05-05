@@ -1,12 +1,6 @@
-export const CATERINGPATTERN = {
-    FINDALLBYUNIQUEEVENTCENTER:  'catering.findAllByUnique',
-    FINDALL: 'catering.findAll',
-    FINDONEBYID: 'catering.findOneById',
-    CREATE: 'catering.create',
-    UPDATE: 'catering.update',
-    DELETE: 'catering.delete',
-    UPDATESUBSCRIPTION: 'catering.updateSubscription',
-}
+import { CATERINGPATTERN } from "../shared"
+
+export  {CATERINGPATTERN} 
 
 export const CATERINGREFUNDPOLICYPATTERN = {
     UPSERT: 'catering.refundPolicy.upsert',

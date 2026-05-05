@@ -4,9 +4,8 @@ import { ClientProxy } from '@nestjs/microservices';
 import { DatabaseService } from 'apps/payments/database/database.service';
 import { $Enums } from 'apps/payments/prisma/@prisma/payments';
 import { EVENT_CENTER_CLIENT, CATERING_CLIENT, NOTIFICATION_CLIENT } from '@shared/contracts';
-import { EVENTCENTERPATTERN } from '@shared/contracts/eventcenters';
-import { CATERINGPATTERN } from '@shared/contracts/catering';
-import { NOTIFICATIONPATTERN, NotificationType } from '@shared/contracts/notifications';
+import { CATERINGPATTERN, NOTIFICATIONPATTERN, EVENTCENTERPATTERN} from '@shared/contracts/shared';
+import {  NotificationType } from '@shared/contracts/notifications';
 
 @Injectable()
 export class SubscriptionExpiryService {

@@ -1,14 +1,6 @@
-export const EVENTCENTERPATTERN = {
-    FINDALLEVENTCENTER: 'event.center.findAll',
-    FINDALLBYUNIQUEEVENTCENTER: 'event.center.findAllByUnique',
-    FINDONEBYID: 'event.center.findOneById',
-    FINDALLBYLOCATION: 'event.center.findOneAllLocation',
-    FINDALLBYSERVICEPROVIDER: 'event.center.findOneAllServiceProvider',
-    CREATEEVENTCENTER: 'event.center.create',
-    UPDATEEVENTCENTER: 'event.center.update',
-    DELETEEVENTCENTER: 'event.center.delete',
-    UPDATESUBSCRIPTION: 'event.center.updateSubscription',
-}
+import {  EVENTCENTERPATTERN} from "../shared"
+
+export {EVENTCENTERPATTERN}
 
 export const EVENTCENTERREFUNDPOLICYPATTERN = {
     UPSERT: 'event.center.refundPolicy.upsert',
