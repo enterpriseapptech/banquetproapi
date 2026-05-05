@@ -5,7 +5,7 @@ import { UpdateUserDto, CreateUserDto, USERPATTERN, LoginUserDto, UserFilterDto,
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { RpcException } from '@nestjs/microservices';
 import { catchError } from 'rxjs/operators';
-import { from, throwError } from 'rxjs';
+import { firstValueFrom, from, throwError } from 'rxjs';
 
 @Controller()
 export class UsersController {
@@ -27,8 +27,7 @@ export class UsersController {
 	}
 
 	@MessagePattern(USERPATTERN.LOGINUSER)
-	login(@Payload() loginUserDto: LoginUserDto) {
-		console.log({loginUserDto})
+	 login(@Payload() loginUserDto: LoginUserDto) {
 		return from(this.userService.login(loginUserDto)).pipe(
 			catchError((err) => {
 				
@@ -38,8 +37,8 @@ export class UsersController {
 					error: err.response.error || "Sever error",
 				}));
 
-			})
-		);
+			}))
+
 	}
 	
 	@MessagePattern(USERPATTERN.LOGOUT)

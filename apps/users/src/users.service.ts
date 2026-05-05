@@ -173,6 +173,7 @@ export class UsersService {
                     customer: true
                 }
             });
+            console.log({user})
 
             if (!user) {
                 throw new NotFoundException('we could not find a user with this email', {
@@ -204,7 +205,7 @@ export class UsersService {
                         status: user.loginAttempts + 1 > 7 ? $Enums.UserStatus.RESTRICTED : user.status
                     }
                 });
-
+                console.log({user})
                 if (user.loginAttempts + 1 > 7) {
                     throw new UnauthorizedException('Authentication error',
                         {
@@ -229,7 +230,7 @@ export class UsersService {
 
             
             // reset login attempts to 0 once successful login
-            await this.databaseService.user.update({
+            const updatedUser = await this.databaseService.user.update({
                 where: { email: email },
                 data: {
                     loginAttempts: 1,
@@ -237,7 +238,7 @@ export class UsersService {
                     refreshToken: refreshToken
                 }
             });
-
+console.log({updatedUser})
             // Ensure wallet exists for customer/SP accounts (handles pre-existing users)
             if (
                 user.userType === $Enums.UserType.CUSTOMER ||
@@ -245,13 +246,14 @@ export class UsersService {
             ) {
                 this.paymentClient.emit(WALLETPATTERN.CREATE, { userId: user.id });
             }
-            
-            return {
-                user: { ...user, refreshToken: undefined, password: undefined},
-                access_token: this.jwtService.sign({ sub: user.id, type: user.userType, isEmailVerified: user.isEmailVerified }, {
+            const access_token  = await this.jwtService.sign({ sub: user.id, type: user.userType, isEmailVerified: user.isEmailVerified }, {
                     secret: process.env.JWT_ACCESS_TOKEN_SECRET,
                     expiresIn: '59m',
-                }),
+                })
+            console.log({access_token})
+            return {
+                user: { ...user, refreshToken: undefined, password: undefined},
+                access_token,
                 refresh_token: refreshToken,
             };
             
