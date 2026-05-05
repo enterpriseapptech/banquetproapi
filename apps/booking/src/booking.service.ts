@@ -8,7 +8,7 @@ import { CreateBookingDto, BookingDto, ManyBookingDto, TimeslotDto, CreateManyTi
 import { EventCenterDto, EVENTCENTERPATTERN, } from '@shared/contracts/eventcenters';
 import { UniqueIdentifierDto, UserDto, USERPATTERN, } from '@shared/contracts/users';
 import { DatabaseService } from '../database/database.service';
-import { NOTIFICATIONPATTERN } from '@shared/contracts/notifications';
+import { NOTIFICATIONPATTERN } from '@shared/contracts/shared';
 import { EVENT_CENTER_CLIENT, NOTIFICATION_CLIENT, USER_CLIENT, CATERING_CLIENT, PAYMENT_CLIENT } from '@shared/contracts';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
