@@ -2,8 +2,9 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload, EventPattern } from '@nestjs/microservices';
 import { NotificationsService, ReviewService } from './notifications.service';
-import { CreateNotificationDto, UpdateNotificationDto, NotificationDto, NOTIFICATIONPATTERN, CreateReviewDto, UpdateReviewDto, ReviewFilter, REVIEWPATTERN } from '@shared/contracts/notifications'
+import { CreateNotificationDto, UpdateNotificationDto, NotificationDto, CreateReviewDto, UpdateReviewDto, ReviewFilter, REVIEWPATTERN } from '@shared/contracts/notifications'
 import { NotificationInterface } from '@shared/interfaces/Notification/notification.interface';
+import { NOTIFICATIONPATTERN } from '@shared/contracts/shared';
 
 @Controller()
 export class NotificationsController {
