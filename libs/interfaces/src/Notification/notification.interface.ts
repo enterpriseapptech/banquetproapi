@@ -1,14 +1,18 @@
+import { NotificationTemplateNames } from "@shared/contracts/shared";
+
+export interface  NotificationData  {
+        subject?: string;
+        message: string;
+        templatePath?: string;
+        recipientId?: string;
+        recipientName?: string;
+        recipientEmail?: string;
+        templateVariables?: Record<string, string>;
+        templateName: NotificationTemplateNames,
+};
 export interface NotificationInterface {
     type: 'EMAIL' | 'IN_APP' | 'SMS';
-    data: {
-        subject?: string; // Email subject
-        message: string;  // Email or in-app message content
-        templatePath?: string; // html template path
-        recipientName?: string;
-        recipientEmail?: string; // Optional email
-        code?: string; 
-        url?: string;     // Optional link (e.g., for email verification)
-    };
+    data: NotificationData
 }
 
 

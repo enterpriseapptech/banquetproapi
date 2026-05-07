@@ -3,7 +3,7 @@ import { BadRequestException, ConflictException, Inject, Injectable, InternalSer
 import * as bcrypt from 'bcrypt';
 import { $Enums, Prisma } from '../prisma/@prisma/users';
 import { CreateUserDto, UpdateUserDto, UserDto, LoginUserDto, UserType, UserStatus, ServiceType, UserFilterDto, UpdateUserPasswordDto, UniqueIdentifierDto, BookMarkType } from '@shared/contracts/users';
-import { NOTIFICATIONPATTERN } from '@shared/contracts/shared';
+import { NOTIFICATIONPATTERN, NotificationTemplateNames } from '@shared/contracts/shared';
 import { WALLETPATTERN } from '@shared/contracts/shared';
 import { DatabaseService } from '../database/database.service';
 import { NOTIFICATION_CLIENT } from './constants';
@@ -12,6 +12,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaErrorHandler } from '@shared/contracts/prisma.error.handler';
 import { firstValueFrom } from 'rxjs';
+import { NotificationInterface } from '@shared/interfaces/Notification/notification.interface';
 
 
 @Injectable()
@@ -121,15 +122,15 @@ export class UsersService {
             });
 
             //  emit a email verification - notification event
-            this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
+            this.notificationClient.emit<string, NotificationInterface>(NOTIFICATIONPATTERN.SEND, {
                 type: 'EMAIL',
                 data: {
                     subject: 'Email Verification Notice!',
                     message: `Thank you for signing up! here is your verification code ${account.personalaAccessTokens.token}`,
                     recipientEmail: account.user.email,
                     recipientName: `${account.user.firstName} ${account.user.lastName}`,
-                    templatePath: 'templates/emails/verification.html',
-                    code: account.personalaAccessTokens.token
+                    templateName: NotificationTemplateNames.VERIFICATION,
+                    templateVariables: { verificationCode: account.personalaAccessTokens.token },
                 },
             });
 
@@ -205,7 +206,6 @@ export class UsersService {
                         status: user.loginAttempts + 1 > 7 ? $Enums.UserStatus.RESTRICTED : user.status
                     }
                 });
-                console.log({user})
                 if (user.loginAttempts + 1 > 7) {
                     throw new UnauthorizedException('Authentication error',
                         {
@@ -238,7 +238,6 @@ export class UsersService {
                     refreshToken: refreshToken
                 }
             });
-console.log({updatedUser})
             // Ensure wallet exists for customer/SP accounts (handles pre-existing users)
             if (
                 user.userType === $Enums.UserType.CUSTOMER ||
@@ -250,7 +249,7 @@ console.log({updatedUser})
                     secret: process.env.JWT_ACCESS_TOKEN_SECRET,
                     expiresIn: '59m',
                 })
-            console.log({access_token})
+
             return {
                 user: { ...user, refreshToken: undefined, password: undefined},
                 access_token,

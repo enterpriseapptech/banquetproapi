@@ -425,5 +425,6 @@ export class CreateManyTimeSlotDto{
 
     @ApiProperty({ type: 'string', required: true })
     @IsUUID()
-    createdBy: string;
+    @IsOptional()
+    createdBy?: string;
 }

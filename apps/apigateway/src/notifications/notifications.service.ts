@@ -48,7 +48,7 @@ export class NotificationService {
     }
 
     send(createNotificationDto: NotificationInterface) {
-        return this.notificationClient.send<NotificationDto, { createNotificationDto: NotificationInterface}>(NOTIFICATIONPATTERN.DELETE, { createNotificationDto})
+        return this.notificationClient.emit<string, NotificationInterface>(NOTIFICATIONPATTERN.SEND, createNotificationDto)
     }
     
 }

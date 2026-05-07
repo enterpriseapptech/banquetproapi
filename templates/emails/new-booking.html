@@ -1,0 +1,97 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>New Booking Notification</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f4f4;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f4;padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;padding:30px;box-shadow:0 4px 8px rgba(0,0,0,0.05);">
+          
+          <!-- Header -->
+          <tr>
+            <td style="text-align:center;">
+              <h1 style="color:#333333;font-size:24px;margin:0 0 20px 0;">
+                You Have a New Booking 🎉
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td>
+              <p style="color:#555555;font-size:16px;line-height:1.5;margin:0 0 20px 0;">
+                Hello {{name}},
+              </p>
+
+              <p style="color:#555555;font-size:16px;line-height:1.5;margin:0 0 20px 0;">
+                {{message}}
+              </p>
+
+              <!-- Booking Details -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f9f9f9;border-radius:6px;padding:20px;margin:20px 0;">
+                <tr>
+                  <td style="padding:8px 0;color:#333333;font-size:15px;">
+                    <strong>Customer:</strong> {{customerName}}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;color:#333333;font-size:15px;">
+                    <strong>Service:</strong> {{serviceName}}
+                  </td>
+                </tr>
+                <!-- <tr>
+                  <td style="padding:8px 0;color:#333333;font-size:15px;">
+                    <strong>Event Date:</strong> {{eventDate}}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;color:#333333;font-size:15px;">
+                    <strong>Location:</strong> {{eventLocation}}
+                  </td>
+                </tr> -->
+                <tr>
+                  <td style="padding:8px 0;color:#333333;font-size:15px;">
+                    <strong>Booking Reference:</strong> {{bookingReference}}
+                  </td>
+                </tr>
+              </table>
+
+              <!-- CTA -->
+              <div style="text-align:center;margin:30px 0;">
+                <a 
+                  href="{{dashboardUrl}}" 
+                  style="background-color:#4CAF50;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:6px;font-size:16px;display:inline-block;"
+                >
+                  View Booking
+                </a>
+              </div>
+
+              <p style="color:#555555;font-size:16px;line-height:1.5;margin:0 0 20px 0;">
+                Please log in to your dashboard to review and manage this booking.
+              </p>
+
+              <p style="color:#555555;font-size:16px;line-height:1.5;margin:0;">
+                Thank you for being part of Banquet Pro.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="text-align:center;font-size:12px;color:#999999;padding-top:30px;">
+              &copy; {{year}} Banquet Pro. All rights reserved.
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+```

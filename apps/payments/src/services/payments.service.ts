@@ -223,7 +223,7 @@ export class PaymentsService {
             }
 
             // Steps 5–8: Debit wallet, distribute funds, mark invoice — all in one transaction
-            let invoiceStatus: string = InvoiceStatus.PENDING;
+            let invoiceStatus: string = invoice.status as InvoiceStatus;
             try {
                 const result = await this.databaseService.$transaction(async (prisma) => {
                     return this.walletService.applyServiceRequestPayment(prisma, invoice, paymentAmount);
@@ -527,9 +527,9 @@ export class PaymentsService {
                 this.logger.log({ message: 'Payment recorded', 
                     paymentId: payment.id, 
                     invoiceId: createPaymentDto.invoiceId ?? 'none', 
-                    status: createPaymentDto.status, 
-                    amount: createPaymentDto.amount, 
-                    reason: createPaymentDto.paymentReason 
+                    status: payment.status, 
+                    amount: payment.amount, 
+                    reason: payment.paymentReason 
                 });
         
                 // 3. Credit customer wallet — always for every completed payment

@@ -13,6 +13,8 @@ import { CateringDto } from '@shared/contracts/catering';
 import { CateringService } from '../catering/catering.service';
 import { EventcentersService } from '../eventcenters/eventcenters.service';
 import { AppSettingService } from '../management/management.service';
+import {  NotificationTemplateNames } from '@shared/contracts/shared';
+import { NotificationsService } from 'apps/notifications/src/notifications.service';
 
 
 export interface AuthenticatedRequest extends Request {
@@ -28,6 +30,7 @@ export class BookingController {
         private readonly eventcentersService: EventcentersService,
         private readonly userService: UsersService,
         private readonly appSettingService: AppSettingService,
+        private readonly notificationService: NotificationsService,
     ) { }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
@@ -228,7 +231,29 @@ export class BookingController {
             }
             createBookingDto.items.push({item: "service charge", amount: serviceCharge})
             createBookingDto.subTotal += serviceCharge
-            return this.bookingService.create({ ...createBookingDto, serviceCharge, customer, serviceProvider });
+            const booking = await firstValueFrom(this.bookingService.create({ ...createBookingDto, serviceCharge, customer, serviceProvider }));
+
+            const message = `A customer just booked your service, login to your dash to view the booking details details and confirm booking`;
+
+            this.notificationService.send({
+                            type: 'EMAIL',
+                            data: {
+                                recipientId: booking.customerId,
+                                subject: `New Booking - ${createBookingDto.serviceName}`,
+                                message,
+                                recipientEmail: createBookingDto.customer.email,
+                                templateName: NotificationTemplateNames.NEW_BOOKING,
+                                templateVariables: { 
+                                    name: serviceProvider.firstName || Service.name,
+                                    message,
+                                    customerName: `${customer.firstName}`,
+                                    serviceName: Service.name,
+                                    bookingReference: booking.bookingReference
+                                },
+                            },
+                        });
+            return booking
+            
         } catch (error: any) {
             this.logger.log({
                     message: `Failed to Create booking in gateway service at ${new Date().toLocaleString()}`,
@@ -649,7 +674,9 @@ export class TimeSlotController {
     @ApiResponse({ status: 201, description: 'Success' })
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post()
-    create(@Body() createTimeSlotDto: CreateManyTimeSlotDto) {
+    async create(@Body() createTimeSlotDto: CreateManyTimeSlotDto, @Req() req: AuthenticatedRequest) {
+        const requestuser: UserDto = await firstValueFrom(req.user)
+        createTimeSlotDto.createdBy = requestuser.id
         return this.timeslotService.create(createTimeSlotDto);
     }
 

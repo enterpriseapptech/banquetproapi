@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ForbiddenException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateNotificationDto, CreateReviewDto, NotificationDto, NotificationFilter, NotificationType, ReviewDto, ReviewFilter, ServiceType, UpdateNotificationDto, UpdateReviewDto } from '@shared/contracts/notifications';
-import { NotificationInterface } from '@shared/interfaces/Notification/notification.interface';
+import { NotificationData, NotificationInterface } from '@shared/interfaces/Notification/notification.interface';
 import { MailerService } from '@nestjs-modules/mailer';
 import { DatabaseService } from '../database/database.service';
 import { $Enums, Prisma } from '../prisma/@prisma/notifications';
@@ -12,12 +12,15 @@ import { firstValueFrom } from 'rxjs';
 import { UserDto, USERPATTERN } from '@shared/contracts/users';
 import * as fs from 'fs';
 import * as path from 'path';
+import { NotificationTemplateNames } from '@shared/contracts/shared';
+
 
 @Injectable()
 export class NotificationsService {
 	constructor(
 		private readonly databaseService: DatabaseService,
-		private readonly mailService: MailerService
+		private readonly mailService: MailerService,
+		@Inject(USER_CLIENT) private readonly userClient: ClientProxy,
 	) { }
 
 	// async create(createNotificationDto: CreateNotificationDto): Promise<NotificationDto> {
@@ -215,28 +218,27 @@ export class NotificationsService {
 
 
 	async send(payload: NotificationInterface): Promise<void> {
-		const { type,  data } = payload;
-		console.log({data})
+		const { type, data } = payload;
 		if (type === 'EMAIL') {
-			await this.retryOperation(() => this.sendEmail(payload));
-		}
+			if (data.recipientId && (!data.recipientEmail || !data.recipientName)) {
+				const user = await firstValueFrom(this.userClient.send<UserDto, string>(USERPATTERN.FINDBYID, data.recipientId));
+				if (user) {
+					data.recipientEmail = data.recipientEmail ?? user.email;
+					data.recipientName = data.recipientName ?? `${user.firstName} ${user.lastName}`.trim();
+				}
+			}
 
-		// Handle other types like IN_APP, SMS, etc.
+			data.templateVariables = {
+				name: data.recipientName || 'Customer',
+				year: new Date().getFullYear().toString(),
+				...data.templateVariables,
+			};
+			const html = this.resolveTemplate(data)
+			await this.retryOperation(() => this.sendEmail(data, html));
+		}
 	}
 
-	// pending a job or task or service that would handle the sending of emails
-	private async sendEmail(payload: NotificationInterface): Promise<void> {
-		const { data } = payload;
-		console.log({data})
-		const templatePath = path.join(process.cwd(), data.templatePath);
-    	let html = fs.readFileSync(templatePath, 'utf-8');
-
-		html = html
-			.replace('{{name}}', payload.data.recipientName || "Customer")
-			.replace('{{verificationCode}}', payload.data.code || "")
-			.replace('{{year}}', new Date().getFullYear().toString());
-
-		
+	private async sendEmail(data: NotificationData, html: string): Promise<void> {
 		const sendMail = await this.mailService.sendMail({
 			from: `"Banquet Pro" <${process.env.SMTP_USER || "support@banquetpay.com"}>`,
 			to: data.recipientEmail,
@@ -247,6 +249,37 @@ export class NotificationsService {
 
 		console.log({sendMail})
 	}
+
+	private resolveTemplate(data: NotificationData ){
+		let templatePath: string
+		let html: string
+
+		switch (data.templateName) {
+			case NotificationTemplateNames.VERIFICATION:
+				templatePath = path.join(process.cwd(), 'templates/emails/verification.html');
+				html = fs.readFileSync(templatePath, 'utf-8');
+				break;
+
+			case NotificationTemplateNames.NEW_BOOKING:
+				templatePath = path.join(process.cwd(), 'templates/emails/new-booking.html');
+				html = fs.readFileSync(templatePath, 'utf-8');
+				break;
+			default:
+				break;
+		}
+
+		const variables: Record<string, string> = {
+			name: data.recipientName || 'Customer',
+			year: new Date().getFullYear().toString(),
+			...data.templateVariables,
+		};
+
+		for (const [key, value] of Object.entries(variables)) {
+			html = html.replaceAll(`{{${key}}}`, value);
+		}
+		return html
+	}
+
 
 	private async retryOperation<T>(
 		operation: () => Promise<T>,
@@ -276,6 +309,7 @@ export class NotificationsService {
 			type: notification.type as unknown as NotificationType
 		};
 	}
+
 }
 
 
@@ -360,7 +394,7 @@ export class ReviewService {
 				serviceType: review.serviceType as unknown as ServiceType
 			};
 			
-		} catch (error) {
+		} catch (error: any) {
 			throw new InternalServerErrorException('sever error could not update review ', {
 				cause: new Error(),
 				description: error.message

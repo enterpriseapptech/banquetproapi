@@ -152,9 +152,11 @@ export class PaymentController {
             });
             let paymentData: CreatePaymentDto;
             const PaymentPayloadStatus = payload.event ? payload.event : payload.type
+            let paymentStatus: IPaymentStatus.COMPLETED | IPaymentStatus.FAILED
             switch (PaymentPayloadStatus) {
-                case 'charge.success':
+                case 'charge.success': 
                     // paystack payment succeeded
+                    paymentStatus =  payload.data.status === 'success' ? IPaymentStatus.COMPLETED : IPaymentStatus.FAILED
                     paymentData = {
                         userId: payload.data.metadata.userId,
                         invoiceId: payload.data.metadata.invoiceId || undefined,
@@ -165,13 +167,14 @@ export class PaymentController {
                         paymentMethod: PaymentMethod.PAYSTACK,
                         currency: payload.data.currency,
                         paidAt: payload.data.paid_at,
-                        status: payload.data.status === 'success' ? IPaymentStatus.COMPLETED : IPaymentStatus.FAILED,
+                        status: paymentStatus,
                         paymentReason: payload.data.metadata.paymentReason,
                         transactionId: String(payload.data.id),
                     };
                     break;
                 case 'charge.failed':
                     // paystack payment failed — record only, no wallet credit
+                    paymentStatus = IPaymentStatus.FAILED
                     paymentData = {
                         userId: payload.data.metadata.userId,
                         invoiceId: payload.data.metadata.invoiceId || undefined,
@@ -191,6 +194,7 @@ export class PaymentController {
 
                 case 'payment_intent.succeeded':
                     // stripe payment succeeded
+                    paymentStatus =  payload.data.status === 'succeeded' ? IPaymentStatus.COMPLETED : IPaymentStatus.FAILED
                     paymentData = {
                         userId: payload.data.object.metadata.userId,
                         paymentReason: payload.data.object.metadata.paymentReason,
@@ -203,11 +207,12 @@ export class PaymentController {
                         paymentMethod: PaymentMethod.STRIPE,
                         currency: payload.data.object.currency.toUpperCase(),
                         paidAt: new Date(payload.data.object.created * 1000).toISOString(),
-                        status: payload.data.object.status === 'succeeded' ? IPaymentStatus.COMPLETED : IPaymentStatus.FAILED,
+                        status: paymentStatus,
                     };
                     break;
                 case 'payment_intent.payment_failed':
                     // stripe payment failed — record only, no wallet credit
+                    paymentStatus = IPaymentStatus.FAILED
                     paymentData = {
                         userId: payload.data.object.metadata.userId,
                         paymentReason: payload.data.object.metadata.paymentReason,
@@ -222,14 +227,16 @@ export class PaymentController {
                         paidAt: new Date(payload.data.object.created * 1000).toISOString(),
                         status: IPaymentStatus.FAILED,
                     };
-                    await this.processFailedPayment(paymentData)
-                    return { received: true };
+                    break;
+     
                 default:
-                    return;
+                    return { received: true };
             }
-
-            await this.processSuccessfulPayment(paymentData)
-
+            
+            paymentStatus == IPaymentStatus.COMPLETED 
+                    ? await this.processSuccessfulPayment(paymentData) 
+                    : await this.processFailedPayment(paymentData)
+            
             return { received: true };
         } catch (error: any) {
             this.logger.error({

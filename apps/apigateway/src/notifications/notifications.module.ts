@@ -22,5 +22,6 @@ import { NOTIFICATION_CLIENT } from '@shared/contracts';
         }
         
     ],
+    exports: [NotificationService]
 })
 export class NotificationsModule { }

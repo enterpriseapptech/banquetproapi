@@ -8,7 +8,7 @@ import { CreateBookingDto, BookingDto, ManyBookingDto, TimeslotDto, CreateManyTi
 import { EventCenterDto, EVENTCENTERPATTERN, } from '@shared/contracts/eventcenters';
 import { UniqueIdentifierDto, UserDto, USERPATTERN, } from '@shared/contracts/users';
 import { DatabaseService } from '../database/database.service';
-import { NOTIFICATIONPATTERN } from '@shared/contracts/shared';
+import { NOTIFICATIONPATTERN, NotificationTemplateNames } from '@shared/contracts/shared';
 import { EVENT_CENTER_CLIENT, NOTIFICATION_CLIENT, USER_CLIENT, CATERING_CLIENT, PAYMENT_CLIENT } from '@shared/contracts';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
@@ -17,6 +17,7 @@ import { BillingAddress, CreateInvoiceDto, InvoiceDto, InvoiceItem, INVOICEPATTE
 import { instanceToPlain } from 'class-transformer';
 import {v4 as uuidv4 } from 'uuid'
 import { Decimal } from '@prisma/client/runtime/library';
+import { NotificationInterface } from '@shared/interfaces/Notification/notification.interface';
 
 @Injectable()
 export class BookingService {
@@ -31,8 +32,7 @@ export class BookingService {
 
 	async create(createBookingDto: CreateBookingDto): Promise<InvoiceDto> {
 		try {
-			console.log({createBookingDto})
-			let notificationSubject: string;
+			
 			const bookingId = uuidv4();
 			const newBookingInput: Prisma.BookingCreateInput = {
 				id: bookingId,
@@ -112,23 +112,7 @@ export class BookingService {
 			newBookingInput.invoice  = [invoice.id]
 			const newBooking = await await this.databaseService.booking.create({ data: newBookingInput });
 
-			//  notify service provider of booking
-			if ($Enums.ServiceType.EVENTCENTER) {
-				notificationSubject = "A customer just booked your Event Center";
-			} else if ($Enums.ServiceType.CATERING) {
-				notificationSubject = "A customer just booked your catering service";
-			}
-
-			this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
-				type: 'EMAIL',
-				recipientId: newBooking.customerId,
-				data: {
-					subject: notificationSubject,
-					message: `A customer just booked your service, view details and confirm booking`,
-					recipientEmail: createBookingDto.customer.email,
-				},
-			});
-
+			// emoit notification form gateway
 			return {
 				...invoice,
 				bookingId: newBooking.id,
