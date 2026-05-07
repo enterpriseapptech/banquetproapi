@@ -14,7 +14,7 @@ import { CateringService } from '../catering/catering.service';
 import { EventcentersService } from '../eventcenters/eventcenters.service';
 import { AppSettingService } from '../management/management.service';
 import {  NotificationTemplateNames } from '@shared/contracts/shared';
-import { NotificationsService } from 'apps/notifications/src/notifications.service';
+import { NotificationService } from '../notifications/notifications.service';
 
 
 export interface AuthenticatedRequest extends Request {
@@ -30,7 +30,7 @@ export class BookingController {
         private readonly eventcentersService: EventcentersService,
         private readonly userService: UsersService,
         private readonly appSettingService: AppSettingService,
-        private readonly notificationService: NotificationsService,
+        private readonly notificationService: NotificationService,
     ) { }
 
     @UseGuards(JwtAuthGuard, VerificationGuard)
