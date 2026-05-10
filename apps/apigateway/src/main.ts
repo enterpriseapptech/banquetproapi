@@ -8,8 +8,8 @@ async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 	app.enableCors({
 		origin: ['http://localhost:3000', 'https://entapp-frontend.vercel.app'], // Allow all origins
-		methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Allowed HTTP methods
-		allowedHeaders: 'Content-Type, Authorization', // Allowed headers
+		methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],, // Allowed HTTP methods
+		allowedHeaders: '*', // Allowed headers
 		credentials: true, // Allow credentials (cookies, authorization headers, etc.)
 	})
 
