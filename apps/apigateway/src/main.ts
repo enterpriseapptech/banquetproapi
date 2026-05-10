@@ -7,10 +7,10 @@ import { HttpLoggingInterceptor } from './common/interceptors/http-logging.inter
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 	app.enableCors({
-		origin: '*', // Allow all origins
+		origin: ['http://localhost:3000', 'https://entapp-frontend.vercel.app'], // Allow all origins
 		methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Allowed HTTP methods
 		allowedHeaders: 'Content-Type, Authorization', // Allowed headers
-		credentials: false, // Allow credentials (cookies, authorization headers, etc.)
+		credentials: true, // Allow credentials (cookies, authorization headers, etc.)
 	})
 
 	app.useGlobalPipes(new ValidationPipe({
