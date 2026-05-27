@@ -264,12 +264,19 @@ export class NotificationsService {
 				templatePath = path.join(process.cwd(), 'templates/emails/new-booking.html');
 				html = fs.readFileSync(templatePath, 'utf-8');
 				break;
+
+			case NotificationTemplateNames.FORGOT_PASSWORD:
+				templatePath = path.join(process.cwd(), 'templates/emails/forgot-password.html');
+				html = fs.readFileSync(templatePath, 'utf-8');
+				break;
+
+				
 			default:
 				break;
 		}
 
 		const variables: Record<string, string> = {
-			name: data.recipientName || 'Customer',
+			name: data.recipientName || '',
 			year: new Date().getFullYear().toString(),
 			...data.templateVariables,
 		};

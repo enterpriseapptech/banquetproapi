@@ -53,7 +53,7 @@ export class NotificationsController {
 
   @EventPattern(NOTIFICATIONPATTERN.SEND)
   send(@Payload() createNotificationDto: NotificationInterface) {
-    // console.log('receiving notifications ..., payload:', createNotificationDto)
+    console.log('receiving notifications ..., payload:', createNotificationDto)
     return this.notificationsService.send(createNotificationDto);
   }
 }
