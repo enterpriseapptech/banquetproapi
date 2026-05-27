@@ -630,15 +630,18 @@ export class UsersService {
         }
 
         //  emit a email verification - notification event
-        this.notificationClient.emit(NOTIFICATIONPATTERN.SEND, {
-            type: 'EMAIL',
-            recipientId: user.id,
-            data: {
-                subject: 'Email Verification Notice!',
-                message: `Thank you for signing up! here is your verification code ${personalAccessToken.token}`,
-                recipientEmail: user.email,
-            },
-        });
+         //  emit a email verification - notification event
+            this.notificationClient.emit<string, NotificationInterface>(NOTIFICATIONPATTERN.SEND, {
+                type: 'EMAIL',
+                data: {
+                    subject: 'Email Verification Notice!',
+                    message: `Thank you for signing up! here is your verification code ${personalAccessToken.token}`,
+                    recipientEmail: user.email,
+                    recipientName: `${user.firstName} ${user.lastName}`,
+                    templateName: NotificationTemplateNames.VERIFICATION,
+                    templateVariables: { verificationCode: personalAccessToken.token },
+                },
+            });
         return user
     }
 
