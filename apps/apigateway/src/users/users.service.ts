@@ -6,13 +6,14 @@ import { USER_CLIENT } from '@shared/contracts';
 import { firstValueFrom } from 'rxjs';
 import { WALLETPATTERN } from '@shared/contracts/shared';
 import { WalletService } from '../payment/payment.service';
+import { JwtService } from '@nestjs/jwt';
 
 
 @Injectable()
 export class UsersService {
     constructor(
         @Inject(USER_CLIENT) private readonly userClient: ClientProxy,
-        private readonly walletService: WalletService
+        private readonly walletService: WalletService,
     ) { }
 
     create(createUserDto: CreateUserDto) {
@@ -80,8 +81,8 @@ export class UsersService {
         return this.userClient.send<UserDto, {id: string, updateUserDto: UpdateUserDto}>(USERPATTERN.UPDATE, {id, updateUserDto})
     }
 
-    remove(id: number) {
-        return `This action removes a #${id} user`;
+    async remove( data:{ id: string, deletedBy: string}) {
+        return this.userClient.send<UserDto, { id: string, deletedBy: string}>(USERPATTERN.DELETE, data)
     }
 
     forgotPassword(email: string) {

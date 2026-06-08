@@ -18,6 +18,7 @@ import { NotificationInterface } from '@shared/interfaces/Notification/notificat
 @Injectable()
 export class UsersService {
     private readonly logger = new Logger(UsersService.name);
+    private readonly FRONTEND_URL = "https://entapp-frontend.vercel.app";
 
     constructor(
         @Inject(NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
@@ -163,9 +164,10 @@ export class UsersService {
         try {
             const { email, password } = loginUserDto;
 
-            const user = await this.databaseService.user.findUnique({
+            const user = await this.databaseService.user.findFirst({
                 where: {
-                    email: email
+                    email: email,
+                    deletedAt: null
                 },
                 include: {
                     admin: true,
@@ -174,7 +176,7 @@ export class UsersService {
                     customer: true
                 }
             });
-            console.log({user})
+    
 
             if (!user) {
                 throw new NotFoundException('we could not find a user with this email', {
@@ -231,7 +233,7 @@ export class UsersService {
             
             // reset login attempts to 0 once successful login
             const updatedUser = await this.databaseService.user.update({
-                where: { email: email },
+                where: { email: email, deletedAt: null },
                 data: {
                     loginAttempts: 1,
                     lastLoginAt: new Date(),
@@ -541,8 +543,22 @@ export class UsersService {
         return userAccount;
     } ;
 
-    remove(id: number) {
-        return `This action removes a #${id} user`;
+    async remove(id: string, deletedBy: string) {
+        const user = await this.databaseService.user.update({
+                where: { id },
+                data: {
+                    deletedAt: new Date(),
+                    deletedBy,
+                    refreshToken: null
+                },
+        });
+            //  const access_token  = await this.jwtService.decode({ sub: user.id, type: user.userType, isEmailVerified: user.isEmailVerified }, {
+            //         secret: process.env.JWT_ACCESS_TOKEN_SECRET,
+            //         expiresIn: '59m',
+            //     })
+        console.log({user})
+        return user; // Return created user
+
     }
 
     async verify(id: string, token: string) {
@@ -703,7 +719,7 @@ export class UsersService {
                     recipientName: `${account.user.firstName} ${account.user.lastName}`,
                     templateName: NotificationTemplateNames.FORGOT_PASSWORD,
                     templateVariables: { subject: 'Request to reset your password', 
-                        link: `${process.env.FRONTEND_URL}/resetpassword?resettoken=${account.hashedHexCode}&tokendata=${account.personalAccessToken.id}` },
+                        link: `${process.env.FRONTEND_URL || this.FRONTEND_URL}/resetpassword?resettoken=${account.hashedHexCode}&tokendata=${account.personalAccessToken.id}` },
                 },
             });
 

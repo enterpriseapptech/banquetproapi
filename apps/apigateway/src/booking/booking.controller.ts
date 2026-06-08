@@ -15,7 +15,7 @@ import { EventcentersService } from '../eventcenters/eventcenters.service';
 import { AppSettingService } from '../management/management.service';
 import {  NotificationTemplateNames } from '@shared/contracts/shared';
 import { NotificationService } from '../notifications/notifications.service';
-
+import { Request } from 'express';
 
 export interface AuthenticatedRequest extends Request {
     user?: any; // Change `any` to your actual user type if known

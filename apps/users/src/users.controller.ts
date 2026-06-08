@@ -153,9 +153,10 @@ export class UsersController {
 	  return this.userService.update(data.id, data.updateUserDto);
 	}
 
-	@MessagePattern('removeUser')
-	remove(@Payload() id: number) {
-		return from(this.userService.remove(id)).pipe(
+	@MessagePattern(USERPATTERN.DELETE)
+	remove(@Payload() data:{ id: string, deletedBy: string}) {
+		console.log("deleting user", {data})
+		return from(this.userService.remove(data.id, data.deletedBy)).pipe(
 			catchError((err) => {
 				
 				return throwError(() => new RpcException({

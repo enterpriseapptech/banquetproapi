@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { BookMarkType, CreateUserDto, LoginUserDto, UpdateUserDto, UpdateUserPasswordDto, UserDto, UserFilterDto } from '@shared/contracts/users';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
@@ -7,13 +7,19 @@ import { VerificationGuard } from '../jwt/verification.guard';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthenticatedRequest } from '../booking/booking.controller';
 import { firstValueFrom } from 'rxjs';
+// import { CacheStore } from '../common/cache/cache.store';
+import { JwtService } from '@nestjs/jwt';
+import { CacheStore } from '../common/cache/cache.store';
 
 
 
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
-    constructor(private readonly usersService: UsersService) { }
+    constructor(private readonly usersService: UsersService,
+                private readonly jwtService: JwtService,
+    ) { }
+    private readonly LOGOUT_CACHE_KEY = "logged_out_jwt_tokens"
     
     @ApiOperation({ summary: 'Create User' })
     @ApiResponse({ status: 200, description: 'Success' })
@@ -32,12 +38,19 @@ export class UsersController {
     @Post('logout')
     async logout(@Req() req: AuthenticatedRequest) {
         const requestuser: UserDto = await firstValueFrom(req.user)
+        const authorization = req.headers.authorization
+        if (!authorization?.startsWith('Bearer ')) {
+            throw new UnauthorizedException("Restricted area! you must login first");
+        }
+        const token = authorization.split(' ')[1];
+        await this.invalidateToken(token)
         return this.usersService.logout(requestuser.id, );
     }
 
 
     @Post('refresh-login')
     refreshlogin(@Body() token: string) {
+        this.isTokenBlacklisted(token)
         return this.usersService.refreshlogin(token);
     }
 
@@ -80,9 +93,20 @@ export class UsersController {
         return this.usersService.update(id, updateUserDto);
     }
 
+    @UseGuards(JwtAuthGuard, VerificationGuard)
     @Delete(':id')
-    remove(@Param('id') id: string) {
-        return this.usersService.remove(+id);
+    async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+        const requestuser: UserDto = await firstValueFrom(req.user)
+        const authorization = req.headers.authorization
+        if (!authorization?.startsWith('Bearer ')) {
+            throw new UnauthorizedException("Restricted area! you must login first");
+        }
+
+        const token = authorization.split(' ')[1];
+        await this.invalidateToken(token)
+        const deletedBy = requestuser.id
+        await this.usersService.remove({id, deletedBy});
+        return "User account deleted successfully"
     }
 
     @Post('forgot-password')
@@ -95,5 +119,21 @@ export class UsersController {
     changePassword(@Body()  updateUserPasswordDto: UpdateUserPasswordDto) {
         return this.usersService.changePassword(updateUserPasswordDto)
         
+    }
+
+
+    async isTokenBlacklisted(token: string){
+        const exists = await CacheStore.manager.get(`${this.LOGOUT_CACHE_KEY}_${token}`)
+        if(exists){
+            throw new UnauthorizedException("Restricted area! you must login first");
+        }
+    }
+
+
+    async invalidateToken(token: string){
+        const {exp} = await this.jwtService.decode(token)
+        const ttl = (exp - Math.floor(Date.now() / 1000)) * 1000 ; // in milliseconds
+        CacheStore.manager.set(`${this.LOGOUT_CACHE_KEY}_${token}`, true, ttl )
+        return 
     }
 }
