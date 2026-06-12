@@ -162,12 +162,13 @@ export class StateController {
     findAll(
         @Query('limit') limit: number,
         @Query('offset') offset: number,
+        @Query('countryId') countryId: string,
         @Query('deletedAt') deletedAt?: string,
         @Query('search') search?: string,
     ) {
         const delete_at = deletedAt === 'true';
-        console.log({limit, offset, delete_at, search})
-        return this.stateService.findAll(limit, offset, delete_at, search)
+        console.log({limit, offset, countryId, delete_at, search})
+        return this.stateService.findAll(limit, offset, countryId, delete_at, search)
        
     }
 

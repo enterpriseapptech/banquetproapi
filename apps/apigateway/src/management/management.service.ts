@@ -91,8 +91,10 @@ export class StateService {
 		return this.stateClient.send(STATEPATTERN.CREATE, createstateDto)
 	}
 
-	findAll(limit: number, 
+	findAll(
+		limit: number, 
 		offset: number, 
+		countryId,
 		deletedAt?: boolean,
 		search?: string, 
 	) {
@@ -100,9 +102,10 @@ export class StateService {
 		return this.stateClient.send<StateDto[], { 
 			limit: number, 
 			offset: number, 
+			countryId,
 			deletedAt?:	 boolean, 
 			search?: string, 
-		}>(STATEPATTERN.FINDALL, {limit, offset, deletedAt, search })
+		}>(STATEPATTERN.FINDALL, {limit, offset, countryId, deletedAt, search })
 	
 	}
 

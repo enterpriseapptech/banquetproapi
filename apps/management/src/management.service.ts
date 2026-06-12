@@ -36,7 +36,7 @@ export class AppSettingService {
               
             return {...appSettings, serviceCharge: appSettings.serviceCharge.toNumber() }
 
-        } catch (error) {
+        } catch (error: any) {
             PrismaErrorHandler.handle(error, Prisma)
             throw new InternalServerErrorException('An error occurred, Create ot update app settings failed', {
                 cause: new Error(),
@@ -49,7 +49,7 @@ export class AppSettingService {
         try {
             const appSetting = await this.databaseService.appSettings.findFirst();
             return {...appSetting, serviceCharge: appSetting.serviceCharge.toNumber() }
-        } catch (error) {
+        } catch (error: any) {
             PrismaErrorHandler.handle(error, Prisma)
             throw new InternalServerErrorException('An error occurred Could not find app settings', {
                 cause: new Error(),
@@ -83,7 +83,7 @@ export class CountryService {
             
             const country = await this.databaseService.country.create({ data: newCountryInput });
             return country; 
-        } catch (error) {
+        } catch (error: any) {
             PrismaErrorHandler.handle(error, Prisma);
             throw new InternalServerErrorException('sever error could not create country', {
                 cause: new Error(),
@@ -160,7 +160,7 @@ export class CountryService {
 
             return country;
 
-        } catch (error) {
+        } catch (error: any) {
             PrismaErrorHandler.handle(error, Prisma);
             throw new ConflictException(error);
         }
@@ -182,7 +182,7 @@ export class CountryService {
 
         return deletedCountry;
   
-        } catch (error) {
+        } catch (error: any) {
             PrismaErrorHandler.handle(error, Prisma);
             throw new InternalServerErrorException('sever error could not delete country', {
                 cause: new Error(),
@@ -198,7 +198,7 @@ export class CountryService {
                 where: { id },
             });
             return deletedCountry;
-        } catch (error) {
+        } catch (error: any) {
             PrismaErrorHandler.handle(error, Prisma);
             throw new InternalServerErrorException('sever error could not delete country', {
                 cause: new Error(),
@@ -236,7 +236,7 @@ export class StateService {
 
             return State;
 
-        } catch (error) {
+        } catch (error: any) {
             PrismaErrorHandler.handle(error, Prisma);
             throw new InternalServerErrorException('sever error could not create service', {
                 cause: new Error(),
@@ -249,6 +249,7 @@ export class StateService {
     async findAll(
         limit: number,
         offset: number,
+        countryId: string,
         deletedAt?: boolean,
         search?: string,
     ): Promise<{ count: number; docs: StateDto[] }> {
@@ -256,6 +257,10 @@ export class StateService {
     
         if (deletedAt) {
             whereClause.deletedAt = { not: null };
+        }
+
+        if (countryId) {
+            whereClause.countryId = countryId;
         }
     
         if (search) {
@@ -327,7 +332,7 @@ export class StateService {
 
             return State;
 
-        } catch (error) {
+        } catch (error: any) {
             PrismaErrorHandler.handle(error, Prisma);
             throw new ConflictException(error);
         }
@@ -343,7 +348,7 @@ export class StateService {
                 }
             });
             return deletedState; 
-        } catch (error) {
+        } catch (error: any) {
             PrismaErrorHandler.handle(error, Prisma);
             throw new InternalServerErrorException('sever error could not delete state', {
                 cause: new Error(),
@@ -360,7 +365,7 @@ export class StateService {
                 where: { id },
             });
             return deletedState
-        } catch (error) {
+        } catch (error: any) {
             PrismaErrorHandler.handle(error, Prisma);
             throw new InternalServerErrorException('sever error could not delete state', {
                 cause: new Error(),

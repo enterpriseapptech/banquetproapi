@@ -169,8 +169,8 @@ export class StateController {
 	}
 
 	@MessagePattern(STATEPATTERN.FINDALL)
-	findAll(@Payload() data: { limit: number, offset: number, deletedAt?: boolean, search?: string }) {
-		return from(this.stateService.findAll(data.limit, data.offset, data.deletedAt, data.search)).pipe(
+	findAll(@Payload() data: { limit: number, offset: number, countryId: string, deletedAt?: boolean, search?: string }) {
+		return from(this.stateService.findAll(data.limit, data.offset, data.countryId, data.deletedAt, data.search)).pipe(
 			catchError((err) => {
 				console.error("Error in stateService:", err);
 				return throwError(() => new RpcException({
