@@ -110,7 +110,7 @@ export class CateringService {
 
         const whereClause: any = {};
         whereClause.deletedAt = null
-        if (state) whereClause.state = { equals: state, mode: "insensitive" };
+        if (state) whereClause.location = { has: state, };
         if (country) whereClause.country = { equals: country, mode: "insensitive" };
         if (city) whereClause.city = { equals: city, mode: "insensitive" };
         if (search) {
@@ -122,6 +122,7 @@ export class CateringService {
             ];
         }
         if (Object.keys(whereClause).length > 0) {
+            console.log({whereClause})
             const caterings = await this.databaseService.catering.findMany({
                 where: whereClause,
                 take: limit,

@@ -124,6 +124,7 @@ export class CateringController {
     @Query('country') country: string,
     @Query('search') search: string,
   ) {
+    console.log({limit, state})
     return this.cateringService.findAll(limit, offset, serviceProvider, city, state, country, search);
   }
 
