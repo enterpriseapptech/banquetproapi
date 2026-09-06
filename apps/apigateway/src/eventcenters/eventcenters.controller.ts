@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, UseInterceptors, BadRequestException, UploadedFiles, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { EventcentersService } from './eventcenters.service';
-import { CreateEventCenterDto, UpdateEventCenterDto, } from '@shared/contracts/eventcenters';
+import { CreateEventCenterDto, UpdateEventCenterDto, EventCenterFilterDto, EventType, Amenities } from '@shared/contracts/eventcenters';
 import { UpsertRefundPolicyDto } from '@shared/contracts/payments';
 import { UserDto } from '@shared/contracts/users';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
@@ -98,8 +98,26 @@ export class EventcentersController {
         @Query('city') city: string,
         @Query('location') location: string,
         @Query('search') search: string,
+        @Query('eventTypes') eventTypes: string | string[],
+        @Query('amenities') amenities: string | string[],
+        @Query('minCapacity') minCapacity: number,
+        @Query('maxPrice') maxPrice: number,
     ) {
-        return this.eventcentersService.findAll(limit, offset, serviceProvider, city, location, search);
+        const filter: EventCenterFilterDto = {
+            city: city || undefined,
+            location: location || undefined,
+            search: search || undefined,
+            eventTypes: eventTypes
+                ? (Array.isArray(eventTypes) ? eventTypes : [eventTypes]) as EventType[]
+                : undefined,
+            amenities: amenities
+                ? (Array.isArray(amenities) ? amenities : [amenities]) as Amenities[]
+                : undefined,
+            minCapacity: minCapacity ? Number(minCapacity) : undefined,
+            maxPrice: maxPrice ? Number(maxPrice) : undefined,
+        };
+        const hasFilter = Object.values(filter).some(v => v !== undefined);
+        return this.eventcentersService.findAll(limit, offset, serviceProvider || undefined, hasFilter ? filter : undefined);
     }
 
     @Get('/bookmarks')

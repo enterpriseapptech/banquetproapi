@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { CreateEventCenterDto, UpdateEventCenterDto, EventCenterDto, EVENTCENTERPATTERN, ManyEventCentersDto, ManyRequestEventCenterDto, EVENTCENTERREFUNDPOLICYPATTERN } from '@shared/contracts/eventcenters';
+import { CreateEventCenterDto, UpdateEventCenterDto, EventCenterDto, EVENTCENTERPATTERN, ManyEventCentersDto, ManyRequestEventCenterDto, EventCenterFilterDto, EVENTCENTERREFUNDPOLICYPATTERN } from '@shared/contracts/eventcenters';
 import { RefundPolicyDto, UpsertRefundPolicyDto } from '@shared/contracts/payments';
 import { CACHE_KEYS, EVENT_CENTER_CLIENT } from '@shared/contracts';
 import { UpdateServiceSubscriptionDto } from '@shared/contracts/shared';
@@ -21,9 +21,11 @@ export class EventcentersService {
     }
 
     @Cacheable((...args) => `${CACHE_KEYS.EVENTCENTERS_ALL}:${args.join(':')}`)
-    findAll(limit: number, offset: number, serviceProvider?: string, city?: string, location?: string, search?: string) {
-        return this.eventClient.send<ManyEventCentersDto, ManyRequestEventCenterDto>(EVENTCENTERPATTERN.FINDALLEVENTCENTER,
-            { limit, offset, serviceProvider, city, location, search });
+    findAll(limit: number, offset: number, serviceProvider?: string, filter?: EventCenterFilterDto) {
+        return this.eventClient.send<ManyEventCentersDto, ManyRequestEventCenterDto>(
+            EVENTCENTERPATTERN.FINDALLEVENTCENTER,
+            { limit, offset, serviceProvider, filter },
+        );
     }
 
     @Cacheable((...args) => `${CACHE_KEYS.EVENTCENTERS_BOOKMARKS}:${[...args[0]].sort().join(',')}`)

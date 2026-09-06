@@ -1,10 +1,10 @@
-import { ServiceStatus } from "./create-event-center.dto";
+import { Amenities, EventType, ServiceStatus } from "./create-event-center.dto";
 
 export class EventCenterDto {
     id: string;
     serviceProviderId: string;
     name: string;
-    eventTypes: string[];
+    eventTypes: EventType[];
     discountPercentage?: number;
     depositPercentage: number;
     description?: string;
@@ -29,13 +29,29 @@ export class EventCenterDto {
     deletedBy?: string;
 }
 
+export class EventCenterFilterDto {
+    /** Match venues that support any of these event types */
+    eventTypes?: EventType[];
+    /** Filter by city name (case-insensitive) */
+    city?: string;
+    /** Filter by state UUID */
+    location?: string;
+    /** Filter venues that have all of these amenities */
+    amenities?: Amenities[];
+    /** Minimum sitting capacity */
+    minCapacity?: number;
+    /** Maximum price per slot */
+    maxPrice?: number;
+    /** Full-text search across name, description, city */
+    search?: string;
+}
+
 export class ManyRequestEventCenterDto {
     limit?: number;
     offset?: number;
+    /** Scope results to a single service provider */
     serviceProvider?: string;
-    city?: string;
-    location?: string;
-    search?: string;
+    filter?: EventCenterFilterDto;
 }
 
 export class ManyEventCentersDto {

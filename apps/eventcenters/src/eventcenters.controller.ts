@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Controller } from '@nestjs/common';
 import { EventcentersService } from './eventcenters.service';
-import { CreateEventCenterDto, EVENTCENTERPATTERN, EVENTCENTERREFUNDPOLICYPATTERN, UpdateEventCenterDto } from '@shared/contracts/eventcenters';
+import { CreateEventCenterDto, EventCenterFilterDto, EVENTCENTERPATTERN, EVENTCENTERREFUNDPOLICYPATTERN, UpdateEventCenterDto } from '@shared/contracts/eventcenters';
 import { EventPattern, MessagePattern, Payload, RpcException, RmqContext, Ctx } from '@nestjs/microservices';
 import { catchError, from, throwError } from 'rxjs';
 import { UpdateServiceSubscriptionDto } from '@shared/contracts/shared';
@@ -33,9 +33,9 @@ export class EventcentersController {
 
     
     @MessagePattern(EVENTCENTERPATTERN.FINDALLEVENTCENTER)
-    findAll(@Payload() data: { limit?: number, offset?: number, serviceProvider?: string, city?: string, location?: string, search?: string }) {
-        const { limit, offset, serviceProvider, city, location, search} = data
-        return from(this.eventcentersService.findAll(limit, offset, serviceProvider, city, location, search)).pipe(
+    findAll(@Payload() data: { limit?: number, offset?: number, serviceProvider?: string, filter?: EventCenterFilterDto }) {
+        const { limit, offset, serviceProvider, filter } = data;
+        return from(this.eventcentersService.findAll(limit, offset, serviceProvider, filter)).pipe(
             catchError((err) => {
                 console.error("Error in UsersService:", err);
                 return throwError(() => new RpcException({

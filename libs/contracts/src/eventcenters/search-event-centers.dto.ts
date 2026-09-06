@@ -1,27 +1,33 @@
-import { IsOptional, IsString, IsNumber } from 'class-validator';
+import { IsOptional, IsString, IsNumber, IsArray, IsEnum } from 'class-validator';
+import { EventType } from './create-event-center.dto';
 
 export class SearchServiceProviderDto {
     @IsOptional()
     @IsString()
-    state?: string; // Optional filter by state
+    state?: string;
 
     @IsOptional()
     @IsString()
-    country?: string; // Optional filter by country
+    country?: string;
 
     @IsOptional()
     @IsString()
-    name?: string; // Optional search by name (partial match)
+    name?: string;
 
     @IsOptional()
     @IsString()
-    amenities?: string; // Optional filter by amenities (comma-separated list)
+    amenities?: string;
+
+    @IsOptional()
+    @IsArray()
+    @IsEnum(EventType, { each: true })
+    eventTypes?: EventType[];
 
     @IsOptional()
     @IsNumber()
-    limit?: number; // Number of records to retrieve (default: 10)
+    limit?: number;
 
     @IsOptional()
     @IsNumber()
-    offset?: number; // Offset for pagination (default: 0)
+    offset?: number;
 }
