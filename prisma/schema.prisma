@@ -1,0 +1,1314 @@
+// =====================================================================
+// BanquetPro — Canonical, Consolidated Prisma Schema
+// =====================================================================
+// This file is the intended SINGLE migration authority for the shared-
+// database consolidation decided 2026-09-08. It merges the 7 previously
+// independent per-microservice schemas:
+//   apps/users/prisma/schema.prisma
+//   apps/eventcenters/prisma/schema.prisma
+//   apps/catering/prisma/schema.prisma
+//   apps/booking/prisma/schema.prisma
+//   apps/payments/prisma/schema.prisma
+//   apps/notifications/prisma/schema.prisma
+//   apps/management/prisma/schema.prisma
+//
+// STATUS: newly authored, additive only. Nothing has been deleted from,
+// or run against, any of the 7 existing per-app schema files or their
+// live databases. No migration has been generated or applied from this
+// file yet. This is a reviewable draft of the TARGET shape only.
+//
+// SINGLE FLAT POSTGRES SCHEMA (no Postgres-namespace separation, i.e.
+// no @@schema()): considered and deliberately dropped on 2026-09-08.
+// Postgres schema namespaces (via Prisma's `multiSchema` feature) would
+// only have bought two things here: (1) letting the two structurally-
+// identical RefundPolicy models keep the literal table name
+// "RefundPolicy" in two different namespaces, and (2) setting up a
+// namespace-level GRANT boundary as one possible way to stop one
+// service's code from writing into another domain's tables now that
+// everything is reachable in one database connection. Neither is worth
+// taking on `multiSchema` (a previewFeatures flag) for right now: (1) is
+// purely cosmetic, and (2) — if wanted later — is equally achievable
+// with per-table GRANTs, which need no schema redesign to add. Every
+// table below lives in the default `public` schema.
+//
+// SCOPE OF THIS PASS — a faithful structural merge:
+// every model, field, and enum from all 7 source schemas is preserved.
+// The only changes made are the minimum necessary to make them coexist
+// in one Prisma project:
+//   1. Resolving hard model/enum NAME collisions — Prisma requires
+//      unique names across an entire schema file. (RefundPolicy /
+//      RefundPolicyTier existed identically in both the eventcenters and
+//      catering domains — renamed to EventCenterRefundPolicy(Tier) /
+//      CateringRefundPolicy(Tier); their table names now simply match
+//      the renamed model, since there's no namespace to disambiguate
+//      them within otherwise.)
+//   2. Unifying enums that were independently declared with identical
+//      or overlapping value sets — always as an additive union (no
+//      value that exists in any source schema is removed).
+//
+// FILE LAYOUT: all MODELS first, grouped by domain in the same order as
+// the 7 source schemas; ALL ENUMS moved to one dedicated section at the
+// end of the file, also grouped by domain (plus a "shared" group for the
+// enums now used by more than one domain). Prisma doesn't care about
+// declaration order — enums are referenced by name from anywhere in the
+// file — this grouping is purely for human readability: one place to
+// see every status/type vocabulary in the system at a glance, instead of
+// scattered next to whichever model happened to need it first.
+//
+// NOT done in this pass — deliberately, as separate follow-up steps:
+//   - No new cross-domain @relation/foreign keys have been added yet
+//     (e.g. Booking.customerId is still a plain String, not yet a real
+//     relation to User.id). Adding these is the next step, one relation
+//     at a time, each independently reviewed for nullability/cascade
+//     behavior.
+//   - No actual data has been touched, copied, or migrated. This file
+//     does not yet run against any real database.
+//   - No pre-existing bug has been "fixed" as part of this merge. The
+//     AppSettingLogs.id @default("singleton") oddity, the Amenities
+//     "PACKINGSPACE" typo, the various dead/orphaned models and enums,
+//     and every other known issue are all carried forward exactly as
+//     they exist today — see docs/planning/backend-gaps.md for the
+//     tracked, separate fixes.
+//
+// ⚠ ONE ITEM NEEDS A DATA-SAFE MIGRATION, NOT A BLIND DIFF, WHEN THIS
+// IS EVENTUALLY MIGRATED:
+// apps/users' ServiceProvider.serviceType currently stores the enum
+// value spelled "EVENTCENTERS" (plural). Every other schema's
+// equivalent field/value uses "EVENTCENTER" (singular). The canonical
+// ServiceType enum below (in the ENUMS section) uses the singular
+// spelling to match the other 4 schemas. If any existing ServiceProvider
+// row has serviceType = 'EVENTCENTERS' today, migrating this column to
+// the canonical enum MUST use `ALTER TYPE ... RENAME VALUE` (via a
+// hand-edited, reviewed migration — `prisma migrate dev --create-only`,
+// never a blind `migrate dev`/`deploy` diff) or that data is destroyed.
+// Do not run migrate against this file for that column until this
+// specific migration has been written and reviewed by hand. NOTE: this
+// field is now marked @deprecated (see ServiceProvider below) — the risk
+// here is only to historical data integrity during migration, not to
+// any code that will keep relying on the value going forward.
+// =====================================================================
+
+generator client {
+  provider      = "prisma-client-js"
+  output        = "@prisma/banquetpro"
+  binaryTargets = ["native", "linux-musl"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =====================================================================
+// USERS DOMAIN — MODELS  (source: apps/users/prisma/schema.prisma)
+// Enums for this domain: see "ENUMS — USERS DOMAIN" near the end of
+// this file.
+// =====================================================================
+
+model User {
+  id              String     @id @default(uuid())
+  firstName       String?
+  lastName        String?
+  email           String     @unique
+  isEmailVerified Boolean    @default(false)
+  password        String
+  userType        UserType
+  status          UserStatus
+  refreshToken    String?
+  lastLoginAt     DateTime?
+  loginAttempts   Int        @default(0)
+  streetAddress   String?
+  streetAddress2  String?
+  city            String?
+  state           String?
+  country         String?
+  location        String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  deletedAt       DateTime?
+  deletedBy       String?
+
+  /// bookmarks — NOT owned listings, despite the field names.
+  /// See docs/domain/overview.md.
+  catering    String[]
+  eventCenter String[]
+
+  admin               Admin?
+  serviceProvider     ServiceProvider?
+  customer            Customer?
+  staff               Staff?
+  personalAccessToken PersonalAccessTokens[]
+  kycVerification     KYCVerification?
+  featured            Featured[]
+  subscription        Subscription?
+  passwordHistory     PasswordHistory[]
+}
+
+model Admin {
+  id        String     @id @default(uuid()) @map("user_id")
+  role      AdminRole?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  user User @relation(fields: [id], references: [id])
+}
+
+model ServiceProvider {
+  id           String @id @default(uuid()) @map("user_id")
+  businessName String
+
+  /// @deprecated a provider's service categories are derivable from the
+  /// actual Service records they own (EventCenter/Catering rows with a
+  /// matching serviceProviderId) — a provider can own both, so this
+  /// self-declared, single-value tag can silently drift from reality
+  /// (e.g. registers as EVENTCENTER, later also creates a Catering
+  /// service, or never creates anything at all). Kept per "no delete";
+  /// do not read this field in new code — derive the category set from
+  /// Service ownership instead. See the ⚠ note at the top of this file
+  /// for the separate, still-open EVENTCENTERS/EVENTCENTER data-safety
+  /// concern on this same column.
+  serviceType ServiceType
+
+  businessLogo          String?
+  pricingInfo           String?
+  regulations           String?
+  additionalInformation String?
+  workingHours          Json?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user   User    @relation(fields: [id], references: [id])
+  staffs Staff[]
+}
+
+model Customer {
+  id                        String   @id @default(uuid()) @map("user_id")
+  historyOfServiceProviders String[]
+  preferences               Json?
+  referralCode              String?
+  profilePicture            String?
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  user User @relation(fields: [id], references: [id])
+}
+
+model Staff {
+  id                String   @id @default(uuid()) @map("user_id")
+  serviceProviderId String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user            User            @relation(fields: [id], references: [id])
+  serviceProvider ServiceProvider @relation(fields: [serviceProviderId], references: [id])
+}
+
+model PasswordHistory {
+  id        String    @id @default(uuid())
+  user_id   String    @map("user_id")
+  password  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model PersonalAccessTokens {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  token     String    @unique
+  type      TokenType
+  expiry    DateTime
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, type])
+}
+
+/// DEAD CODE (PM-GAP-002, docs/planning/backend-gaps.md) — zero
+/// application references anywhere in the repo. Carried forward as-is
+/// per the "no delete" scope of this pass; candidate for removal in a
+/// dedicated follow-up, not this one.
+model Permission {
+  id        String    @id @default(uuid())
+  role      AdminRole
+  action    String
+  resource  String
+  condition Json?
+}
+
+/// VESTIGIAL — a stub with only an `id` field, never finished, and never
+/// actually related to Subscription.subscriptionPlanId (that's a plain
+/// String, not a @relation, in the source schema). Carried forward
+/// as-is; do not build on this model without first deciding whether
+/// it's worth finishing or deleting (docs/planning/open-decisions.md,
+/// subscription cleanup item).
+model SubscriptionPlan {
+  id String @id @default(uuid()) @map("user_id")
+}
+
+model KYCVerification {
+  id                       String             @id @default(uuid()) @map("user_id")
+  facialVerificationImage  String?
+  idCardType               String?
+  idNumber                 String?
+  expiryDate               DateTime?
+  facialVerificationStatus VerificationStatus
+  idVerificationStatus     VerificationStatus
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
+
+  user User @relation(fields: [id], references: [id], onDelete: Cascade)
+}
+
+model Featured {
+  id            String    @id @default(uuid())
+  paymentId     String
+  userId        String    @unique
+  featurePlanId String
+  startDate     DateTime  @default(now())
+  endDate       DateTime
+  createdAt     DateTime  @default(now())
+  updatededAt   DateTime  @updatedAt
+  updatedBy     String?
+  deletedAt     DateTime?
+  deletedBy     String?
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+/// DEAD CODE (PM-GAP-005) — the live implementation is payments'
+/// Subscriptions model below. Carried forward as-is per the "no delete"
+/// scope of this pass.
+model Subscription {
+  id                 String             @id @default(uuid()) @map("user_id")
+  paymentId          String[]
+  subscriptionPlanId String
+  status             SUBSCRIPTIONSTATUS
+  startDate          DateTime
+  endDate            DateTime
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  updatedBy          String?
+  deletedAt          DateTime?
+  deletedBy          String?
+
+  user User @relation(fields: [id], references: [id])
+}
+
+// =====================================================================
+// EVENT CENTERS DOMAIN — MODELS  (source: apps/eventcenters/prisma/schema.prisma)
+// Enums for this domain: see "ENUMS — EVENT CENTERS DOMAIN" near the
+// end of this file.
+// =====================================================================
+
+model EventCenter {
+  id                 String        @id @default(uuid())
+  name               String
+  eventTypes         String[]
+  serviceProviderId  String
+  discountPercentage Int?          @default(0)
+  depositPercentage  Int           @map("depositAmount")
+  description        String?
+  pricingPerSlot     Decimal       @db.Decimal(10, 2)
+  sittingCapacity    Int
+  venueLayout        String?
+  amenities          Amenities[]
+  images             String[]
+  termsOfUse         String
+  cancellationPolicy String
+  streetAddress      String
+  streetAddress2     String
+  city               String
+  location           String
+  postal             String
+  status             ServiceStatus
+  paymentRequired    Boolean?      @default(false)
+  rating             Decimal?
+  contact            String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  deletedAt          DateTime?
+  deletedBy          String?
+
+  subscriptionStatus SubscriptionStatus?
+  subscriptionExpiry DateTime?
+  subscriptionPlanId String?
+
+  refundPolicy EventCenterRefundPolicy?
+
+  @@index([serviceProviderId])
+  @@index([status])
+  @@index([name])
+  @@index([rating])
+  @@index([location])
+  @@index([amenities])
+  @@index([eventTypes])
+}
+
+/// Renamed from RefundPolicy -> EventCenterRefundPolicy because Prisma
+/// requires unique model names across the whole file, and catering has
+/// a structurally-identical model of the same name (the duplication
+/// itself is an open architecture decision, PM-GAP-011 — not resolved
+/// by this rename). Table name now simply matches the renamed model —
+/// no namespace exists to let it keep the literal name "RefundPolicy"
+/// the way the original eventcenters database used.
+model EventCenterRefundPolicy {
+  id               String   @id @default(uuid())
+  eventCenterId    String   @unique
+  allowRefunds     Boolean  @default(true)
+  refundWindowDays Int      @default(3)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  eventCenter EventCenter                   @relation(fields: [eventCenterId], references: [id], onDelete: Cascade)
+  tiers       EventCenterRefundPolicyTier[]
+}
+
+model EventCenterRefundPolicyTier {
+  id                  String  @id @default(uuid())
+  refundPolicyId      String
+  minDaysBeforeEvent  Int
+  deductionPercentage Decimal @db.Decimal(5, 2)
+  description         String?
+
+  refundPolicy EventCenterRefundPolicy @relation(fields: [refundPolicyId], references: [id], onDelete: Cascade)
+
+  @@index([refundPolicyId])
+}
+
+// =====================================================================
+// CATERING DOMAIN — MODELS  (source: apps/catering/prisma/schema.prisma)
+// This domain declares no enums of its own — both ServiceStatus and
+// SubscriptionStatus below are shared with the eventcenters domain; see
+// "ENUMS — SHARED / CROSS-DOMAIN" near the end of this file.
+// =====================================================================
+
+model Catering {
+  id                 String        @id @default(uuid())
+  name               String?
+  eventTypes         String[]
+  serviceProviderId  String
+  tagLine            String
+  depositPercentage  Int           @map("depositAmount")
+  discountPercentage Int?          @default(0)
+  /// known float-precision risk on a money field, preserved as-is —
+  /// see docs/data/data-model.md.
+  startPrice         Float
+  minCapacity        Int?
+  maxCapacity        Int?
+  description        String?
+  dishTypes          String[]
+  cuisine            String[]
+  images             String[]
+  termsOfUse         String
+  cancellationPolicy String
+  streetAddress      String
+  streetAddress2     String
+  city               String
+  location           String[]
+  postal             String
+  status             ServiceStatus
+  isFeatured         Boolean       @default(false)
+  featureExpiringAt  DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  updatedBy          String?
+  deletedAt          DateTime?
+  deletedBy          String?
+  rating             Decimal?
+  paymentRequired    Boolean?      @default(false)
+  contact            String?
+
+  menu               Menu[]
+  refundPolicy       CateringRefundPolicy?
+  subscriptionStatus SubscriptionStatus?
+  subscriptionExpiry DateTime?
+  subscriptionPlanId String?
+
+  @@index([serviceProviderId])
+  @@index([status])
+  @@index([name])
+  @@index([rating])
+  @@index([location])
+  @@index([cuisine])
+  @@index([startPrice])
+}
+
+model Menu {
+  id          String    @id @default(uuid())
+  cateringId  String
+  name        String
+  description String?
+  images      String[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  updatedBy   String?
+  deletedAt   DateTime?
+  deletedBy   String?
+
+  cateringService Catering @relation(fields: [cateringId], references: [id])
+
+  @@index([description])
+}
+
+/// Renamed from RefundPolicy -> CateringRefundPolicy — see the identical
+/// note on EventCenterRefundPolicy above. Same rationale, same
+/// consequence (table name now matches the renamed model).
+model CateringRefundPolicy {
+  id               String   @id @default(uuid())
+  cateringId       String   @unique
+  allowRefunds     Boolean  @default(true)
+  refundWindowDays Int      @default(3)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  catering Catering                   @relation(fields: [cateringId], references: [id], onDelete: Cascade)
+  tiers    CateringRefundPolicyTier[]
+}
+
+model CateringRefundPolicyTier {
+  id                  String  @id @default(uuid())
+  refundPolicyId      String
+  minDaysBeforeEvent  Int
+  deductionPercentage Decimal @db.Decimal(5, 2)
+  description         String?
+
+  refundPolicy CateringRefundPolicy @relation(fields: [refundPolicyId], references: [id], onDelete: Cascade)
+
+  @@index([refundPolicyId])
+}
+
+// =====================================================================
+// BOOKING DOMAIN — MODELS  (source: apps/booking/prisma/schema.prisma)
+// Enums for this domain: see "ENUMS — BOOKING DOMAIN" near the end of
+// this file.
+// =====================================================================
+
+model Booking {
+  id                           String        @id @default(uuid())
+  requestQuoteId               String?       @unique
+  customerId                   String
+  confirmedBy                  String?
+  confirmedAt                  DateTime?
+  servicebookingId             String?
+  serviceId                    String
+  serviceName                  String?
+  serviceProvider              String
+  serviceType                  ServiceType
+  subTotal                     Decimal       @db.Decimal(10, 2)
+  discount                     Decimal       @db.Decimal(10, 2)
+  total                        Decimal       @db.Decimal(10, 2)
+  invoice                      String[]
+  paymentStatus                InvoiceStatus
+  status                       BookingStatus
+  isTermsAccepted              Boolean
+  isCancellationPolicyAccepted Boolean
+  isLiabilityWaiverSigned      Boolean
+  bookingReference             String
+  source                       BookingSource
+  serviceNotes                 String?
+  customerNotes                String?
+  rescheduledBy                String?
+  rescheduledAt                DateTime?
+  previousDates                String[]
+  cancelledBy                  String?
+  canceledAt                   DateTime?
+  cancelationReason            String?
+  createdAt                    DateTime      @default(now())
+  createdBy                    String
+  updatedAt                    DateTime      @updatedAt
+  deletedAt                    DateTime?
+  deletedBy                    String?
+
+  eventCenterBooking EventCenterBooking?
+  cateringBooking    CateringBooking?
+  requestQuote       RequestQuote?       @relation("BookingToRequestQuote", fields: [requestQuoteId], references: [id])
+  confirmedTimeSlots TimeSlot[]          @relation("ConfirmedTimeSlots")
+  requestedTimeSlots TimeSlot[]          @relation("RequestedTimeSlots")
+
+  @@index([bookingReference])
+  @@index([status])
+  @@index([serviceId])
+  @@index([serviceType])
+  @@index([paymentStatus])
+  @@index([serviceProvider])
+}
+
+model RequestQuote {
+  id                           String        @id @default(uuid())
+  customerId                   String
+  serviceId                    String
+  serviceName                  String?
+  serviceProvider              String
+  serviceType                  ServiceType
+  budget                       String
+  status                       InvoiceStatus @default(GENERATED)
+  quoteReference               String
+  isTermsAccepted              Boolean
+  isCancellationPolicyAccepted Boolean
+  isLiabilityWaiverSigned      Boolean
+  source                       BookingSource
+  customerNotes                String?
+  createdAt                    DateTime      @default(now())
+  updatedAt                    DateTime      @updatedAt
+  deletedAt                    DateTime?
+  deletedBy                    String?
+  billingDetails               Json
+
+  booking            Booking?   @relation("BookingToRequestQuote")
+  requestedTimeSlots TimeSlot[]
+
+  @@index([customerId])
+  @@index([serviceId])
+  @@index([serviceType])
+  @@index([serviceProvider])
+}
+
+model AvailableLocations {
+  id      String         @id @default(uuid())
+  country String
+  state   String
+  city    String?
+  status  LocationStatus
+}
+
+model TimeSlot {
+  id               String      @id @default(uuid())
+  serviceId        String
+  serviceType      ServiceType
+  bookingId        String?
+  startTime        DateTime
+  endTime          DateTime
+  isAvailable      Boolean     @default(true)
+  previousBookings String[]
+  createdBy        String
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  updatedBy        String?
+  deletedAt        DateTime?
+  deletedBy        String?
+
+  booking         Booking?       @relation("ConfirmedTimeSlots", fields: [bookingId], references: [id])
+  bookingRequests Booking[]      @relation("RequestedTimeSlots")
+  quotesRequested RequestQuote[]
+
+  @@index([serviceId])
+  @@index([bookingId])
+  @@index([startTime, endTime])
+  @@index([isAvailable])
+}
+
+model EventCenterBooking {
+  id                  String               @id @default(uuid())
+  eventcenterId       String
+  bookingId           String               @unique @map("booking_id")
+  eventName           String?
+  eventTheme          String?
+  eventType           String?
+  description         String?
+  noOfGuest           Int?
+  specialRequirements SpecialRequirement[]
+  images              String[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  deletedAt           DateTime?
+  deletedBy           String?
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+
+  @@index([bookingId, eventcenterId, eventName, eventTheme, eventType])
+}
+
+model CateringBooking {
+  id                  String               @id @default(uuid())
+  cateringId          String
+  bookingId           String               @unique @map("booking_id")
+  eventName           String?
+  eventType           String?
+  dishTypes           String[]
+  cuisine             String[]
+  description         String?
+  noOfGuest           Int?
+  specialRequirements SpecialRequirement[]
+  images              String[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  deletedAt           DateTime?
+  deletedBy           String?
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+
+  @@index([bookingId])
+  @@index([cateringId])
+  @@index([cuisine])
+  @@index([dishTypes])
+}
+
+// =====================================================================
+// PAYMENTS DOMAIN — MODELS  (source: apps/payments/prisma/schema.prisma)
+// Enums for this domain: see "ENUMS — PAYMENTS DOMAIN" near the end of
+// this file.
+// =====================================================================
+
+model Payment {
+  id                   String        @id @default(uuid())
+  invoiceId            String?
+  paymentMethod        PaymentMethod
+  userId               String
+  amount               Decimal       @db.Decimal(10, 2)
+  amountCharged        Decimal       @db.Decimal(10, 2)
+  reference            String
+  paymentReference     String
+  paymentAuthorization Json?
+  paidAt               String
+  currency             Currency      @default(NGN)
+  paymentReason        PaymentReason
+  status               PaymentStatus
+  transactionId        String
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  updatedBy            String?
+  deletedAt            DateTime?
+  deletedBy            String?
+
+  refund  Refund?
+  dispute Dispute?
+  invoice Invoice? @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@unique([reference, paymentReference, transactionId])
+  @@index([paymentMethod])
+  @@index([userId])
+  @@index([reference])
+  @@index([paymentReference])
+}
+
+model Invoice {
+  id                  String        @id @default(uuid())
+  reference           String        @unique
+  userId              String
+  serviceProviderId   String?
+  bookingId           String?
+  subscriptionId      String?
+  serviceType         ServiceType?
+  serviceId           String?
+  subscriptionPlanId  String?
+  items               Json[]
+  amountDue           Decimal       @db.Decimal(10, 2)
+  serviceChargeAmount Decimal?      @db.Decimal(10, 2)
+  currency            Currency?     @default(NGN)
+  note                String?
+  billingAddress      Json
+  status              InvoiceStatus
+  dueDate             DateTime
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  deletedAt           DateTime?
+  deletedBy           String?
+
+  payments           Payment[]
+  subscription       Subscriptions?      @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  walletTransactions WalletTransaction[] @relation("InvoiceToWalletTx")
+
+  @@index([userId])
+  @@index([serviceProviderId])
+  @@index([bookingId])
+  @@index([subscriptionId])
+  @@index([status])
+  @@index([currency])
+}
+
+model Refund {
+  id                  String       @id @default(uuid())
+  paymentId           String       @unique
+  invoiceId           String
+  customerId          String
+  serviceProviderId   String
+  bookingId           String?
+  refundReason        String
+  policySnapshot      Json?
+  deductionPercentage Decimal?     @db.Decimal(5, 2)
+  deductionAmount     Decimal?     @db.Decimal(10, 2)
+  refundAmount        Decimal      @db.Decimal(10, 2)
+  processAt           DateTime?
+  walletTransactionId String?
+  status              RefundStatus
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  updatedBy           String?
+  deletedAt           DateTime?
+  deletedBy           String?
+
+  payment Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  dispute Dispute?
+}
+
+model Dispute {
+  id               String        @id @default(uuid())
+  userId           String
+  paymentId        String?       @unique
+  refundId         String?       @unique
+  serviceRequestId String?
+  reason           String
+  adminNote        String?
+  status           DisputeStatus
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime?
+  updatedBy        String?
+  deletedAt        DateTime?
+  deletedBy        String?
+
+  payment Payment? @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  refund  Refund?  @relation(fields: [refundId], references: [id])
+}
+
+model Wallet {
+  id        String     @id @default(uuid())
+  userId    String?    @unique
+  type      WalletType
+  balance   Decimal    @default(0) @db.Decimal(12, 2)
+  currency  Currency   @default(NGN)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  deletedAt DateTime?
+
+  transactions WalletTransaction[]
+  withdrawals  Withdrawal[]
+
+  @@index([type])
+}
+
+model WalletTransaction {
+  id            String         @id @default(uuid())
+  walletId      String
+  type          WalletTxType
+  reason        WalletTxReason
+  amount        Decimal        @db.Decimal(10, 2)
+  balanceBefore Decimal        @db.Decimal(12, 2)
+  balanceAfter  Decimal        @db.Decimal(12, 2)
+  description   String?
+  invoiceId     String?
+  paymentId     String?
+  refundId      String?
+  withdrawalId  String?
+  createdAt     DateTime       @default(now())
+
+  wallet  Wallet   @relation(fields: [walletId], references: [id])
+  invoice Invoice? @relation("InvoiceToWalletTx", fields: [invoiceId], references: [id])
+
+  @@index([walletId])
+  @@index([reason])
+  @@index([invoiceId])
+  @@index([paymentId])
+}
+
+model Withdrawal {
+  id          String           @id @default(uuid())
+  walletId    String
+  userId      String
+  amount      Decimal          @db.Decimal(10, 2)
+  currency    Currency         @default(NGN)
+  bankDetails Json
+  status      WithdrawalStatus @default(PENDING)
+  reference   String           @unique
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  wallet Wallet @relation(fields: [walletId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+}
+
+/// The LIVE subscription implementation (see docs/domain/overview.md) —
+/// distinct from the dead users.Subscription model above.
+model Subscriptions {
+  id                 String            @id @default(uuid())
+  serviceProviderId  String
+  serviceId          String
+  type               PaymentType
+  subscriptionplanId String
+  status             Status
+  expiryDate         DateTime
+  subscriptionplan   SubscriptionPlans @relation(fields: [subscriptionplanId], references: [id], onDelete: Cascade)
+  invoice            Invoice[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  @@index([serviceId])
+  @@index([serviceProviderId])
+  @@index([status])
+  @@index([expiryDate])
+}
+
+model Fees {
+  id        String    @id @default(uuid())
+  name      FeesType  @unique
+  amount    Decimal
+  status    Status
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  @@unique([name, amount])
+}
+
+model SubscriptionPlans {
+  id        String    @id @default(uuid())
+  plan      String
+  amount    Decimal
+  timeFrame Int
+  status    Status
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  subscriptions Subscriptions[]
+}
+
+model FeaturedPlans {
+  id        String    @id @default(uuid())
+  plan      String
+  amount    Decimal
+  timeFrame Int
+  status    Status
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+}
+
+// =====================================================================
+// NOTIFICATIONS DOMAIN — MODELS  (source: apps/notifications/prisma/schema.prisma)
+// Enums for this domain: see "ENUMS — NOTIFICATIONS DOMAIN" near the
+// end of this file.
+// =====================================================================
+
+model Notification {
+  id        String           @id @default(uuid())
+  senderId  String
+  userId    String
+  message   String
+  type      NotificationType
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  deletedAt DateTime?
+  deletedBy String?
+}
+
+model Review {
+  id          String      @id @default(uuid())
+  userId      String
+  bookingId   String
+  serviceId   String
+  serviceType ServiceType
+  rating      Int
+  comment     String?
+  isApproved  Boolean     @default(false)
+  approvedBy  String?
+  deletedAt   DateTime?
+  deletedBy   String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+// =====================================================================
+// MANAGEMENT DOMAIN — MODELS  (source: apps/management/prisma/schema.prisma)
+// Enums for this domain: see "ENUMS — MANAGEMENT DOMAIN" near the end
+// of this file.
+// =====================================================================
+
+/// NOTE: id @default("singleton") on a table clearly meant to log many
+/// entries over time looks like a copy-paste bug from AppSettings below
+/// (a second insert would collide on the primary key). Preserved as-is —
+/// not fixed in this structural-merge pass; flag for a dedicated bug-fix
+/// change, not silent correction here.
+model AppSettingLogs {
+  id           String    @id @default("singleton")
+  description  String
+  createdAt    DateTime  @default(now())
+  createdBy    KycMethod @default(Manual)
+  appSettingId String
+
+  appSetting AppSettings @relation(fields: [appSettingId], references: [id])
+}
+
+model AppSettings {
+  id                     String    @id @default("singleton")
+  serviceCharge          Decimal
+  kycMethod              KycMethod @default(Manual)
+  notifyOnRequest        Boolean   @default(true)
+  notifyCertifiedOnly    Boolean   @default(true)
+  visibleToCertifiedOnly Boolean   @default(true)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  createdBy              String
+  updatedBy              String?
+
+  changelogs AppSettingLogs[]
+}
+
+model Country {
+  id             String    @id @default(uuid())
+  name           String    @unique
+  code           String    @unique
+  currency       String?
+  currencyCode   String?
+  currencySymbol String?
+  states         State[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  updatedBy      String?
+  deletedAt      DateTime?
+  deletedBy      String?
+}
+
+model State {
+  id        String    @id @default(uuid())
+  name      String
+  code      String?
+  countryId String
+  country   Country   @relation(fields: [countryId], references: [id])
+  cities    City[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+}
+
+model City {
+  id        String    @id @default(uuid())
+  name      String
+  stateId   String
+  state     State     @relation(fields: [stateId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+}
+
+// #######################################################################
+// #                                                                     #
+// #                                ENUMS                                #
+// #                                                                     #
+// # Every enum in the system, grouped by domain, in the same order as   #
+// # the model sections above. Grouping enums here (instead of next to   #
+// # whichever model happened to need one first) makes every status/     #
+// # type vocabulary in the platform visible in one place — useful when  #
+// # checking "does an equivalent enum already exist before adding a     #
+// # new one" or auditing for the kind of silent duplication/naming      #
+// # drift this consolidation exists to fix (see docs/data/data-model.md #
+// # for the full inventory of what was already found and merged here).  #
+// #                                                                     #
+// #######################################################################
+
+// =====================================================================
+// ENUMS — SHARED / CROSS-DOMAIN
+// Used by models in more than one domain. Each was independently
+// declared in 2+ of the original 7 schemas; unified here as the single
+// source of truth. See docs/data/data-model.md for the full duplication
+// inventory this resolves.
+// =====================================================================
+
+/// Unifies: booking, payments, notifications schemas' identical
+/// {CATERING, EVENTCENTER} enum, plus users schema's {EVENTCENTERS
+/// (plural — corrected to EVENTCENTER here, see the ⚠ note at the top of
+/// this file), CATERING, ALL}.
+enum ServiceType {
+  EVENTCENTER
+  CATERING
+  /// only meaningful for the now-deprecated ServiceProvider.serviceType
+  /// ("offers both categories") — not a valid value for any booking/
+  /// invoice/review/timeslot-level field. Postgres enums can't restrict
+  /// a value to one column only; this is an application-level
+  /// validation concern.
+  ALL
+}
+
+/// Unifies booking schema's InvoiceStatus {PENDING, PAID, OVERDUE,
+/// GENERATED, PARTIALLY_PAID} and payments schema's separately-declared
+/// InvoiceStatus {PENDING, PARTIALLY_PAID, OVER_PAID, PAID, OVERDUE} —
+/// two different enums that happened to share a name, with overlapping
+/// but non-identical values (booking had GENERATED, payments had
+/// OVER_PAID). Union of both; nothing removed.
+enum InvoiceStatus {
+  PENDING
+  GENERATED
+  PARTIALLY_PAID
+  PAID
+  OVER_PAID
+  OVERDUE
+}
+
+/// Unifies eventcenters/catering's byte-identical ServiceStatus.
+enum ServiceStatus {
+  ACTIVE
+  INACTIVE
+}
+
+/// Unifies eventcenters/catering's byte-identical SubscriptionStatus.
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+  EXPIRED
+}
+
+/// Unifies payments' live Status (used by Fees/SubscriptionPlans/
+/// FeaturedPlans) and management's identically-named, identically-
+/// valued, but unused Status enum.
+enum Status {
+  ACTIVE
+  INACTIVE
+}
+
+// =====================================================================
+// ENUMS — USERS DOMAIN
+// =====================================================================
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// Used only by the dead users.Subscription model — kept distinct from
+/// the shared Status/ServiceStatus enums rather than force-merged, since
+/// unifying three independently-declared "is this active" enums into
+/// one is a bigger judgment call than this mechanical pass should make
+/// silently.
+enum SUBSCRIPTIONSTATUS {
+  ACTIVE
+  INACTIVE
+}
+
+enum UserType {
+  ADMIN
+  SERVICE_PROVIDER
+  CUSTOMER
+  STAFF
+}
+
+enum AdminRole {
+  SUPERADMIN
+  ADMIN
+  CUSTOMERSERVICE
+}
+
+enum TokenType {
+  PASSWORDRESET
+  DELETEACCOUNT
+  VERIFYACCOUNT
+}
+
+enum UserStatus {
+  ACTIVE
+  DEACTIVATED
+  RESTRICTED
+}
+
+// =====================================================================
+// ENUMS — EVENT CENTERS DOMAIN
+// =====================================================================
+
+enum Amenities {
+  WIFI
+  /// [sic] known typo (should be PARKINGSPACE) — preserved as-is,
+  /// renaming an enum value requires a data-safe migration; see
+  /// docs/planning/backend-gaps.md.
+  PACKINGSPACE
+  SECURITY
+}
+
+/// Declared but confirmed unused by any field in the eventcenters
+/// domain (fork-catalog audit, 2026-09-07). Carried forward as-is.
+enum EventType {
+  WEDDING
+  CONFERENCE
+  SEMINAR
+  CONCERT
+}
+
+/// DEAD, ORPHANED (PM-GAP-013) — copy-paste leftover; no field in the
+/// original eventcenters schema referenced it. Renamed only because
+/// "BookingStatus" collides with the real, live enum of that name in
+/// the booking domain below — values are unchanged, nothing deleted.
+enum EventCenterUnusedBookingStatus {
+  SCHEDULED
+  POSTPONED
+  CANCELED
+}
+
+/// DEAD, ORPHANED — same situation as above; renamed only to avoid
+/// colliding with payments' real, live PaymentStatus enum.
+enum EventCenterUnusedPaymentStatus {
+  SCHEDULED
+  POSTPONED
+  CANCELED
+}
+
+// =====================================================================
+// ENUMS — BOOKING DOMAIN
+// =====================================================================
+
+enum LocationStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum BookingSource {
+  WEB
+  MOBILE
+}
+
+/// The live, real BookingStatus — unambiguous single source of truth
+/// now that eventcenters' dead duplicate has been renamed away
+/// (EventCenterUnusedBookingStatus, above). NOTE: does not yet include a
+/// COMPLETED value (PM-GAP-016). Adding one is a deliberate lifecycle/
+/// business-logic decision (see
+/// docs/planning/open-decisions.md#booking-completion-trigger), out of
+/// scope for this structural-merge pass — tracked separately.
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  RESERVED
+  POSTPONED
+  CANCELED
+}
+
+enum SpecialRequirement {
+  WHEELCHAIRACCESS
+  TEMPERATUREADJUSTMENT
+}
+
+// =====================================================================
+// ENUMS — PAYMENTS DOMAIN
+// =====================================================================
+
+enum Currency {
+  NGN
+  USD
+  GHS
+  ZAR
+  KES
+  XOF
+}
+
+enum FeesType {
+  KYC
+  CERTIFICATION
+}
+
+enum PaymentType {
+  KYC
+  CERTIFICATION
+  FEATUREDPLANS
+  SUBSCRIPTIONPLANS
+}
+
+enum PaymentReason {
+  WALLETFUNDING
+  SUBSCRIPTION
+  KYC
+  CERTIFICATION
+  FEATURED
+  SERVICEREQUEST
+}
+
+/// The live PaymentStatus — unambiguous now that eventcenters' dead,
+/// unused duplicate (EventCenterUnusedPaymentStatus, above) has been
+/// renamed away.
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  DISPUTED
+  REFUNDED
+}
+
+enum RefundStatus {
+  REQUESTED
+  APPROVED
+  DECLINED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum DisputeStatus {
+  OPEN
+  RESOLVED
+  REJECTED
+}
+
+enum PaymentOption {
+  CASH
+  CARD
+  TRANSFER
+}
+
+enum PaymentMethod {
+  STRIPE
+  PAYSTACK
+}
+
+enum WalletType {
+  USER
+  PLATFORM
+}
+
+enum WalletTxType {
+  CREDIT
+  DEBIT
+}
+
+enum WalletTxReason {
+  TOPUP
+  INVOICE_PAYMENT
+  SERVICE_CHARGE
+  ESCROW_HOLD
+  ESCROW_RELEASE
+  REFUND
+  WITHDRAWAL
+}
+
+enum WithdrawalStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// =====================================================================
+// ENUMS — NOTIFICATIONS DOMAIN
+// =====================================================================
+
+enum NotificationType {
+  INFO
+  WARNING
+  ERROR
+  SUCCESS
+}
+
+// =====================================================================
+// ENUMS — MANAGEMENT DOMAIN
+// =====================================================================
+
+enum KycMethod {
+  Manual
+  AUTOMATIC
+}
