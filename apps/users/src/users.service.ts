@@ -2,7 +2,7 @@
 import { BadRequestException, ConflictException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { $Enums, Prisma } from '../prisma/@prisma/users';
-import { CreateUserDto, UpdateUserDto, UserDto, LoginUserDto, UserType, UserStatus, ServiceType, UserFilterDto, UpdateUserPasswordDto, UniqueIdentifierDto, BookMarkType } from '@shared/contracts/users';
+import { CreateUserDto, UpdateUserDto, UserDto, LoginUserDto, UserType, UserStatus, ServiceType, UserFilterDto, UpdateUserPasswordDto, UniqueIdentifierDto, BookMarkType, ServiceProviderDto } from '@shared/contracts/users';
 import { NOTIFICATIONPATTERN, NotificationTemplateNames } from '@shared/contracts/shared';
 import { WALLETPATTERN } from '@shared/contracts/shared';
 import { DatabaseService } from '../database/database.service';
@@ -13,12 +13,15 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaErrorHandler } from '@shared/contracts/prisma.error.handler';
 import { firstValueFrom } from 'rxjs';
 import { NotificationInterface } from '@shared/interfaces/Notification/notification.interface';
+import { PrismaClient } from '@prisma/client';
 
-
+type PrismaClientOrTransaction =
+  | PrismaClient
+  | Prisma.TransactionClient;
 @Injectable()
 export class UsersService {
     private readonly logger = new Logger(UsersService.name);
-    private readonly FRONTEND_URL = "https://entapp-frontend.vercel.app";
+    private readonly FRONTEND_URL = process.env.FRONTEND_URL;
 
     constructor(
         @Inject(NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
@@ -26,265 +29,6 @@ export class UsersService {
         private readonly jwtService: JwtService,
         private readonly databaseService: DatabaseService
     ) { }
-
-    async create(createUserDto: CreateUserDto): Promise<UserDto> {
-        const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-
-        // restrict admin account on creation pending approval
-        const userStatus = createUserDto.userType === $Enums.UserType.ADMIN ? $Enums.UserStatus.RESTRICTED : $Enums.UserStatus.ACTIVE
-
-        const newUserInput: Prisma.UserCreateInput = {
-            firstName: createUserDto.firstName,
-            lastName: createUserDto.lastName,
-            email: createUserDto.email,
-            password: hashedPassword,
-            userType: createUserDto.userType as $Enums.UserType,
-            status: userStatus as $Enums.UserStatus
-        }
-
-        //  check if the provided email is a registered email
-        const IsEmailNotUnique = await this.databaseService.user.findFirst({
-            where: {
-                email: newUserInput.email
-            }
-        });
-
-        // if email is not unique and contains a value, throw error cos user exists already
-        if (IsEmailNotUnique) {
-
-            throw new ConflictException('This email has been used, kindly login to your account', {
-                cause: new Error(),
-                description: 'existing user'
-            });
-
-        }
-
-        try {
-            // Start a transaction - for an all or fail process of creating a user
-            const account = await this.databaseService.$transaction(async (prisma) => {
-
-                // Create the user
-                const user = await prisma.user.create({ data: newUserInput });
-
-                // Create the related entity based on user type
-                switch (user.userType) {
-                    case $Enums.UserType.ADMIN:
-                        await prisma.admin.create({
-                            data: {
-                                id: user.id,
-                            }
-                        });
-                        break;
-                    case $Enums.UserType.SERVICE_PROVIDER:
-                        await prisma.serviceProvider.create({
-                            data: {
-                                id: user.id,
-                                businessName: createUserDto.businessName,
-                                serviceType: createUserDto.serviceType
-                            }
-                        });
-                        break;
-                    case $Enums.UserType.CUSTOMER:
-                        await prisma.customer.create({
-                            data: {
-                                id: user.id // Associate user with customer
-                            }
-                        });
-                        break;
-                    case $Enums.UserType.STAFF:
-                        await prisma.staff.create({
-                            data: {
-                                id: user.id,
-                                serviceProviderId: createUserDto.serviceProviderId // Associate user with staff
-                            }
-                        });
-                        break;
-                    default:
-                        // If userType is unknown, rollback the transaction
-                        throw new Error('Invalid user type');
-                }
-
-                // create personal access token for user account verification
-                const hexCode = Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0");
-                console.log(`email verification code ${hexCode}`)
-                const expiry = new Date();
-                expiry.setHours(expiry.getHours() + 3);
-
-                const personalaAccessTokens = await prisma.personalAccessTokens.create({
-                    data: {
-                        user: { connect: { id: user.id } },
-                        token: hexCode,
-                        type: 'VERIFYACCOUNT' as $Enums.TokenType,
-                        expiry: expiry,
-                    }
-                });
-
-                return { user, personalaAccessTokens }; // Return created user
-            });
-
-            //  emit a email verification - notification event
-            this.notificationClient.emit<string, NotificationInterface>(NOTIFICATIONPATTERN.SEND, {
-                type: 'EMAIL',
-                data: {
-                    subject: 'Email Verification Notice!',
-                    message: `Thank you for signing up! here is your verification code ${account.personalaAccessTokens.token}`,
-                    recipientEmail: account.user.email,
-                    recipientName: `${account.user.firstName} ${account.user.lastName}`,
-                    templateName: NotificationTemplateNames.VERIFICATION,
-                    templateVariables: { verificationCode: account.personalaAccessTokens.token },
-                },
-            });
-
-            // emit wallet creation for CUSTOMER and SERVICE_PROVIDER accounts
-            if (
-                account.user.userType === $Enums.UserType.CUSTOMER ||
-                account.user.userType === $Enums.UserType.SERVICE_PROVIDER
-            ) {
-                this.paymentClient.emit(WALLETPATTERN.CREATE, { userId: account.user.id });
-                this.logger.log(`Wallet create event emitted | userId=${account.user.id} type=${account.user.userType}`);
-            }
-
-            const userAccount: UserDto = {
-                ...account.user,
-                userType: account.user.userType as unknown as UserType,
-                status: account.user.status as unknown as UserStatus,
-            };
-            return userAccount;
-
-        } catch (error : any) {
-            PrismaErrorHandler.handle(error, Prisma);
-            throw new ConflictException('sever error could not create user', {
-                cause: new Error(),
-                description: 'User account creation failed, please try again'
-            });
-        }
-    }
-
-    async login(loginUserDto: LoginUserDto) {
-        try {
-            const { email, password } = loginUserDto;
-
-            const user = await this.databaseService.user.findFirst({
-                where: {
-                    email: email,
-                    deletedAt: null
-                },
-                include: {
-                    admin: true,
-                    serviceProvider: true,
-                    staff: true,
-                    customer: true
-                }
-            });
-    
-
-            if (!user) {
-                throw new NotFoundException('we could not find a user with this email', {
-                    cause: new Error(),
-                    description: "we could not find a user with this email"
-                });
-            }
-
-            if (user.status === $Enums.UserStatus.RESTRICTED || user.status === $Enums.UserStatus.DEACTIVATED) {
-                throw new UnauthorizedException('Unauthorized error, user account is restricted.');
-            }
-
-            const lastLoginTime = user.lastLoginAt ? new Date(user.lastLoginAt) : null;
-            const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000); // 10 minutes ago
-
-            if (user.loginAttempts >= 4 && lastLoginTime && lastLoginTime > tenMinutesAgo) {
-                throw new UnauthorizedException('Too many failed login attempts. Please wait 10 minutes before trying again.');
-            }
-
-            const validatePassword = await bcrypt.compare(password, user.password);
-
-            if (!validatePassword) {
-
-                await this.databaseService.user.update({
-                    where: { email: email },
-                    data: {
-                        loginAttempts: user.loginAttempts + 1,
-                        lastLoginAt: new Date(),
-                        status: user.loginAttempts + 1 > 7 ? $Enums.UserStatus.RESTRICTED : user.status
-                    }
-                });
-                if (user.loginAttempts + 1 > 7) {
-                    throw new UnauthorizedException('Authentication error',
-                        {
-                            cause: new Error(),
-                            description: 'Your account has been disabled due to too many failed login attempts.'
-                        }
-                    )
-                }
-
-                throw new UnauthorizedException('Authentication error, Incorrected password for this user',
-                    {
-                        cause: new Error(),
-                        description: "incorrect password"
-                    }
-                )
-            }
-
-            const refreshToken = this.jwtService.sign({ sub: user.id, type: user.userType, isEmailVerified: user.isEmailVerified }, {
-                secret: process.env.JWT_REFRESH_TOKEN_SECRET,
-                expiresIn: '7d',
-            });
-
-            
-            // reset login attempts to 0 once successful login
-            const updatedUser = await this.databaseService.user.update({
-                where: { email: email, deletedAt: null },
-                data: {
-                    loginAttempts: 1,
-                    lastLoginAt: new Date(),
-                    refreshToken: refreshToken
-                }
-            });
-            // Ensure wallet exists for customer/SP accounts (handles pre-existing users)
-            if (
-                user.userType === $Enums.UserType.CUSTOMER ||
-                user.userType === $Enums.UserType.SERVICE_PROVIDER
-            ) {
-                this.paymentClient.emit(WALLETPATTERN.CREATE, { userId: user.id });
-            }
-            const access_token  = await this.jwtService.sign({ sub: user.id, type: user.userType, isEmailVerified: user.isEmailVerified }, {
-                    secret: process.env.JWT_ACCESS_TOKEN_SECRET,
-                    expiresIn: '59m',
-                })
-
-            return {
-                user: { ...user, refreshToken: undefined, password: undefined},
-                access_token,
-                refresh_token: refreshToken,
-            };
-            
-        } catch (error: any) {
-            console.log({error})
-            PrismaErrorHandler.handle(error, Prisma);
-           throw new NotFoundException(error.message, {
-                    cause: new Error(),
-                    description: error.message
-                });
-        }
-    }
-
-    async logout(userId: string): Promise<boolean> {
-        try {
-            const user = await this.databaseService.user.update({
-                where: { id: userId },
-                data: {
-                    refreshToken: null
-                },
-            });
-            return true;
-        } catch (error : any) {
-            throw new InternalServerErrorException('sever error could not logout user', {
-                cause: error,
-                description: 'sever error could not logout user',
-            });
-        }
-
-    }
 
     async refreshLogin(token: string): Promise<{ access_token: string; refresh_token: string }> {
         const user = await this.databaseService.user.findFirst({
@@ -417,24 +161,29 @@ export class UsersService {
         const { ...userData } = updateUserDto;
 
         const account = await this.databaseService.$transaction(async (prisma) => {
-            const user = await prisma.user.findUnique({
-                where: { id },
-                include: {
-                    admin: true,
-                    serviceProvider: true,
-                },
-            });
-
+            const user = await this.findUser(
+                prisma,
+                { id },
+             )
             if (!user) {
                 throw new NotFoundException('User not found');
             }
+            const updateUserFields = {
+                ...updateUserDto, 
+                admin: undefined,
+                serviceProvider: undefined,
+                customer: undefined,
+            }
+            await this.updateUser(
+                prisma, 
+                { id },
+                {...updateUserFields}
+            )
 
-            const userUpdated = prisma.user.update({
-                where: { id },
-                data: userData,
-            })
-
-
+            const userUpdated = await this.findUser(
+                prisma,
+                { id },
+            )
             return userUpdated; // Return created user
         });
 
@@ -442,52 +191,8 @@ export class UsersService {
             ...account,
             status: account.status as unknown as UserStatus,
             userType: account.userType as unknown as UserType,
-            // serviceProvider: account.serviceProvider
-            //     ? {
-            //         ...account.serviceProvider,
-            //         serviceType: account.serviceProvider.serviceType as  unknown as ServiceType,
-            //         workingHours:
-            //             typeof user.serviceProvider.workingHours === 'string'
-            //                 ? JSON.parse(user.serviceProvider.workingHours)
-            //                 : user.serviceProvider.workingHours
-            //     }
-            //     : null
-        };
-        // // Update Admin model if data exists
-        // if (admin && user.admin) {
-        //     updateOperations.push(
-        //     this.databaseService.admin.update({
-        //         where: { id },
-        //         data: admin,
-        //     })
-        //     );
-        // }
-
-        // Update or create ServiceProvider
-        // if (serviceProvider) {
-        //     if (user.serviceProvider) {
-        //     updateOperations.push(
-        //         this.databaseService.serviceProvider.update({
-        //         where: { id },
-        //         data: serviceProvider,
-        //         })
-        //     );
-        //     } else {
-        //     updateOperations.push(
-        //         this.databaseService.serviceProvider.create({
-        //         data: {
-        //             id, // same as userId
-        //             ...serviceProvider,
-        //         },
-        //         })
-        //     );
-        //     }
-        // }
-
-        // Run all updates concurrently
-        // return await this.databaseService.$transaction(updateOperations);
-
-        // return { message: 'User updated successfully' };
+            
+        }
     }
 
     async bookmark(id: string, serviceType: BookMarkType, userId: string) {
@@ -828,5 +533,98 @@ export class UsersService {
             userType: user.userType as unknown as UserType,
             status: user.status as unknown as UserStatus,
         };
+    }
+
+    private emitWalletCreateEvent (userType: $Enums.UserType, userId): void{
+        if (userType === $Enums.UserType.CUSTOMER || $Enums.UserType.SERVICE_PROVIDER) {
+            this.paymentClient.emit(WALLETPATTERN.CREATE, { userId});
+            this.logger.log(`Wallet create event emitted | userId=${userId} type=${userType}`);
+
+        }
+    }
+
+    private generateVerificationCode(): {hexCode: string, expiry: Date}{
+        // create personal access token for user account verification
+        const hexCode = Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0");
+        console.log(`email verification code ${hexCode}`)
+        const expiry = new Date();
+        expiry.setHours(expiry.getHours() + Number(process.env.VERIFICATION_CODE_EXPIRY));
+        return {hexCode, expiry}
+    }
+
+    private async logFailedLogin (loginAttempts: number, userStatus: $Enums.UserStatus, email: string){
+        const max_failed_login_attempts = Number(process.env.MAX_FAILED_LOGIN_ATTEMPTS)
+        const isMaxLoginReached = loginAttempts + 1 > max_failed_login_attempts 
+        const status = isMaxLoginReached
+                        ? $Enums.UserStatus.RESTRICTED 
+                        : userStatus
+        await this.databaseService.user.update({
+            where: { email},
+            data: {
+                loginAttempts: loginAttempts + 1,
+                lastLoginAt: new Date(),
+                status
+            }
+        });
+
+        if (isMaxLoginReached) {
+            throw new UnauthorizedException('Authentication error',
+                {
+                    cause: new Error(),
+                    description: 'Your account has been disabled due to too many failed login attempts.'
+                }
+            )
+        }
+
+        throw new UnauthorizedException('Authentication error, Incorrected password or email for this user',
+            {
+                cause: new Error(),
+                description: "incorrect password or email"
+            }
+        )
+            
+    }
+
+    private async findUser(
+        prisma: PrismaClientOrTransaction,
+        where: Prisma.UserWhereInput,
+        select?: Prisma.UserSelectScalar,
+        include?: Prisma.UserInclude,
+        ){
+        const user = await prisma.user.findFirst({
+                where,
+                include,
+                select,
+
+        });
+
+        return user
+    }
+
+    private async updateUser(
+        prisma: PrismaClientOrTransaction,
+        where: Prisma.UserWhereInput,
+        userUpdateInpute: Prisma.UserUpdateInput,
+        ): Promise<void>{
+            
+            await prisma.user.update({
+                where,
+                data: {...userUpdateInpute}
+            });
+    }
+
+    
+    private emitEmailVerificationEvent(email: string, token: string, recipientName: string){
+        this.notificationClient.emit<string, NotificationInterface>(NOTIFICATIONPATTERN.SEND, {
+                type: 'EMAIL',
+                data: {
+                    subject: 'Email Verification Notice!',
+                    message: `Thank you for signing up! here is your verification code ${token}`,
+                    recipientEmail: email,
+                    recipientName,
+                    templateName: NotificationTemplateNames.VERIFICATION,
+                    templateVariables: { verificationCode: token },
+                },
+            });
     }
 }

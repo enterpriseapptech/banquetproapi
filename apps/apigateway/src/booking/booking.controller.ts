@@ -18,7 +18,7 @@ import { NotificationService } from '../notifications/notifications.service';
 import { Request } from 'express';
 
 export interface AuthenticatedRequest extends Request {
-    user?: any; // Change `any` to your actual user type if known
+    user?: UserDto;
 }
 
 @ApiTags('booking')
@@ -42,7 +42,7 @@ export class BookingController {
             let itemsTotal = 0;
             let Service: EventCenterDto | CateringDto;
             let actualAmountDue: number;
-            const requestuser: UserDto = await firstValueFrom(req.user)
+            const requestuser: UserDto = req.user
             createBookingDto.createdBy = requestuser.id
             createBookingDto.items.map((item) => { itemsTotal += item.amount })
             /**
@@ -267,13 +267,10 @@ export class BookingController {
     @Post()
     async create(@Body() createBookingDto: CreateBookingDto, @Req() req: AuthenticatedRequest) {
         try {
-            // Parallel fetch — independent calls
-            const [appSetting, requestUser] = await Promise.all([
-                firstValueFrom(this.appSettingService.find()),
-                firstValueFrom(req.user as any),
-            ]);
+            const appSetting = await firstValueFrom(this.appSettingService.find());
+            const requestUser = req.user as UserDto;
             const serviceCharge: number = appSetting.serviceCharge;
-            const authenticatedUserId: string = (requestUser as UserDto).id;
+            const authenticatedUserId: string = requestUser.id;
 
             // Guard: items must exist before any iteration
             if (!createBookingDto.items || createBookingDto.items.length === 0) {
@@ -522,7 +519,7 @@ export class BookingController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Delete(':id')
     async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
-        const user: UserDto = await firstValueFrom(req.user)
+        const user: UserDto = req.user
         return this.bookingService.remove(id, user.id);
     }
 
@@ -647,7 +644,7 @@ export class RequestQuoteController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Delete(':id')
     async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
-        const user: UserDto = await firstValueFrom(req.user)
+        const user: UserDto = req.user
         return this.requestQuoteService.remove(id, user.id);
     }
 
@@ -675,7 +672,7 @@ export class TimeSlotController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post()
     async create(@Body() createTimeSlotDto: CreateManyTimeSlotDto, @Req() req: AuthenticatedRequest) {
-        const requestuser: UserDto = await firstValueFrom(req.user)
+        const requestuser: UserDto = req.user
         createTimeSlotDto.createdBy = requestuser.id
         return this.timeslotService.create(createTimeSlotDto);
     }
@@ -708,7 +705,7 @@ export class TimeSlotController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Delete(':id')
     async removeTimeSlot(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
-        const user: UserDto = await firstValueFrom(req.user)
+        const user: UserDto = req.user
         return this.timeslotService.removeTimeSlot(id, user.id);
     }
 }

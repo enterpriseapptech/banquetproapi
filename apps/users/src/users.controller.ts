@@ -5,15 +5,19 @@ import { UpdateUserDto, CreateUserDto, USERPATTERN, LoginUserDto, UserFilterDto,
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { RpcException } from '@nestjs/microservices';
 import { catchError } from 'rxjs/operators';
-import { firstValueFrom, from, throwError } from 'rxjs';
+import { from, throwError } from 'rxjs';
+import { AuthService } from './services/auth.service';
 
 @Controller()
 export class UsersController {
-	constructor(private readonly userService: UsersService) { }
+	constructor(
+		private readonly userService: UsersService,
+		private readonly authService: AuthService
+	) { }
 
 	@MessagePattern(USERPATTERN.CREATEUSER)
 	create(@Payload() createUserDto: CreateUserDto) {
-		return from(this.userService.create(createUserDto)).pipe(
+		return from(this.authService.create(createUserDto)).pipe(
 			catchError((err) => {
 				
 				return throwError(() => new RpcException({
@@ -28,7 +32,7 @@ export class UsersController {
 
 	@MessagePattern(USERPATTERN.LOGINUSER)
 	 login(@Payload() loginUserDto: LoginUserDto) {
-		return from(this.userService.login(loginUserDto)).pipe(
+		return from(this.authService.login(loginUserDto)).pipe(
 			catchError((err) => {
 				
 				return throwError(() => new RpcException({
@@ -43,7 +47,7 @@ export class UsersController {
 	
 	@MessagePattern(USERPATTERN.LOGOUT)
 	logout(@Payload()id: string) {
-		return from(this.userService.logout(id)).pipe(
+		return from(this.authService.logout(id)).pipe(
 			catchError((err) => {
 				
 				return throwError(() => new RpcException({

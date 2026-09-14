@@ -6,7 +6,6 @@ import { VerificationGuard } from '../jwt/verification.guard';
 // import { AdminRoleGuard } from '../jwt/admin.guard';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthenticatedRequest } from '../booking/booking.controller';
-import { firstValueFrom } from 'rxjs';
 // import { CacheStore } from '../common/cache/cache.store';
 import { JwtService } from '@nestjs/jwt';
 import { CacheStore } from '../common/cache/cache.store';
@@ -37,7 +36,7 @@ export class UsersController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post('logout')
     async logout(@Req() req: AuthenticatedRequest) {
-        const requestuser: UserDto = await firstValueFrom(req.user)
+        const requestuser: UserDto = req.user
         const authorization = req.headers.authorization
         if (!authorization?.startsWith('Bearer ')) {
             throw new UnauthorizedException("Restricted area! you must login first");
@@ -71,7 +70,7 @@ export class UsersController {
     @Post('bookmark')
     async bookmark(@Body() bookmark: { id: string, serviceType: BookMarkType}, @Req() req: AuthenticatedRequest) {
         
-        const requestuser: UserDto = await firstValueFrom(req.user)
+        const requestuser: UserDto = req.user
         const {id, serviceType} = bookmark
         return this.usersService.bookmark(id, serviceType, requestuser.id);
     }
@@ -81,6 +80,16 @@ export class UsersController {
     findAll(@Query('limit') limit: number, @Query('offset') offset: number, @Query('search') search?: string, @Query('filter')  filter?: UserFilterDto) {
         console.log({filter})
         return this.usersService.findAll(limit, offset, search, filter);
+    }
+
+    @ApiOperation({ summary: 'Get the authenticated user' })
+    @ApiResponse({ status: 200, description: 'Success' })
+    @UseGuards(JwtAuthGuard)
+    @Get('me')
+    me(@Req() req: AuthenticatedRequest) {
+        // JwtStrategy already resolves this from the users service on every
+        // request, so it's current data, not stale JWT claims — no extra RPC needed.
+        return req.user;
     }
 
     @Get(':id')
@@ -96,7 +105,7 @@ export class UsersController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Delete(':id')
     async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
-        const requestuser: UserDto = await firstValueFrom(req.user)
+        const requestuser: UserDto = req.user
         const authorization = req.headers.authorization
         if (!authorization?.startsWith('Bearer ')) {
             throw new UnauthorizedException("Restricted area! you must login first");

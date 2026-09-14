@@ -4,7 +4,7 @@ import { IsImageFile } from '../media/images';
 import { BillingAddress, InvoiceItem } from './payments.dto';
 import { BookingDto } from '../booking';
 import { Type } from 'class-transformer';
-import { ServiceType } from '../shared';
+import { ServiceType, UserType } from '../shared';
 export { ServiceType } from '../shared';
 
 export enum FeesType {
@@ -713,10 +713,16 @@ export class CreateRefundDto {
 
 export class CreateWalletDto {
     @ApiProperty({ description: 'User ID to create wallet for (omit for platform wallet)' })
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
     @IsUUID()
-    userId?: string;
+    userId: string;
+
+    @ApiProperty({ description: 'User type to create wallet for (omit for platform wallet)' })
+    @IsNotEmpty()
+    @IsEnum(UserType)
+    userType: UserType;
+
 
     @ApiProperty({ enum: WalletType, default: WalletType.USER })
     @IsEnum(WalletType)

@@ -7,13 +7,16 @@ import { firstValueFrom } from 'rxjs';
 import { WALLETPATTERN } from '@shared/contracts/shared';
 import { WalletService } from '../payment/payment.service';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 
 @Injectable()
 export class UsersService {
     constructor(
         @Inject(USER_CLIENT) private readonly userClient: ClientProxy,
+        private readonly jwtService: JwtService,
         private readonly walletService: WalletService,
+        private configService: ConfigService
     ) { }
 
     create(createUserDto: CreateUserDto) {
@@ -21,9 +24,15 @@ export class UsersService {
     }
 
     async login(loginUserDto: LoginUserDto) {
-        // return this.userClient.send<UserDto, CreateUserDto>({ cmd: USERPATTERN.CREATEUSER }, createUserDto)
-        const {user, access_token, refresh_token} = await firstValueFrom(this.userClient.send<{ user: UserDto, refresh_token: string, access_token: string }, LoginUserDto>(USERPATTERN.LOGINUSER, loginUserDto))
+        const user = await firstValueFrom(
+            this.userClient.send<UserDto, 
+            LoginUserDto>(USERPATTERN.LOGINUSER, loginUserDto));
+
         const userwallet = await firstValueFrom( this.walletService.findByUserId(user.id, user.userType));
+        const {access_token, refresh_token} = await this.generateTokens(
+            user.id, 
+            user.userType, 
+            user.isEmailVerified)
         return{
             user: {
                 ...user,
@@ -31,10 +40,23 @@ export class UsersService {
             },
             access_token,
             refresh_token
+            
         }
     }
 
-    refreshlogin(token: string) {
+    async refreshlogin(token: string) {
+        const payload = await this.jwtService.verifyAsync(
+            token,
+            {
+                secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
+            },
+        );
+        console.log({payload})
+        // const {access_token, refresh_token} = await this.generateTokens(
+        //     user.id, 
+        //     user.userType, 
+        //     user.isEmailVerified)
+        return payload
         return this.userClient.send<string>(USERPATTERN.REFRESHLOGIN, token)
     }
 
@@ -94,4 +116,31 @@ export class UsersService {
 	changePassword(updateUserPasswordDto: UpdateUserPasswordDto) {
 		return this.userClient.send<UserDto, UpdateUserPasswordDto>(USERPATTERN.CHANGEPASSWORD, updateUserPasswordDto)
 	}
+
+
+    
+    private async generateTokens(
+        userId: string, 
+        userType: string,
+        isEmailVerified: boolean): Promise<{access_token: string, refresh_token: string,}>{
+        const refresh_token = this.jwtService.sign(
+            {   sub: userId, 
+                type: userType, 
+                isEmailVerified,
+            }, {
+                secret: process.env.JWT_REFRESH_TOKEN_SECRET,
+                expiresIn: '7d',
+            });
+
+        const access_token  = await this.jwtService.sign(
+            { sub: userId, 
+                type: userType, 
+                isEmailVerified
+            }, {
+            secret: process.env.JWT_ACCESS_TOKEN_SECRET,
+            expiresIn: '59m',
+        })
+
+        return {access_token, refresh_token}
+    }
 }

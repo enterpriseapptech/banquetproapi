@@ -2,13 +2,12 @@
 import { CanActivate, ExecutionContext, UnauthorizedException } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { UserDto } from "@shared/contracts/users";
-import { firstValueFrom } from "rxjs";
 
 export class VerificationGuard extends AuthGuard('jwt') implements CanActivate {
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const activate = super.canActivate(context) as Promise<boolean>;
         const request = await context.switchToHttp().getRequest();
-        const user: UserDto = await firstValueFrom(request.user);
+        const user: UserDto = request.user;
         if (!user || !user.isEmailVerified) {
             throw new UnauthorizedException('Account verification error!', {
                 cause: new Error(),

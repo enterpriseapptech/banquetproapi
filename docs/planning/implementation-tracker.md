@@ -32,8 +32,8 @@ These don't block *all* work, but block specific phases below. Resolving them ea
 
 Everything downstream depends on the platform correctly identifying who is calling.
 
-- [ ] Fix `JwtStrategy.validate()` Observable-await bug (`GAP-001` root cause, `apps/apigateway/src/jwt/jwt.strategy.ts:26`)
-- [ ] Update the ~30 `firstValueFrom(req.user)` call sites that depend on the current broken (Observable) shape of `request.user` — must land in the **same change** as the fix above
+- [x] Fix `JwtStrategy.validate()` Observable-await bug (`GAP-001` root cause, `apps/apigateway/src/jwt/jwt.strategy.ts:26`) — done 2026-09-14, wrapped the `userClient.send()` call in `firstValueFrom` so `validate()` returns a resolved `UserDto` instead of the unsubscribed Observable
+- [x] Update the `firstValueFrom(req.user)` call sites that depend on the previous broken (Observable) shape of `request.user` — landed in the same change. Actual count was **35 active sites across 8 files** (not ~30): `payment.controller.ts` (16), `management.controller.ts` (6, aliased via `authuser`), `booking.controller.ts` (6), `users.controller.ts` (3), `catering.controller.ts`, `eventcenters.controller.ts`, `jwt/verification.guard.ts`, `jwt/account.status..guard.ts` (1 each). Also tightened `AuthenticatedRequest.user` from `any` to `UserDto` in all 5 files that declare it, and added `apps/apigateway/src/jwt/jwt.strategy.spec.ts` (no prior test existed) to regression-guard the Observable-vs-resolved-value bug. `common/interceptors/http-logging.interceptor.ts` reads `req.user?.id` with no unwrap — it was silently always `'anon'` before this fix and now resolves correctly, no code change needed there.
 - [ ] Fix `AdminRoleGuard` to check `err`/`!user` before `user.admin` (`GAP-001`, `admin.guard.ts:10-19`)
 - [ ] Fix `VerificationGuard`/`AccountStatusGuard` race condition (`GAP-002`, `verification.guard.ts`, `account.status..guard.ts`)
 - [ ] Guard + ownership-check `GET`/`PATCH /users/:id`, restrict `PATCH` to a self-editable field whitelist (`GAP-016`)

@@ -100,28 +100,9 @@ export class WalletService {
 
     // ─── Public operations ───────────────────────────────────────────────
 
-    /** Create a USER wallet — called when a new CUSTOMER or SERVICE_PROVIDER is created */
-    async create(dto: CreateWalletDto): Promise<WalletDto> {
-        const existing = await this.databaseService.wallet.findUnique({ where: { userId: dto.userId } });
-        if (existing) {
-            this.logger.warn(`Wallet already exists for userId=${dto.userId}`);
-            return this.mapToDto(existing);
-        }
-
-        const wallet = await this.databaseService.wallet.create({
-            data: {
-                userId: dto.userId,
-                type: $Enums.WalletType.USER,
-                balance: new Decimal(0),
-                currency: (dto.currency as $Enums.Currency) ?? $Enums.Currency.NGN,
-            },
-        });
-        this.logger.log(`Wallet created | walletId=${wallet.id} userId=${dto.userId}`);
-        return this.mapToDto(wallet);
-    }
 
     /** Get wallet for a user — creates one if it doesn't exist yet */
-    async findorCreateWalletByUserId(userId: string, userType?: UserType, prisma?: DatabaseService): Promise<WalletDto> {
+    async findorCreateWalletByUserId(userId: string, userType?: UserType, prisma?: DatabaseService, currency?: Currency): Promise<WalletDto> {
         const db = prisma ?? this.databaseService;
         // only providers or customers can have wallet
         if(userType !== UserType.SERVICE_PROVIDER && userType !== UserType.CUSTOMER){
@@ -139,7 +120,7 @@ export class WalletService {
                     userId,
                     type: $Enums.WalletType.USER,
                     balance: new Decimal(0),
-                    currency: $Enums.Currency.NGN,
+                    currency: currency as $Enums.Currency ?? $Enums.Currency.NGN,
                 },
             });
         }
@@ -530,7 +511,9 @@ export class WalletService {
         const amountToApply = incomingAmount.gt(invoiceRemaining) ? invoiceRemaining : incomingAmount;
 
         // Fetch live customer wallet balance (reflects the TOPUP that just completed)
-        const customerWallet = await prisma.wallet.findUnique({ where: { userId: invoice.userId } });
+        // Self-heals via findorCreateWalletByUserId rather than assuming the wallet
+        // already exists — see the account-creation wallet-dependency discussion.
+        const customerWallet = await this.findorCreateWalletByUserId(invoice.userId, UserType.CUSTOMER, prisma);
         if (!customerWallet) throw new NotFoundException('Customer wallet not found');
         const customerBalance = new Decimal(customerWallet.balance);
 

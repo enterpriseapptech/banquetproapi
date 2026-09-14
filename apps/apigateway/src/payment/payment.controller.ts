@@ -60,7 +60,7 @@ import { SubscriptionStatus, NOTIFICATIONPATTERN, UpdateServiceSubscriptionDto }
 
 
 interface AuthenticatedRequest extends Request {
-    user?: any; // Change `any` to your actual user type if known
+    user?: UserDto;
 }
 
 
@@ -115,7 +115,7 @@ export class InvoiceController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Delete(':id')
     async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
-        const user: UserDto = await firstValueFrom(req.user)
+        const user: UserDto = req.user
         return this.invoiceService.remove(id, user.id);
     }
 
@@ -137,7 +137,7 @@ export class PaymentController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post('initiate')
     async initiate(@Body() generatePaymentDto: GeneratePaymentDto, @Req() req: AuthenticatedRequest) {
-        const user: UserDto = await firstValueFrom(req.user);
+        const user: UserDto = req.user;
         generatePaymentDto.userId = user.id;
         return this.paymentService.initiate(generatePaymentDto);
     }
@@ -271,7 +271,7 @@ export class PaymentController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Delete(':id')
     async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
-        const user: UserDto = await firstValueFrom(req.user)
+        const user: UserDto = req.user
         return this.paymentService.remove(id, user.id);
     }
 
@@ -505,7 +505,7 @@ export class SubscriptionPlanController {
     @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
     @Delete(':id')
     async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
-        const user: UserDto = await firstValueFrom(req.user);
+        const user: UserDto = req.user;
         return this.subscriptionPlanService.remove(id, user.id);
     }
 }
@@ -540,7 +540,7 @@ export class FeaturedPlanController {
     @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
     @Delete(':id')
     async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
-        const user: UserDto = await firstValueFrom(req.user);
+        const user: UserDto = req.user;
         return this.featuredPlanService.remove(id, user.id);
     }
 }
@@ -575,7 +575,7 @@ export class FeesController {
     @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
     @Delete(':id')
     async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
-        const user: UserDto = await firstValueFrom(req.user);
+        const user: UserDto = req.user;
         return this.feesService.remove(id, user.id);
     }
 }
@@ -593,7 +593,7 @@ export class SubscriptionController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post()
     async create(@Body() dto: CreateSubscriptionDto, @Req() req: AuthenticatedRequest) {
-        const user: UserDto = await firstValueFrom(req.user);
+        const user: UserDto = req.user;
         dto.serviceProviderId = user.id;
 
         if (dto.serviceType === ServiceType.EVENTCENTER) {
@@ -673,7 +673,7 @@ export class SubscriptionController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Delete(':id')
     async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
-        const user: UserDto = await firstValueFrom(req.user);
+        const user: UserDto = req.user;
         return this.subscriptionService.remove(id, user.id);
     }
 }
@@ -696,7 +696,7 @@ export class RefundController {
     //     @Body() body: { paymentId: string; refundReason: string },
     //     @Req() req: AuthenticatedRequest,
     // ) {
-    //     const user: UserDto = await firstValueFrom(req.user);
+    //     const user: UserDto = req.user;
     //     const customerId = user.id;
 
     //     const payment = await firstValueFrom(this.paymentService.findOne(body.paymentId));
@@ -774,7 +774,7 @@ export class RefundController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post(':id/approve')
     async approve(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
-        const user: UserDto = await firstValueFrom(req.user);
+        const user: UserDto = req.user;
         const dto: ApproveRefundDto = { id, serviceProviderId: user.id };
         return this.refundGatewayService.approve(dto);
     }
@@ -786,7 +786,7 @@ export class RefundController {
         @Body() body: { reason: string },
         @Req() req: AuthenticatedRequest,
     ) {
-        const user: UserDto = await firstValueFrom(req.user);
+        const user: UserDto = req.user;
         const dto: DeclineRefundDto = { id, serviceProviderId: user.id, reason: body.reason };
         return this.refundGatewayService.decline(dto);
     }
@@ -825,7 +825,7 @@ export class DisputeController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post()
     async create(@Body() dto: CreateDisputeDto, @Req() req: AuthenticatedRequest) {
-        const user: UserDto = await firstValueFrom(req.user);
+        const user: UserDto = req.user;
         dto.userId = user.id;
         return this.disputeGatewayService.create(dto);
     }
@@ -877,7 +877,7 @@ export class WalletController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Get()
     async getWallet(@Req() req: AuthenticatedRequest) {
-        const user: UserDto = await firstValueFrom(req.user);
+        const user: UserDto = req.user;
         return this.walletService.findByUserId(user.id, user.userType);
     }
 
@@ -888,7 +888,7 @@ export class WalletController {
         @Query('limit') limit: number,
         @Query('offset') offset: number,
     ) {
-        const user: UserDto = await firstValueFrom(req.user);
+        const user: UserDto = req.user;
         return this.walletService.getTransactions(user.id, limit ?? 10, offset ?? 0);
     }
 
@@ -904,7 +904,7 @@ export class WalletController {
     // @UseGuards(JwtAuthGuard, VerificationGuard)
     // @Post('topup')
     // async topup(@Body() dto: TopupWalletDto, @Req() req: AuthenticatedRequest) {
-    //     const user: UserDto = await firstValueFrom(req.user);
+    //     const user: UserDto = req.user;
     //     return this.paymentService.initiate({
     //         userId: user.id,
     //         amount: dto.amount,
@@ -919,7 +919,7 @@ export class WalletController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post('pay-invoice')
     async payInvoice(@Body() dto: PayInvoiceDto, @Req() req: AuthenticatedRequest) {
-        const user: UserDto = await firstValueFrom(req.user);
+        const user: UserDto = req.user;
         dto.userId = user.id;
         return this.walletService.payInvoice(dto);
     }
@@ -933,7 +933,7 @@ export class WithdrawalController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Post()
     async create(@Body() dto: CreateWithdrawalDto, @Req() req: AuthenticatedRequest) {
-        const user: UserDto = await firstValueFrom(req.user);
+        const user: UserDto = req.user;
         dto.userId = user.id;
         return this.withdrawalService.create(dto);
     }
@@ -945,7 +945,7 @@ export class WithdrawalController {
         @Query('limit') limit: number,
         @Query('offset') offset: number,
     ) {
-        const user: UserDto = await firstValueFrom(req.user);
+        const user: UserDto = req.user;
         return this.withdrawalService.findAll(limit, offset, user.id);
     }
 

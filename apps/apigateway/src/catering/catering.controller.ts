@@ -21,7 +21,7 @@ import { UsersService } from '../users/users.service';
 
 // Extend the Request type to include 'user'
 interface AuthenticatedRequest extends Request {
-  user?: any; // Change `any` to your actual user type if known
+  user?: UserDto;
 }
 
 @ApiTags('catering')
@@ -137,7 +137,7 @@ export class CateringController {
   @UseGuards(JwtAuthGuard, VerificationGuard)
   @Delete(':id')
   async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
-    const user: UserDto = await firstValueFrom(req.user)
+    const user: UserDto = req.user
     return this.cateringService.remove(id, user.id);
   }
 

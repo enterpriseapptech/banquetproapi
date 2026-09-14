@@ -19,7 +19,7 @@ import { UsersService } from '../users/users.service';
 
 // Extend the Request type to include 'user'
 interface AuthenticatedRequest extends Request {
-    user?: any; // Change `any` to your actual user type if known
+    user?: UserDto;
 }
 @Controller('event-centers')
 export class EventcentersController {
@@ -141,7 +141,7 @@ export class EventcentersController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Delete(':id')
     async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
-        const user: UserDto = await firstValueFrom(req.user)
+        const user: UserDto = req.user
         return this.eventcentersService.remove(id, user.id);
     }
 
