@@ -88,7 +88,6 @@ export class AuthService {
                             data: {
                                 id: user.id,
                                 businessName: createUserDto.businessName,
-                                serviceType: createUserDto.serviceType
                             }
                         });
                         break;

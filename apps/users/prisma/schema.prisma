@@ -24,7 +24,6 @@ model User {
   password        String    // Hashed password
   userType        UserType  // Enum for user type
   status          UserStatus    // Account status (e.g., active, suspended)
-  refreshToken    String?
   lastLoginAt     DateTime?
   loginAttempts   Int @default(0) // Number of login attempts
   streetAddress   String?

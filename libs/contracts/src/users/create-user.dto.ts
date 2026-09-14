@@ -83,11 +83,6 @@ export class CreateUserDto {
     @IsNotEmpty()
     userType: UserType;
     
-    @ApiProperty({ type: 'string', required: true })
-    @IsOptional()
-    @IsEnum(ServiceType, { message: 'service type must be event centers, catering or all' })
-    serviceType: ServiceType;
-
     @ApiProperty({ type: 'string', required: false })
     @IsOptional()
     @IsUUID()
