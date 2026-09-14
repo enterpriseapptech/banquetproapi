@@ -18,12 +18,9 @@ import { ClientProxy } from '@nestjs/microservices';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaErrorHandler } from '@shared/contracts/prisma.error.handler';
 import { NotificationInterface } from '@shared/interfaces/Notification/notification.interface';
-import { PrismaClient } from '@prisma/client';
 import { CreateWalletDto } from '@shared/contracts/payments';
+import { findUser, updateUser } from '../utils';
 
-type PrismaClientOrTransaction =
-  | PrismaClient
-  | Prisma.TransactionClient;
 @Injectable()
 export class AuthService {
     private readonly logger = new Logger(AuthService.name);
@@ -39,8 +36,8 @@ export class AuthService {
     async create(createUserDto: CreateUserDto): Promise<UserDto> {
 
         //  check if the provided email is an already registered email
-        const IsEmailNotUnique =  await this.findUser(
-            this.databaseService, 
+        const IsEmailNotUnique =  await findUser(
+            this.databaseService,
             {email: createUserDto.email},
             {id: true}
         )
@@ -152,8 +149,8 @@ export class AuthService {
     async login(loginUserDto: LoginUserDto) {
         try {
             const { email, password } = loginUserDto;
-            const user = await this.findUser(
-                    this.databaseService, 
+            const user = await findUser(
+                    this.databaseService,
                     {
                         email: email,
                         deletedAt: null
@@ -168,7 +165,7 @@ export class AuthService {
                 )
             
             if (!user) {
-                throw new NotFoundException('wWe could not find a user with this email', {
+                throw new NotFoundException('Invalid credentials, email or password incorrect', {
                     cause: new Error(),
                     description: "we could not find a user with this email"
                 });
@@ -197,41 +194,9 @@ export class AuthService {
             return {...user, refreshToken: undefined, password: undefined};
             
         } catch (error: any) {
-            console.log({error})
             PrismaErrorHandler.handle(error, Prisma);
            throw error
         }
-    }
-
-    async logout(userId: string): Promise<boolean> {
-        try {
-            await this.updateUser(
-                this.databaseService,
-                { id: userId },
-                { refreshToken: null}
-            );
-            return true;
-        } catch (error : any) {
-            PrismaErrorHandler.handle(error, Prisma);
-            throw error;
-        }
-
-    }
-
-
-    async updateRefreshToken(userId: string, oldRefreshToken: string, newRefreshToken: string): Promise<void> {
-        // Store new refresh token
-        try {
-            await this.updateUser(
-                this.databaseService,
-                { refreshToken: oldRefreshToken, id: userId },
-                { refreshToken: newRefreshToken}
-            );
-        } catch (error) {
-            PrismaErrorHandler.handle(error, Prisma);
-            throw error;
-        }
-
     }
 
     async verify(id: string, token: string) {
@@ -262,7 +227,7 @@ export class AuthService {
             }
 
             // Update user to set email as verified
-            const user = await this.updateUser(
+            const user = await updateUser(
                 this.databaseService,
                 { id: personalAccessToken.userId },
                 { isEmailVerified: true }
@@ -411,8 +376,6 @@ export class AuthService {
         }
     }
 
-   
-
     /**
      * 
      * Maps a raw event center from the database to EventCenterDto.
@@ -476,33 +439,6 @@ export class AuthService {
             
     }
 
-    private async findUser(
-        prisma: PrismaClientOrTransaction,
-        where: Prisma.UserWhereInput,
-        select?: Prisma.UserSelectScalar,
-        include?: Prisma.UserInclude,
-        ){
-        const user = await prisma.user.findFirst({
-                where,
-                include,
-                select,
-
-        });
-
-        return user
-    }
-
-    private async updateUser(
-        prisma: PrismaClientOrTransaction,
-        where: Prisma.UserWhereInput,
-        userUpdateInpute: Prisma.UserUpdateInput,
-        ): Promise<void>{
-            
-            await prisma.user.update({
-                where,
-                data: {...userUpdateInpute}
-            });
-    } 
     private emitEmailVerificationEvent(email: string, token: string, recipientName: string){
         this.notificationClient.emit<string, NotificationInterface>(NOTIFICATIONPATTERN.SEND, {
                 type: 'EMAIL',

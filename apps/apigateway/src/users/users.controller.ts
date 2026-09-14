@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, Res, UnauthorizedException } from '@nestjs/common';
+import { Response } from 'express';
 import { UsersService } from './users.service';
 import { BookMarkType, CreateUserDto, LoginUserDto, UpdateUserDto, UpdateUserPasswordDto, UserDto, UserFilterDto } from '@shared/contracts/users';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
@@ -9,6 +10,11 @@ import { AuthenticatedRequest } from '../booking/booking.controller';
 // import { CacheStore } from '../common/cache/cache.store';
 import { JwtService } from '@nestjs/jwt';
 import { CacheStore } from '../common/cache/cache.store';
+import { ConfigService } from '@nestjs/config';
+import { AdminRoleGuard } from '../jwt/admin.guard';
+
+const REFRESH_TOKEN_COOKIE = 'refresh_token';
+
 
 
 
@@ -17,6 +23,7 @@ import { CacheStore } from '../common/cache/cache.store';
 export class UsersController {
     constructor(private readonly usersService: UsersService,
                 private readonly jwtService: JwtService,
+                private readonly configService: ConfigService
     ) { }
     private readonly LOGOUT_CACHE_KEY = "logged_out_jwt_tokens"
     
@@ -29,13 +36,15 @@ export class UsersController {
     }
 
     @Post('login')
-    login(@Body() loginUserDto: LoginUserDto) {
-        return this.usersService.login(loginUserDto);
+    async login(@Body() loginUserDto: LoginUserDto, @Res({ passthrough: true }) res: Response) {
+        const { refresh_token, ...body } = await this.usersService.login(loginUserDto);
+        this.setRefreshTokenCookie(res, refresh_token);
+        return body;
     }
 
-    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @UseGuards(JwtAuthGuard)
     @Post('logout')
-    async logout(@Req() req: AuthenticatedRequest) {
+    async logout(@Req() req: AuthenticatedRequest, @Res({ passthrough: true }) res: Response) {
         const requestuser: UserDto = req.user
         const authorization = req.headers.authorization
         if (!authorization?.startsWith('Bearer ')) {
@@ -43,14 +52,21 @@ export class UsersController {
         }
         const token = authorization.split(' ')[1];
         await this.invalidateToken(token)
+        this.clearRefreshTokenCookie(res);
         return this.usersService.logout(requestuser.id, );
     }
 
 
     @Post('refresh-login')
-    refreshlogin(@Body() token: string) {
-        this.isTokenBlacklisted(token)
-        return this.usersService.refreshlogin(token);
+    async refreshlogin(@Req() req: AuthenticatedRequest, @Res({ passthrough: true }) res: Response) {
+        const token = req.cookies?.[REFRESH_TOKEN_COOKIE];
+        if (!token) {
+            throw new UnauthorizedException("Restricted area! you must login first");
+        }
+        await this.isTokenBlacklisted(token)
+        const { refresh_token, ...body } = await this.usersService.refreshlogin(token);
+        this.setRefreshTokenCookie(res, refresh_token);
+        return body;
     }
 
 
@@ -75,23 +91,14 @@ export class UsersController {
         return this.usersService.bookmark(id, serviceType, requestuser.id);
     }
 
-    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
     @Get()
     findAll(@Query('limit') limit: number, @Query('offset') offset: number, @Query('search') search?: string, @Query('filter')  filter?: UserFilterDto) {
         console.log({filter})
         return this.usersService.findAll(limit, offset, search, filter);
     }
 
-    @ApiOperation({ summary: 'Get the authenticated user' })
-    @ApiResponse({ status: 200, description: 'Success' })
-    @UseGuards(JwtAuthGuard)
-    @Get('me')
-    me(@Req() req: AuthenticatedRequest) {
-        // JwtStrategy already resolves this from the users service on every
-        // request, so it's current data, not stale JWT claims — no extra RPC needed.
-        return req.user;
-    }
-
+    @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
     @Get(':id')
     findOne(@Param('id') id: string) {
         return this.usersService.findOne(id);
@@ -130,6 +137,27 @@ export class UsersController {
         
     }
 
+
+    private setRefreshTokenCookie(res: Response, refreshToken: string) {
+        const refreshTokenExpiry = Number(this.configService.get<string>('JWT_EXPIRES_IN'))
+        const REFRESH_TOKEN_MAX_AGE_MS = refreshTokenExpiry * 24 * 60 * 60 * 1000; // 7d, matches generateTokens' expiresIn
+        res.cookie(REFRESH_TOKEN_COOKIE, refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'none',
+            maxAge: REFRESH_TOKEN_MAX_AGE_MS,
+            path: '/',
+        });
+    }
+
+    private clearRefreshTokenCookie(res: Response) {
+        res.clearCookie(REFRESH_TOKEN_COOKIE, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'none',
+            path: '/',
+        });
+    }
 
     async isTokenBlacklisted(token: string){
         const exists = await CacheStore.manager.get(`${this.LOGOUT_CACHE_KEY}_${token}`)

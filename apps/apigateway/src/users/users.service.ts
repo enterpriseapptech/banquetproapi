@@ -45,25 +45,26 @@ export class UsersService {
     }
 
     async refreshlogin(token: string) {
-        const payload = await this.jwtService.verifyAsync(
-            token,
-            {
-                secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
-            },
-        );
-        console.log({payload})
-        // const {access_token, refresh_token} = await this.generateTokens(
-        //     user.id, 
-        //     user.userType, 
-        //     user.isEmailVerified)
-        return payload
-        return this.userClient.send<string>(USERPATTERN.REFRESHLOGIN, token)
+        let payload: { sub: string, type: string, isEmailVerified: boolean };
+        try {
+            payload = await this.jwtService.verifyAsync(
+                token,
+                {
+                    secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
+                },
+            );
+           return this.generateTokens(payload.sub, payload.type, payload.isEmailVerified)
+        } catch (e) {
+            throw new UnauthorizedException('refresh token is invalid or expired', {
+                cause: new Error(),
+                description: 'refresh token is invalid or expired',
+            });
+        }
+
     }
 
 
     logout(id: string) {
-        console.log('Gateway sending logout message...');
-        
         return this.userClient.send<string>(USERPATTERN.LOGOUT, id);
     }
 

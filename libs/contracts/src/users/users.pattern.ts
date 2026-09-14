@@ -11,6 +11,5 @@ export const USERPATTERN = {
     DELETE: 'users.delete',
     RESETPASSWORD: 'users.resetPassword',
     CHANGEPASSWORD: 'users.changePassword',
-    REFRESHLOGIN: 'users.refreshlogin',
     LOGOUT: 'users.logout',
 }

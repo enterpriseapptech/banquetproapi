@@ -2,7 +2,7 @@
 import { Controller, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto, CreateUserDto, USERPATTERN, LoginUserDto, UserFilterDto, UpdateUserPasswordDto, UniqueIdentifierDto, BookMarkType } from '@shared/contracts/users';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
 import { RpcException } from '@nestjs/microservices';
 import { catchError } from 'rxjs/operators';
 import { from, throwError } from 'rxjs';
@@ -45,39 +45,9 @@ export class UsersController {
 
 	}
 	
-	@MessagePattern(USERPATTERN.LOGOUT)
-	logout(@Payload()id: string) {
-		return from(this.authService.logout(id)).pipe(
-			catchError((err) => {
-				
-				return throwError(() => new RpcException({
-					statusCode: err.response.statusCode || 500,
-					message: err.message || "Internal Server Error",
-					error: err.response.error || "Sever error",
-				}));
-
-			})
-		);
-	}
-
-	@MessagePattern(USERPATTERN.REFRESHLOGIN)
-	refreshLogin(@Payload()  payload: {token: string}) {
-		return from(this.userService.refreshLogin(payload.token)).pipe(
-			catchError((err) => {
-				
-				return throwError(() => new RpcException({
-					statusCode: err.response.statusCode || 500,
-					message: err.message || "Internal Server Error",
-					error: err.response.error || "Sever error",
-				}));
-
-			})
-		);
-	}
-	
 	@MessagePattern(USERPATTERN.VERIFYUSER)
 	verify(@Payload() { id, token }) {
-		return from(this.userService.verify(id, token)).pipe(
+		return from(this.authService.verify(id, token)).pipe(
 			catchError((err) => {
 				
 				return throwError(() => new RpcException({
@@ -92,7 +62,7 @@ export class UsersController {
 
 	@MessagePattern(USERPATTERN.RESENDUSER)
 	resend(@Payload() { id }) {
-		return from(this.userService.resendVerificationToken(id)).pipe(
+		return from(this.authService.resendVerificationToken(id)).pipe(
 			catchError((err) => {
 				
 				return throwError(() => new RpcException({
@@ -176,7 +146,7 @@ export class UsersController {
 	
     @MessagePattern(USERPATTERN.RESETPASSWORD)
     forgotPassword(@Payload() email: string) {
-        return from(this.userService.forgotPassword(email)).pipe(
+        return from(this.authService.forgotPassword(email)).pipe(
             catchError((err) => {
                 
                 return throwError(() => new RpcException({
@@ -203,7 +173,7 @@ export class UsersController {
             })
         );
     }
-	@MessagePattern(USERPATTERN.BOOKMARK)
+	@EventPattern(USERPATTERN.BOOKMARK)
 	bookmark(@Payload() data: {id: string, serviceType: BookMarkType, userId: string}) {
 		const {id, serviceType, userId} = data
         return from(this.userService.bookmark(id, serviceType, userId)).pipe(
