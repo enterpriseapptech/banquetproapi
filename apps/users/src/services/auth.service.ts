@@ -18,7 +18,6 @@ import { ClientProxy } from '@nestjs/microservices';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaErrorHandler } from '@shared/contracts/prisma.error.handler';
 import { NotificationInterface } from '@shared/interfaces/Notification/notification.interface';
-import { CreateWalletDto } from '@shared/contracts/payments';
 import { findUser, updateUser } from '../utils';
 
 @Injectable()
@@ -391,7 +390,7 @@ export class AuthService {
 
     private emitWalletCreateEvent (userType: $Enums.UserType, userId): void{
         if (userType === $Enums.UserType.CUSTOMER || $Enums.UserType.SERVICE_PROVIDER) {
-            this.paymentClient.emit<CreateWalletDto>(WALLETPATTERN.CREATE, { userId, userType});
+            this.paymentClient.emit(WALLETPATTERN.CREATE, { userId, userType});
             this.logger.log(`Wallet create event emitted | userId=${userId} type=${userType}`);
         }
     }
