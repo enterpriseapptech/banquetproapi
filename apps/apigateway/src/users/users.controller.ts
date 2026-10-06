@@ -10,10 +10,11 @@ import { AuthenticatedRequest } from '../booking/booking.controller';
 // import { CacheStore } from '../common/cache/cache.store';
 import { JwtService } from '@nestjs/jwt';
 import { CacheStore } from '../common/cache/cache.store';
-import { ConfigService } from '@nestjs/config';
 import { AdminRoleGuard } from '../jwt/admin.guard';
 
 const REFRESH_TOKEN_COOKIE = 'refresh_token';
+// Must match the refresh token's expiresIn ('7d') in UsersService.generateTokens
+const REFRESH_TOKEN_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 
 
@@ -23,7 +24,6 @@ const REFRESH_TOKEN_COOKIE = 'refresh_token';
 export class UsersController {
     constructor(private readonly usersService: UsersService,
                 private readonly jwtService: JwtService,
-                private readonly configService: ConfigService
     ) { }
     private readonly LOGOUT_CACHE_KEY = "logged_out_jwt_tokens"
     
@@ -139,24 +139,27 @@ export class UsersController {
 
 
     private setRefreshTokenCookie(res: Response, refreshToken: string) {
-        const refreshTokenExpiry = Number(this.configService.get<string>('JWT_EXPIRES_IN'))
-        const REFRESH_TOKEN_MAX_AGE_MS = refreshTokenExpiry * 24 * 60 * 60 * 1000; // 7d, matches generateTokens' expiresIn
         res.cookie(REFRESH_TOKEN_COOKIE, refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'none',
+            ...this.refreshTokenCookieOptions(),
             maxAge: REFRESH_TOKEN_MAX_AGE_MS,
-            path: '/',
         });
     }
 
     private clearRefreshTokenCookie(res: Response) {
-        res.clearCookie(REFRESH_TOKEN_COOKIE, {
+        res.clearCookie(REFRESH_TOKEN_COOKIE, this.refreshTokenCookieOptions());
+    }
+
+    // The frontend (vercel.app) and the API are on different sites, so in production
+    // the cookie must be SameSite=None (which browsers only accept with Secure) or it
+    // is never sent to /refresh-login. Locally both run on localhost, which is same-site.
+    private refreshTokenCookieOptions() {
+        const isProduction = process.env.NODE_ENV === 'production';
+        return {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'none',
+            secure: isProduction,
+            sameSite: isProduction ? 'none' as const : 'lax' as const,
             path: '/',
-        });
+        };
     }
 
     async isTokenBlacklisted(token: string){

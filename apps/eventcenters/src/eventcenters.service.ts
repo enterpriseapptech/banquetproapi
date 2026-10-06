@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ConflictException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException, UseInterceptors } from '@nestjs/common';
 import { $Enums, Prisma } from '../prisma/@prisma/eventcenters';
-import { CreateEventCenterDto, EventCenterDto, EventCenterFilterDto, ManyEventCentersDto, ServiceStatus, UpdateEventCenterDto } from '@shared/contracts/eventcenters';
+import { CreateEventCenterDto, EventCenterDto, EventCenterFilterDto, EventType, ManyEventCentersDto, ServiceStatus, UpdateEventCenterDto } from '@shared/contracts/eventcenters';
 import { NOTIFICATIONPATTERN } from '@shared/contracts/shared';
 import { DatabaseService } from '../database/database.service';
 import { NOTIFICATION_CLIENT } from '@shared/contracts';
@@ -61,6 +61,7 @@ export class EventcentersService {
                 pricingPerSlot: Number(neweventCenter.pricingPerSlot),
                 rating: neweventCenter.rating as unknown as number,
                 status: neweventCenter.status as unknown as ServiceStatus,
+                eventTypes: neweventCenter.eventTypes as EventType[],
             };
             return eventCenterDto;
         } catch (error) {
@@ -145,6 +146,7 @@ export class EventcentersService {
             pricingPerSlot: Number(eventCenter.pricingPerSlot),
             rating: eventCenter.rating as unknown as number,
             status: eventCenter.status as unknown as ServiceStatus,
+            eventTypes: eventCenter.eventTypes as EventType[],
         };
         return eventCenterDto;
     }
@@ -165,6 +167,7 @@ export class EventcentersService {
                 pricingPerSlot: Number(eventCenter.pricingPerSlot),
                 rating: eventCenter.rating as unknown as number,
                 status: eventCenter.status as unknown as ServiceStatus,
+                eventTypes: eventCenter.eventTypes as EventType[],
             };
             return eventCenterDto;
         } catch (error) {
@@ -185,6 +188,7 @@ export class EventcentersService {
             pricingPerSlot: Number(eventCenter.pricingPerSlot),
             rating: eventCenter.rating as unknown as number,
             status: eventCenter.status as unknown as ServiceStatus,
+            eventTypes: eventCenter.eventTypes as EventType[],
         };
         return eventCenterDto;
     }
@@ -287,6 +291,7 @@ export class EventcentersService {
             ...eventCenter,
             rating: eventCenter.rating as unknown as number,
             status: eventCenter.status as unknown as ServiceStatus,
+            eventTypes: eventCenter.eventTypes as EventType[],
         };
     }
 }

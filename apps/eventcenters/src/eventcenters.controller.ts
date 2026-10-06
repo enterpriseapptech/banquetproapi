@@ -33,8 +33,11 @@ export class EventcentersController {
 
     
     @MessagePattern(EVENTCENTERPATTERN.FINDALLEVENTCENTER)
-    findAll(@Payload() data: { limit?: number, offset?: number, serviceProvider?: string, filter?: EventCenterFilterDto }) {
-        const { limit, offset, serviceProvider, filter } = data;
+    findAll(@Payload() data: { limit?: number, offset?: number, serviceProvider?: string, filter?: EventCenterFilterDto, city?: string, location?: string, search?: string }) {
+        const { limit, offset, serviceProvider, city, location, search } = data;
+        // Fall back to the legacy flat fields if an older gateway sent them. Remove once
+        // both services are deployed.
+        const filter = data.filter ?? ((city || location || search) ? { city, location, search } : undefined);
         return from(this.eventcentersService.findAll(limit, offset, serviceProvider, filter)).pipe(
             catchError((err) => {
                 console.error("Error in UsersService:", err);

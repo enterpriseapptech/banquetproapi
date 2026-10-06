@@ -20,11 +20,19 @@ export class EventcentersService {
         return this.eventClient.send<EventCenterDto, CreateEventCenterDto>(EVENTCENTERPATTERN.CREATEEVENTCENTER, createEventcenterDto);
     }
 
-    @Cacheable((...args) => `${CACHE_KEYS.EVENTCENTERS_ALL}:${args.join(':')}`)
+    // JSON.stringify, not join: join turns the filter object into "[object Object]",
+    // making every filtered search share one cache entry.
+    @Cacheable((...args) => `${CACHE_KEYS.EVENTCENTERS_ALL}:${JSON.stringify(args)}`)
     findAll(limit: number, offset: number, serviceProvider?: string, filter?: EventCenterFilterDto) {
-        return this.eventClient.send<ManyEventCentersDto, ManyRequestEventCenterDto>(
+        return this.eventClient.send<ManyEventCentersDto, ManyRequestEventCenterDto & { city?: string, location?: string, search?: string }>(
             EVENTCENTERPATTERN.FINDALLEVENTCENTER,
-            { limit, offset, serviceProvider, filter },
+            {
+                limit, offset, serviceProvider, filter,
+                // Legacy flat fields, kept so an eventcenters service still on the old
+                // contract keeps filtering if the gateway is deployed first. Remove once
+                // both are deployed.
+                city: filter?.city, location: filter?.location, search: filter?.search,
+            },
         );
     }
 

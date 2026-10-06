@@ -107,17 +107,29 @@ export class EventcentersController {
             city: city || undefined,
             location: location || undefined,
             search: search || undefined,
-            eventTypes: eventTypes
-                ? (Array.isArray(eventTypes) ? eventTypes : [eventTypes]) as EventType[]
-                : undefined,
-            amenities: amenities
-                ? (Array.isArray(amenities) ? amenities : [amenities]) as Amenities[]
-                : undefined,
+            eventTypes: this.parseEnumList(eventTypes, EventType, 'eventTypes'),
+            amenities: this.parseEnumList(amenities, Amenities, 'amenities'),
             minCapacity: minCapacity ? Number(minCapacity) : undefined,
             maxPrice: maxPrice ? Number(maxPrice) : undefined,
         };
         const hasFilter = Object.values(filter).some(v => v !== undefined);
         return this.eventcentersService.findAll(limit, offset, serviceProvider || undefined, hasFilter ? filter : undefined);
+    }
+
+    // Accepts ?x=a&x=b or ?x=a,b in any case, and rejects values outside the enum
+    // instead of silently matching nothing.
+    private parseEnumList<T extends string>(raw: string | string[] | undefined, enumType: Record<string, T>, name: string): T[] | undefined {
+        if (!raw) return undefined;
+        const values = (Array.isArray(raw) ? raw : [raw])
+            .flatMap(v => v.split(','))
+            .map(v => v.trim().toUpperCase())
+            .filter(Boolean);
+        const allowed = Object.values(enumType);
+        const invalid = values.filter(v => !allowed.includes(v as T));
+        if (invalid.length) {
+            throw new BadRequestException(`Invalid ${name}: ${invalid.join(', ')}. Allowed: ${allowed.join(', ')}`);
+        }
+        return values.length ? values as T[] : undefined;
     }
 
     @Get('/bookmarks')
