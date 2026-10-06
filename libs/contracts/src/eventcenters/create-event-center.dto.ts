@@ -14,6 +14,19 @@ export enum Amenities {
     SECURITY = 'SECURITY'
 }
 
+export enum EventType {
+    WEDDING = 'WEDDING',
+    BIRTHDAY = 'BIRTHDAY',
+    CONFERENCE = 'CONFERENCE',
+    CORPORATE = 'CORPORATE',
+    CONCERT = 'CONCERT',
+    EXHIBITION = 'EXHIBITION',
+    FUNERAL = 'FUNERAL',
+    GRADUATION = 'GRADUATION',
+    NETWORKING = 'NETWORKING',
+    OTHER = 'OTHER',
+}
+
 export class CreateEventCenterDto {
     @ApiProperty({
         description: 'Unique ID of the service provider',
@@ -48,13 +61,14 @@ export class CreateEventCenterDto {
 
 
     @ApiProperty({
-        description: 'List of event types supported (e.g. weddings, conferences)',
-        example: ['wedding', 'conference', 'birthday'],
-        type: [String]
+        description: 'List of event types supported',
+        example: [EventType.WEDDING, EventType.CONFERENCE],
+        enum: EventType,
+        isArray: true
     })
-    @IsString({ each: true })
     @IsArray()
-    eventTypes: string[];
+    @IsEnum(EventType, { each: true })
+    eventTypes: EventType[];
 
     @ApiProperty({ type: 'number', required: false })
     @IsInt()

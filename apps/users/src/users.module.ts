@@ -9,6 +9,7 @@ import { ClientConfigService } from '../client-config/client-config.service';
 import { NOTIFICATION_CLIENT } from './constants';
 import { PAYMENT_CLIENT } from '@shared/contracts';
 import { JwtModule } from '@nestjs/jwt';
+import { AuthService } from './services/auth.service';
 
 
 
@@ -30,6 +31,7 @@ import { JwtModule } from '@nestjs/jwt';
     controllers: [UsersController],
     providers: [
         UsersService,
+        AuthService,
         DatabaseService,
         ClientConfigService,
         {

@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, Res, UnauthorizedException } from '@nestjs/common';
+import { Response } from 'express';
 import { UsersService } from './users.service';
 import { BookMarkType, CreateUserDto, LoginUserDto, UpdateUserDto, UpdateUserPasswordDto, UserDto, UserFilterDto } from '@shared/contracts/users';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
@@ -6,10 +7,15 @@ import { VerificationGuard } from '../jwt/verification.guard';
 // import { AdminRoleGuard } from '../jwt/admin.guard';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthenticatedRequest } from '../booking/booking.controller';
-import { firstValueFrom } from 'rxjs';
 // import { CacheStore } from '../common/cache/cache.store';
 import { JwtService } from '@nestjs/jwt';
 import { CacheStore } from '../common/cache/cache.store';
+import { AdminRoleGuard } from '../jwt/admin.guard';
+
+const REFRESH_TOKEN_COOKIE = 'refresh_token';
+// Must match the refresh token's expiresIn ('7d') in UsersService.generateTokens
+const REFRESH_TOKEN_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
 
 
 
@@ -30,28 +36,37 @@ export class UsersController {
     }
 
     @Post('login')
-    login(@Body() loginUserDto: LoginUserDto) {
-        return this.usersService.login(loginUserDto);
+    async login(@Body() loginUserDto: LoginUserDto, @Res({ passthrough: true }) res: Response) {
+        const { refresh_token, ...body } = await this.usersService.login(loginUserDto);
+        this.setRefreshTokenCookie(res, refresh_token);
+        return body;
     }
 
-    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @UseGuards(JwtAuthGuard)
     @Post('logout')
-    async logout(@Req() req: AuthenticatedRequest) {
-        const requestuser: UserDto = await firstValueFrom(req.user)
+    async logout(@Req() req: AuthenticatedRequest, @Res({ passthrough: true }) res: Response) {
+        const requestuser: UserDto = req.user
         const authorization = req.headers.authorization
         if (!authorization?.startsWith('Bearer ')) {
             throw new UnauthorizedException("Restricted area! you must login first");
         }
         const token = authorization.split(' ')[1];
         await this.invalidateToken(token)
+        this.clearRefreshTokenCookie(res);
         return this.usersService.logout(requestuser.id, );
     }
 
 
     @Post('refresh-login')
-    refreshlogin(@Body() token: string) {
-        this.isTokenBlacklisted(token)
-        return this.usersService.refreshlogin(token);
+    async refreshlogin(@Req() req: AuthenticatedRequest, @Res({ passthrough: true }) res: Response) {
+        const token = req.cookies?.[REFRESH_TOKEN_COOKIE];
+        if (!token) {
+            throw new UnauthorizedException("Restricted area! you must login first");
+        }
+        await this.isTokenBlacklisted(token)
+        const { refresh_token, ...body } = await this.usersService.refreshlogin(token);
+        this.setRefreshTokenCookie(res, refresh_token);
+        return body;
     }
 
 
@@ -71,18 +86,19 @@ export class UsersController {
     @Post('bookmark')
     async bookmark(@Body() bookmark: { id: string, serviceType: BookMarkType}, @Req() req: AuthenticatedRequest) {
         
-        const requestuser: UserDto = await firstValueFrom(req.user)
+        const requestuser: UserDto = req.user
         const {id, serviceType} = bookmark
         return this.usersService.bookmark(id, serviceType, requestuser.id);
     }
 
-    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
     @Get()
     findAll(@Query('limit') limit: number, @Query('offset') offset: number, @Query('search') search?: string, @Query('filter')  filter?: UserFilterDto) {
         console.log({filter})
         return this.usersService.findAll(limit, offset, search, filter);
     }
 
+    @UseGuards(JwtAuthGuard, VerificationGuard, AdminRoleGuard)
     @Get(':id')
     findOne(@Param('id') id: string) {
         return this.usersService.findOne(id);
@@ -96,7 +112,7 @@ export class UsersController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Delete(':id')
     async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
-        const requestuser: UserDto = await firstValueFrom(req.user)
+        const requestuser: UserDto = req.user
         const authorization = req.headers.authorization
         if (!authorization?.startsWith('Bearer ')) {
             throw new UnauthorizedException("Restricted area! you must login first");
@@ -121,6 +137,30 @@ export class UsersController {
         
     }
 
+
+    private setRefreshTokenCookie(res: Response, refreshToken: string) {
+        res.cookie(REFRESH_TOKEN_COOKIE, refreshToken, {
+            ...this.refreshTokenCookieOptions(),
+            maxAge: REFRESH_TOKEN_MAX_AGE_MS,
+        });
+    }
+
+    private clearRefreshTokenCookie(res: Response) {
+        res.clearCookie(REFRESH_TOKEN_COOKIE, this.refreshTokenCookieOptions());
+    }
+
+    // The frontend (vercel.app) and the API are on different sites, so in production
+    // the cookie must be SameSite=None (which browsers only accept with Secure) or it
+    // is never sent to /refresh-login. Locally both run on localhost, which is same-site.
+    private refreshTokenCookieOptions() {
+        const isProduction = process.env.NODE_ENV === 'production';
+        return {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? 'none' as const : 'lax' as const,
+            path: '/',
+        };
+    }
 
     async isTokenBlacklisted(token: string){
         const exists = await CacheStore.manager.get(`${this.LOGOUT_CACHE_KEY}_${token}`)

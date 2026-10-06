@@ -9,6 +9,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
 // to do: payments from proseeker to the application for things like kyc, featured, certification e.t.c

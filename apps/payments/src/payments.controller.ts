@@ -9,6 +9,7 @@ import { DISPUTEPATTERN, FEATUREDPLANSPATTERN, FEESPATTERN, INVOICEPATTERN, PAYM
 import { CreateDisputeDto, CreateFeaturedPlanDto, CreateFeeDto, CreateInvoiceDto, CreatePaymentDto, CreateRefundDto, CreateSubscriptionDto, CreateSubscriptionPlanDto, CreateWalletDto, CreateWithdrawalDto, GeneratePaymentDto, PayInvoiceDto, ReleaseEscrowDto, TopupWalletDto } from '@shared/contracts/payments/create-payments.dto';
 import { UpdateDisputeDto, UpdateFeaturedPlanDto, UpdateFeeDto, UpdateInvoiceDto, UpdatePaymentDto, UpdateRefundDto, UpdateSubscriptionDto, UpdateSubscriptionPlanDto, UpdateWithdrawalDto, ApproveRefundDto, DeclineRefundDto, ResolveDisputeDto } from '@shared/contracts/payments/update-payments.dto';
 import { UserType, WALLETPATTERN, } from '@shared/contracts/shared';
+import { isUndefined } from 'util';
 
 @Controller()
 export class SubscriptionPlansController {
@@ -736,7 +737,12 @@ export class WalletController {
   @MessagePattern(WALLETPATTERN.CREATE)
   create(@Payload() dto: CreateWalletDto) {
     console.log({dto})
-    return from(this.walletService.create(dto)).pipe(
+    return from(this.walletService.findorCreateWalletByUserId(
+      dto.userId, 
+      dto.userType,
+      undefined,
+      dto.currency
+    )).pipe(
       catchError((err) => throwError(() => new RpcException({
         statusCode: err.response?.statusCode || 500,
         message: err.message || 'Internal Server Error',

@@ -6,12 +6,11 @@ import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { VerificationGuard } from '../jwt/verification.guard';
 import { AdminRoleGuard } from '../jwt/admin.guard';
 import { UpdateCountryDto, UpdateStateDto } from '@shared/contracts/management/update-management.dto';
-import { firstValueFrom } from 'rxjs';
 import { UserDto } from '@shared/contracts/users';
 
 
 interface AuthenticatedRequest extends Request {
-    user?: any; // Change `any` to your actual user type if known
+    user?: UserDto;
 }
 
 @ApiTags('app-settings')
@@ -28,7 +27,7 @@ export class AppSettingController {
         if (!authuser) {
             throw new UnauthorizedException('Access token has expired');
         }
-        const user: UserDto = await firstValueFrom(authuser)
+        const user: UserDto = authuser
         if(user.userType !== 'ADMIN') {
             throw new UnauthorizedException('Only Admins can update app settings');
         }
@@ -66,7 +65,7 @@ export class CountryController {
         if (!authuser) {
             throw new UnauthorizedException('Access token has expired');
         }
-        const user: UserDto = await firstValueFrom(authuser)
+        const user: UserDto = authuser
         if(user.userType !== 'ADMIN') {
             throw new UnauthorizedException('Only Admins can create Country');
         }
@@ -104,7 +103,7 @@ export class CountryController {
         if (!authuser) {
             throw new UnauthorizedException('Access token has expired');
         }
-        const user: UserDto = await firstValueFrom(authuser)
+        const user: UserDto = authuser
         updateCountryDto.updatedBy = user.id
         return this.countryService.update(id, updateCountryDto);
 
@@ -119,7 +118,7 @@ export class CountryController {
         if (!authuser) {
             throw new UnauthorizedException('Access token has expired');
         }
-        const user: UserDto = await firstValueFrom(authuser)
+        const user: UserDto = authuser
         return this.countryService.remove(id, user.id);
     }
 
@@ -148,7 +147,7 @@ export class StateController {
         if (!authuser) {
             throw new UnauthorizedException('Access token has expired');
         }
-        const user: UserDto = await firstValueFrom(authuser)
+        const user: UserDto = authuser
         if(user.userType !== 'ADMIN') {
             throw new UnauthorizedException('Only Admins can create Country');
         }
@@ -198,7 +197,7 @@ export class StateController {
         if (!authuser) {
             throw new UnauthorizedException('Access token has expired');
         }
-        const user: UserDto = await firstValueFrom(authuser)
+        const user: UserDto = authuser
         return this.stateService.remove(id, user.id);
     }
 

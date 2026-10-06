@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ConflictException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException, UseInterceptors } from '@nestjs/common';
 import { $Enums, Prisma } from '../prisma/@prisma/eventcenters';
-import { CreateEventCenterDto, EventCenterDto, ManyEventCentersDto, ServiceStatus, UpdateEventCenterDto } from '@shared/contracts/eventcenters';
+import { CreateEventCenterDto, EventCenterDto, EventCenterFilterDto, EventType, ManyEventCentersDto, ServiceStatus, UpdateEventCenterDto } from '@shared/contracts/eventcenters';
 import { NOTIFICATIONPATTERN } from '@shared/contracts/shared';
 import { DatabaseService } from '../database/database.service';
 import { NOTIFICATION_CLIENT } from '@shared/contracts';
@@ -61,6 +61,7 @@ export class EventcentersService {
                 pricingPerSlot: Number(neweventCenter.pricingPerSlot),
                 rating: neweventCenter.rating as unknown as number,
                 status: neweventCenter.status as unknown as ServiceStatus,
+                eventTypes: neweventCenter.eventTypes as EventType[],
             };
             return eventCenterDto;
         } catch (error) {
@@ -89,77 +90,45 @@ export class EventcentersService {
         limit?: number,
         offset?: number,
         serviceProvider?: string,
-        city?: string,
-        location?: string,
-        search?: string,
+        filter?: EventCenterFilterDto,
     ): Promise<ManyEventCentersDto> {
-        if (serviceProvider) {
-            const eventCenters = await this.databaseService.eventCenter.findMany({
-                where: { serviceProviderId: serviceProvider, deletedAt: null },
-                ...(limit ? { take: limit, skip: offset ? offset : 0 } : {})
-            });
-
-            const count = await this.databaseService.eventCenter.count({
-                where: { serviceProviderId: serviceProvider, deletedAt: null },
-            });
-
-            return {
-                count,
-                data: eventCenters.map(eventCenter => this.mapToEventCenterDto(eventCenter))
-            };
-        }
-
-        // find state or country
+        const orderBy = [
+            { subscriptionStatus: 'desc' as const },
+            { subscriptionExpiry: 'desc' as const },
+            { createdAt: 'desc' as const },
+        ];
 
         const whereClause: any = { deletedAt: null };
-        if (city) whereClause.city = { equals: city, mode: "insensitive" };
-        if (location) whereClause.location = { equals: location };
-        if (search) {
-            whereClause.OR = [
-                { name: { contains: search, mode: "insensitive" } },
-                { eventTypes: { has: search} },
-                { description: { contains: search, mode: "insensitive" } },
-                { venueLayout: { contains: search, mode: "insensitive" } },
-                { city: { contains: search, mode: "insensitive" } },
-            ].filter(Boolean)
+
+        if (serviceProvider) whereClause.serviceProviderId = serviceProvider;
+
+        if (filter) {
+            if (filter.city) whereClause.city = { equals: filter.city, mode: 'insensitive' };
+            if (filter.location) whereClause.location = { equals: filter.location };
+            if (filter.eventTypes?.length) whereClause.eventTypes = { hasSome: filter.eventTypes };
+            if (filter.amenities?.length) whereClause.amenities = { hasSome: filter.amenities };
+            if (filter.minCapacity) whereClause.sittingCapacity = { gte: filter.minCapacity };
+            if (filter.maxPrice) whereClause.pricingPerSlot = { lte: filter.maxPrice };
+            if (filter.search) {
+                whereClause.OR = [
+                    { name: { contains: filter.search, mode: 'insensitive' } },
+                    { description: { contains: filter.search, mode: 'insensitive' } },
+                    { venueLayout: { contains: filter.search, mode: 'insensitive' } },
+                    { city: { contains: filter.search, mode: 'insensitive' } },
+                ];
+            }
         }
 
-        if (Object.keys(whereClause).length > 0) {
-            const eventCenters = await this.databaseService.eventCenter.findMany({
+        const [eventCenters, count] = await Promise.all([
+            this.databaseService.eventCenter.findMany({
                 where: whereClause,
-                take: limit,
-                skip: offset,
-                orderBy:  [
-                    { subscriptionStatus: 'desc' }, // subscribed first
-                    { subscriptionExpiry: 'desc' }, // newest active subs first
-                    { createdAt: 'desc' } // fallback
-                ]
-            });
+                ...(limit ? { take: limit, skip: offset ?? 0 } : {}),
+                orderBy,
+            }),
+            this.databaseService.eventCenter.count({ where: whereClause }),
+        ]);
 
-            const count = await this.databaseService.eventCenter.count({ where: whereClause });
-
-            return {
-                count,
-                data: eventCenters.map(eventCenter => this.mapToEventCenterDto(eventCenter))
-            };
-        }
-
-        const eventCenters = await this.databaseService.eventCenter.findMany({
-            take: limit,
-            skip: offset,
-            orderBy: [
-                { subscriptionStatus: 'desc' }, // subscribed first
-                { subscriptionExpiry: 'desc' }, // newest active subs first
-                { createdAt: 'desc' } // fallback
-            ]
-        });
-
-        const count = await this.databaseService.eventCenter.count();
-
-        return {
-            count,
-            data: eventCenters.map(eventCenter => this.mapToEventCenterDto(eventCenter))
-        };
+        return { count, data: eventCenters.map(ec => this.mapToEventCenterDto(ec)) };
     }
 
     async findOne(id: string): Promise<EventCenterDto> {
@@ -177,6 +146,7 @@ export class EventcentersService {
             pricingPerSlot: Number(eventCenter.pricingPerSlot),
             rating: eventCenter.rating as unknown as number,
             status: eventCenter.status as unknown as ServiceStatus,
+            eventTypes: eventCenter.eventTypes as EventType[],
         };
         return eventCenterDto;
     }
@@ -197,6 +167,7 @@ export class EventcentersService {
                 pricingPerSlot: Number(eventCenter.pricingPerSlot),
                 rating: eventCenter.rating as unknown as number,
                 status: eventCenter.status as unknown as ServiceStatus,
+                eventTypes: eventCenter.eventTypes as EventType[],
             };
             return eventCenterDto;
         } catch (error) {
@@ -217,6 +188,7 @@ export class EventcentersService {
             pricingPerSlot: Number(eventCenter.pricingPerSlot),
             rating: eventCenter.rating as unknown as number,
             status: eventCenter.status as unknown as ServiceStatus,
+            eventTypes: eventCenter.eventTypes as EventType[],
         };
         return eventCenterDto;
     }
@@ -319,6 +291,7 @@ export class EventcentersService {
             ...eventCenter,
             rating: eventCenter.rating as unknown as number,
             status: eventCenter.status as unknown as ServiceStatus,
+            eventTypes: eventCenter.eventTypes as EventType[],
         };
     }
 }

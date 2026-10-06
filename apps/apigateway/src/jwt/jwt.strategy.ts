@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import * as dotenv from 'dotenv';
 import { ClientProxy } from '@nestjs/microservices';
+import { firstValueFrom } from 'rxjs';
 import { USERPATTERN, UserDto  } from '@shared/contracts/users';
 import { USER_CLIENT } from '@shared/contracts';
 
@@ -21,10 +22,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     async validate(payload: { sub: string }) {
-        console.log({payload})
         try {
-            const user = await this.userClient.send<UserDto, string>(USERPATTERN.FINDBYID, payload.sub);
-
+            const user = await firstValueFrom(
+                this.userClient.send<UserDto, string>(USERPATTERN.FINDBYID, payload.sub),
+            );
+            console.log({payload})
             if (!user) {
                 throw new UnauthorizedException('user is unauthorized', {
                     cause: new Error(),

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, UseInterceptors, BadRequestException, UploadedFiles, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { EventcentersService } from './eventcenters.service';
-import { CreateEventCenterDto, UpdateEventCenterDto, } from '@shared/contracts/eventcenters';
+import { CreateEventCenterDto, UpdateEventCenterDto, EventCenterFilterDto, EventType, Amenities } from '@shared/contracts/eventcenters';
 import { UpsertRefundPolicyDto } from '@shared/contracts/payments';
 import { UserDto } from '@shared/contracts/users';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
@@ -19,7 +19,7 @@ import { UsersService } from '../users/users.service';
 
 // Extend the Request type to include 'user'
 interface AuthenticatedRequest extends Request {
-    user?: any; // Change `any` to your actual user type if known
+    user?: UserDto;
 }
 @Controller('event-centers')
 export class EventcentersController {
@@ -98,8 +98,38 @@ export class EventcentersController {
         @Query('city') city: string,
         @Query('location') location: string,
         @Query('search') search: string,
+        @Query('eventTypes') eventTypes: string | string[],
+        @Query('amenities') amenities: string | string[],
+        @Query('minCapacity') minCapacity: number,
+        @Query('maxPrice') maxPrice: number,
     ) {
-        return this.eventcentersService.findAll(limit, offset, serviceProvider, city, location, search);
+        const filter: EventCenterFilterDto = {
+            city: city || undefined,
+            location: location || undefined,
+            search: search || undefined,
+            eventTypes: this.parseEnumList(eventTypes, EventType, 'eventTypes'),
+            amenities: this.parseEnumList(amenities, Amenities, 'amenities'),
+            minCapacity: minCapacity ? Number(minCapacity) : undefined,
+            maxPrice: maxPrice ? Number(maxPrice) : undefined,
+        };
+        const hasFilter = Object.values(filter).some(v => v !== undefined);
+        return this.eventcentersService.findAll(limit, offset, serviceProvider || undefined, hasFilter ? filter : undefined);
+    }
+
+    // Accepts ?x=a&x=b or ?x=a,b in any case, and rejects values outside the enum
+    // instead of silently matching nothing.
+    private parseEnumList<T extends string>(raw: string | string[] | undefined, enumType: Record<string, T>, name: string): T[] | undefined {
+        if (!raw) return undefined;
+        const values = (Array.isArray(raw) ? raw : [raw])
+            .flatMap(v => v.split(','))
+            .map(v => v.trim().toUpperCase())
+            .filter(Boolean);
+        const allowed = Object.values(enumType);
+        const invalid = values.filter(v => !allowed.includes(v as T));
+        if (invalid.length) {
+            throw new BadRequestException(`Invalid ${name}: ${invalid.join(', ')}. Allowed: ${allowed.join(', ')}`);
+        }
+        return values.length ? values as T[] : undefined;
     }
 
     @Get('/bookmarks')
@@ -123,7 +153,7 @@ export class EventcentersController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @Delete(':id')
     async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
-        const user: UserDto = await firstValueFrom(req.user)
+        const user: UserDto = req.user
         return this.eventcentersService.remove(id, user.id);
     }
 

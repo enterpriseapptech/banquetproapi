@@ -13,6 +13,7 @@ generator usersclient {
 datasource banquestprousersdb {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
 model User {
@@ -24,7 +25,6 @@ model User {
   password        String    // Hashed password
   userType        UserType  // Enum for user type
   status          UserStatus    // Account status (e.g., active, suspended)
-  refreshToken    String?
   lastLoginAt     DateTime?
   loginAttempts   Int @default(0) // Number of login attempts
   streetAddress   String?
@@ -66,7 +66,6 @@ model Admin {
 model ServiceProvider {
   id                      String @id @default(uuid()) @map("user_id") // Foreign key to User table
   businessName            String
-  serviceType             ServiceType  // Type of service (e.g., catering, event center)
   businessLogo            String? // URL to business logo
   pricingInfo             String?    // Pricing details (could be JSON for flexibility)
   regulations             String?   

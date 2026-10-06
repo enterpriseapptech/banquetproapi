@@ -3,9 +3,11 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpLoggingInterceptor } from './common/interceptors/http-logging.interceptor';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
+	app.use(cookieParser());
 	app.enableCors({
 		origin: ['http://localhost:3000', 'https://entapp-frontend.vercel.app'], // Allow all origins
 		methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
