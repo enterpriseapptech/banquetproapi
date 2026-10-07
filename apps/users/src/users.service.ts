@@ -213,8 +213,7 @@ export class UsersService {
                 where: { id },
                 data: {
                     deletedAt: new Date(),
-                    deletedBy,
-                    refreshToken: null
+                    deletedBy
                 },
         });
             //  const access_token  = await this.jwtService.decode({ sub: user.id, type: user.userType, isEmailVerified: user.isEmailVerified }, {
