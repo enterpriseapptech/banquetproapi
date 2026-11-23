@@ -24,7 +24,7 @@ export class HttpLoggingInterceptor implements NestInterceptor {
                 },
                 error: (err) => {
                     this.logger.error(
-                        `${method} ${url} → ${err?.status ?? 500} [${Date.now() - start}ms] trace=${traceId} user=${req.user?.id ?? 'anon'} | ${err?.message}`,
+                        `${method} ${url} → ${err?.status ?? err?.statusCode ?? 500} [${Date.now() - start}ms] trace=${traceId} user=${req.user?.id ?? 'anon'} | ${err?.message}`,
                     );
                 },
             }),

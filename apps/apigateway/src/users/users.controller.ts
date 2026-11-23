@@ -72,9 +72,7 @@ export class UsersController {
 
     @Post('verify')
     verify(@Body() { id, token }) {
-        const verify = this.usersService.verify(id, token)
-        console.log("verification", verify)
-        return verify;
+        return this.usersService.verify(id, token);
     }
 
     @Post('resend-verification')

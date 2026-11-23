@@ -69,14 +69,9 @@ export class UsersService {
     }
 
     verify(id: string, token: string) {
-        try {
-            return this.userClient.send<UserDto, { id: string, token: string }>(USERPATTERN.VERIFYUSER, { id, token })
-        } catch (e) {
-            throw new UnauthorizedException('access token is invalid', {
-                cause: new Error(),
-                description: 'access token is invalid',
-            });
-        }
+        // send() is lazy: errors arrive later through the Observable, so a try/catch here never fires.
+        // RPC errors are turned into HTTP responses by RpcToHttpExceptionFilter.
+        return this.userClient.send<UserDto, { id: string, token: string }>(USERPATTERN.VERIFYUSER, { id, token })
     }
 
     bookmark(id: string, serviceType: BookMarkType, userId: string) {

@@ -1,9 +1,10 @@
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpLoggingInterceptor } from './common/interceptors/http-logging.interceptor';
 import * as cookieParser from 'cookie-parser';
+import { RpcToHttpExceptionFilter } from './common/filters/rpc-to-http-exception.filter';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
@@ -16,6 +17,8 @@ async function bootstrap() {
 		credentials: true, // Allow credentials (cookies, authorization headers, etc.)
 		optionsSuccessStatus: 204,
 	})
+
+	app.useGlobalFilters(new RpcToHttpExceptionFilter(app.get(HttpAdapterHost).httpAdapter));
 
 	app.useGlobalPipes(new ValidationPipe({
 		whitelist: true, // Remove unknown fields
