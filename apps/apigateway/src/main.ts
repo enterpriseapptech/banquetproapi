@@ -9,9 +9,10 @@ async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 	app.use(cookieParser());
 	app.enableCors({
-		origin: ['http://localhost:3000', 'https://entapp-frontend.vercel.app'], // Allow all origins
+		origin: true, // Reflect the request's Origin, so any origin is allowed
 		methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
-		allowedHeaders: '*', // Allowed headers
+		// allowedHeaders omitted: the cors package echoes back whatever headers the browser requests.
+		// ('*' is not honoured as a wildcard by browsers when credentials are used, and never covers Authorization.)
 		credentials: true, // Allow credentials (cookies, authorization headers, etc.)
 		optionsSuccessStatus: 204,
 	})
