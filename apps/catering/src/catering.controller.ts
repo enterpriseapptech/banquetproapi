@@ -5,6 +5,7 @@ import { EventPattern, MessagePattern, Payload, RpcException } from '@nestjs/mic
 import { CATERINGPATTERN, CATERINGREFUNDPOLICYPATTERN, CreateCateringDto, UpdateCateringDto } from '@shared/contracts/catering';
 import { catchError, from, throwError } from 'rxjs';
 import { UpdateServiceSubscriptionDto } from '@shared/contracts/shared';
+import { toRpcException } from '@shared/contracts/rpc-error';
 
 
 @Controller()
@@ -16,11 +17,7 @@ export class CateringController {
         return from(this.cateringService.create(createCateringDto)).pipe(
             catchError((err) => {
                 console.error("Error in Catering Service:", err);
-                return throwError(() => new RpcException({
-                    statusCode: err.response.statusCode || 500,
-                    message: err.message || "Internal Server Error",
-                    error: err.response.error || "Sever error",
-                }));
+                return throwError(() => toRpcException(err));
 
             })
         );
@@ -32,11 +29,7 @@ export class CateringController {
         return from(this.cateringService.findAllWithUnique(ids)).pipe(
             catchError((err) => {
                 console.error("Error in Catering Service:", err);
-                return throwError(() => new RpcException({
-                    statusCode: err.response.statusCode || 500,
-                    message: err.message || "Internal Server Error",
-                    error: err.response.error || "Sever error",
-                }));
+                return throwError(() => toRpcException(err));
 
             })
         );
@@ -50,11 +43,7 @@ export class CateringController {
         return from(this.cateringService.findAll(limit, offset, serviceProvider, city, state, country, search)).pipe(
             catchError((err) => {
                 console.error("Error in Catering Service:", err);
-                return throwError(() => new RpcException({
-                    statusCode: err.response.statusCode || 500,
-                    message: err.message || "Internal Server Error",
-                    error: err.response.error || "Sever error",
-                }));
+                return throwError(() => toRpcException(err));
 
             })
         );
@@ -66,11 +55,7 @@ export class CateringController {
         return from(this.cateringService.findOne(id)).pipe(
             catchError((err) => {
                 console.error("Error in Catering Service:", err);
-                return throwError(() => new RpcException({
-                    statusCode: err.response.statusCode || 500,
-                    message: err.message || "Internal Server Error",
-                    error: err.response.error || "Sever error",
-                }));
+                return throwError(() => toRpcException(err));
 
             })
         );
@@ -83,11 +68,7 @@ export class CateringController {
         return from(this.cateringService.update(id, updateCateringDto)).pipe(
             catchError((err) => {
                 console.error("Error in  Catering Service:", err);
-                return throwError(() => new RpcException({
-                    statusCode: err.response.statusCode || 500,
-                    message: err.message || "Internal Server Error",
-                    error: err.response.error || "Sever error",
-                }));
+                return throwError(() => toRpcException(err));
 
             })
         );
@@ -100,11 +81,7 @@ export class CateringController {
         return from(this.cateringService.remove(id, updaterId)).pipe(
             catchError((err) => {
                 console.error("Error in Catering Service:", err);
-                return throwError(() => new RpcException({
-                    statusCode: err.response.statusCode || 500,
-                    message: err.message || "Internal Server Error",
-                    error: err.response.error || "Sever error",
-                }));
+                return throwError(() => toRpcException(err));
 
             })
         );
@@ -116,11 +93,7 @@ export class CateringController {
         return from(this.cateringService.updateSubscriptionStatus(data)).pipe(
             catchError((err) => {
                 console.error("Error in Catering Service:", err);
-                return throwError(() => new RpcException({
-                    statusCode: err.response.statusCode || 500,
-                    message: err.message || "Internal Server Error",
-                    error: err.response.error || "Sever error",
-                }));
+                return throwError(() => toRpcException(err));
 
             })
         );

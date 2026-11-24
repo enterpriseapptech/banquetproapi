@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { BookingService, RequestQuoteService, TimeSlotService } from './booking.service';
-import { EventPattern, MessagePattern, Payload, RpcException } from '@nestjs/microservices';
+import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
 import { catchError, from, throwError } from 'rxjs';
 import { BOOKINGPATTERN, CreateBookingDto, CreateManyTimeSlotDto, CreateRequestQuoteDto, ManyRequestTimeSlotDto, REQUESTQUOTEPATTERN, TIMESLOTPATTERN, 
     UpdateBookingDto, 
@@ -18,11 +18,7 @@ export class BookingController {
         return from(this.bookingService.create(createBookingDto)).pipe(
             catchError((err) => {
                 console.error("Error in bookingService:", err);
-                return throwError(() => new RpcException({
-                    statusCode: err.response.statusCode || 500,
-                    message: err.message || "Internal Server Error",
-                    error: err.response.error || "Sever error",
-                }));
+                return throwError(() => toRpcException(err));
 
             })
         );
@@ -35,11 +31,7 @@ export class BookingController {
         return from(this.bookingService.findAll(limit, offset, customerId, serviceType, serviceId, serviceProvider, bookingReference)).pipe(
                 catchError((err) => {
                     console.error("Error in UsersService:", err);
-                    return throwError(() => new RpcException({
-                        statusCode: err.response.statusCode || 500,
-                        message: err.message || "Internal Server Error",
-                        error: err.response.error || "Sever error",
-                    }));
+                    return throwError(() => toRpcException(err));
     
                 })
             );
@@ -51,11 +43,7 @@ export class BookingController {
         return from(this.bookingService.findOne(id)).pipe(
                 catchError((err) => {
                     console.error("Error in UsersService:", err);
-                    return throwError(() => new RpcException({
-                        statusCode: err.response.statusCode || 500,
-                        message: err.message || "Internal Server Error",
-                        error: err.response.error || "Sever error",
-                    }));
+                    return throwError(() => toRpcException(err));
     
                 })
             );
@@ -68,11 +56,7 @@ export class BookingController {
     return from(this.bookingService.update(id, updateBookingDto)).pipe(
             catchError((err) => {
                 console.error("Error in EventService:", err);
-                return throwError(() => new RpcException({
-                    statusCode: err.response.statusCode || 500,
-                    message: err.message || "Internal Server Error",
-                    error: err.response.error || "Sever error",
-                }));
+                return throwError(() => toRpcException(err));
 
             })
         );
@@ -85,11 +69,7 @@ export class BookingController {
         return from(this.bookingService.updatePayment(id, new Decimal(amount))).pipe(
             catchError((err) => {
                 console.error("Error in Booking Service:", err);
-                return throwError(() => new RpcException({
-                    statusCode: err.response.statusCode || 500,
-                    message: err.message || "Internal Server Error",
-                    error: err.response.error || "Sever error",
-                }));
+                return throwError(() => toRpcException(err));
 
             })
         );
@@ -101,11 +81,7 @@ export class BookingController {
         return from(this.bookingService.remove(id, updaterId)).pipe(
                 catchError((err) => {
                     console.error("Error in UsersService:", err);
-                    return throwError(() => new RpcException({
-                        statusCode: err.response.statusCode || 500,
-                        message: err.message || "Internal Server Error",
-                        error: err.response.error || "Sever error",
-                    }));
+                    return throwError(() => toRpcException(err));
     
                 })
             );
@@ -123,11 +99,7 @@ export class  RequestQuoteController {
         return from(this.requestQuoteService.create(createRequestQuoteDto)).pipe(
             catchError((err) => {
                 console.error("Error in requestQuoteService:", err);
-                return throwError(() => new RpcException({
-                    statusCode: err.response.statusCode || 500,
-                    message: err.message || "Internal Server Error",
-                    error: err.response.error || "Sever error",
-                }));
+                return throwError(() => toRpcException(err));
 
             })
         );
@@ -140,11 +112,7 @@ export class  RequestQuoteController {
         return from(this.requestQuoteService.findAll(limit, offset, serviceType, serviceId, serviceProvider, quoteReference)).pipe(
                 catchError((err) => {
                     console.error("Error in requestQuoteService:", err);
-                    return throwError(() => new RpcException({
-                        statusCode: err.response.statusCode || 500,
-                        message: err.message || "Internal Server Error",
-                        error: err.response.error || "Sever error",
-                    }));
+                    return throwError(() => toRpcException(err));
     
                 })
             );
@@ -156,11 +124,7 @@ export class  RequestQuoteController {
         return from(this.requestQuoteService.findOne(id)).pipe(
                 catchError((err) => {
                     console.error("Error in requestQuoteService:", err);
-                    return throwError(() => new RpcException({
-                        statusCode: err.response.statusCode || 500,
-                        message: err.message || "Internal Server Error",
-                        error: err.response.error || "Sever error",
-                    }));
+                    return throwError(() => toRpcException(err));
     
                 })
             );
@@ -173,11 +137,7 @@ export class  RequestQuoteController {
         return from(this.requestQuoteService.update(id, updateRequestQuoteDto)).pipe(
                 catchError((err) => {
                     console.error("Error in requestQuoteService:", err);
-                    return throwError(() => new RpcException({
-                        statusCode: err.response.statusCode || 500,
-                        message: err.message || "Internal Server Error",
-                        error: err.response.error || "Sever error",
-                    }));
+                    return throwError(() => toRpcException(err));
     
                 })
             );
@@ -190,11 +150,7 @@ export class  RequestQuoteController {
         return from(this.requestQuoteService.remove(id, updaterId)).pipe(
                 catchError((err) => {
                     console.error("Error in requestQuoteService:", err);
-                    return throwError(() => new RpcException({
-                        statusCode: err.response.statusCode || 500,
-                        message: err.message || "Internal Server Error",
-                        error: err.response.error || "Sever error",
-                    }));
+                    return throwError(() => toRpcException(err));
     
                 })
             );

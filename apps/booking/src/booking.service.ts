@@ -225,7 +225,7 @@ export class BookingService {
 
 			return bookingDto;
 		} catch (error) {
-			throw new ConflictException(error);
+			throw error; // let toRpcException keep the real status
 		}
 	}
 
@@ -435,7 +435,7 @@ export class BookingService {
 
 			return bookingDto;
 		} catch (error) {
-			throw new InternalServerErrorException(error);
+			throw error; // let toRpcException keep the real status
 		}
 	}
 
@@ -493,7 +493,7 @@ export class BookingService {
 
 			return bookingDto;
 		} catch (error) {
-			throw new InternalServerErrorException(error);
+			throw error; // let toRpcException keep the real status
 		}
 	}
 
@@ -526,7 +526,7 @@ export class BookingService {
 
 			return bookingDto;
 		} catch (error) {
-			throw new InternalServerErrorException(error);
+			throw error; // let toRpcException keep the real status
 		}
 	}
 
@@ -698,7 +698,7 @@ export class RequestQuoteService {
 
 			return bookingDto;
 		} catch (error) {
-			throw new ConflictException(error);
+			throw error; // let toRpcException keep the real status
 		}
 	}
 

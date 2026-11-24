@@ -65,11 +65,8 @@ export class EventcentersService {
             };
             return eventCenterDto;
         } catch (error) {
-            console.log(error)
-            throw new InternalServerErrorException(error, {
-                cause: new Error(),
-                description: 'new event Center creation failed, please try again'
-            });
+            // Re-throw unchanged; toRpcException in the controller maps it (Prisma, HttpException, nested RPC errors).
+            throw error;
         }
         
     }
@@ -171,7 +168,8 @@ export class EventcentersService {
             };
             return eventCenterDto;
         } catch (error) {
-            throw new ConflictException(error);
+            // Re-throw unchanged; toRpcException in the controller maps it (Prisma, HttpException, nested RPC errors).
+            throw error;
         }
     }
 

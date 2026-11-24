@@ -1,4 +1,4 @@
-import { ConflictException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { $Enums, Prisma } from '../prisma/@prisma/catering';
 import { CreateCateringDto, CateringDto, ManyCateringDto, UpdateCateringDto, ServiceStatus } from '@shared/contracts/catering';
 import { DatabaseService } from '../database/database.service';
@@ -63,10 +63,8 @@ export class CateringService {
             };
             return cateringDto;
         } catch (error) {
-            throw new InternalServerErrorException(error, {
-                cause: new Error(),
-                description: 'new catering service creation failed, please try again'
-            });
+            // Re-throw unchanged; toRpcException in the controller maps it (Prisma, HttpException, nested RPC errors).
+            throw error;
         }
     }
 
@@ -195,7 +193,8 @@ export class CateringService {
             };
             return cateringDto;
         } catch (error) {
-            throw new ConflictException(error);
+            // Re-throw unchanged; toRpcException in the controller maps it (Prisma, HttpException, nested RPC errors).
+            throw error;
         }
     }
 

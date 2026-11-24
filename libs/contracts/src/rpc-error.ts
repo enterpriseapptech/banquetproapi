@@ -1,5 +1,6 @@
 import { HttpException } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
+import { PrismaErrorHandler } from './prisma.error.handler';
 
 /**
  * Convert any error thrown inside a microservice handler into an RpcException
@@ -9,8 +10,9 @@ import { RpcException } from '@nestjs/microservices';
  * Handles:
  *  - RpcException: passed through unchanged
  *  - HttpException (NotFoundException, BadRequestException, ...): keeps its status and message
+ *  - Prisma known request errors: mapped via PrismaErrorHandler (P2025 -> 404, P2002 -> 400, ...)
  *  - plain { statusCode } objects: errors re-thrown from another microservice call (firstValueFrom(client.send(...)))
- *  - anything else: 500
+ *  - anything else (a genuine crash): 500
  *
  * Unlike `err.response.statusCode`, this never throws when `err.response` is undefined.
  */
@@ -25,6 +27,16 @@ export function toRpcException(err: unknown): RpcException {
             message: body.message ?? err.message,
             error: body.error ?? err.name,
         });
+    }
+
+    // Prisma errors that weren't mapped in the service (e.g. P2025 record not found -> 404).
+    // Duck-typed so this helper doesn't depend on any one service's generated Prisma client.
+    if ((err as any)?.name === 'PrismaClientKnownRequestError' && (err as any)?.code) {
+        try {
+            PrismaErrorHandler.handle(err, { PrismaClientKnownRequestError: (err as any).constructor });
+        } catch (mapped) {
+            if (mapped instanceof HttpException) return toRpcException(mapped);
+        }
     }
 
     if (err && typeof err === 'object') {

@@ -5,6 +5,7 @@ import { CreateEventCenterDto, EventCenterFilterDto, EVENTCENTERPATTERN, EVENTCE
 import { EventPattern, MessagePattern, Payload, RpcException, RmqContext, Ctx } from '@nestjs/microservices';
 import { catchError, from, throwError } from 'rxjs';
 import { UpdateServiceSubscriptionDto } from '@shared/contracts/shared';
+import { toRpcException } from '@shared/contracts/rpc-error';
 
 @Controller()
 export class EventcentersController {
@@ -21,11 +22,7 @@ export class EventcentersController {
         return from(this.eventcentersService.create(createEventCenterDto)).pipe(
                 catchError((err) => {
                     console.error("Error in UsersService:", err);
-                    return throwError(() => new RpcException({
-                        statusCode: err.response.statusCode || 500,
-                        message: err.message || "Internal Server Error",
-                        error: err.response.error || "Sever error",
-                    }));
+                    return throwError(() => toRpcException(err));
 
                 })
             );
@@ -41,11 +38,7 @@ export class EventcentersController {
         return from(this.eventcentersService.findAll(limit, offset, serviceProvider, filter)).pipe(
             catchError((err) => {
                 console.error("Error in UsersService:", err);
-                return throwError(() => new RpcException({
-                    statusCode: err.response.statusCode || 500,
-                    message: err.message || "Internal Server Error",
-                    error: err.response.error || "Sever error",
-                }));
+                return throwError(() => toRpcException(err));
 
             })
         );
@@ -57,11 +50,7 @@ export class EventcentersController {
         return from(this.eventcentersService.findAllWithUnique(ids)).pipe(
             catchError((err) => {
                 console.error("Error in Event Service findAllWithUnique:", err);
-                return throwError(() => new RpcException({
-                    statusCode: err.response.statusCode || 500,
-                    message: err.message || "Internal Server Error",
-                    error: err.response.error || "Sever error",
-                }));
+                return throwError(() => toRpcException(err));
 
             })
         );
@@ -75,11 +64,7 @@ export class EventcentersController {
         return from(this.eventcentersService.findOne(id)).pipe(
             catchError((err) => {
                 console.error("Error in Event Service:", err);
-                return throwError(() => new RpcException({
-                    statusCode: err.response.statusCode || 500,
-                    message: err.message || "Internal Server Error",
-                    error: err.response.error || "Sever error",
-                }));
+                return throwError(() => toRpcException(err));
 
             })
         );
@@ -92,11 +77,7 @@ export class EventcentersController {
         return from(this.eventcentersService.update(id, updateEventcenterDto)).pipe(
             catchError((err) => {
                 console.error("Error in EventService:", err);
-                return throwError(() => new RpcException({
-                    statusCode: err.response.statusCode || 500,
-                    message: err.message || "Internal Server Error",
-                    error: err.response.error || "Sever error",
-                }));
+                return throwError(() => toRpcException(err));
 
             })
         );
@@ -109,11 +90,7 @@ export class EventcentersController {
         return from(this.eventcentersService.remove(id, updaterId)).pipe(
             catchError((err) => {
                 console.error("Error in UsersService:", err);
-                return throwError(() => new RpcException({
-                    statusCode: err.response.statusCode || 500,
-                    message: err.message || "Internal Server Error",
-                    error: err.response.error || "Sever error",
-                }));
+                return throwError(() => toRpcException(err));
 
             })
         );
