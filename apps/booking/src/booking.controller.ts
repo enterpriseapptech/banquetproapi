@@ -7,6 +7,7 @@ import { BOOKINGPATTERN, CreateBookingDto, CreateManyTimeSlotDto, CreateRequestQ
     // UpdateBookingDto, 
     UpdateRequestQuoteDto, UpdateTimeslotDto } from '@shared/contracts/booking';
 import { Decimal } from '@prisma/client/runtime/library';
+import { toRpcException } from '@shared/contracts/rpc-error';
 
 @Controller()
 export class BookingController {
@@ -210,13 +211,8 @@ export class TimeSlotController {
     create(@Payload() createTimeslotDto: CreateManyTimeSlotDto) {
         return from(this.timeSlotService.create(createTimeslotDto)).pipe(
             catchError((err) => {
-                console.error("Error in timeSlotService for timeslot:", err);
-                return throwError(() => new RpcException({
-                    statusCode: err.response.statusCode || 500,
-                    message: err.message || "Internal Server Error",
-                    error: err.response.error || "Sever error",
-                }));
-
+                console.error("Error in TimeSlotService:", err);
+                return throwError(() => toRpcException(err));
             })
         );
 
@@ -226,13 +222,8 @@ export class TimeSlotController {
     findAll(@Payload() data: ManyRequestTimeSlotDto) {
         return from(this.timeSlotService.findAll(data)).pipe(
             catchError((err) => {
-                console.error("Error in UsersService:", err);
-                return throwError(() => new RpcException({
-                    statusCode: err.response.statusCode || 500,
-                    message: err.message || "Internal Server Error",
-                    error: err.response.error || "Sever error",
-                }));
-
+                console.error("Error in TimeSlotService:", err);
+                return throwError(() => toRpcException(err));
             })
         );
 
@@ -259,13 +250,8 @@ export class TimeSlotController {
         const { id, updateTimeslotDto } = data
         return from(this.timeSlotService.update(id, updateTimeslotDto)).pipe(
             catchError((err) => {
-                console.error("Error in EventService:", err);
-                return throwError(() => new RpcException({
-                    statusCode: err.response.statusCode || 500,
-                    message: err.message || "Internal Server Error",
-                    error: err.response.error || "Sever error",
-                }));
-
+                console.error("Error in TimeSlotService:", err);
+                return throwError(() => toRpcException(err));
             })
         );
 
@@ -276,13 +262,8 @@ export class TimeSlotController {
         const { id, updaterId } = data
         return from(this.timeSlotService.remove(id, updaterId)).pipe(
             catchError((err) => {
-                console.error("Error in UsersService:", err);
-                return throwError(() => new RpcException({
-                    statusCode: err.response.statusCode || 500,
-                    message: err.message || "Internal Server Error",
-                    error: err.response.error || "Sever error",
-                }));
-
+                console.error("Error in TimeSlotService:", err);
+                return throwError(() => toRpcException(err));
             })
         );
 

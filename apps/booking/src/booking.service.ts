@@ -18,6 +18,7 @@ import { instanceToPlain } from 'class-transformer';
 import {v4 as uuidv4 } from 'uuid'
 import { Decimal } from '@prisma/client/runtime/library';
 import { NotificationInterface } from '@shared/interfaces/Notification/notification.interface';
+import { PrismaErrorHandler } from '@shared/contracts/prisma.error.handler';
 
 @Injectable()
 export class BookingService {
@@ -870,11 +871,10 @@ export class TimeSlotService {
 
 			return newTimeSlot;
 		} catch (error) {
-			console.log(error)
-			throw new InternalServerErrorException(error, {
-				cause: new Error(),
-				description: 'time slot generation failed, please try again!'
-			});
+			// Re-throw as-is so NotFound/BadRequest (and errors from other services) keep their status.
+			// Prisma errors are mapped to HTTP exceptions; anything else becomes a 500 in toRpcException.
+			PrismaErrorHandler.handle(error, Prisma);
+			throw error;
 		}
 	}
 
@@ -944,21 +944,27 @@ export class TimeSlotService {
 			
 			return result;
 		} catch (error) {
-			throw new ConflictException(error);
+			PrismaErrorHandler.handle(error, Prisma);
+			throw error;
 		}
 	}
 
 	async remove(id: string, updaterId: string): Promise<TimeslotDto> {
-		const timeSlot = await this.databaseService.timeSlot.update({
-			where: { id },
-			data: {
-				deletedAt: new Date(),
-				deletedBy: updaterId
-			}
-		});
+		try {
+			const timeSlot = await this.databaseService.timeSlot.update({
+				where: { id },
+				data: {
+					deletedAt: new Date(),
+					deletedBy: updaterId
+				}
+			});
 
-		// delete the associating service timeSlot
-		return timeSlot;
+			// delete the associating service timeSlot
+			return timeSlot;
+		} catch (error) {
+			PrismaErrorHandler.handle(error, Prisma); // e.g. P2025 -> 404 when the timeslot doesn't exist
+			throw error;
+		}
 	}
 
 
